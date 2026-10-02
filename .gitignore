@@ -1,0 +1,16 @@
+# Racine du dépôt. Les règles propres à Unity sont dans « Project Archery/.gitignore ».
+
+# Fichiers système et réglages personnels des éditeurs
+Thumbs.db
+desktop.ini
+.DS_Store
+.vs/
+.idea/
+.vscode/
+
+# Cache Python (Tools/)
+__pycache__/
+*.pyc
+
+# Sujet du projet : document du professeur, inutile de le publier dans le dépôt
+Projet_UnityVR_Archery_Challenge_ST2OOS.pdf
