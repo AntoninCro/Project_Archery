@@ -1,0 +1,357 @@
+using System;
+using System.Collections.Generic;
+using Archery.Combat;
+using Archery.Core;
+using Archery.Defense;
+using Archery.Player;
+using UnityEngine;
+using UnityEngine.AI;
+
+namespace Archery.Enemies
+{
+    /// <summary>
+    /// Ennemi au sol (GDD, section 10) : marche vers la tour avec un NavMeshAgent et la frappe,
+    /// ou attaque le joueur s'il est au sol tout près. Meurt quand son <see cref="Health"/> tombe à 0.
+    /// </summary>
+    /// <remarks>
+    /// L'Animator est optionnel. S'il existe, il peut utiliser les paramètres Speed (float),
+    /// Attack, Hit et Die (triggers) ; ceux qui manquent sont simplement ignorés.
+    /// </remarks>
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(NavMeshAgent), typeof(Health))]
+    public class Enemy : MonoBehaviour
+    {
+        enum State
+        {
+            Moving,
+            Attacking,
+            Dead,
+        }
+
+        static readonly int k_SpeedId = Animator.StringToHash("Speed");
+        static readonly int k_AttackId = Animator.StringToHash("Attack");
+        static readonly int k_HitId = Animator.StringToHash("Hit");
+        static readonly int k_DieId = Animator.StringToHash("Die");
+
+        static readonly List<Enemy> s_Alive = new List<Enemy>();
+
+        [SerializeField]
+        EnemyDefinition m_Definition;
+
+        [Tooltip("Animator du modèle. Laisser vide pour le chercher dans les enfants.")]
+        [SerializeField]
+        Animator m_Animator;
+
+        [Tooltip("Temps (s) avant que le corps disparaisse.")]
+        [SerializeField]
+        float m_CorpseLifetime = 4f;
+
+        [SerializeField]
+        AudioClip m_AttackClip;
+
+        [SerializeField]
+        AudioClip m_DeathClip;
+
+        NavMeshAgent m_Agent;
+        Health m_Health;
+        Collider[] m_Colliders = Array.Empty<Collider>();
+        EnemyDefinition m_FallbackDefinition;
+        State m_State = State.Moving;
+        Health m_Target;
+        Vector3 m_TargetPoint;
+        float m_RepathTimer;
+        float m_AttackCooldown;
+        float m_HitDelay = -1f;
+        float m_DeathTime;
+        Quaternion m_DeathRotation;
+        bool m_HasSpeed;
+        bool m_HasAttack;
+        bool m_HasHit;
+        bool m_HasDie;
+
+        /// <summary>Ennemis vivants dans la scène.</summary>
+        public static IReadOnlyList<Enemy> Alive => s_Alive;
+
+        /// <summary>Un ennemi vient de mourir (score, argent…). Le DamageInfo décrit le coup fatal.</summary>
+        public static event Action<Enemy, DamageInfo> Killed;
+
+        public EnemyDefinition Definition => Def;
+        public Health Health => m_Health;
+        public bool IsAlive => m_State != State.Dead;
+
+        /// <summary>Ralentissements (flèches de foudre…) : 1 = vitesse normale.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
+
+        /// <summary>Multiplicateur des dégâts infligés (difficulté).</summary>
+        public float DamageMultiplier { get; set; } = 1f;
+
+        EnemyDefinition Def
+        {
+            get
+            {
+                if (m_Definition != null)
+                    return m_Definition;
+                if (m_FallbackDefinition == null)
+                    m_FallbackDefinition = ScriptableObject.CreateInstance<EnemyDefinition>();
+                return m_FallbackDefinition;
+            }
+        }
+
+        void Awake()
+        {
+            m_Agent = GetComponent<NavMeshAgent>();
+            m_Health = GetComponent<Health>();
+            m_Colliders = GetComponentsInChildren<Collider>(true);
+            if (m_Animator == null)
+                m_Animator = GetComponentInChildren<Animator>();
+            CacheAnimatorParameters();
+
+            if (m_Definition == null)
+                Debug.LogError("Enemy : aucune Enemy Definition assignée, valeurs par défaut utilisées.", this);
+
+            m_Health.ResetHealth(Def.maxHealth);
+            m_Agent.speed = Def.moveSpeed;
+            m_Agent.stoppingDistance = Def.attackRange * 0.8f;
+        }
+
+        void OnEnable()
+        {
+            if (m_State != State.Dead)
+                s_Alive.Add(this);
+            m_Health.Damaged += OnDamaged;
+            m_Health.Died += OnDied;
+        }
+
+        void OnDisable()
+        {
+            s_Alive.Remove(this);
+            m_Health.Damaged -= OnDamaged;
+            m_Health.Died -= OnDied;
+        }
+
+        void Update()
+        {
+            var deltaTime = Time.deltaTime;
+            if (m_State == State.Dead)
+            {
+                UpdateCorpse(deltaTime);
+                return;
+            }
+
+            ChooseTarget();
+            UpdatePendingHit(deltaTime);
+
+            if (m_Target == null)
+                Stop();
+            else if (HorizontalDistance(transform.position, m_TargetPoint) <= Def.attackRange)
+                UpdateAttack(deltaTime);
+            else
+                UpdateMove(deltaTime);
+
+            if (m_HasSpeed)
+                m_Animator.SetFloat(k_SpeedId, m_Agent.enabled ? m_Agent.velocity.magnitude : 0f);
+        }
+
+        /// <summary>
+        /// Cible : le joueur s'il est au sol et proche, sinon la tour, sinon le joueur (tour détruite).
+        /// </summary>
+        void ChooseTarget()
+        {
+            var player = PlayerHealth.Instance;
+            var tower = Tower.Instance;
+            var playerAvailable = player != null && player.IsAlive;
+            m_Target = null;
+
+            if (playerAvailable && Def.playerAggroRange > 0f)
+            {
+                var body = player.BodyPosition;
+                var sameLevel = Mathf.Abs(body.y - transform.position.y) < 1.5f;
+                if (sameLevel && HorizontalDistance(transform.position, body) <= Def.playerAggroRange)
+                {
+                    m_Target = player.Health;
+                    m_TargetPoint = body;
+                    return;
+                }
+            }
+
+            if (tower != null && tower.IsStanding)
+            {
+                m_Target = tower.Health;
+                m_TargetPoint = tower.ClosestPoint(transform.position);
+                return;
+            }
+
+            if (playerAvailable)
+            {
+                m_Target = player.Health;
+                m_TargetPoint = player.BodyPosition;
+            }
+        }
+
+        void UpdateMove(float deltaTime)
+        {
+            m_State = State.Moving;
+            if (!m_Agent.isOnNavMesh)
+                return;
+
+            m_Agent.isStopped = false;
+            m_Agent.updateRotation = true;
+            m_Agent.speed = Def.moveSpeed * SpeedMultiplier;
+
+            m_RepathTimer -= deltaTime;
+            if (m_RepathTimer <= 0f)
+            {
+                m_Agent.SetDestination(m_TargetPoint);
+                m_RepathTimer = 0.25f;
+            }
+        }
+
+        void UpdateAttack(float deltaTime)
+        {
+            m_State = State.Attacking;
+            Stop();
+            FaceTarget(deltaTime);
+
+            m_AttackCooldown -= deltaTime;
+            if (m_AttackCooldown > 0f || m_HitDelay >= 0f)
+                return;
+
+            // L'attaque démarre ; le coup porte après le délai de préparation.
+            m_AttackCooldown = Def.attackInterval;
+            m_HitDelay = Def.attackWindup;
+            if (m_HasAttack)
+                m_Animator.SetTrigger(k_AttackId);
+        }
+
+        void UpdatePendingHit(float deltaTime)
+        {
+            if (m_HitDelay < 0f)
+                return;
+
+            m_HitDelay -= deltaTime;
+            if (m_HitDelay > 0f)
+                return;
+
+            m_HitDelay = -1f;
+
+            // Le coup ne touche que si la cible est encore à portée.
+            if (m_Target == null || HorizontalDistance(transform.position, m_TargetPoint) > Def.attackRange + 0.3f)
+                return;
+
+            var direction = m_TargetPoint - transform.position;
+            m_Target.TakeDamage(new DamageInfo
+            {
+                Amount = Def.attackDamage * DamageMultiplier,
+                Zone = HitZone.Body,
+                Point = m_TargetPoint,
+                Direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
+                Source = this,
+            });
+            Sfx.Play(m_AttackClip, m_TargetPoint, 0.9f);
+        }
+
+        void Stop()
+        {
+            if (m_Agent.isOnNavMesh && !m_Agent.isStopped)
+            {
+                m_Agent.isStopped = true;
+                m_Agent.velocity = Vector3.zero;
+            }
+
+            m_Agent.updateRotation = false;
+        }
+
+        void FaceTarget(float deltaTime)
+        {
+            var direction = m_TargetPoint - transform.position;
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 1e-4f)
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 360f * deltaTime);
+        }
+
+        void OnDamaged(Health health, DamageInfo info)
+        {
+            if (m_HasHit && health.IsAlive)
+                m_Animator.SetTrigger(k_HitId);
+        }
+
+        void OnDied(Health health, DamageInfo info)
+        {
+            if (m_State == State.Dead)
+                return;
+
+            m_State = State.Dead;
+            s_Alive.Remove(this);
+            m_HitDelay = -1f;
+
+            if (m_Agent.isOnNavMesh)
+                m_Agent.isStopped = true;
+            m_Agent.enabled = false;
+
+            // Les flèches traversent les corps.
+            foreach (var collider in m_Colliders)
+            {
+                if (collider != null)
+                    collider.enabled = false;
+            }
+
+            m_DeathTime = 0f;
+            m_DeathRotation = transform.rotation;
+            if (m_HasDie)
+                m_Animator.SetTrigger(k_DieId);
+
+            Sfx.Play(m_DeathClip, transform.position + Vector3.up, 0.9f);
+            Killed?.Invoke(this, info);
+        }
+
+        void UpdateCorpse(float deltaTime)
+        {
+            m_DeathTime += deltaTime;
+
+            // Sans animation de mort, l'ennemi bascule en arrière.
+            if (!m_HasDie)
+            {
+                var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(m_DeathTime / 0.5f));
+                transform.rotation = m_DeathRotation * Quaternion.Euler(-80f * t, 0f, 0f);
+            }
+
+            // Puis le corps s'enfonce dans le sol et disparaît.
+            if (m_DeathTime > m_CorpseLifetime - 1f)
+                transform.position += Vector3.down * (0.8f * deltaTime);
+            if (m_DeathTime >= m_CorpseLifetime)
+                Destroy(gameObject);
+        }
+
+        void CacheAnimatorParameters()
+        {
+            if (m_Animator == null || m_Animator.runtimeAnimatorController == null)
+                return;
+
+            foreach (var parameter in m_Animator.parameters)
+            {
+                if (parameter.type == AnimatorControllerParameterType.Float && parameter.nameHash == k_SpeedId)
+                    m_HasSpeed = true;
+                else if (parameter.type == AnimatorControllerParameterType.Trigger)
+                {
+                    m_HasAttack |= parameter.nameHash == k_AttackId;
+                    m_HasHit |= parameter.nameHash == k_HitId;
+                    m_HasDie |= parameter.nameHash == k_DieId;
+                }
+            }
+        }
+
+        static float HorizontalDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            s_Alive.Clear();
+            Killed = null;
+        }
+    }
+}

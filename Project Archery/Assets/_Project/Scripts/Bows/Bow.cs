@@ -43,6 +43,11 @@ namespace Archery.Bows
         [SerializeField]
         Transform m_Model;
 
+        [Tooltip("Optionnel : modèle importé décrit par un BowVisual (cherché tout seul sous le Model). " +
+                 "Ses extrémités de corde et son repose-flèche remplacent ceux ci-dessous.")]
+        [SerializeField]
+        BowVisual m_Visual;
+
         [SerializeField]
         Transform m_ArrowRest;
 
@@ -192,6 +197,7 @@ namespace Archery.Bows
             if (m_LowerLimb != null)
                 m_LowerLimbRest = m_LowerLimb.localRotation;
 
+            ApplyVisual();
             CacheGeometry();
 
             if (m_String != null)
@@ -231,6 +237,11 @@ namespace Archery.Bows
             base.OnSelectEntered(args);
             m_BowHand = args.interactorObject;
             m_Holstered = false;
+
+            // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde.
+            if (m_Nocked == null)
+                CacheGeometry();
+
             if (PlayerRig.Instance != null && m_BowHand is XRBaseInteractor interactor)
                 PlayerRig.Instance.BowHand = interactor.handedness;
         }
@@ -336,6 +347,22 @@ namespace Archery.Bows
                 Origin = origin,
                 Direction = m_AimDirection,
             });
+        }
+
+        // Un modèle importé (BowVisual) fournit ses propres points d'accroche de la corde.
+        void ApplyVisual()
+        {
+            if (m_Visual == null && m_Model != null)
+                m_Visual = m_Model.GetComponentInChildren<BowVisual>();
+            if (m_Visual == null)
+                return;
+
+            if (m_Visual.StringTop != null)
+                m_StringTop = m_Visual.StringTop;
+            if (m_Visual.StringBottom != null)
+                m_StringBottom = m_Visual.StringBottom;
+            if (m_Visual.ArrowRest != null)
+                m_ArrowRest = m_Visual.ArrowRest;
         }
 
         void CacheGeometry()
@@ -566,8 +593,12 @@ namespace Archery.Bows
                 m_StringVibration = Mathf.MoveTowards(m_StringVibration, 0f, deltaTime * 4f);
             }
 
-            // Les branches plient avec la tension.
-            var flex = m_Nocked != null ? m_LimbFlexAngle * m_DrawDistance / MaxDraw : 0f;
+            // Les branches plient avec la tension : par le rig du modèle importé, ou en tournant les branches.
+            var drawRatio = m_Nocked != null ? m_DrawDistance / MaxDraw : 0f;
+            if (m_Visual != null)
+                m_Visual.SetDraw(drawRatio);
+
+            var flex = m_LimbFlexAngle * drawRatio;
             if (m_UpperLimb != null)
                 m_UpperLimb.localRotation = m_UpperLimbRest * Quaternion.Euler(-flex, 0f, 0f);
             if (m_LowerLimb != null)

@@ -26,7 +26,7 @@ namespace Archery.Bows
         public float damage = 10f;
 
         [Tooltip("Distance de tirage maximale (m), mesurée depuis la position de repos de la corde.")]
-        public float maxDrawDistance = 0.45f;
+        public float maxDrawDistance = 0.35f;
 
         [Tooltip("Puissance selon la tension (0 = corde au repos, 1 = tension maximale).")]
         public AnimationCurve drawToPower = new AnimationCurve(new Keyframe(0f, 0.1f), new Keyframe(1f, 1f));

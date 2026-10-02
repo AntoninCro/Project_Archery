@@ -1,12 +1,13 @@
 """Vérifie que les scripts de Assets/_Project compilent, sans ouvrir Unity.
 
-Compile deux assemblages avec le SDK .NET, contre les mêmes DLL qu'Unity
+Compile les scripts avec le SDK .NET, contre les mêmes DLL qu'Unity
 (références lues dans Assembly-CSharp.csproj, généré par Unity) :
   - Archery.Runtime : comme un build joueur (sans UnityEditor) ;
-  - Archery.Editor : les outils d'éditeur.
+  - Archery.Editor : les outils d'éditeur, s'il y a un dossier Scripts/Editor.
 
 Usage : python Tools/compile_check.py   (Unity doit avoir généré les .csproj au moins une fois)
 """
+import json
 import os
 import re
 import subprocess
@@ -79,12 +80,22 @@ def build(path):
     return result.returncode == 0
 
 
+def version_defines():
+    """Defines des « Version Defines » de l'asmdef, pour les paquets installés (manifest.json)."""
+    with open(os.path.join(SCRIPTS, "Archery.Runtime.asmdef"), encoding="utf-8-sig") as file:
+        asmdef = json.load(file)
+    with open(os.path.join(PROJECT, "Packages", "manifest.json"), encoding="utf-8-sig") as file:
+        installed = json.load(file).get("dependencies", {})
+    return [entry["define"] for entry in asmdef.get("versionDefines", []) if entry["name"] in installed]
+
+
 def main():
     csproj = os.path.join(PROJECT, "Assembly-CSharp.csproj")
     with open(csproj, encoding="utf-8-sig") as file:
         source = file.read()
 
     defines = re.search(r"<DefineConstants>(.*?)</DefineConstants>", source, re.S).group(1).strip()
+    defines = ";".join([defines] + version_defines())
     references = [(n, absolute(p)) for n, p in re.findall(r'<Reference Include="([^"]+)">\s*<HintPath>(.*?)</HintPath>', source, re.S)]
     runtime_references = [(n, p) for n, p in references if not is_editor_dll(p)]
     runtime_defines = ";".join(d for d in defines.split(";") if not d.startswith("UNITY_EDITOR"))
@@ -94,6 +105,9 @@ def main():
                             os.path.join(SCRIPTS, "**", "*.cs"), os.path.join(SCRIPTS, "Editor", "**"))
     if not build(runtime):
         return 1
+
+    if not os.path.isdir(os.path.join(SCRIPTS, "Editor")):
+        return 0
 
     print("== Archery.Editor ==")
     runtime_dll = os.path.join(WORK, "bin", "Archery.Runtime", "Archery.Runtime.dll")

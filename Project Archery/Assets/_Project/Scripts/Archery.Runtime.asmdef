@@ -5,7 +5,8 @@
         "Unity.XR.Interaction.Toolkit",
         "Unity.XR.CoreUtils",
         "Unity.InputSystem",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.Animation.Rigging"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -14,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.animation.rigging",
+            "expression": "1.0.0",
+            "define": "ARCHERY_ANIMATION_RIGGING"
+        }
+    ],
     "noEngineReferences": false
 }

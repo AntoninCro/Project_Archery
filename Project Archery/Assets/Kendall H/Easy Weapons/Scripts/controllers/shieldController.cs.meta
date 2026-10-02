@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: eb8220c9a2301f442b3e166dd15d64de
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 295122
+  packageName: Untitled
+  packageVersion: 1.0
+  assetPath: Assets/Kendall H/Easy Weapons/Scripts/controllers/shieldController.cs
+  uploadId: 690134

@@ -27,29 +27,33 @@ namespace Archery.Combat
         [SerializeField]
         UnityEvent m_OnDeath = new UnityEvent();
 
+        [Tooltip("PV actuels. Affichés pour suivre la partie dans l'Inspector ; remis au maximum au lancement.")]
+        [SerializeField]
+        float m_Current;
+
         float m_LastDamageTime = float.NegativeInfinity;
 
         public event Action<Health, DamageInfo> Damaged;
         public event Action<Health, DamageInfo> Died;
 
-        public float Current { get; private set; }
+        public float Current => m_Current;
         public float Max => m_MaxHealth;
-        public float Normalized => m_MaxHealth > 0f ? Current / m_MaxHealth : 0f;
-        public bool IsAlive => Current > 0f;
+        public float Normalized => m_MaxHealth > 0f ? m_Current / m_MaxHealth : 0f;
+        public bool IsAlive => m_Current > 0f;
         public UnityEvent OnDeath => m_OnDeath;
 
-        void OnEnable() => Current = m_MaxHealth;
+        void OnEnable() => m_Current = m_MaxHealth;
 
         public void ResetHealth(float max)
         {
             m_MaxHealth = Mathf.Max(1f, max);
-            Current = m_MaxHealth;
+            m_Current = m_MaxHealth;
         }
 
         public void Heal(float amount)
         {
             if (IsAlive && amount > 0f)
-                Current = Mathf.Min(m_MaxHealth, Current + amount);
+                m_Current = Mathf.Min(m_MaxHealth, m_Current + amount);
         }
 
         public void TakeDamage(in DamageInfo info)
@@ -58,10 +62,10 @@ namespace Archery.Combat
                 return;
 
             m_LastDamageTime = Time.time;
-            Current = m_Invulnerable ? Mathf.Max(1f, Current - info.Amount) : Mathf.Max(0f, Current - info.Amount);
+            m_Current = m_Invulnerable ? Mathf.Max(1f, m_Current - info.Amount) : Mathf.Max(0f, m_Current - info.Amount);
             Damaged?.Invoke(this, info);
 
-            if (Current <= 0f)
+            if (m_Current <= 0f)
             {
                 Died?.Invoke(this, info);
                 m_OnDeath.Invoke();
@@ -70,8 +74,8 @@ namespace Archery.Combat
 
         void Update()
         {
-            if (m_RegenPerSecond > 0f && IsAlive && Current < m_MaxHealth && Time.time - m_LastDamageTime > m_RegenDelay)
-                Current = Mathf.Min(m_MaxHealth, Current + m_RegenPerSecond * Time.deltaTime);
+            if (m_RegenPerSecond > 0f && IsAlive && m_Current < m_MaxHealth && Time.time - m_LastDamageTime > m_RegenDelay)
+                m_Current = Mathf.Min(m_MaxHealth, m_Current + m_RegenPerSecond * Time.deltaTime);
         }
     }
 }

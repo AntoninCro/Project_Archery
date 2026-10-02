@@ -37,6 +37,17 @@ namespace Archery.Player
         /// <summary>Main qui tient (ou a tenu en dernier) l'arc.</summary>
         public InteractorHandedness BowHand { get; set; } = InteractorHandedness.Left;
 
+        /// <summary>Position des pieds du joueur : sous la tête, au niveau du sol du XR Origin.</summary>
+        public Vector3 BodyPosition
+        {
+            get
+            {
+                var head = Head;
+                var floor = m_Origin != null ? m_Origin.transform.position.y : transform.position.y;
+                return head != null ? new Vector3(head.position.x, floor, head.position.z) : transform.position;
+            }
+        }
+
         /// <summary>Orientation horizontale du regard (sans tangage ni roulis).</summary>
         public Quaternion HeadYaw
         {

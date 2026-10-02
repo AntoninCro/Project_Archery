@@ -3,25 +3,26 @@ using UnityEngine;
 namespace Archery.Bows
 {
     /// <summary>
-    /// Réglages globaux des qualités de tir (valeurs de départ du GDD, section 4.2).
+    /// Réglages globaux des qualités de tir (GDD, section 4.2).
+    /// La portée varie comme le carré de la vitesse : ×1,5 en vitesse donne ×2,25 en portée.
     /// </summary>
     [CreateAssetMenu(fileName = "ShotTuning", menuName = "Archery/Shot Tuning")]
     public class ShotTuning : ScriptableObject
     {
         [SerializeField]
-        GradeModifiers m_None = new GradeModifiers("", new Color(1f, 1f, 1f, 0.6f), 0.85f, 0.75f, 0.5f);
+        GradeModifiers m_None = new GradeModifiers("", new Color(1f, 1f, 1f, 0.6f), 0.6f, 0.75f, 0.5f);
 
         [SerializeField]
-        GradeModifiers m_Miss = new GradeModifiers("Raté", new Color(0.92f, 0.22f, 0.16f), 0.85f, 0.75f, 0.5f);
+        GradeModifiers m_Miss = new GradeModifiers("Raté", new Color(0.92f, 0.22f, 0.16f), 0.6f, 0.75f, 0.5f);
 
         [SerializeField]
-        GradeModifiers m_Ok = new GradeModifiers("Moyen", new Color(1f, 0.58f, 0.12f), 1f, 1f, 1f);
+        GradeModifiers m_Ok = new GradeModifiers("Moyen", new Color(1f, 0.58f, 0.12f), 0.9f, 1f, 1f);
 
         [SerializeField]
-        GradeModifiers m_Good = new GradeModifiers("Bon", new Color(0.35f, 0.86f, 0.32f), 1.1f, 1.25f, 1.25f);
+        GradeModifiers m_Good = new GradeModifiers("Bon", new Color(0.35f, 0.86f, 0.32f), 1.15f, 1.25f, 1.25f);
 
         [SerializeField]
-        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(1f, 0.82f, 0.18f), 1.25f, 2f, 2f);
+        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(1f, 0.82f, 0.18f), 1.5f, 2f, 2f);
 
         static ShotTuning s_Fallback;
 

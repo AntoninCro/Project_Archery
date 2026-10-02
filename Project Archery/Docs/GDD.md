@@ -43,7 +43,7 @@ Durée des vagues : 30 s à la vague 1, puis 5 s de plus à chaque vague (75 s �
 1. Prendre l'arc avec le bouton de poignée, dans n'importe quelle main.
 2. Attraper une flèche au-dessus de l'épaule, dans une zone invisible derrière la tête qui suit la rotation horizontale du casque.
 3. Encocher : approcher l'arrière de la flèche de la corde, elle s'y accroche.
-4. Tendre : reculer la main. La puissance dépend de la distance de tirage (jusqu'à environ 60 cm selon l'arc). La vibration et le grincement augmentent avec la tension.
+4. Tendre : reculer la main. La puissance dépend de la distance de tirage (main à environ 50 cm de l'arc à tension maximale, selon l'arc). La vibration et le grincement augmentent avec la tension.
 5. Lâcher le bouton : la flèche part, propulsée par le moteur physique.
 
 ### 4.2 L'anneau de timing
@@ -55,14 +55,15 @@ Durée des vagues : 30 s à la vague 1, puis 5 s de plus à chaque vague (75 s �
 - Si le cercle atteint le centre sans tir, l'anneau recommence.
 - Un tir lâché avant la tension maximale est faible et sans bonus.
 
-| Qualité | Bande | Vitesse | Dégâts | Points |
-|---|---|---|---|---|
-| Parfait | doré | ×1,25 | ×2 | ×2 |
-| Bon | vert | ×1,1 | ×1,25 | ×1,25 |
-| Moyen | orange | ×1 | ×1 | ×1 |
-| Raté | rouge | ×0,85 | ×0,75 | ×0,5 |
+| Qualité | Bande | Vitesse | Portée | Dégâts | Points |
+|---|---|---|---|---|---|
+| Parfait | doré | ×1,5 | ×2,25 | ×2 | ×2 |
+| Bon | vert | ×1,15 | ×1,3 | ×1,25 | ×1,25 |
+| Moyen | orange | ×0,9 | ×0,8 | ×1 | ×1 |
+| Raté | rouge | ×0,6 | ×0,36 | ×0,75 | ×0,5 |
+| Sans anneau (tension incomplète) | — | ×0,6 | ×0,36 | ×0,75 | ×0,5 |
 
-Ce sont des valeurs de départ, à régler en jouant dans le casque. Un tir parfait déclenche aussi un effet visuel et sonore.
+La portée varie comme le carré de la vitesse : un tir doré va environ 6 fois plus loin qu'un tir rouge. Ces valeurs se règlent dans `Data/ShotTuning`. Un tir parfait déclenche aussi un effet visuel et sonore.
 
 ### 4.3 La flèche
 
@@ -235,15 +236,16 @@ Tous les sons du jeu sont spatialisés.
 Assets/_Project/
 ├── Scripts/                       assemblage Archery.Runtime
 │   ├── Core/        vibrations des manettes, sons ponctuels
-│   ├── Bows/        arc, flèche, réserve de flèches, carquois, anneau de timing, réglages de tir
+│   ├── Bows/        arc, modèle d'arc importé (BowVisual), flèche, réserve de flèches, carquois, anneau de timing, réglages de tir
 │   ├── Combat/      PV, zones de touche, dégâts
-│   ├── Player/      accès au joueur (tête, mains, emplacement de l'arc rangé)
+│   ├── Enemies/     ennemi au sol, données des ennemis, apparition
+│   ├── Defense/     la tour
+│   ├── Player/      accès au joueur (tête, mains, arc rangé), PV du joueur
 │   ├── Training/    cibles d'entraînement, cibles mobiles
 │   ├── UI/          textes flottants (points, dégâts)
-│   ├── Editor/      assemblage Archery.Editor : construction automatique du prototype
-│   └── (à venir)    Core/GameManager, Enemies, Waves, Economy, Upgrades, Shop, Tower, Locomotion, Save
+│   └── (à venir)    Core/GameManager, Waves, Economy, Upgrades, Shop, Locomotion, Save
 ├── Shaders/         anneau de timing, traînées des flèches
-├── Data/            ScriptableObjects : arcs, réglages de tir (puis améliorations, ennemis, vagues, difficultés)
+├── Data/            ScriptableObjects : arcs, réglages de tir, ennemis (puis améliorations, vagues, difficultés)
 ├── Prefabs/
 ├── Scenes/
 ├── Materials/
@@ -251,8 +253,9 @@ Assets/_Project/
 └── Audio/           sons provisoires générés, à remplacer
 ```
 
-Outil : `Tools/compile_check.py` vérifie que tout compile sans ouvrir Unity.
-
+- Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`).
+- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol.
+- Outil : `Tools/compile_check.py` vérifie que tout compile sans ouvrir Unity.
 - Les réglages (arcs, améliorations, ennemis, vagues, difficultés) sont des ScriptableObjects : on équilibre le jeu sans toucher au code.
 - `GameManager` enchaîne les états Menu → Vague → Pause → Fin de partie.
 - Pools d'objets (`UnityEngine.Pool`) pour les flèches, les ennemis et les effets.

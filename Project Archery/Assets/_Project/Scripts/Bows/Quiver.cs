@@ -22,11 +22,15 @@ namespace Archery.Bows
     {
         [Tooltip("Coin minimal de la zone de prise, dans le repère horizontal de la tête (x droite, y haut, z avant).")]
         [SerializeField]
-        Vector3 m_ZoneMin = new Vector3(-0.35f, -0.45f, -0.45f);
+        Vector3 m_GrabZoneMin = new Vector3(-0.45f, -0.6f, -0.6f);
 
-        [Tooltip("Coin maximal de la zone de prise. z = -0.1 : la main doit être derrière les oreilles, pas au coin de la joue.")]
+        [Tooltip("Coin maximal de la zone de prise. z = -0.02 : il suffit que la main passe derrière le plan des yeux.")]
         [SerializeField]
-        Vector3 m_ZoneMax = new Vector3(0.35f, 0.25f, -0.1f);
+        Vector3 m_GrabZoneMax = new Vector3(0.45f, 0.4f, -0.02f);
+
+        [Tooltip("Délai (s) pendant lequel une pression de la poignée faite juste avant d'entrer dans la zone compte encore.")]
+        [SerializeField]
+        float m_PressBuffer = 0.5f;
 
         [Tooltip("Petite vibration quand une main vide entre dans la zone.")]
         [SerializeField]
@@ -37,6 +41,7 @@ namespace Archery.Bows
 
         PlayerRig m_Rig;
         readonly HashSet<XRBaseInputInteractor> m_HandsInZone = new HashSet<XRBaseInputInteractor>();
+        readonly Dictionary<XRBaseInputInteractor, float> m_LastPressTime = new Dictionary<XRBaseInputInteractor, float>();
 
         void Awake() => m_Rig = GetComponent<PlayerRig>();
 
@@ -55,9 +60,13 @@ namespace Archery.Bows
                 if (hand == null || !hand.isActiveAndEnabled)
                     continue;
 
+                // On retient le moment de la pression : souvent, on serre la poignée
+                // un peu avant que la main arrive dans le dos.
+                if (hand.selectInput.ReadWasPerformedThisFrame())
+                    m_LastPressTime[hand] = Time.time;
+
                 var local = toHeadSpace * (hand.transform.position - head.position);
-                var inZone = IsInZone(local);
-                if (!inZone)
+                if (!IsInZone(local))
                 {
                     m_HandsInZone.Remove(hand);
                     continue;
@@ -66,18 +75,24 @@ namespace Archery.Bows
                 if (m_HandsInZone.Add(hand) && !hand.hasSelection)
                     Haptics.Pulse(hand, m_EnterHapticAmplitude, 0.03f);
 
-                if (!hand.hasSelection && hand.selectInput.ReadWasPerformedThisFrame())
+                if (!hand.hasSelection && hand.selectInput.ReadIsPerformed() && PressedRecently(hand))
                     GiveArrow(hand, pool);
             }
         }
 
         bool IsInZone(Vector3 point) =>
-            point.x >= m_ZoneMin.x && point.x <= m_ZoneMax.x &&
-            point.y >= m_ZoneMin.y && point.y <= m_ZoneMax.y &&
-            point.z >= m_ZoneMin.z && point.z <= m_ZoneMax.z;
+            point.x >= m_GrabZoneMin.x && point.x <= m_GrabZoneMax.x &&
+            point.y >= m_GrabZoneMin.y && point.y <= m_GrabZoneMax.y &&
+            point.z >= m_GrabZoneMin.z && point.z <= m_GrabZoneMax.z;
+
+        bool PressedRecently(XRBaseInputInteractor hand) =>
+            m_LastPressTime.TryGetValue(hand, out var pressTime) && Time.time - pressTime <= m_PressBuffer;
 
         void GiveArrow(XRBaseInputInteractor hand, ArrowPool pool)
         {
+            // Une pression ne donne qu'une seule flèche.
+            m_LastPressTime[hand] = float.NegativeInfinity;
+
             var arrow = pool.Get();
             if (!arrow.TryPutInHand(hand))
             {
@@ -98,7 +113,7 @@ namespace Archery.Bows
 
             Gizmos.color = new Color(1f, 0.6f, 0.1f, 0.5f);
             Gizmos.matrix = Matrix4x4.TRS(head.position, rig.HeadYaw, Vector3.one);
-            Gizmos.DrawWireCube((m_ZoneMin + m_ZoneMax) * 0.5f, m_ZoneMax - m_ZoneMin);
+            Gizmos.DrawWireCube((m_GrabZoneMin + m_GrabZoneMax) * 0.5f, m_GrabZoneMax - m_GrabZoneMin);
         }
     }
 }

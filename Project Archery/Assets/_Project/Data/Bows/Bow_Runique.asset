@@ -18,7 +18,7 @@ MonoBehaviour:
   availableFromWave: 7
   arrowSpeed: 55
   damage: 24
-  maxDrawDistance: 0.45
+  maxDrawDistance: 0.35
   drawToPower:
     serializedVersion: 2
     m_Curve:
