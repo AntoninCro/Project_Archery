@@ -98,11 +98,13 @@ Un arc de départ, puis des arcs plus puissants à acheter en boutique.
 
 ### 6.1 Raretés
 
-| Rareté | Couleur | Rôle | Vagues 1–3 | Vagues 4–6 | Vagues 7–10 | Mode infini |
-|---|---|---|---|---|---|---|
-| Commune | blanc | statistiques | 80 % | 65 % | 50 % | 40 % |
-| Rare | bleu | effets qui se déclenchent parfois | 18 % | 30 % | 40 % | 45 % |
-| Légendaire | doré | effets puissants ou uniques | 2 % | 5 % | 10 % | 15 % |
+| Rareté | Couleur | Rôle | Chances |
+|---|---|---|---|
+| Commune | blanc | statistiques | 70 % |
+| Rare | bleu | effets qui se déclenchent parfois | 25 % |
+| Légendaire | doré | effets puissants ou uniques | 5 % |
+
+Les chances sont les mêmes toute la partie. Aux premiers tests, elles montaient avec les vagues, et les boutiques de fin de partie n'avaient plus aucune carte commune. L'amélioration Chance augmente le poids des rares et des légendaires, mais les communes gardent toujours au moins 40 % des tirages.
 
 ### 6.2 Liste de départ
 
@@ -110,9 +112,10 @@ Un arc de départ, puis des arcs plus puissants à acheter en boutique.
 
 - **Les bonus** s'additionnent : dégâts, vitesse, PV, etc.
 - **Les chances** (foudre, explosion, glace) s'additionnent jusqu'à 100 %. Au-delà, chaque exemplaire rend l'effet plus fort (tableau ci-dessous).
-- **Les nombres de flèches** (multitir, tir écho, déluge) et le perçage sont des moyennes. Chaque exemplaire en ajoute une part : avec 150 %, on a 1 flèche en plus à coup sûr, et 50 % de chance d'en avoir une deuxième. Il n'y a pas de limite. Seule une sécurité, pour que le jeu reste fluide, arrête d'ajouter des flèches au-delà de 250 en vol en même temps.
+- **Les nombres de flèches** (multitir, tir écho, déluge) et le perçage sont des moyennes. Chaque exemplaire en ajoute une part : avec 150 %, on a 1 flèche en plus à coup sûr, et 50 % de chance d'en avoir une deuxième. Il n'y a pas de limite. Seule une sécurité, pour que le jeu reste fluide, arrête d'ajouter des flèches au-delà de 150 en vol en même temps.
 - **Ils s'enchaînent** : le multitir ajoute des flèches à la volée, le tir écho répète toute la volée, et le déluge divise en vol chaque flèche, celles du multitir et de l'écho comprises. Les flèches nées d'une division ne se divisent pas à leur tour.
-- **Chaque flèche en plus est une vraie flèche** : elle tire au sort ses propres effets (foudre, explosion, glace, perçage) et profite de l'auto-visée et du ricochet. Elle ne casse pas le combo quand elle rate.
+- **La volée reste centrée sur la visée** : la flèche de l'arc part toujours tout droit. Les flèches en plus se placent par paires, à gauche et à droite, à égalité. Avec un nombre pair de flèches, celle qui n'a pas de paire part juste à côté de la flèche de l'arc (20 cm), dans la même direction : avec 2 flèches, les deux vont là où l'on vise. Le déluge suit la même règle autour de la flèche qui se divise, qui continue tout droit.
+- **Chaque flèche en plus est une vraie flèche** : elle tire au sort ses propres effets (foudre, explosion, glace, perçage) et profite de l'auto-visée et du ricochet. Elle ne casse pas le combo quand elle rate. En revanche, elle ne rapporte pas de points de touche et ne fait pas monter le combo ; ses éliminations rapportent normalement (section 8).
 
 Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chance) :
 
@@ -131,11 +134,11 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 - Vitalité : +15 PV max.
 - Butin : le taux de conversion des points en or passe de 25 % à 30 % (+5 points par exemplaire).
 - Chasseur de têtes : +25 % de dégâts à la tête.
-- Chance : les cartes rares et légendaires sortent 25 % plus souvent en boutique. Avec beaucoup d'exemplaires, les cartes communes disparaissent.
+- Chance : les cartes rares et légendaires sortent plus souvent en boutique (+25 % de poids face aux communes). Les communes gardent toujours au moins 40 % des tirages.
 
 **Rares** (se déclenchent au hasard)
 
-- Multitir : +50 % de chance de tirer une flèche en plus, en éventail. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, une flèche en plus et 50 % de chance d'une deuxième ; etc.
+- Multitir : +50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, une flèche en plus et 50 % de chance d'une deuxième ; etc. Avec 2 flèches, elles partent côte à côte ; à partir de 3, l'éventail s'ouvre de chaque côté.
 - Flèche de foudre : chaque flèche a 20 % de chance d'appeler un éclair qui blesse la cible (75 % des dégâts de la flèche) et la ralentit de 40 % pendant 2 s.
 - Perçage : chaque flèche a 25 % de chance de traverser un ennemi ; au-delà de 100 %, elle en traverse plusieurs. Chaque ennemi traversé enlève 20 % des dégâts.
 - Vampirisme : chaque headshot rend 2 PV.
@@ -144,7 +147,7 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 
 **Légendaires**
 
-- Déluge : en vol, environ 0,2 s après son départ, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, en deux, et 50 % de chance en trois ; etc.
+- Déluge : en vol, environ 0,2 s après son départ, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, en deux, et 50 % de chance en trois ; etc. La flèche continue tout droit, la nouvelle part juste à côté d'elle, et les suivantes s'écartent par paires.
 - Chaîne d'éclairs : la foudre rebondit sur 3 ennemis proches de plus par exemplaire. Sans flèche de foudre, 20 % des flèches appellent l'éclair.
 - Flèche explosive : chaque flèche a 25 % de chance d'exploser et de toucher tous les ennemis autour (3,5 m).
 - Auto-visée : les flèches dévient légèrement (30° par seconde et par exemplaire) vers l'ennemi le plus proche, s'il est à moins de 12 m devant elles.
@@ -156,32 +159,46 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 
 - Elle s'ouvre entre les vagues, en haut de la tour : un panneau à gauche du joueur. On vise une carte avec le rayon de la main libre et on achète avec la gâchette.
 - Elle propose 4 améliorations tirées au sort selon les raretés, le prochain arc et les services de la tour.
-- Relancer les offres coûte 10, puis 5 de plus à chaque relance (le coût revient à 10 à chaque pause).
-- Prix de base : commune 25, rare 60, légendaire 140 ; +8 % par vague.
+- Relancer les offres coûte 10, puis 5 de plus à chaque relance (le coût revient au départ à chaque pause). Il suit la hausse des vagues et du mode infini.
 - Services de la tour : réparation (+25 % des PV, 40), reconstruction après destruction (250), barricades (60), brasero (100, une seule fois).
-- **Mode infini** : tous les prix de la boutique (améliorations, arc, tour, relance) sont multipliés par 1,2 à chaque vague, en se cumulant. Avec la courbe des ennemis (section 11), cela compense les achats sans limite : le mode infini finit toujours par déborder le joueur.
 
-| Boutique après la vague | 1 | 5 | 10 | 11 | 15 | 20 |
-|---|---|---|---|---|---|---|
-| Commune | 25 | 35 | 45 | 55 | 130 | 390 |
-| Rare | 60 | 80 | 105 | 130 | 315 | 935 |
-| Légendaire | 140 | 185 | 240 | 300 | 740 | 2 185 |
+**Prix des améliorations.** Aux premiers tests, en Impossible, on gagnait jusqu'à 5 000 pièces d'or vers la vague 10 et l'on achetait des dizaines d'améliorations par pause, au point de faire ramer le jeu. Les prix montent donc de trois façons, qui se cumulent :
+
+- prix de base : commune 25, rare 60, légendaire 140 ;
+- **+10 % à chaque vague**, en se cumulant (×2,4 après la vague 10) ;
+- **+5 % à chaque amélioration achetée**, en se cumulant (×1,6 après 10 achats, ×2,7 après 20, ×7 après 40) : plus on en a, plus la suivante coûte cher ;
+- **en mode infini, ×1,2 à chaque vague**, en se cumulant, pour tous les prix de la boutique (améliorations, arc, tour, relance).
+
+| Prix d'une rare (commune, légendaire) | 0 achat | 10 achats | 20 achats | 40 achats |
+|---|---|---|---|---|
+| Après la vague 1 | 60 (25, 140) | 100 (40, 230) | 160 (65, 370) | 420 (175, 985) |
+| Après la vague 5 | 90 (35, 205) | 145 (60, 335) | 235 (95, 545) | 620 (260, 1 445) |
+| Après la vague 10 | 140 (60, 330) | 230 (95, 540) | 375 (155, 875) | 995 (415, 2 325) |
+| Après la vague 15 | 565 (235, 1 325) | 925 (385, 2 155) | 1 505 (625, 3 510) | 3 990 (1 665, 9 315) |
+
+Avec la courbe des ennemis (section 11) et la baisse de l'or (section 8), cela compense les achats sans limite : selon une simulation (un très bon joueur qui tue tous les ennemis et dépense tout), on possède une trentaine d'améliorations à la vague 10 en Normal et une cinquantaine en Impossible, au lieu de plus de 250. Le mode infini finit toujours par déborder le joueur.
 
 ## 8. Score et argent
 
 **Points**
 
-- Chaque touche : 5 points au corps, 10 à la tête.
-- Chaque ennemi tué : sa valeur de base (section 10), doublée s'il meurt d'un tir à la tête.
+- Chaque touche de la flèche tirée par l'arc : 5 points au corps, 10 à la tête. Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche : sinon, les points et l'or grimpaient avec le nombre de flèches.
+- Chaque ennemi tué, par n'importe quelle flèche ou effet : sa valeur de base (section 10), doublée s'il meurt d'un tir à la tête.
 - Ces points sont multipliés par la qualité du tir (section 4.2), la distance, le combo et la difficulté (section 11).
 - Fin de vague : 50 points × numéro de la vague.
 
 | Multiplicateur | Règle |
 |---|---|
 | Distance | +1 % par mètre au-delà de 10 m, jusqu'à +50 % |
-| Combo | +10 % par touche consécutive, jusqu'à ×2 ; retombe à zéro quand une flèche ne touche aucun ennemi |
+| Combo | +10 % par touche consécutive de la flèche tirée par l'arc, jusqu'à ×2 ; retombe à zéro quand cette flèche ne touche aucun ennemi |
 
-**Argent** : 25 % des points gagnés (l'amélioration Butin augmente ce taux), divisé par deux tant que la tour est détruite.
+**Argent** : 25 % des points gagnés (l'amélioration Butin augmente ce taux), divisé par deux tant que la tour est détruite. À partir de la vague 5, ce taux baisse de 9 % à chaque vague, en se cumulant :
+
+| Vague | 1 à 4 | 5 | 10 | 15 | 20 |
+|---|---|---|---|---|---|
+| Points changés en or | 25 % | 23 % | 14 % | 9 % | 5,5 % |
+
+Le score, lui, ne baisse pas.
 
 ## 9. La tour
 
@@ -206,7 +223,7 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 - Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive 4 s après le début de la vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11) : le boss de la vague 10 est plus coriace que celui de la vague 5. Une vague de boss compte 40 % de Rampants ordinaires en moins.
 - Les ennemis sortent de la forêt par 4 chemins autour de la clairière.
 - Chaque vague dispose d'un budget qui augmente de vague en vague. Chaque ennemi a un coût, et le budget est dépensé tout au long du chrono.
-- Les PV, les dégâts et le nombre des ennemis suivent une courbe exponentielle (section 11). Le tableau ci-dessus donne leurs valeurs à la vague 1, en Normal.
+- Les PV, les dégâts, le nombre et la vitesse des ennemis suivent une courbe exponentielle (section 11). Le tableau ci-dessus donne leurs valeurs à la vague 1, en Normal. Quand ils vont plus vite, leur animation de course accélère aussi.
 - Pour que le jeu reste fluide dans le casque : 500 ennemis au plus par vague, et 40 en vie en même temps (12 à la vague 1 en Normal ; ce maximum grandit avec la difficulté et les vagues). À la fin du chrono, ceux qui ne sont pas encore sortis ne viennent plus.
 
 ## 11. Les difficultés
@@ -222,13 +239,23 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 | PV des ennemis, à chaque vague | ×1,06 | ×1,08 | ×1,11 | ×1,14 |
 | Dégâts subis, à chaque vague | ×1,03 | ×1,04 | ×1,06 | ×1,08 |
 | Nombre d'ennemis, à chaque vague | ×1,04 | ×1,05 | ×1,07 | ×1,09 |
+| Vitesse des ennemis, à chaque vague | ×1,01 | ×1,02 | ×1,025 | ×1,03 |
 | Largeur de la bande verte (parfait) | ×1,3 | ×1 | ×0,85 | ×0,7 |
 | Aide à la visée | oui | oui | non | non |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
 
 La nuit, les yeux des ennemis brillent et une lanterne éclaire la tour, pour que le jeu reste lisible.
 
-**Courbe de difficulté exponentielle.** Les améliorations n'ont pas de limite (section 6.2) : pour compenser, chaque vague multiplie encore les PV, les dégâts et le nombre des ennemis (lignes « à chaque vague »). La courbe monte plus vite en Difficile et en Impossible. En mode infini, elle s'accélère encore, quelle que soit la difficulté : chaque vague après la 10e multiplie en plus les PV par 1,12, les dégâts par 1,06 et le nombre d'ennemis par 1,08. Les prix de la boutique montent aussi (section 7).
+**Courbe de difficulté exponentielle.** Les améliorations n'ont pas de limite (section 6.2) : pour compenser, chaque vague multiplie encore les PV, les dégâts, le nombre et la vitesse des ennemis (lignes « à chaque vague »). La courbe monte plus vite en Difficile et en Impossible. En mode infini, elle s'accélère encore, quelle que soit la difficulté : chaque vague après la 10e multiplie en plus les PV par 1,12, les dégâts par 1,06, le nombre d'ennemis par 1,08 et leur vitesse par 1,03. Les prix de la boutique montent aussi, et l'or gagné baisse (sections 7 et 8).
+
+La vitesse ne fait au plus que doubler (réglage *Max Speed Scale* des Wave Settings), pour que les ennemis restent lisibles et que leurs déplacements restent propres :
+
+| Vitesse d'un Rampant | Vague 1 | Vague 5 | Vague 10 | Vague 15 | Vague 20 |
+|---|---|---|---|---|---|
+| Facile | 2,0 m/s | 2,1 m/s | 2,2 m/s | 2,7 m/s | 3,2 m/s |
+| Normal | 2,5 m/s | 2,7 m/s | 3,0 m/s | 3,8 m/s | 4,9 m/s |
+| Difficile | 2,9 m/s | 3,2 m/s | 3,6 m/s | 4,7 m/s | 5,8 m/s (plafond) |
+| Impossible | 3,3 m/s | 3,7 m/s | 4,2 m/s | 5,7 m/s | 6,5 m/s (plafond) |
 
 | PV d'un Rampant (dégâts d'un coup) | Vague 1 | Vague 5 | Vague 10 | Vague 15 | Vague 20 |
 |---|---|---|---|---|---|
@@ -371,6 +398,7 @@ Objectif : tirer sur des ennemis qui attaquent la tour.
 - [x] Menu principal, paramètres, fin de partie, clavier virtuel, sauvegarde JSON, classement (montage corrigé après les premiers tests).
 - [x] Anneau de timing à 3 couleurs (rouge, orange, vert pour le tir parfait), après les tests.
 - [x] Après les tests : améliorations sans limite d'achat (chances, puis effets plus forts), flèches en plus avec leurs propres effets, déluge qui divise les flèches en vol, courbe de difficulté exponentielle, prix du mode infini (+20 % par vague).
+- [x] Après les tests suivants : prix qui montent à chaque vague et à chaque achat, or en baisse à partir de la vague 5, flèches en plus sans points de touche, raretés fixes, ennemis de plus en plus rapides, volées centrées sur la visée.
 
 Objectif : toutes les consignes du cours sont couvertes.
 

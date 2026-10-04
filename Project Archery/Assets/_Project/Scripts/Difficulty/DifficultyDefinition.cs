@@ -65,6 +65,11 @@ namespace Archery.Difficulty
         [Min(1f)]
         public float countGrowthPerWave = 1.05f;
 
+        [Tooltip("Multiplie la vitesse des ennemis à chaque nouvelle vague, en se cumulant. " +
+                 "Plafonnée par « Max Speed Scale » des Wave Settings.")]
+        [Min(1f)]
+        public float speedGrowthPerWave = 1.02f;
+
         [Header("Score")]
         [Tooltip("Multiplie tous les points gagnés.")]
         [Min(0f)]
@@ -91,6 +96,7 @@ namespace Archery.Difficulty
             healthGrowthPerWave = 1.06f;
             damageGrowthPerWave = 1.03f;
             countGrowthPerWave = 1.04f;
+            speedGrowthPerWave = 1.01f;
             sky = SkySettings.Noon();
             EndFill();
         }
@@ -113,6 +119,7 @@ namespace Archery.Difficulty
             healthGrowthPerWave = 1.08f;
             damageGrowthPerWave = 1.04f;
             countGrowthPerWave = 1.05f;
+            speedGrowthPerWave = 1.02f;
             sky = SkySettings.Sunset();
             EndFill();
         }
@@ -135,6 +142,7 @@ namespace Archery.Difficulty
             healthGrowthPerWave = 1.11f;
             damageGrowthPerWave = 1.06f;
             countGrowthPerWave = 1.07f;
+            speedGrowthPerWave = 1.025f;
             sky = SkySettings.Night();
             EndFill();
         }
@@ -157,6 +165,7 @@ namespace Archery.Difficulty
             healthGrowthPerWave = 1.14f;
             damageGrowthPerWave = 1.08f;
             countGrowthPerWave = 1.09f;
+            speedGrowthPerWave = 1.03f;
             sky = SkySettings.BloodMoon();
             EndFill();
         }

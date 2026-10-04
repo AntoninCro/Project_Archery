@@ -285,7 +285,8 @@ namespace Archery.Bows
 
             SetTrailColor(launch.TrailColor);
 
-            if (m_FlightAudio != null && launch.IsShot)
+            // Seule la flèche tirée par l'arc siffle : avec des dizaines de flèches en plus, ce serait trop bruyant et trop lourd.
+            if (m_FlightAudio != null && launch.IsShot && !launch.IsExtra)
             {
                 m_FlightAudio.pitch = UnityEngine.Random.Range(0.9f, 1.1f);
                 m_FlightAudio.Play();

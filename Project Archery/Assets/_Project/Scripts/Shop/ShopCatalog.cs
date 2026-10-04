@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Archery.Shop
 {
-    /// <summary>Chances (en %) de chaque rareté à partir d'une vague (GDD, section 6.1).</summary>
+    /// <summary>Chances (en %) de chaque rareté, à partir d'une vague (GDD, section 6.1).</summary>
     [Serializable]
     public struct RarityOdds
     {
@@ -38,14 +38,16 @@ namespace Archery.Shop
         [Header("Améliorations")]
         public List<Upgrade> upgrades = new List<Upgrade>();
 
-        [Tooltip("Chances des raretés selon la vague qui vient de se terminer.")]
+        [Tooltip("Chances des raretés. Une seule ligne : les mêmes chances toute la partie. " +
+                 "On peut ajouter des lignes pour les faire changer à partir d'une vague.")]
         public List<RarityOdds> rarityOdds = new List<RarityOdds>
         {
-            new RarityOdds(1, 80f, 18f, 2f),
-            new RarityOdds(4, 65f, 30f, 5f),
-            new RarityOdds(7, 50f, 40f, 10f),
-            new RarityOdds(11, 40f, 45f, 15f),
+            new RarityOdds(1, 70f, 25f, 5f),
         };
+
+        [Tooltip("Part minimale des cartes communes, même avec beaucoup d'améliorations Chance (0,4 = 40 %).")]
+        [Range(0f, 1f)]
+        public float minCommonShare = 0.4f;
 
         [Tooltip("Nombre d'améliorations proposées à chaque pause.")]
         [Min(1)]
@@ -56,8 +58,15 @@ namespace Archery.Shop
         public int rarePrice = 60;
         public int legendaryPrice = 140;
 
-        [Tooltip("Hausse des prix à chaque vague (0,08 = +8 %).")]
-        public float priceIncreasePerWave = 0.08f;
+        [Tooltip("Hausse des prix à chaque vague, en se cumulant (0,1 = +10 % par vague : ×2,4 après la vague 10). " +
+                 "Elle touche aussi la relance.")]
+        [Min(0f)]
+        public float priceGrowthPerWave = 0.1f;
+
+        [Tooltip("Chaque amélioration achetée fait monter le prix de toutes les suivantes, en se cumulant " +
+                 "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20).")]
+        [Min(0f)]
+        public float priceIncreasePerPurchase = 0.05f;
 
         [Tooltip("En mode infini, tous les prix de la boutique sont multipliés par cette valeur à chaque vague, en se cumulant (1,2 = +20 %).")]
         [Min(1f)]
@@ -102,8 +111,11 @@ namespace Archery.Shop
             _ => "Commune",
         };
 
-        /// <summary>Prix d'une amélioration dans la boutique qui suit cette vague, arrondi à 5.</summary>
-        public int PriceOf(UpgradeRarity rarity, int wave, int wavesToWin)
+        /// <summary>
+        /// Prix d'une amélioration dans la boutique qui suit cette vague, arrondi à 5.
+        /// <paramref name="purchases"/> : nombre d'améliorations déjà achetées pendant la partie.
+        /// </summary>
+        public int PriceOf(UpgradeRarity rarity, int wave, int wavesToWin, int purchases)
         {
             var basePrice = rarity switch
             {
@@ -112,9 +124,12 @@ namespace Archery.Shop
                 _ => commonPrice,
             };
 
-            var price = basePrice * (1f + priceIncreasePerWave * Mathf.Max(0, wave - 1)) * EndlessFactor(wave, wavesToWin);
-            return RoundPrice(price);
+            var purchaseFactor = Mathf.Pow(1f + priceIncreasePerPurchase, Mathf.Max(0, purchases));
+            return RoundPrice(basePrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
         }
+
+        /// <summary>Hausse des prix due aux vagues : +10 % par vague, en se cumulant.</summary>
+        public float WaveFactor(int wave) => Mathf.Pow(1f + priceGrowthPerWave, Mathf.Max(0, wave - 1));
 
         /// <summary>Hausse des prix du mode infini : ×1,2 par vague au-delà de la dernière, en se cumulant.</summary>
         public float EndlessFactor(int wave, int wavesToWin) =>
@@ -125,23 +140,31 @@ namespace Archery.Shop
 
         /// <summary>
         /// Tire une rareté au hasard selon les chances de cette vague.
-        /// <paramref name="luck"/> multiplie les chances des rares et des légendaires, au détriment des communes.
+        /// <paramref name="luck"/> multiplie le poids des rares et des légendaires face aux communes,
+        /// mais les communes gardent au moins <see cref="minCommonShare"/>.
         /// </summary>
         public UpgradeRarity RollRarity(int wave, float luck = 1f)
         {
             var odds = OddsFor(wave);
-            var total = odds.common + odds.rare + odds.legendary;
-            if (total <= 0f)
-                return UpgradeRarity.Common;
+            var common = Mathf.Max(0f, odds.common);
+            var rare = Mathf.Max(0f, odds.rare) * Mathf.Max(0f, luck);
+            var legendary = Mathf.Max(0f, odds.legendary) * Mathf.Max(0f, luck);
 
-            var rare = odds.rare * Mathf.Max(0f, luck);
-            var legendary = odds.legendary * Mathf.Max(0f, luck);
-            if (rare + legendary > total)
+            // Plafond de la part des rares et des légendaires (jamais sous leur part de départ).
+            var baseTotal = common + Mathf.Max(0f, odds.rare) + Mathf.Max(0f, odds.legendary);
+            var baseShare = baseTotal > 0f ? (baseTotal - common) / baseTotal : 0f;
+            var maxShare = Mathf.Max(baseShare, 1f - minCommonShare);
+            var lucky = rare + legendary;
+            if (common > 0f && lucky > 0f && maxShare < 0.999f && lucky / (common + lucky) > maxShare)
             {
-                var scale = total / (rare + legendary);
+                var scale = common * maxShare / (1f - maxShare) / lucky;
                 rare *= scale;
                 legendary *= scale;
             }
+
+            var total = common + rare + legendary;
+            if (total <= 0f)
+                return UpgradeRarity.Common;
 
             var roll = UnityEngine.Random.value * total;
             if (roll < legendary)
@@ -182,16 +205,16 @@ namespace Archery.Shop
                 new Upgrade("Charge rapide", "L'anneau va 15 % plus vite, et toutes ses bandes s'élargissent un peu.", UpgradeRarity.Common, UpgradeEffect.QuickCharge, 0.15f),
                 new Upgrade("Précision", "Bande verte (tir parfait) 15 % plus large.", UpgradeRarity.Common, UpgradeEffect.Precision, 0.15f),
                 new Upgrade("Vitalité", "+15 PV max.", UpgradeRarity.Common, UpgradeEffect.Vitality, 15f),
-                new Upgrade("Butin", "Plus de points changés en or : +5 points (25 % → 30 %).", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
+                new Upgrade("Butin", "+20 % d'or : 30 % des points deviennent de l'or au lieu de 25 %.", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
                 new Upgrade("Chasseur de têtes", "+25 % de dégâts à la tête.", UpgradeRarity.Common, UpgradeEffect.HeadHunter, 0.25f),
-                new Upgrade("Chance", "Les cartes rares et légendaires sortent 25 % plus souvent.", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
-                new Upgrade("Multitir", "+50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, 50 % de chance d'une deuxième, etc.", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
+                new Upgrade("Chance", "Les cartes rares et légendaires sortent plus souvent (+25 % de poids). Il reste toujours des cartes communes.", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
+                new Upgrade("Multitir", "+50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, 50 % de chance d'une deuxième, etc. La flèche de l'arc part toujours tout droit.", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
                 new Upgrade("Flèche de foudre", "Chaque flèche a 20 % de chance d'appeler un éclair qui blesse la cible et la ralentit. Au-delà de 100 % : éclairs plus forts.", UpgradeRarity.Rare, UpgradeEffect.Lightning, 0.2f),
                 new Upgrade("Perçage", "Chaque flèche a 25 % de chance de traverser un ennemi. Au-delà de 100 % : plusieurs ennemis traversés.", UpgradeRarity.Rare, UpgradeEffect.Piercing, 0.25f),
                 new Upgrade("Vampirisme", "Chaque tir à la tête rend 2 PV.", UpgradeRarity.Rare, UpgradeEffect.Vampirism, 2f),
                 new Upgrade("Tir écho", "25 % de chance que la volée se répète un instant après, à la même puissance. Au-delà de 100 % : plusieurs échos.", UpgradeRarity.Rare, UpgradeEffect.Echo, 0.25f),
                 new Upgrade("Flèche de glace", "Chaque flèche a 25 % de chance de laisser au sol une zone de glace qui ralentit les ennemis. Au-delà de 100 % : glace plus forte et plus grande.", UpgradeRarity.Rare, UpgradeEffect.Frost, 0.25f),
-                new Upgrade("Déluge", "En vol, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisième flèche, etc.", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
+                new Upgrade("Déluge", "En vol, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisième flèche, etc. Elle continue tout droit.", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
                 new Upgrade("Chaîne d'éclairs", "La foudre rebondit sur 3 ennemis proches de plus. Sans Flèche de foudre, 20 % des flèches l'appellent.", UpgradeRarity.Legendary, UpgradeEffect.ChainLightning, 3f),
                 new Upgrade("Flèche explosive", "Chaque flèche a 25 % de chance d'exploser et de toucher les ennemis autour. Au-delà de 100 % : explosions plus fortes et plus larges.", UpgradeRarity.Legendary, UpgradeEffect.Explosive, 0.25f),
                 new Upgrade("Auto-visée", "Les flèches dévient vers l'ennemi le plus proche, s'il est à moins de 12 m devant elles. Encore : elles tournent plus vite.", UpgradeRarity.Legendary, UpgradeEffect.Homing, 30f),
@@ -200,17 +223,16 @@ namespace Archery.Shop
 
             rarityOdds = new List<RarityOdds>
             {
-                new RarityOdds(1, 80f, 18f, 2f),
-                new RarityOdds(4, 65f, 30f, 5f),
-                new RarityOdds(7, 50f, 40f, 10f),
-                new RarityOdds(11, 40f, 45f, 15f),
+                new RarityOdds(1, 70f, 25f, 5f),
             };
 
+            minCommonShare = 0.4f;
             upgradeOffers = 4;
             commonPrice = 25;
             rarePrice = 60;
             legendaryPrice = 140;
-            priceIncreasePerWave = 0.08f;
+            priceGrowthPerWave = 0.1f;
+            priceIncreasePerPurchase = 0.05f;
             endlessPriceGrowth = 1.2f;
             rerollCost = 10;
             rerollCostIncrease = 5;

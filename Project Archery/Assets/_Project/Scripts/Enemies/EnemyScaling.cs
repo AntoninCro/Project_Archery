@@ -14,10 +14,14 @@ namespace Archery.Enemies
         /// <summary>Multiplie les dégâts des ennemis qui apparaissent maintenant.</summary>
         public static float Damage { get; set; } = 1f;
 
+        /// <summary>Multiplie la vitesse des ennemis qui apparaissent maintenant (plafonnée par les Wave Settings).</summary>
+        public static float Speed { get; set; } = 1f;
+
         public static void Reset()
         {
             Health = 1f;
             Damage = 1f;
+            Speed = 1f;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

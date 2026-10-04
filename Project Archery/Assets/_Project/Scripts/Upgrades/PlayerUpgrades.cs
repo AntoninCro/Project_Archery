@@ -40,6 +40,9 @@ namespace Archery.Upgrades
         /// <summary>Améliorations possédées, une fois chacune, dans l'ordre du premier achat.</summary>
         public IReadOnlyList<Upgrade> Owned => m_Owned;
 
+        /// <summary>Nombre total d'améliorations achetées pendant la partie (chaque exemplaire compte).</summary>
+        public int Count { get; private set; }
+
         public float DamageMultiplier => 1f + Total(UpgradeEffect.Damage);
         public float ArrowSpeedMultiplier => 1f + Total(UpgradeEffect.ArrowSpeed);
         public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge);
@@ -138,6 +141,7 @@ namespace Archery.Upgrades
 
             m_Stacks[index]++;
             m_Totals[index] += upgrade.value;
+            Count++;
             Apply();
             Changed?.Invoke();
         }

@@ -32,6 +32,11 @@ namespace Archery.Upgrades
         [SerializeField]
         float m_MaxFanAngle = 25f;
 
+        [Tooltip("Écart (m) de la flèche « jumelle » : avec un nombre pair de flèches, celle qui n'a pas de paire " +
+                 "part juste à côté de la flèche du milieu, dans la même direction.")]
+        [SerializeField]
+        float m_TwinOffset = 0.2f;
+
         [Tooltip("Délai (s) entre deux échos de la volée.")]
         [SerializeField]
         float m_EchoDelay = 0.25f;
@@ -54,7 +59,7 @@ namespace Archery.Upgrades
 
         [Tooltip("Sécurité pour la fluidité du jeu : au-delà de ce nombre de flèches en vol, on n'en ajoute plus.")]
         [SerializeField]
-        int m_MaxArrowsInFlight = 250;
+        int m_MaxArrowsInFlight = 150;
 
         [Header("Foudre")]
         [Tooltip("Dégâts de l'éclair, en fraction des dégâts de la flèche (doublés à 200 % de chance, etc.).")]
@@ -255,22 +260,33 @@ namespace Archery.Upgrades
             }
         }
 
-        // Les flèches de part et d'autre de la direction de tir, en éventail horizontal (sans celle du milieu).
+        // Les flèches en plus d'une volée de « total » flèches (celle du milieu est déjà partie, tout droit).
+        // Elles se placent par paires, à gauche et à droite, à égalité : la volée reste centrée sur la visée.
+        // Avec un nombre pair de flèches, celle qui n'a pas de paire part juste à côté de celle du milieu, dans la même direction.
         void Fan(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, int pierce, Color trail, int total)
         {
             if (total <= 1 || direction.sqrMagnitude < 1e-4f)
                 return;
 
+            direction.Normalize();
             var aim = Quaternion.LookRotation(direction);
-            var step = Mathf.Min(m_SplitAngle, 2f * m_MaxFanAngle / (total - 1));
-            for (var i = 1; i < total; i++)
+            var extras = total - 1;
+            if (extras % 2 == 1)
+                LaunchExtra(origin + TwinOffset(aim), direction, speed, damage, grade, pierce, trail, true);
+
+            var pairs = extras / 2;
+            var step = pairs > 0 ? Mathf.Min(m_SplitAngle, m_MaxFanAngle / pairs) : 0f;
+            for (var i = 1; i <= pairs && HasRoomFor(2); i++)
             {
-                // 1, 2, 3, 4 → +1, -1, +2, -2 pas d'angle.
-                var side = (i + 1) / 2 * (i % 2 == 1 ? 1 : -1);
-                var fanDirection = aim * Quaternion.Euler(0f, side * step, 0f) * Vector3.forward;
-                LaunchExtra(origin, fanDirection, speed, damage, grade, pierce, trail, true);
+                LaunchExtra(origin, aim * Quaternion.Euler(0f, i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true);
+                LaunchExtra(origin, aim * Quaternion.Euler(0f, -i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true);
             }
         }
+
+        // La flèche jumelle part à côté de celle du milieu, à gauche ou à droite au hasard.
+        Vector3 TwinOffset(Quaternion aim) => aim * new Vector3(Random.value < 0.5f ? -m_TwinOffset : m_TwinOffset, 0f, 0f);
+
+        bool HasRoomFor(int arrows) => m_Tracked.Count + arrows <= m_MaxArrowsInFlight;
 
         // Une flèche en plus : elle ne casse pas le combo si elle rate, et tire ses propres effets au sort.
         void LaunchExtra(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, int pierce, Color trail, bool canSplit)
@@ -363,7 +379,8 @@ namespace Archery.Upgrades
             }
         }
 
-        // Déluge : au moment tiré au sort, la flèche se divise ; les nouvelles flèches partent autour de sa direction.
+        // Déluge : au moment tiré au sort, la flèche se divise. Elle continue tout droit, et les nouvelles flèches
+        // se placent autour d'elle comme dans une volée : par paires (dans un plan tiré au sort), plus une jumelle s'il en reste une.
         void UpdateSplits()
         {
             if (m_Tracked.Count == 0)
@@ -391,13 +408,21 @@ namespace Archery.Upgrades
                 if (speed < 1f)
                     continue;
 
-                var aim = Quaternion.LookRotation(velocity / speed);
+                var direction = velocity / speed;
+                var aim = Quaternion.LookRotation(direction);
                 var position = arrow.transform.position;
-                for (var i = 0; i < splits; i++)
+                if (splits % 2 == 1)
+                    LaunchExtra(position + TwinOffset(aim), direction, speed, state.Damage, state.Grade, state.BasePierce, state.Trail, false);
+
+                var pairs = splits / 2;
+                for (var i = 1; i <= pairs && HasRoomFor(2); i++)
                 {
-                    var offset = Random.insideUnitCircle.normalized * (m_DelugeSpread * Random.Range(0.5f, 1f));
-                    var direction = aim * Quaternion.Euler(offset.y, offset.x, 0f) * Vector3.forward;
-                    LaunchExtra(position, direction, speed, state.Damage, state.Grade, state.BasePierce, state.Trail, false);
+                    var plane = aim * Quaternion.AngleAxis(Random.Range(0f, 180f), Vector3.forward);
+                    var angle = m_DelugeSpread * i / pairs;
+                    LaunchExtra(position, plane * Quaternion.Euler(0f, angle, 0f) * Vector3.forward, speed,
+                                state.Damage, state.Grade, state.BasePierce, state.Trail, false);
+                    LaunchExtra(position, plane * Quaternion.Euler(0f, -angle, 0f) * Vector3.forward, speed,
+                                state.Damage, state.Grade, state.BasePierce, state.Trail, false);
                 }
 
                 Sfx.Play(m_DelugeClip, position, 0.6f, Random.Range(0.95f, 1.1f));

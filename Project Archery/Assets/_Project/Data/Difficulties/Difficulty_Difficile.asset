@@ -27,6 +27,7 @@ MonoBehaviour:
   healthGrowthPerWave: 1.11
   damageGrowthPerWave: 1.06
   countGrowthPerWave: 1.07
+  speedGrowthPerWave: 1.025
   sky:
     elevation: 35
     azimuth: 40

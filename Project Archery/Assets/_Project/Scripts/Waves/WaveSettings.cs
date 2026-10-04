@@ -55,6 +55,10 @@ namespace Archery.Waves
         [Tooltip("Plafond absolu d'ennemis vivants en même temps, pour que le jeu reste fluide dans le casque.")]
         public int maxAliveCap = 40;
 
+        [Tooltip("Plafond de la hausse de vitesse due aux vagues (2 = au plus deux fois plus rapides qu'à la vague 1).")]
+        [Min(1f)]
+        public float maxSpeedScale = 2f;
+
         public List<WaveEnemy> enemies = new List<WaveEnemy>();
 
         [Header("Mode infini")]
@@ -69,6 +73,10 @@ namespace Archery.Waves
         [Tooltip("En mode infini, chaque vague multiplie encore le nombre d'ennemis par cette valeur.")]
         [Min(1f)]
         public float endlessCountGrowth = 1.08f;
+
+        [Tooltip("En mode infini, chaque vague multiplie encore la vitesse des ennemis par cette valeur (jusqu'au plafond « Max Speed Scale »).")]
+        [Min(1f)]
+        public float endlessSpeedGrowth = 1.03f;
 
         [Header("Boss")]
         [Tooltip("Boss des vagues de boss. Vide : pas de boss.")]

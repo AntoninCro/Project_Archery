@@ -5,17 +5,22 @@ Ce guide ajoute la boutique du GDD (sections 5, 6 et 7) à la scène `Prototype_
 À la fin de chaque vague, un panneau s'ouvre en haut de la tour, à ta gauche. On vise une carte avec le rayon de la main libre et on appuie sur la **gâchette** pour l'acheter.
 
 Le panneau propose :
-- **4 améliorations** tirées au sort selon leur rareté : **communes** (blanc), **rares** (bleu) et **légendaires** (doré). Elles sont listées juste en dessous ;
+- **4 améliorations** tirées au sort selon leur rareté : **communes** (blanc, 70 %), **rares** (bleu, 25 %) et **légendaires** (doré, 5 %), avec les mêmes chances toute la partie. Elles sont listées juste en dessous ;
 - **le prochain arc** : composite, puis long, puis runique ;
 - **la tour** : la réparer (+25 % de PV) ou la reconstruire si elle est détruite ;
-- **relancer** les 4 améliorations : 10 or, puis 5 de plus à chaque relance. Le prix revient à 10 à chaque pause.
+- **relancer** les 4 améliorations : 10 or, puis 5 de plus à chaque relance. Le prix revient au départ à chaque pause.
 
 **Aucune limite d'achat** : chaque amélioration se prend autant de fois qu'on veut, et tout se cumule jusqu'à la fin de la partie.
 - Les bonus s'additionnent.
 - Les chances (foudre, explosion, glace) s'additionnent jusqu'à 100 %. Au-delà, chaque exemplaire rend l'effet plus fort : plus de dégâts, un ralentissement plus fort et plus long, une zone plus grande (détails dans le GDD, section 6.2).
 - Le multitir, le tir écho, le déluge et le perçage sont des moyennes : 150 %, c'est 1 flèche (ou 1 écho, 1 division, 1 ennemi traversé) à coup sûr, et 50 % de chance d'une deuxième.
 
-Les prix montent de 8 % à chaque vague. En mode infini, ils sont en plus multipliés par 1,2 à chaque vague (relance, arc et tour compris).
+Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section 7) :
+- **+10 % à chaque vague** (la relance aussi) ;
+- **+5 % à chaque amélioration achetée** : plus tu en as, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
+- **en mode infini, ×1,2 à chaque vague**, pour tout (relance, arc et tour compris).
+
+L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
 
 ### Les 19 améliorations
 
@@ -26,16 +31,16 @@ Les prix montent de 8 % à chaque vague. En mode infini, ils sont en plus multip
 | Charge rapide | commune | anneau 15 % plus rapide, bandes un peu plus larges |
 | Précision | commune | bande verte (tir parfait) 15 % plus large |
 | Vitalité | commune | +15 PV max |
-| Butin | commune | +5 points de conversion des points en or (25 % → 30 %) |
+| Butin | commune | +20 % d'or : 30 % des points deviennent de l'or au lieu de 25 % |
 | Chasseur de têtes | commune | +25 % de dégâts à la tête |
-| Chance | commune | les cartes rares et légendaires sortent 25 % plus souvent |
-| Multitir | rare | +50 % de chance de tirer une flèche en plus, en éventail |
+| Chance | commune | les cartes rares et légendaires sortent plus souvent (+25 % de poids) ; il reste toujours au moins 40 % de communes |
+| Multitir | rare | +50 % de chance de tirer une flèche en plus : à côté de la flèche de l'arc, puis en éventail de chaque côté |
 | Flèche de foudre | rare | +20 % de chance par flèche : éclair, cible ralentie de 40 % pendant 2 s |
 | Perçage | rare | +25 % de chance par flèche de traverser un ennemi |
 | Vampirisme | rare | chaque tir à la tête rend 2 PV |
 | Tir écho | rare | +25 % de chance que la volée se répète 0,25 s après, à la même puissance |
 | Flèche de glace | rare | +25 % de chance par flèche : zone de glace au sol (3 m, 5 s) qui ralentit les ennemis de 50 % |
-| Déluge | légendaire | +50 % de chance que chaque flèche se divise en deux, en vol |
+| Déluge | légendaire | +50 % de chance que chaque flèche se divise en deux, en vol ; elle continue tout droit |
 | Chaîne d'éclairs | légendaire | la foudre rebondit sur 3 ennemis proches de plus |
 | Flèche explosive | légendaire | +25 % de chance par flèche d'exploser et de toucher les ennemis autour |
 | Auto-visée | légendaire | les flèches dévient vers l'ennemi le plus proche s'il est à moins de 12 m devant elles (+30° par seconde) |
@@ -43,9 +48,10 @@ Les prix montent de 8 % à chaque vague. En mode infini, ils sont en plus multip
 
 Quelques règles :
 - **Les flèches spéciales se reconnaissent à leur traînée** : bleue pour la foudre, orange pour l'explosion, bleu pâle pour la glace.
-- **Les flèches en plus sont de vraies flèches** : celles du multitir, du tir écho et du déluge tirent au sort leurs propres effets (foudre, explosion, glace, perçage). Elles profitent de l'auto-visée et du ricochet, et ne cassent pas le combo quand elles ratent.
+- **Les flèches en plus sont de vraies flèches** : celles du multitir, du tir écho et du déluge tirent au sort leurs propres effets (foudre, explosion, glace, perçage). Elles profitent de l'auto-visée et du ricochet, et ne cassent pas le combo quand elles ratent. Elles ne rapportent pas de points de touche (seulement leurs éliminations) et ne sifflent pas en vol.
+- **La volée reste centrée sur la visée** : la flèche de l'arc part toujours tout droit, et les autres se placent par paires, à gauche et à droite. Avec un nombre pair de flèches, celle qui n'a pas de paire part 20 cm à côté de la flèche de l'arc, dans la même direction. Avec 2 flèches, les deux vont donc là où tu vises. Le déluge suit la même règle autour de la flèche qui se divise.
 - **L'ordre** : le multitir ajoute des flèches à la volée, l'écho répète toute la volée, puis le déluge divise en vol chaque flèche, environ 0,2 s après son départ. Les flèches nées d'une division ne se divisent pas à leur tour.
-- **Une sécurité** garde le jeu fluide : au-delà de 250 flèches en vol en même temps, on n'en ajoute plus (*Max Arrows In Flight* de `Special Arrows`).
+- **Une sécurité** garde le jeu fluide : au-delà de 150 flèches en vol en même temps, on n'en ajoute plus (*Max Arrows In Flight* de `Special Arrows`).
 - **L'auto-visée** reste légère : la flèche tourne de 30° par seconde et par exemplaire, et jamais vers un ennemi derrière elle.
 - **Le ricochet** vise un peu au-dessus de l'ennemi suivant pour compenser la chute de la flèche. Comme le perçage, chaque rebond enlève 20 % des dégâts.
 
@@ -75,7 +81,7 @@ Chaque amélioration a un nom, une description, une rareté, un effet, une valeu
 
 Par exemple, pour que **chaque** tir ait son écho, mets la *Value* du *Tir écho* à `1` (100 %). Pense alors à changer sa description.
 
-> **Ta boutique est déjà montée ?** Il n'y a rien à refaire : l'asset `ShopCatalog` a été mis à jour avec les nouvelles valeurs (19 améliorations sans limite, prix du mode infini). Si tu l'as modifié à la main depuis, refais *Remplir avec le GDD* : la liste *Bows* n'est pas touchée.
+> **Ta boutique est déjà montée ?** Il n'y a rien à refaire : l'asset `ShopCatalog` a été mis à jour avec les nouvelles valeurs (19 améliorations sans limite, raretés fixes, prix progressifs). Si tu l'as modifié à la main depuis, refais *Remplir avec le GDD* : la liste *Bows* n'est pas touchée.
 
 ## 2. Les gestionnaires
 
@@ -207,13 +213,14 @@ Sans effet, l'explosion fait une gerbe d'éclairs orange et un « boum ». Pour 
 6. Laisse les chevaliers abîmer la tour pendant une vague, puis répare-la.
 
 **Pour tester les légendaires** :
-- enchaîne **N** pour avancer jusqu'à la vague 10, où les légendaires sortent plus souvent (10 %, puis 15 %) ;
-- achète quelques *Chance* : elles augmentent encore leurs chances ;
+- achète quelques *Chance* : elles augmentent leurs chances ;
 - l'or de **M** paie les relances.
 
+**Pour tester les prix** : achète une carte, les prix des autres cartes montent de 5 %. Enchaîne **N** : à chaque pause, les prix sont 10 % plus élevés.
+
 Les effets à vérifier :
-- *Multitir* : un tir sur deux, une deuxième flèche part à côté de la première. Avec 2 exemplaires, à chaque tir ; avec 5 ou 6, l'éventail s'élargit ;
-- *Déluge* : environ 0,2 s après le départ, une flèche sur deux se divise en vol ;
+- *Multitir* : un tir sur deux, une deuxième flèche part 20 cm à côté de la première, parallèle à elle. Avec 2 exemplaires, à chaque tir ; à partir de 4 exemplaires (3 flèches), l'éventail s'ouvre de chaque côté ;
+- *Déluge* : environ 0,2 s après le départ, une flèche sur deux se dédouble en vol et continue tout droit ;
 - *Tir écho* : un quart de seconde après le tir, une seconde volée part du même endroit, avec le même éventail ;
 - *Les flèches en plus* : avec *Multitir* et *Flèche explosive*, les flèches de l'éventail peuvent exploser elles aussi (traînée orange) ;
 - *Au-delà de 100 %* : avec 5 *Flèches de foudre*, chaque flèche appelle un éclair ; à partir de la 6e, les éclairs font plus de dégâts ;
@@ -242,5 +249,5 @@ Les effets à vérifier :
 - **Les éclairs ou la glace sont roses ou invisibles** : *Effect Material* doit utiliser le shader *Archery/UnlitVertexColor*.
 - **La glace n'apparaît pas quand la flèche se plante loin des ennemis** : elle se pose sur le NavMesh, là où marchent les ennemis. Si la flèche se plante à plus de 3 m du NavMesh, il n'y a pas de glace.
 - **L'auto-visée est trop forte ou trop faible** : change la *Value* d'*Auto-visée* dans le catalogue (degrés par seconde), ou *Homing Range* et *Homing Angle* dans `Special Arrows`.
-- **Le jeu saccade avec beaucoup de flèches** : baisse *Max Arrows In Flight* dans `Special Arrows` (250 par défaut).
+- **Le jeu saccade avec beaucoup de flèches** : baisse *Max Arrows In Flight* dans `Special Arrows` (150 par défaut).
 - **Une amélioration a encore un niveau maximal** : son *Max Stacks* n'est pas à `0` dans le catalogue.

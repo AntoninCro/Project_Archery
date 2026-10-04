@@ -47,10 +47,14 @@ namespace Archery.Shop
         public ShopOffer BowOffer => m_BowOffer;
         public ShopOffer TowerOffer => m_TowerOffer;
         public int RerollCost => m_Catalog != null
-            ? ShopCatalog.RoundPrice((m_Catalog.rerollCost + m_Catalog.rerollCostIncrease * m_Rerolls) * EndlessFactor)
+            ? ShopCatalog.RoundPrice((m_Catalog.rerollCost + m_Catalog.rerollCostIncrease * m_Rerolls) *
+                                     m_Catalog.WaveFactor(m_Wave) * EndlessFactor)
             : 0;
 
         int WavesToWin => m_Waves != null ? m_Waves.WavesToWin : 0;
+
+        // Chaque amélioration achetée fait monter le prix des suivantes.
+        static int Purchases => PlayerUpgrades.Instance != null ? PlayerUpgrades.Instance.Count : 0;
 
         // En mode infini, tous les prix montent de 20 % par vague, en se cumulant.
         float EndlessFactor => m_Catalog != null ? m_Catalog.EndlessFactor(m_Wave, WavesToWin) : 1f;
@@ -156,6 +160,7 @@ namespace Archery.Shop
                 case ShopOfferKind.Upgrade:
                     upgrades.Add(offer.Upgrade);
                     offer.Sold = true;
+                    RefreshUpgradePrices();
                     result = ShopResult.Done(offer.Upgrade.displayName + " !", offer.Color);
                     break;
 
@@ -240,6 +245,16 @@ namespace Archery.Shop
             return m_Candidates.Count > 0 ? m_Candidates[UnityEngine.Random.Range(0, m_Candidates.Count)] : null;
         }
 
+        // Après un achat, les autres améliorations proposées coûtent plus cher.
+        void RefreshUpgradePrices()
+        {
+            foreach (var offer in m_UpgradeOffers)
+            {
+                if (offer.Kind == ShopOfferKind.Upgrade && !offer.Sold && offer.Upgrade != null)
+                    offer.Price = m_Catalog.PriceOf(offer.Upgrade.rarity, m_Wave, WavesToWin, Purchases);
+            }
+        }
+
         bool IsOffered(Upgrade upgrade)
         {
             foreach (var offer in m_UpgradeOffers)
@@ -264,7 +279,7 @@ namespace Archery.Shop
                 Description = upgrade.description,
                 Color = m_Catalog.ColorOf(upgrade.rarity),
                 Icon = upgrade.icon,
-                Price = m_Catalog.PriceOf(upgrade.rarity, m_Wave, WavesToWin),
+                Price = m_Catalog.PriceOf(upgrade.rarity, m_Wave, WavesToWin, Purchases),
             };
         }
 

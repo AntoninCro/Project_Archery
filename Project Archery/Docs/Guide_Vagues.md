@@ -42,7 +42,8 @@ Les autres valeurs suivent le GDD :
 - 30 s pour la vague 1, puis +5 s par vague ;
 - un budget de 6 ennemis, puis +3 par vague, qui apparaissent pendant 80 % du chrono. La difficulté et sa courbe exponentielle le multiplient ensuite (GDD, section 11) ;
 - 12 ennemis au maximum en même temps à la vague 1 ; ce maximum grandit avec la difficulté et les vagues, jusqu'à 40 (*Max Alive Cap*) ;
-- en mode infini, la courbe s'accélère : chaque vague multiplie en plus les PV des ennemis par 1,12, leurs dégâts par 1,06 et leur nombre par 1,08 (partie *Mode infini*) ;
+- les ennemis vont aussi de plus en plus vite, au plus deux fois plus vite qu'à la vague 1 (*Max Speed Scale*) ;
+- en mode infini, la courbe s'accélère : chaque vague multiplie en plus les PV des ennemis par 1,12, leurs dégâts par 1,06, leur nombre par 1,08 et leur vitesse par 1,03 (partie *Mode infini*) ;
 - un bonus de 50 × le numéro de la vague.
 
 ## 2. Le spawner

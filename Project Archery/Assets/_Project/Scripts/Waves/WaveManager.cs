@@ -179,6 +179,8 @@ namespace Archery.Waves
             var difficulty = DifficultyManager.Current;
             EnemyScaling.Health = m_Settings.Growth(WaveNumber, difficulty.healthGrowthPerWave, m_Settings.endlessHealthGrowth);
             EnemyScaling.Damage = m_Settings.Growth(WaveNumber, difficulty.damageGrowthPerWave, m_Settings.endlessDamageGrowth);
+            EnemyScaling.Speed = Mathf.Min(Mathf.Max(1f, m_Settings.maxSpeedScale),
+                                           m_Settings.Growth(WaveNumber, difficulty.speedGrowthPerWave, m_Settings.endlessSpeedGrowth));
             m_CountScale = m_Settings.Growth(WaveNumber, difficulty.countGrowthPerWave, m_Settings.endlessCountGrowth);
 
             m_IsBossWave = m_Settings.IsBossWave(WaveNumber);

@@ -7,6 +7,7 @@ using Archery.Defense;
 using Archery.Difficulty;
 using Archery.Enemies;
 using Archery.UI;
+using Archery.Waves;
 using UnityEngine;
 
 namespace Archery.Economy
@@ -55,10 +56,21 @@ namespace Archery.Economy
         float m_MaxComboMultiplier = 2f;
 
         [Header("Argent")]
-        [Tooltip("Part des points gagnés qui devient de l'argent.")]
+        [Tooltip("Part des points gagnés qui devient de l'argent, à la vague 1.")]
         [Range(0f, 1f)]
         [SerializeField]
         float m_MoneyRate = 0.25f;
+
+        [Tooltip("En fin de partie, l'argent gagné baisse à chaque vague, en se cumulant " +
+                 "(0,91 = −9 % par vague : 25 % des points jusqu'à la vague 4, 14 % à la vague 10, 5,5 % à la vague 20).")]
+        [Range(0.5f, 1f)]
+        [SerializeField]
+        float m_MoneyDecayPerWave = 0.91f;
+
+        [Tooltip("Première vague où l'argent gagné baisse.")]
+        [Min(1)]
+        [SerializeField]
+        int m_MoneyDecayFromWave = 5;
 
         [Tooltip("Multiplie l'argent gagné tant que la tour est détruite.")]
         [Range(0f, 1f)]
@@ -94,14 +106,17 @@ namespace Archery.Economy
         /// <summary>Multiplie l'or gagné (bonus temporaires, coffres…).</summary>
         public float MoneyMultiplier { get; set; } = 1f;
 
-        /// <summary>Part des points changée en or en ce moment, tour détruite comprise.</summary>
+        /// <summary>Part des points changée en or en ce moment : baisse des vagues et tour détruite comprises.</summary>
         public float MoneyRate
         {
             get
             {
                 var tower = Tower.Instance;
                 var towerFactor = tower != null && !tower.IsStanding ? m_TowerDestroyedMoneyFactor : 1f;
-                return (m_MoneyRate + MoneyRateBonus) * MoneyMultiplier * towerFactor;
+                var waves = WaveManager.Instance;
+                var wave = waves != null ? waves.WaveNumber : 1;
+                var waveFactor = Mathf.Pow(m_MoneyDecayPerWave, Mathf.Max(0, wave - m_MoneyDecayFromWave + 1));
+                return (m_MoneyRate + MoneyRateBonus) * waveFactor * MoneyMultiplier * towerFactor;
             }
         }
 
@@ -188,7 +203,9 @@ namespace Archery.Economy
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
-            if (!(info.Source is Arrow arrow))
+            // Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche et ne font pas
+            // monter le combo : sinon l'or grimperait avec le nombre de flèches. Leurs éliminations comptent.
+            if (!(info.Source is Arrow arrow) || arrow.IsExtra)
                 return;
 
             m_ArrowsThatHitEnemies.Add(arrow);

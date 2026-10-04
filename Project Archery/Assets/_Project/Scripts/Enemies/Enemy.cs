@@ -75,6 +75,7 @@ namespace Archery.Enemies
         Vector3 m_FleePoint;
         float m_FleeTime;
         float m_MoveSpeed;
+        float m_RunAnimationSpeed = 1f;
         float m_SlowMultiplier = 1f;
         float m_SlowTimer;
         bool m_HasSpeed;
@@ -133,7 +134,8 @@ namespace Archery.Enemies
             // Difficulté, puis renforcement selon la vague (courbe exponentielle).
             var difficulty = DifficultyManager.Current;
             m_Health.ResetHealth(Def.maxHealth * difficulty.enemyHealth * EnemyScaling.Health);
-            m_MoveSpeed = Def.moveSpeed * difficulty.enemySpeed;
+            m_MoveSpeed = Def.moveSpeed * difficulty.enemySpeed * EnemyScaling.Speed;
+            m_RunAnimationSpeed = EnemyScaling.Speed;
             DamageMultiplier = difficulty.damageTaken * EnemyScaling.Damage;
             ScaleHeadHitboxes(difficulty.headSize);
 
@@ -175,8 +177,7 @@ namespace Archery.Enemies
             if (m_State == State.Fleeing)
             {
                 UpdateFlee(deltaTime);
-                if (m_HasSpeed)
-                    m_Animator.SetFloat(k_SpeedId, m_Agent.enabled ? m_Agent.velocity.magnitude : 0f);
+                UpdateAnimation();
                 return;
             }
 
@@ -190,8 +191,18 @@ namespace Archery.Enemies
             else
                 UpdateMove(deltaTime);
 
+            UpdateAnimation();
+        }
+
+        // Paramètre Speed de l'Animator. En course, l'animation accélère avec les vagues, pour que les pieds ne glissent pas.
+        void UpdateAnimation()
+        {
+            if (m_Animator == null)
+                return;
+
             if (m_HasSpeed)
                 m_Animator.SetFloat(k_SpeedId, m_Agent.enabled ? m_Agent.velocity.magnitude : 0f);
+            m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed : 1f;
         }
 
         /// <summary>
@@ -389,9 +400,14 @@ namespace Archery.Enemies
 
             // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
             if (m_HasDie)
+            {
+                m_Animator.speed = 1f;
                 m_Animator.SetTrigger(k_DieId);
+            }
             else if (m_Animator != null)
+            {
                 m_Animator.speed = 0f;
+            }
 
             Sfx.Play(m_DeathClip, transform.position + Vector3.up, 0.9f);
             Killed?.Invoke(this, info);
