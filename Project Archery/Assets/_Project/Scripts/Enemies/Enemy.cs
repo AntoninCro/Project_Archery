@@ -11,17 +11,22 @@ using UnityEngine.AI;
 namespace Archery.Enemies
 {
     /// <summary>
-    /// Ennemi au sol (GDD, section 10) : marche vers la tour avec un NavMeshAgent et la frappe,
+    /// Un ennemi (GDD, section 10). Par défaut, il marche avec un NavMeshAgent vers la tour et la frappe,
     /// ou attaque le joueur s'il est au sol tout près. Meurt quand son <see cref="Health"/> tombe à 0.
     /// </summary>
     /// <remarks>
+    /// <list type="bullet">
+    /// <item>Avec un <see cref="EnemyRangedAttack"/>, il tire des projectiles au lieu de frapper (tireur).</item>
+    /// <item>Avec un <see cref="EnemyBehaviour"/>, c'est lui qui gère le déplacement et l'attaque (volant) :
+    /// le NavMeshAgent n'est alors pas nécessaire.</item>
+    /// </list>
     /// L'Animator est optionnel. S'il existe, il peut utiliser les paramètres Speed (float),
     /// Attack, Hit et Die (triggers) ; ceux qui manquent sont simplement ignorés.
     /// À son apparition, l'ennemi applique la difficulté (PV, vitesse, dégâts, taille de la tête)
     /// et le renforcement de la vague en cours (<see cref="EnemyScaling"/>).
     /// </remarks>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(NavMeshAgent), typeof(Health))]
+    [RequireComponent(typeof(Health))]
     public class Enemy : MonoBehaviour
     {
         enum State
@@ -54,6 +59,11 @@ namespace Archery.Enemies
         [SerializeField]
         float m_FleeSpeedMultiplier = 1.5f;
 
+        [Tooltip("Hauteur (m) du centre du corps au-dessus du pivot de l'ennemi (0 pour un volant) : " +
+                 "visée automatique des flèches, éclairs, explosions.")]
+        [SerializeField]
+        float m_CenterHeight = 1.2f;
+
         [SerializeField]
         AudioClip m_AttackClip;
 
@@ -61,6 +71,8 @@ namespace Archery.Enemies
         AudioClip m_DeathClip;
 
         NavMeshAgent m_Agent;
+        EnemyBehaviour m_Behaviour;
+        EnemyRangedAttack m_RangedAttack;
         Health m_Health;
         Collider[] m_Colliders = Array.Empty<Collider>();
         EnemyDefinition m_FallbackDefinition;
@@ -95,12 +107,16 @@ namespace Archery.Enemies
         public EnemyDefinition Definition => Def;
         public Health Health => m_Health;
         public bool IsAlive => m_State != State.Dead;
+        public bool IsFleeing => m_State == State.Fleeing;
+
+        /// <summary>Centre du corps : là où visent la visée automatique, les éclairs et les explosions.</summary>
+        public Vector3 Center => transform.TransformPoint(0f, m_CenterHeight, 0f);
 
         /// <summary>Multiplicateur de vitesse durable (1 = vitesse normale). Pour un ralentissement passager, voir <see cref="Slow"/>.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
-        /// <summary>Vitesse effective : difficulté, multiplicateur durable et ralentissement en cours.</summary>
-        float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
+        /// <summary>Vitesse effective (m/s) : difficulté, vague, multiplicateur durable et ralentissement en cours.</summary>
+        public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
 
         /// <summary>Multiplicateur des dégâts infligés : celui de la difficulté au départ.</summary>
         public float DamageMultiplier { get; set; } = 1f;
@@ -120,6 +136,8 @@ namespace Archery.Enemies
         void Awake()
         {
             m_Agent = GetComponent<NavMeshAgent>();
+            m_Behaviour = GetComponent<EnemyBehaviour>();
+            m_RangedAttack = GetComponent<EnemyRangedAttack>();
             m_Health = GetComponent<Health>();
             m_Colliders = GetComponentsInChildren<Collider>(true);
             if (m_Animator == null)
@@ -139,8 +157,15 @@ namespace Archery.Enemies
             DamageMultiplier = difficulty.damageTaken * EnemyScaling.Damage;
             ScaleHeadHitboxes(difficulty.headSize);
 
-            m_Agent.speed = m_MoveSpeed;
-            m_Agent.stoppingDistance = Def.attackRange * 0.8f;
+            if (m_Agent != null)
+            {
+                m_Agent.speed = m_MoveSpeed;
+                m_Agent.stoppingDistance = Def.attackRange * 0.8f;
+            }
+            else if (m_Behaviour == null)
+            {
+                Debug.LogError("Enemy : il faut un NavMeshAgent, ou un comportement particulier (Flying Enemy…).", this);
+            }
         }
 
         void OnEnable()
@@ -176,7 +201,17 @@ namespace Archery.Enemies
 
             if (m_State == State.Fleeing)
             {
-                UpdateFlee(deltaTime);
+                if (m_Behaviour != null)
+                    m_Behaviour.TickFlee(deltaTime);
+                else
+                    UpdateFlee(deltaTime);
+                UpdateAnimation();
+                return;
+            }
+
+            if (m_Behaviour != null)
+            {
+                m_Behaviour.Tick(deltaTime);
                 UpdateAnimation();
                 return;
             }
@@ -201,12 +236,23 @@ namespace Archery.Enemies
                 return;
 
             if (m_HasSpeed)
-                m_Animator.SetFloat(k_SpeedId, m_Agent.enabled ? m_Agent.velocity.magnitude : 0f);
+                m_Animator.SetFloat(k_SpeedId, CurrentVelocity.magnitude);
             m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed : 1f;
         }
 
+        Vector3 CurrentVelocity
+        {
+            get
+            {
+                if (m_Behaviour != null)
+                    return m_Behaviour.Velocity;
+                return m_Agent != null && m_Agent.enabled ? m_Agent.velocity : Vector3.zero;
+            }
+        }
+
         /// <summary>
-        /// Cible : le joueur s'il est au sol et proche, sinon la tour, sinon le joueur (tour détruite).
+        /// Cible : d'abord une barricade qui lui barre la route ; puis le joueur pour un ennemi qui le vise toujours
+        /// (tireur) ; sinon le joueur s'il est au sol et proche, puis la tour, puis le joueur (tour détruite).
         /// </summary>
         void ChooseTarget()
         {
@@ -214,6 +260,21 @@ namespace Archery.Enemies
             var tower = Tower.Instance;
             var playerAvailable = player != null && player.IsAlive;
             m_Target = null;
+
+            var barricade = Barricade.FindBlocking(transform.position);
+            if (barricade != null)
+            {
+                m_Target = barricade.Health;
+                m_TargetPoint = barricade.ClosestPoint(transform.position);
+                return;
+            }
+
+            if (playerAvailable && Def.targetsPlayer)
+            {
+                m_Target = player.Health;
+                m_TargetPoint = player.BodyPosition;
+                return;
+            }
 
             if (playerAvailable && Def.playerAggroRange > 0f)
             {
@@ -244,7 +305,7 @@ namespace Archery.Enemies
         void UpdateMove(float deltaTime)
         {
             m_State = State.Moving;
-            if (!m_Agent.isOnNavMesh)
+            if (m_Agent == null || !m_Agent.isOnNavMesh)
                 return;
 
             m_Agent.isStopped = false;
@@ -287,24 +348,56 @@ namespace Archery.Enemies
 
             m_HitDelay = -1f;
 
-            // Le coup ne touche que si la cible est encore à portée.
-            if (m_Target == null || HorizontalDistance(transform.position, m_TargetPoint) > Def.attackRange + 0.3f)
+            if (m_Target == null)
                 return;
 
-            var direction = m_TargetPoint - transform.position;
-            m_Target.TakeDamage(new DamageInfo
+            // Tireur : le projectile part, c'est lui qui touchera (ou non).
+            if (m_RangedAttack != null)
+            {
+                m_RangedAttack.Fire(m_Target, Def.attackDamage * DamageMultiplier);
+                return;
+            }
+
+            // Le coup ne touche que si la cible est encore à portée.
+            if (HorizontalDistance(transform.position, m_TargetPoint) > Def.attackRange + 0.3f)
+                return;
+
+            DealDamage(m_Target, m_TargetPoint);
+        }
+
+        /// <summary>Inflige les dégâts d'attaque de l'ennemi (difficulté et vague comprises) à cette cible.</summary>
+        public void DealDamage(Health target, Vector3 point)
+        {
+            if (target == null || !target.IsAlive)
+                return;
+
+            var direction = point - transform.position;
+            target.TakeDamage(new DamageInfo
             {
                 Amount = Def.attackDamage * DamageMultiplier,
                 Zone = HitZone.Body,
-                Point = m_TargetPoint,
+                Point = point,
                 Direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
                 Source = this,
             });
-            Sfx.Play(m_AttackClip, m_TargetPoint, 0.9f);
+            Sfx.Play(m_AttackClip, point, 0.9f);
         }
+
+        /// <summary>Lance l'animation d'attaque, s'il y en a une.</summary>
+        public void PlayAttackAnimation()
+        {
+            if (m_HasAttack)
+                m_Animator.SetTrigger(k_AttackId);
+        }
+
+        /// <summary>Retire l'ennemi de la partie sans le tuer (fin de sa fuite).</summary>
+        public void Despawn() => Destroy(gameObject);
 
         void Stop()
         {
+            if (m_Agent == null)
+                return;
+
             if (m_Agent.isOnNavMesh && !m_Agent.isStopped)
             {
                 m_Agent.isStopped = true;
@@ -337,7 +430,13 @@ namespace Archery.Enemies
             m_HitDelay = -1f;
             m_Target = null;
 
-            if (!m_Agent.isOnNavMesh)
+            if (m_Behaviour != null)
+            {
+                m_Behaviour.BeginFlee(exitPoint);
+                return;
+            }
+
+            if (m_Agent == null || !m_Agent.isOnNavMesh)
                 return;
 
             m_Agent.isStopped = false;
@@ -382,9 +481,15 @@ namespace Archery.Enemies
             s_Alive.Remove(this);
             m_HitDelay = -1f;
 
-            if (m_Agent.isOnNavMesh)
-                m_Agent.isStopped = true;
-            m_Agent.enabled = false;
+            if (m_Agent != null)
+            {
+                if (m_Agent.isOnNavMesh)
+                    m_Agent.isStopped = true;
+                m_Agent.enabled = false;
+            }
+
+            if (m_Behaviour != null)
+                m_Behaviour.OnDied();
 
             // Les flèches traversent les corps.
             foreach (var collider in m_Colliders)
@@ -416,9 +521,10 @@ namespace Archery.Enemies
         void UpdateCorpse(float deltaTime)
         {
             m_DeathTime += deltaTime;
+            var handled = m_Behaviour != null && m_Behaviour.TickCorpse(deltaTime);
 
-            // Sans animation de mort, l'ennemi bascule en arrière.
-            if (!m_HasDie)
+            // Sans animation de mort (ni chute gérée par le comportement), l'ennemi bascule en arrière.
+            if (!m_HasDie && !handled)
             {
                 var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(m_DeathTime / 0.5f));
                 transform.rotation = m_DeathRotation * Quaternion.Euler(-80f * t, 0f, 0f);

@@ -28,6 +28,8 @@ MonoBehaviour:
   damageGrowthPerWave: 1.08
   countGrowthPerWave: 1.09
   speedGrowthPerWave: 1.03
+  earlyStrength: 0.5
+  fullStrengthWave: 6
   sky:
     elevation: 22
     azimuth: 0

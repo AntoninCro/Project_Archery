@@ -10,10 +10,24 @@ using UnityEngine;
 
 namespace Archery.Upgrades
 {
+    /// <summary>Bonus temporaire donné par une orbe de coffre (GDD, section 13).</summary>
+    public enum TemporaryBuff
+    {
+        /// <summary>Dégâts doublés.</summary>
+        DoubleDamage,
+
+        /// <summary>Tout tir à pleine tension est parfait ; l'anneau est presque entièrement vert.</summary>
+        PerfectShots,
+
+        /// <summary>Anneau de timing accéléré, bandes un peu plus larges.</summary>
+        FastRing,
+    }
+
     /// <summary>
     /// Les améliorations achetées pendant la partie (GDD, section 6). Elles se cumulent sans limite et durent
     /// jusqu'à la fin de la partie. Ce script applique les bonus de statistiques (arc, PV, or, tête, vampirisme) ;
     /// la chance est lue par la boutique, et les flèches spéciales sont gérées par <see cref="SpecialArrows"/>.
+    /// Il gère aussi les bonus temporaires des coffres (<see cref="TemporaryBuff"/>).
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerUpgrades : MonoBehaviour
@@ -22,12 +36,31 @@ namespace Archery.Upgrades
         const float k_QuickChargeBandBonus = 0.1f;
 
         static readonly int k_EffectCount = Enum.GetValues(typeof(UpgradeEffect)).Length;
+        static readonly int k_BuffCount = Enum.GetValues(typeof(TemporaryBuff)).Length;
 
         [Tooltip("Couleur du « +2 PV » du vampirisme.")]
         [SerializeField]
         Color m_HealPopupColor = new Color(0.45f, 1f, 0.45f);
 
+        [Header("Bonus temporaires (coffres)")]
+        [Tooltip("Multiplie les dégâts pendant « Dégâts ×2 ».")]
+        [SerializeField]
+        float m_BuffDamageMultiplier = 2f;
+
+        [Tooltip("Multiplie la vitesse de l'anneau pendant « Anneau rapide ».")]
+        [SerializeField]
+        float m_BuffRingSpeedMultiplier = 1.75f;
+
+        [Tooltip("Élargit les bandes de l'anneau pendant « Anneau rapide », pour que le parfait reste faisable.")]
+        [SerializeField]
+        float m_BuffRingBandMultiplier = 1.25f;
+
+        [Tooltip("Couleur du message de fin d'un bonus.")]
+        [SerializeField]
+        Color m_BuffEndColor = new Color(0.8f, 0.8f, 0.85f);
+
         readonly int[] m_Stacks = new int[k_EffectCount];
+        readonly float[] m_BuffTimers = new float[k_BuffCount];
         readonly float[] m_Totals = new float[k_EffectCount];
         readonly List<Upgrade> m_Owned = new List<Upgrade>();
         float m_BaseMaxHealth = -1f;
@@ -37,10 +70,13 @@ namespace Archery.Upgrades
         /// <summary>Une amélioration vient d'être ajoutée.</summary>
         public event Action Changed;
 
+        /// <summary>Un bonus temporaire commence ou se termine.</summary>
+        public event Action BuffsChanged;
+
         /// <summary>Améliorations possédées, une fois chacune, dans l'ordre du premier achat.</summary>
         public IReadOnlyList<Upgrade> Owned => m_Owned;
 
-        /// <summary>Nombre total d'améliorations achetées pendant la partie (chaque exemplaire compte).</summary>
+        /// <summary>Nombre total d'améliorations obtenues pendant la partie, en boutique ou dans un coffre (chaque exemplaire compte).</summary>
         public int Count { get; private set; }
 
         public float DamageMultiplier => 1f + Total(UpgradeEffect.Damage);
@@ -123,6 +159,59 @@ namespace Archery.Upgrades
 
         public int Stacks(UpgradeEffect effect) => m_Stacks[(int)effect];
 
+        /// <summary>Secondes restantes d'un bonus temporaire (0 = inactif).</summary>
+        public float BuffTimeLeft(TemporaryBuff buff) => m_BuffTimers[(int)buff];
+
+        public bool HasBuff(TemporaryBuff buff) => m_BuffTimers[(int)buff] > 0f;
+
+        public static string NameOf(TemporaryBuff buff) => buff switch
+        {
+            TemporaryBuff.DoubleDamage => "Dégâts ×2",
+            TemporaryBuff.PerfectShots => "Tirs parfaits",
+            _ => "Anneau rapide",
+        };
+
+        /// <summary>Lance (ou prolonge) un bonus temporaire pendant <paramref name="duration"/> secondes.</summary>
+        public void AddBuff(TemporaryBuff buff, float duration)
+        {
+            var index = (int)buff;
+            m_BuffTimers[index] = Mathf.Max(m_BuffTimers[index], duration);
+            Apply();
+            BuffsChanged?.Invoke();
+        }
+
+        void Update()
+        {
+            var expired = false;
+            for (var i = 0; i < m_BuffTimers.Length; i++)
+            {
+                if (m_BuffTimers[i] <= 0f)
+                    continue;
+
+                m_BuffTimers[i] -= Time.deltaTime;
+                if (m_BuffTimers[i] > 0f)
+                    continue;
+
+                m_BuffTimers[i] = 0f;
+                expired = true;
+                AnnounceBuffEnd((TemporaryBuff)i);
+            }
+
+            if (!expired)
+                return;
+
+            Apply();
+            BuffsChanged?.Invoke();
+        }
+
+        void AnnounceBuffEnd(TemporaryBuff buff)
+        {
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            if (head != null)
+                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, -0.3f, 1.5f), "Fin : " + NameOf(buff), m_BuffEndColor, 0.6f, 1.5f);
+        }
+
         /// <summary>Somme des valeurs de tous les exemplaires de cet effet.</summary>
         public float Total(UpgradeEffect effect) => m_Totals[(int)effect];
 
@@ -149,13 +238,21 @@ namespace Archery.Upgrades
         // Pousse les bonus vers les scripts concernés.
         void Apply()
         {
+            // Bonus temporaires des coffres, par-dessus les améliorations.
+            var damageBuff = HasBuff(TemporaryBuff.DoubleDamage) ? m_BuffDamageMultiplier : 1f;
+            var fastRing = HasBuff(TemporaryBuff.FastRing);
+            var perfectShots = HasBuff(TemporaryBuff.PerfectShots);
+
             foreach (var bow in FindObjectsByType<Bow>())
             {
-                bow.DamageMultiplier = DamageMultiplier;
+                bow.DamageMultiplier = DamageMultiplier * damageBuff;
                 bow.SpeedMultiplier = ArrowSpeedMultiplier;
-                bow.RingSpeedMultiplier = RingSpeedMultiplier;
-                bow.BandWidthMultiplier = BandWidthMultiplier;
-                bow.GoldWidthMultiplier = GoldWidthMultiplier;
+                bow.RingSpeedMultiplier = RingSpeedMultiplier * (fastRing ? m_BuffRingSpeedMultiplier : 1f);
+                bow.BandWidthMultiplier = BandWidthMultiplier * (fastRing ? m_BuffRingBandMultiplier : 1f);
+
+                // Tirs parfaits : l'anneau devient presque entièrement vert, et tout tir à pleine tension compte comme parfait.
+                bow.GoldWidthMultiplier = GoldWidthMultiplier * (perfectShots ? 20f : 1f);
+                bow.ForcePerfect = perfectShots;
             }
 
             var player = PlayerHealth.Instance;

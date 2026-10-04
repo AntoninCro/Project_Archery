@@ -136,6 +136,7 @@ Ensuite, en dessous des lignes :
 3. Sur la page `Settings` : *Add Component > Settings Panel* :
    - les trois curseurs et les trois textes `Value` (*Master*, *Music*, *Effects*) ;
    - *Snap Turn Button* : `Snap Turn`, et *Snap Turn Text* : son texte.
+   - le curseur « Confort » (vignette de confort) s'ajoute avec `Guide_Deplacements.md`.
 
 Le menu disparaît dès que la vague 1 commence, que ce soit par le gong ou par *Jouer*.
 

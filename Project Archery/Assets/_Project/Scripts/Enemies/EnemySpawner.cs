@@ -69,8 +69,18 @@ namespace Archery.Enemies
             if (point == null)
                 point = transform;
 
-            // L'agent doit apparaître sur le NavMesh, sinon il ne peut pas se déplacer.
-            if (!NavMesh.SamplePosition(point.position, out var hit, 4f, NavMesh.AllAreas))
+            // Un volant apparaît en l'air ; un ennemi au sol doit apparaître sur le NavMesh, sinon il ne peut pas se déplacer.
+            Vector3 position;
+            var behaviour = prefab.GetComponent<EnemyBehaviour>();
+            if (behaviour != null && !behaviour.NeedsNavMesh)
+            {
+                position = point.position + behaviour.SpawnOffset;
+            }
+            else if (NavMesh.SamplePosition(point.position, out var hit, 4f, NavMesh.AllAreas))
+            {
+                position = hit.position;
+            }
+            else
             {
                 Debug.LogWarning($"EnemySpawner : pas de NavMesh près de « {point.name} ». As-tu fait le Bake du NavMesh ?", point);
                 return null;
@@ -80,13 +90,13 @@ namespace Archery.Enemies
             var tower = Tower.Instance;
             if (tower != null)
             {
-                var toTower = tower.transform.position - hit.position;
+                var toTower = tower.transform.position - position;
                 toTower.y = 0f;
                 if (toTower.sqrMagnitude > 0.01f)
                     rotation = Quaternion.LookRotation(toTower);
             }
 
-            var enemy = Instantiate(prefab, hit.position, rotation);
+            var enemy = Instantiate(prefab, position, rotation);
             m_Spawned.Add(enemy);
             return enemy;
         }

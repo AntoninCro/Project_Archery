@@ -1,4 +1,6 @@
 using System;
+using System.Globalization;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Difficulty;
 using Archery.Waves;
@@ -30,14 +32,35 @@ namespace Archery.Menus
         [SerializeField]
         TMP_Text m_DifficultyText;
 
+        [Tooltip("Optionnel, avec Bow Classes : nom et caractéristiques de l'arc choisi.")]
+        [SerializeField]
+        TMP_Text m_BowText;
+
+        [Tooltip("Optionnel, avec Bow Classes : expérience et prochain arc à débloquer.")]
+        [SerializeField]
+        TMP_Text m_ProgressText;
+
         [Tooltip("Optionnel : son des boutons.")]
         [SerializeField]
         AudioClip m_ClickClip;
+
+        BowClasses m_Classes;
 
         void Start()
         {
             SetPage(0);
             RefreshDifficulty(DifficultyManager.Current);
+
+            m_Classes = BowClasses.Instance;
+            if (m_Classes != null)
+                m_Classes.Changed += RefreshBow;
+            RefreshBow();
+        }
+
+        void OnDestroy()
+        {
+            if (m_Classes != null)
+                m_Classes.Changed -= RefreshBow;
         }
 
         void OnEnable() => DifficultyManager.Changed += RefreshDifficulty;
@@ -81,6 +104,11 @@ namespace Archery.Menus
 
         public void PreviousDifficulty() => ChangeDifficulty(-1);
 
+        /// <summary>Arcs comme des classes : arc débloqué suivant.</summary>
+        public void NextBow() => ChangeBow(1);
+
+        public void PreviousBow() => ChangeBow(-1);
+
         public void Quit()
         {
             Click();
@@ -116,6 +144,36 @@ namespace Archery.Menus
 
             m_DifficultyText.text = difficulty.displayName;
             m_DifficultyText.color = difficulty.color;
+        }
+
+        void ChangeBow(int step)
+        {
+            if (m_Classes == null)
+                return;
+
+            m_Classes.Select(step);
+            Click();
+        }
+
+        // « Arc long », ses caractéristiques, sa description ; puis l'expérience et le prochain arc à débloquer.
+        void RefreshBow()
+        {
+            var bow = m_Classes != null ? m_Classes.Selected : null;
+            if (m_BowText != null)
+            {
+                var ring = bow != null ? bow.ringDuration.ToString("0.#", CultureInfo.GetCultureInfo("fr-FR")) : "";
+                m_BowText.text = bow == null
+                    ? ""
+                    : $"<b>{bow.displayName}</b>\n{bow.arrowSpeed:0} m/s · {bow.damage:0} dégâts · anneau {ring} s\n<size=80%>{bow.description}</size>";
+            }
+
+            if (m_ProgressText != null && m_Classes != null)
+            {
+                var next = m_Classes.NextLocked();
+                m_ProgressText.text = next == null
+                    ? $"Expérience : {m_Classes.Xp} XP · tous les arcs sont débloqués"
+                    : $"Expérience : {m_Classes.Xp} XP · prochain arc : {next.displayName} à {next.unlockXp} XP";
+            }
         }
 
         void Click() => Sfx.Play(m_ClickClip, transform.position, 0.6f);

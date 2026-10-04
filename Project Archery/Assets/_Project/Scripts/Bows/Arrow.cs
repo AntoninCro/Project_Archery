@@ -30,6 +30,12 @@ namespace Archery.Bows
         static readonly List<Arrow> s_HeldArrows = new List<Arrow>();
         static readonly RaycastHit[] s_RaycastHits = new RaycastHit[16];
 
+        GameObject m_FireEffect;
+        static Bow s_MeleeBow;
+        Vector3 m_PreviousTip;
+        bool m_HasPreviousTip;
+        bool m_Stabbing;
+
         /// <summary>Flèches actuellement tenues en main, que l'arc peut encocher.</summary>
         public static IReadOnlyList<Arrow> HeldArrows => s_HeldArrows;
 
@@ -76,6 +82,19 @@ namespace Archery.Bows
         [Tooltip("Si la flèche traverse le corps puis la tête du même ennemi sur cette distance (m), c'est la tête qui compte.")]
         [SerializeField]
         float m_ZonePreferenceDepth = 0.6f;
+
+        [Header("Coup au corps à corps")]
+        [Tooltip("Frapper un ennemi avec la flèche tenue en main (GDD, section 4.5) : elle reste plantée dedans.")]
+        [SerializeField]
+        bool m_MeleeEnabled = true;
+
+        [Tooltip("Vitesse minimale (m/s) de la pointe pour que le coup porte : il faut frapper franchement.")]
+        [SerializeField]
+        float m_MeleeMinSpeed = 2f;
+
+        [Tooltip("Le coup fait les dégâts d'un tir de cette qualité (Good : un tir orange).")]
+        [SerializeField]
+        ShotGrade m_MeleeGrade = ShotGrade.Good;
 
         [Header("Sons d'impact")]
         [SerializeField]
@@ -126,6 +145,12 @@ namespace Archery.Bows
 
         /// <summary>Nombre d'ennemis que la flèche peut encore traverser.</summary>
         public int PierceLeft => m_PierceLeft;
+
+        /// <summary>La flèche est enflammée (trempée dans le brasero) : sa cible brûlera.</summary>
+        public bool IsOnFire { get; private set; }
+
+        /// <summary>Position de la pointe.</summary>
+        public Vector3 TipPosition => m_Tip != null ? m_Tip.position : transform.position + transform.forward * m_Length;
 
         public Color TrailColor { get; private set; }
 
@@ -196,6 +221,7 @@ namespace Archery.Bows
 
             m_PreviousHandPosition = transform.position;
             m_HandVelocity = Vector3.zero;
+            m_HasPreviousTip = false;
         }
 
         protected override void OnSelectExited(SelectExitEventArgs args)
@@ -204,6 +230,10 @@ namespace Archery.Bows
             var hand = m_Hand;
             m_Hand = null;
             s_HeldArrows.Remove(this);
+
+            // Plantée dans un ennemi par un coup au corps à corps : elle reste où elle est.
+            if (m_Stabbing)
+                return;
 
             if (m_State == State.Nocked && m_Bow != null)
                 m_Bow.OnNockedArrowReleased(this, hand, !args.isCanceled);
@@ -232,6 +262,83 @@ namespace Archery.Bows
             }
 
             transform.SetPositionAndRotation(position, attach.rotation);
+            if (isDynamic)
+                UpdateMelee();
+        }
+
+        // Coup au corps à corps : la pointe, poussée assez vite, traverse un ennemi entre deux images.
+        void UpdateMelee()
+        {
+            var tip = TipPosition;
+            var previous = m_PreviousTip;
+            var hadPrevious = m_HasPreviousTip;
+            m_PreviousTip = tip;
+            m_HasPreviousTip = true;
+            if (!m_MeleeEnabled || !hadPrevious || Time.deltaTime <= 0f)
+                return;
+
+            var step = tip - previous;
+            var distance = step.magnitude;
+            if (distance < 1e-4f || distance / Time.deltaTime < m_MeleeMinSpeed)
+                return;
+
+            if (!TryFindHit(previous, step / distance, distance, out var raycastHit))
+                return;
+
+            var handler = raycastHit.collider.GetComponentInParent<IArrowHitHandler>();
+            if (handler != null)
+                Stab(raycastHit, handler, step / distance);
+        }
+
+        // Le coup fait les dégâts d'un tir orange ; la flèche quitte la main et reste plantée.
+        // Aucune flèche spéciale (multitir…) ne s'y ajoute, mais une flèche enflammée fait brûler l'ennemi.
+        void Stab(RaycastHit raycastHit, IArrowHitHandler handler, Vector3 direction)
+        {
+            if (s_MeleeBow == null)
+                s_MeleeBow = FindAnyObjectByType<Bow>();
+            var damage = s_MeleeBow != null ? s_MeleeBow.MeleeDamage(m_MeleeGrade) : 10f;
+
+            m_Damage = damage;
+            m_Grade = m_MeleeGrade;
+            m_IsShot = true;
+            m_ShotPending = true;
+            m_LaunchPosition = raycastHit.point;
+
+            var hit = new ArrowHit
+            {
+                Arrow = this,
+                Collider = raycastHit.collider,
+                Point = raycastHit.point,
+                Normal = raycastHit.normal,
+                Direction = direction,
+                Speed = m_MeleeMinSpeed,
+                Damage = damage,
+                Grade = m_MeleeGrade,
+                TravelDistance = 0f,
+                IsShot = true,
+            };
+
+            // Pas sur quelque chose de vivant : la flèche reste en main.
+            if (!handler.OnArrowHit(hit))
+            {
+                m_Damage = 0f;
+                m_Grade = ShotGrade.None;
+                m_IsShot = false;
+                m_ShotPending = false;
+                return;
+            }
+
+            AnyHit?.Invoke(hit);
+            Sfx.Play(m_ImpactLiving, raycastHit.point, 0.9f, UnityEngine.Random.Range(0.92f, 1.08f));
+
+            var hand = m_Hand;
+            m_Stabbing = true;
+            if (hand != null && interactionManager != null)
+                interactionManager.SelectExit(hand, (IXRSelectInteractable)this);
+            m_Stabbing = false;
+
+            Haptics.Pulse(hand, 0.8f, 0.12f);
+            StickInto(raycastHit, transform.forward);
         }
 
         internal void OnNocked(Bow bow)
@@ -307,6 +414,25 @@ namespace Archery.Bows
             m_Trail.startColor = color;
             color.a = 0f;
             m_Trail.endColor = color;
+        }
+
+        /// <summary>Enflamme la flèche : l'effet (petites flammes) s'attache à sa pointe. Elle s'éteint en retournant dans le pool.</summary>
+        public void Ignite(GameObject fireEffect)
+        {
+            if (IsOnFire)
+                return;
+
+            IsOnFire = true;
+            if (fireEffect != null)
+                m_FireEffect = Instantiate(fireEffect, m_Tip != null ? m_Tip : transform, false);
+        }
+
+        void Extinguish()
+        {
+            IsOnFire = false;
+            if (m_FireEffect != null)
+                Destroy(m_FireEffect);
+            m_FireEffect = null;
         }
 
         /// <summary>Permet à la flèche en vol de traverser des ennemis en plus (perçage).</summary>
@@ -560,6 +686,7 @@ namespace Archery.Bows
             m_ShotPending = false;
             m_DeflectPending = false;
             IsExtra = false;
+            Extinguish();
 
             if (m_Body != null)
             {
@@ -588,6 +715,7 @@ namespace Archery.Bows
         static void ResetStatics()
         {
             s_HeldArrows.Clear();
+            s_MeleeBow = null;
             AnyHit = null;
             ShotEnded = null;
         }

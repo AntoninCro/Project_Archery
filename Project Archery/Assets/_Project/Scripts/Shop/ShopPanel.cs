@@ -36,6 +36,14 @@ namespace Archery.Shop
         [SerializeField]
         ShopCard m_TowerCard;
 
+        [Tooltip("Optionnel : carte « Barricades ».")]
+        [SerializeField]
+        ShopCard m_BarricadeCard;
+
+        [Tooltip("Optionnel : carte « Brasero ».")]
+        [SerializeField]
+        ShopCard m_BrazierCard;
+
         [SerializeField]
         Button m_RerollButton;
 
@@ -113,6 +121,10 @@ namespace Archery.Shop
                 m_BowCard.Clicked += OnCardClicked;
             if (m_TowerCard != null)
                 m_TowerCard.Clicked += OnCardClicked;
+            if (m_BarricadeCard != null)
+                m_BarricadeCard.Clicked += OnCardClicked;
+            if (m_BrazierCard != null)
+                m_BrazierCard.Clicked += OnCardClicked;
             if (m_RerollButton != null)
                 m_RerollButton.onClick.AddListener(OnRerollClicked);
             if (m_Content != null)
@@ -187,6 +199,10 @@ namespace Archery.Shop
                 m_BowCard.Show(m_Shop.BowOffer, money);
             if (m_TowerCard != null)
                 m_TowerCard.Show(m_Shop.TowerOffer, money);
+            if (m_BarricadeCard != null)
+                m_BarricadeCard.Show(m_Shop.BarricadeOffer, money);
+            if (m_BrazierCard != null)
+                m_BrazierCard.Show(m_Shop.BrazierOffer, money);
             if (m_RerollText != null)
                 m_RerollText.text = $"Relancer\n{m_Shop.RerollCost} or";
             if (m_MoneyText != null)

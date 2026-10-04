@@ -29,7 +29,13 @@ STUBS = """
 #define UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(x)
 float4 _Time;
 float4x4 _StubViewProjection;
+float4x4 _StubObjectToWorld;
+float3 _WorldSpaceCameraPos;
 float4 TransformObjectToHClip(float3 positionOS) { return mul(_StubViewProjection, float4(positionOS, 1.0)); }
+float3 TransformObjectToWorld(float3 positionOS) { return mul(_StubObjectToWorld, float4(positionOS, 1.0)).xyz; }
+float4 TransformWorldToHClip(float3 positionWS) { return mul(_StubViewProjection, float4(positionWS, 1.0)); }
+float3 TransformObjectToWorldNormal(float3 normalOS) { return normalize(mul((float3x3)_StubObjectToWorld, normalOS)); }
+float3 GetWorldSpaceViewDir(float3 positionWS) { return _WorldSpaceCameraPos - positionWS; }
 """
 
 

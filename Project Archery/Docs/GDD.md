@@ -75,13 +75,18 @@ Pendant la tension, une ligne droite part de la pointe de la flèche, dans son a
 - Elle se plante dans ce qu'elle touche, puis disparaît au bout de quelques secondes.
 - Les flèches sont illimitées. Elles sont réutilisées (pool d'objets) au lieu d'être recréées à chaque tir.
 
-### 4.5 Coup de flèche au corps à corps (fin de projet)
+### 4.5 Coup de flèche au corps à corps
 
-Idée à ajouter quand tout le reste est en place.
-
-- On frappe un ennemi avec la flèche tenue en main : il subit des dégâts équivalents à un tir orange.
+- On frappe un ennemi avec la pointe de la flèche tenue en main (pas encochée), d'un geste franc (pointe à plus de 2 m/s) : il subit les dégâts d'un tir orange de l'arc, bonus de dégâts compris. Un coup à la tête compte double.
 - La flèche reste plantée dans l'ennemi ; il faut en reprendre une dans le dos.
+- Le coup compte comme une touche (points, combo, vampirisme). Une flèche enflammée au brasero fait brûler l'ennemi.
 - C'est surtout utile en début de partie. L'attaque ne profite pas des flèches spéciales (multitir…), elle devient donc moins intéressante ensuite.
+
+### 4.6 La grenade de flèches
+
+- On la prend d'une main vide en bas du dos, derrière les hanches (un étui invisible, comme le carquois), et on la lance.
+- Elle éclate au premier choc, ou 1,5 s après le lancer, et projette 24 flèches tout autour d'elle, sur deux couronnes. Chaque flèche fait les dégâts d'un tir orange et ne casse pas le combo.
+- Recharge : 30 s à partir du moment où on la prend, affichée sur la montre ; une vibration annonce la suivante.
 
 ## 5. Les arcs
 
@@ -153,20 +158,20 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 - Auto-visée : les flèches dévient légèrement (30° par seconde et par exemplaire) vers l'ennemi le plus proche, s'il est à moins de 12 m devant elles.
 - Tir ricochet : après avoir touché un ennemi, la flèche rebondit vers un autre ennemi proche (un rebond par exemplaire, 20 % de dégâts en moins par rebond).
 
-**Flèches enflammées** : avec le brasero de la tour (voir section 9), on trempe une flèche dans le feu ; la cible brûle pendant 3 s.
+**Flèches enflammées** : avec le brasero de la tour (voir section 9), on trempe une flèche dans le feu ; la cible brûle pendant 3 s (30 % des dégâts de la flèche par seconde). Les flèches en plus d'un tir enflammé brûlent aussi.
 
 ## 7. La boutique
 
 - Elle s'ouvre entre les vagues, en haut de la tour : un panneau à gauche du joueur. On vise une carte avec le rayon de la main libre et on achète avec la gâchette.
 - Elle propose 4 améliorations tirées au sort selon les raretés, le prochain arc et les services de la tour.
 - Relancer les offres coûte 10, puis 5 de plus à chaque relance (le coût revient au départ à chaque pause). Il suit la hausse des vagues et du mode infini.
-- Services de la tour : réparation (+25 % des PV, 40), reconstruction après destruction (250), barricades (60), brasero (100, une seule fois).
+- Services de la tour : réparation (+25 % des PV, 40), reconstruction après destruction (250), réparation de toutes les barricades (60), brasero (100, une seule fois). Chaque service a sa carte.
 
 **Prix des améliorations.** Aux premiers tests, en Impossible, on gagnait jusqu'à 5 000 pièces d'or vers la vague 10 et l'on achetait des dizaines d'améliorations par pause, au point de faire ramer le jeu. Les prix montent donc de trois façons, qui se cumulent :
 
 - prix de base : commune 25, rare 60, légendaire 140 ;
 - **+10 % à chaque vague**, en se cumulant (×2,4 après la vague 10) ;
-- **+5 % à chaque amélioration achetée**, en se cumulant (×1,6 après 10 achats, ×2,7 après 20, ×7 après 40) : plus on en a, plus la suivante coûte cher ;
+- **+5 % à chaque amélioration obtenue** (achetée, ou trouvée dans un coffre), en se cumulant (×1,6 après 10, ×2,7 après 20, ×7 après 40) : plus on en a, plus la suivante coûte cher ;
 - **en mode infini, ×1,2 à chaque vague**, en se cumulant, pour tous les prix de la boutique (améliorations, arc, tour, relance).
 
 | Prix d'une rare (commune, légendaire) | 0 achat | 10 achats | 20 achats | 40 achats |
@@ -207,8 +212,8 @@ Le score, lui, ne baisse pas.
 - À la fin d'une vague, si le joueur n'est pas en haut, le panneau de la boutique vient à côté de lui.
 - Le sommet est une plateforme à environ 6 m, avec une rambarde, la boutique, le gong et l'emplacement du brasero.
 - À 0 PV, la tour s'effondre. Le joueur qui était en haut est téléporté au sol, devant le cercle du bas. Le téléporteur ne fonctionne plus et l'argent gagné est divisé par deux jusqu'à la reconstruction.
-- Barricades : des murs aux entrées de la clairière, qui bloquent les ennemis au sol jusqu'à ce qu'ils les détruisent.
-- Brasero : on y trempe une flèche pour l'enflammer.
+- **Barricades** : des murs de planches aux 4 entrées de la clairière (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, côté forêt (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
+- **Brasero** : acheté une fois, il s'allume en haut de la tour. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd chaque seconde 30 % des dégâts de la flèche. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
 
 ## 10. Les ennemis
 
@@ -220,6 +225,9 @@ Le score, lui, ne baisse pas.
 | Boss | au sol | la tour | 1500 | 1 m/s | frappe la tour, appelle des Rampants | 250 | 5, 10, 15… |
 
 - Zones de touche : la tête et le corps. Le boss a en plus des points faibles lumineux (dégâts ×3).
+- **Volant** : il tourne en l'air autour du joueur, à 6–8 m de haut. De temps en temps, il fait du sur-place en criant (0,6 s, le moment de le viser), puis pique sur la tête du joueur, en corrigeant lentement sa trajectoire : un pas de côté suffit à l'esquiver. Touché ou raté, il remonte et recommence (un piqué toutes les 6 s environ). Tué, il tombe au sol en tournoyant. Il ne passe pas par le NavMesh ; la glace, posée au sol, ne le ralentit pas.
+- **Tireur** : il marche vers le joueur et s'arrête vers 20 m (80 % de sa portée de 25 m). Toutes les 3,5 s, il lance un projectile lent (9 m/s) vers la tête du joueur. On peut l'esquiver, ou l'abattre d'une flèche (5 points). Le projectile se brise sur le décor.
+- Le volant et le tireur visent toujours le joueur, jamais la tour.
 - Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive 4 s après le début de la vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11) : le boss de la vague 10 est plus coriace que celui de la vague 5. Une vague de boss compte 40 % de Rampants ordinaires en moins.
 - Les ennemis sortent de la forêt par 4 chemins autour de la clairière.
 - Chaque vague dispose d'un budget qui augmente de vague en vague. Chaque ennemi a un coût, et le budget est dépensé tout au long du chrono.
@@ -240,6 +248,7 @@ Le score, lui, ne baisse pas.
 | Dégâts subis, à chaque vague | ×1,03 | ×1,04 | ×1,06 | ×1,08 |
 | Nombre d'ennemis, à chaque vague | ×1,04 | ×1,05 | ×1,07 | ×1,09 |
 | Vitesse des ennemis, à chaque vague | ×1,01 | ×1,02 | ×1,025 | ×1,03 |
+| Début plus doux (PV et dégâts) | non | non | non | ×0,5 à la vague 1, en remontant jusqu'à ×1 à la vague 6 |
 | Largeur de la bande verte (parfait) | ×1,3 | ×1 | ×0,85 | ×0,7 |
 | Aide à la visée | oui | oui | non | non |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
@@ -262,7 +271,15 @@ La vitesse ne fait au plus que doubler (réglage *Max Speed Scale* des Wave Sett
 | Facile | 21 (6) | 27 (7) | 35 (8) | 84 (12) | 197 (19) |
 | Normal | 30 (10) | 41 (12) | 60 (14) | 155 (23) | 402 (38) |
 | Difficile | 42 (13) | 64 (16) | 107 (22) | 319 (39) | 947 (70) |
-| Impossible | 60 (18) | 101 (24) | 195 (36) | 662 (71) | 2 247 (139) |
+| Impossible | 30 (9) | 91 (22) | 195 (36) | 662 (71) | 2 247 (139) |
+
+**Début de partie plus doux en Impossible.** Aux tests, les vagues 1 à 5 étaient très dures en Impossible. Les PV et les dégâts des ennemis y sont donc réduits au début, puis remontent régulièrement : la vague 1 est bien plus simple, la vague 2 un peu moins, et ainsi de suite jusqu'à la vague 6, où l'on retrouve la courbe normale. Le nombre d'ennemis ne change pas : Impossible garde ses vagues en masse, et l'on gagne autant d'or (même un peu plus, puisqu'on en tue davantage). Réglages *Early Strength* et *Full Strength Wave* de chaque difficulté.
+
+| Impossible | Vague 1 | Vague 2 | Vague 3 | Vague 4 | Vague 5 | Vague 6 |
+|---|---|---|---|---|---|---|
+| Force des ennemis | 50 % | 60 % | 70 % | 80 % | 90 % | 100 % |
+| PV d'un Rampant | 30 (avant 60) | 41 (68) | 55 (78) | 71 (89) | 91 (101) | 116 |
+| Dégâts d'un coup | 9 (avant 18) | 12 (19) | 15 (21) | 18 (23) | 22 (24) | 26 |
 
 En Normal, une vague sans boss compte 6 ennemis à la vague 1, 51 à la vague 10 et 343 à la vague 20 (dans la limite de 40 en vie en même temps, section 10). Ces réglages se trouvent dans les assets `Data/Difficulties` (courbe de chaque difficulté) et `Data/Waves/WaveSettings` (accélération du mode infini).
 
@@ -271,24 +288,34 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 ## 12. Les déplacements
 
 - Le joueur se déplace physiquement dans sa pièce.
-- Course aux bras : maintenir une gâchette et balancer les bras. La vitesse suit celle des mains (5 m/s au maximum). La direction est la moyenne de l'orientation des deux manettes.
-- Slide : un bouton dédié (A ou X) pendant la course. On garde l'élan, avec peu de frottement, pendant environ 1,5 s, les mains libres pour tirer.
+- **Marche** : le joystick gauche donne la direction, par rapport au regard (lissé, pour que la course ne tangue pas). Joystick en arrière, on recule. 2,5 m/s, joystick à fond.
+- **Course aux bras** : en marchant, balancer les deux bras multiplie la vitesse, jusqu'à ×3 (7,5 m/s). La vitesse suit celle de la main la plus lente par rapport à la tête : tendre la corde ou prendre une flèche, d'une seule main, ne fait pas courir. Pas besoin de gâchette (option possible).
+  - On accélère et on freine progressivement : en pleine course, un demi-tour freine d'abord. En l'air, on garde son élan.
+- **Slide** : A ou X pendant la course, à partir de 3,5 m/s. On repart 40 % plus vite (10 m/s au plus), puis on glisse 2,5 s dans la même direction, avec peu de frottement, les mains libres pour tirer. Un son, une vibration et la vignette de confort l'accompagnent.
+- Ces déplacements passent par le système de locomotion d'XRI : on ne traverse pas les murs, et l'on tombe si l'on court dans le vide. Le script remplace le déplacement au joystick d'XRI, et le saut d'XRI (bouton A) est désactivé, puisque A sert au slide.
 - Rotation par crans de 45° au joystick, désactivable : pratique avec le câble Link.
-- Vignette de confort pendant le slide, réglable dans les paramètres.
+- Vignette de confort pendant le slide (et, en option, pendant la course), réglable dans les paramètres.
 - Le téléporteur de la tour.
 
 ## 13. Les coffres
 
-- 1 ou 2 coffres par vague, à des emplacements aléatoires dans la forêt, signalés par un rayon de lumière visible depuis la tour.
-- Ils sont gratuits. On soulève le couvercle à la main : le temps ralentit, 3 orbes flottent, et on en attrape une.
-- Une orbe donne soit un bonus temporaire, soit une amélioration pour toute la partie, tirée comme en boutique. Bonus temporaires possibles : 30 s de dégâts doublés, de tirs parfaits garantis ou d'anneau accéléré, ou un soin.
+- **Apparition** : 1 coffre par vague, et 50 % de chance d'un deuxième, après 15 % puis 55 % du chrono. Ils se posent à 15–30 m de la tour, sur le sol des ennemis, ou sur des emplacements choisis (dans la forêt de la carte finale). Un message les annonce, et un rayon de lumière doré, qui pulse, les signale depuis la tour.
+- **Risque** : ils sont gratuits, mais il faut quitter la tour pendant la vague et courir les chercher. Ils disparaissent à la fin de la vague, ouverts ou non.
+- **Ouverture** : on attrape le couvercle à la main (pas au rayon) et on le soulève ; il tourne autour de sa charnière en suivant la main. Passé 45°, le coffre s'ouvre : le temps ralentit (×0,3), et 3 orbes montent du coffre, chacune avec le nom de sa récompense dans sa couleur.
+- **Choix** : on attrape une orbe, les autres disparaissent. Le ralenti s'arrête au choix, ou au bout de 6 s ; les orbes restent alors jusqu'à la fin de la vague.
+- **Récompenses** : il y a toujours au moins une amélioration pour toute la partie, tirée comme en boutique (raretés et Chance comprises), et un bonus temporaire. La troisième orbe est l'un ou l'autre. Bonus possibles :
+  - 30 s de dégâts doublés ;
+  - 30 s de tirs parfaits : l'anneau est presque entièrement vert, et tout tir lâché à pleine tension compte comme parfait ;
+  - 30 s d'anneau accéléré (×1,75, bandes un peu plus larges) ;
+  - un soin complet, proposé seulement si le joueur a perdu des PV.
+- Les bonus en cours s'affichent sur la montre avec leur temps restant ; un message annonce leur fin. Une amélioration trouvée dans un coffre compte pour la hausse des prix de la boutique (section 7).
 
 ## 14. L'interface
 
 - **Menu principal**, dans le décor en haut de la tour, avant la première vague : Jouer (avec le choix de la difficulté), Paramètres, Classement, Quitter. Le gong et les panneaux de difficulté marchent aussi. On clique au rayon de la main libre, avec la gâchette.
-- **Paramètres** : volumes général, musique et effets (Audio Mixer) ; rotation au joystick par crans ; vignette de confort (avec le slide, semaine 3).
-- **Montre au poignet** : score, chrono, numéro de vague, PV du joueur, PV de la tour, argent, combo, difficulté.
-- **Retours dans le monde** : chiffres de dégâts, « Headshot ! », « Parfait ! ».
+- **Paramètres** : volumes général, musique et effets (Audio Mixer) ; rotation au joystick par crans ; vignette de confort pendant le slide, de « Aucune » à 100 %.
+- **Montre au poignet** : score, chrono, numéro de vague, PV du joueur, PV de la tour, argent, combo, difficulté, bonus des coffres en cours.
+- **Retours dans le monde** : chiffres de dégâts, « Headshot ! », « Parfait ! » ; particules à l'impact (giclée au corps, étincelles dorées à la tête, poussière dans le décor) et fumée à la mort d'un ennemi.
 - **Fin de partie** : un écran apparaît devant le joueur après sa mort, et les ennemis s'enfuient. Il affiche le résumé (score, vague atteinte, difficulté, ennemis tués, headshots, tirs parfaits) et fait saisir le nom au clavier virtuel de XRI (exemple *Spatial Keyboard*). Le classement s'affiche ensuite avec la nouvelle ligne en doré ; *Rejouer* ramène au menu avec un fondu.
 - **Classement** : les 10 meilleurs scores, avec le nom, le score, la difficulté et la vague atteinte, du meilleur au moins bon.
 
@@ -297,7 +324,8 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 Fichiers JSON dans `Application.persistentDataPath` :
 
 - `leaderboard.json` : nom, score, difficulté, vague atteinte, ennemis tués et date de chaque partie, triés du meilleur score au moins bon (100 parties gardées, 10 affichées) ;
-- `settings.json` : volumes et rotation au joystick.
+- `settings.json` : volumes, rotation au joystick et vignette de confort ;
+- `progress.json` : expérience totale, arc choisi et nombre de parties (arcs comme classes, section 23).
 
 Sous Windows, le dossier est `%USERPROFILE%\AppData\LocalLow\<Company Name>\<Product Name>`.
 
@@ -308,37 +336,42 @@ Tous les sons du jeu sont spatialisés.
 - **Arc** : grincement de la corde (plus aigu quand elle est tendue), claquement au lâcher, sifflement de la flèche en vol.
 - **Impacts** : bois, chair, « ding » du headshot, pierre.
 - **Ennemis et tour** : grognements, battements d'ailes, tirs, tour qui encaisse, gong.
-- **Ambiance** : oiseaux le jour, grillons et chouettes la nuit, vent ; musiques de vague et de boutique.
+- **Déplacements et coffres** : pas, slide, apparition et ouverture d'un coffre, orbe prise, disparition.
+- **Ambiance** : oiseaux le jour, grillons et chouettes la nuit, vent, selon le ciel de la difficulté.
+- **Musiques** : menu, pause (boutique), vague, boss ; rien après la mort. On passe d'une boucle à l'autre en fondu. La musique suit le curseur *Musique* des paramètres, l'ambiance celui des *Effets*. Les boucles actuelles sont générées pour tester, à remplacer en fin de projet.
 - **Sources libres** : Kenney (CC0), freesound.org (filtre CC0), Sonniss GDC Bundle.
 
 ## 17. La carte
 
-- Une seule scène : une clairière d'environ 35 m de rayon, la tour au centre, une forêt dense autour, percée de 4 chemins.
+- Une seule scène : une clairière d'environ 35 m de rayon, la tour au centre, une forêt dense autour (de 37 à 75 m), percée de 4 chemins de 4 m de large (nord, est, sud, ouest), avec les points d'apparition à leur bout (65 m) et une barricade à chaque entrée (36 m).
+- La forêt n'est pas praticable pour les ennemis au sol (NavMesh « Not Walkable ») : ils passent par les chemins. Les coffres apparaissent à des emplacements choisis le long des chemins.
 - Décors et monstres : packs nature et monstres animés de Quaternius, Nature Kit de Kenney.
-- Sol : le Terrain d'Unity donne un rendu lisse. Il faudra un shader à facettes ou un sol modélisé en low-poly (à trancher au moment du prototype).
+- Sol : un grand plan au matériau d'herbe, avec des bandes de terre pour les chemins. Pas de Terrain d'Unity, dont le rendu lisse jure avec le style low-poly.
 
 ## 18. Architecture technique
 
 ```
 Assets/_Project/
 ├── Scripts/                       assemblage Archery.Runtime
-│   ├── Core/        vibrations des manettes, sons ponctuels, pulsation
-│   ├── Bows/        arc, modèle d'arc importé (BowVisual), flèche, réserve de flèches, carquois, anneau de timing, réglages de tir
+│   ├── Core/        vibrations des manettes, sons ponctuels, pulsation, ralenti du temps
+│   ├── Bows/        arc, modèle d'arc importé (BowVisual), flèche, réserve de flèches, carquois, anneau de timing, réglages de tir, grenade de flèches et son étui
 │   ├── Combat/      PV, zones de touche, dégâts
-│   ├── Enemies/     ennemi au sol, boss, données des ennemis, apparition
-│   ├── Defense/     la tour, son téléporteur
+│   ├── Enemies/     ennemi au sol, volant, tireur et ses projectiles, boss, données des ennemis, apparition
+│   ├── Defense/     la tour, son téléporteur, les barricades, le brasero
 │   ├── Player/      accès au joueur (tête, mains, arc rangé), PV du joueur, téléportation, fondu au noir
 │   ├── Training/    cibles d'entraînement, cibles mobiles
 │   ├── UI/          textes flottants (points, dégâts), affichage de la partie (montre, panneau), barres de PV
 │   ├── Waves/       gestion des vagues, réglages des vagues, gong
 │   ├── Economy/     score, combo, argent
 │   ├── Difficulty/  difficultés, choix de la difficulté (panneaux)
-│   ├── World/       ciel (skybox, soleil ou lune, ambiance, brouillard), objets de nuit
-│   ├── Upgrades/    améliorations achetées, flèches spéciales (division, écho, foudre, explosion, glace, auto-visée, ricochet), éclairs, zones de glace
+│   ├── World/       ciel (skybox, soleil ou lune, ambiance, brouillard), objets de nuit, ambiance sonore et musiques
+│   ├── Upgrades/    améliorations achetées, bonus temporaires, flèches spéciales (division, écho, foudre, explosion, glace, auto-visée, ricochet), éclairs, zones de glace
+│   ├── Chests/      coffres, couvercle à soulever, orbes, récompenses, apparition pendant les vagues, arc légendaire
+│   ├── Effects/     particules d'impact et de mort
 │   ├── Shop/        catalogue, offres et achats, panneau et cartes de la boutique
 │   ├── Menus/       menu principal, paramètres, classement, écran de fin de partie
-│   ├── Save/        fichiers JSON, classement, paramètres du joueur
-│   └── (à venir)    Locomotion
+│   ├── Save/        fichiers JSON, classement, paramètres du joueur, progression entre les parties
+│   └── Locomotion/  course aux bras, slide, vignette de confort
 ├── Shaders/         anneau de timing, ciel stylisé, traînées des flèches
 ├── Data/            ScriptableObjects : arcs, réglages de tir, ennemis, vagues, difficultés, catalogue de la boutique
 ├── Prefabs/
@@ -348,7 +381,7 @@ Assets/_Project/
 └── Audio/           sons provisoires générés, à remplacer
 ```
 
-- Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`, `Guide_Vagues.md`, `Guide_Difficultes.md`, `Guide_Boutique.md`, `Guide_Teleporteur.md`, `Guide_Menus.md`, `Guide_Boss.md`).
+- Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`, `Guide_Vagues.md`, `Guide_Difficultes.md`, `Guide_Boutique.md`, `Guide_Teleporteur.md`, `Guide_Menus.md`, `Guide_Boss.md`, `Guide_Deplacements.md`, `Guide_Coffres.md`, `Guide_Volants_Tireurs.md`, `Guide_Barricades_Brasero.md`, `Guide_CorpsACorps.md`, `Guide_Ambiance.md`, `Guide_Effets.md`, `Guide_Carte.md`, `Guide_Grenade.md`, `Guide_ArcLegendaire.md`, `Guide_Classes.md`).
 - Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol.
 - Outils : `Tools/compile_check.py` vérifie que les scripts compilent sans ouvrir Unity, `Tools/shader_check.py` vérifie la syntaxe HLSL des shaders.
 - Les réglages (arcs, améliorations, ennemis, vagues, difficultés) sont des ScriptableObjects : on équilibre le jeu sans toucher au code.
@@ -391,27 +424,29 @@ Objectif : tirer sur des ennemis qui attaquent la tour.
 
 ### Semaine 2 (9 au 15 octobre) : le jeu complet
 
-- [ ] Gestion des vagues : budget, durée croissante, 10 vagues puis mode infini (fait), boss toutes les 5 vagues (codé, à tester : `Docs/Guide_Boss.md`).
+- [x] Gestion des vagues : budget, durée croissante, 10 vagues puis mode infini, boss toutes les 5 vagues.
 - [x] Les 4 difficultés et leurs ciels (la lanterne et les yeux qui brillent attendent les décors définitifs, en fin de projet).
 - [x] Score complet (timing, distance, combo) et argent.
 - [x] Boutique, raretés, améliorations (19), flèches spéciales, arcs à acheter, réparation et reconstruction de la tour.
 - [x] Menu principal, paramètres, fin de partie, clavier virtuel, sauvegarde JSON, classement (montage corrigé après les premiers tests).
 - [x] Anneau de timing à 3 couleurs (rouge, orange, vert pour le tir parfait), après les tests.
 - [x] Après les tests : améliorations sans limite d'achat (chances, puis effets plus forts), flèches en plus avec leurs propres effets, déluge qui divise les flèches en vol, courbe de difficulté exponentielle, prix du mode infini (+20 % par vague).
-- [x] Après les tests suivants : prix qui montent à chaque vague et à chaque achat, or en baisse à partir de la vague 5, flèches en plus sans points de touche, raretés fixes, ennemis de plus en plus rapides, volées centrées sur la visée.
+- [x] Après les tests suivants : prix qui montent à chaque vague et à chaque achat, or en baisse à partir de la vague 5, flèches en plus sans points de touche, raretés fixes, ennemis de plus en plus rapides, volées centrées sur la visée, début de partie plus doux en Impossible (vagues 1 à 5).
 
 Objectif : toutes les consignes du cours sont couvertes.
 
 ### Semaine 3 (16 au 22 octobre) : la vision
 
-- [ ] Course aux bras et slide.
-- [ ] Coffres.
-- [ ] Ennemis volants et tireurs.
-- [ ] Barricades et brasero.
-- [ ] Carte finale, ambiance sonore, effets visuels, équilibrage ; finitions avec des assets de l'Asset Store (lanterne et yeux qui brillent la nuit, décor).
-- [ ] Coup de flèche au corps à corps (section 4.5), une fois tout le reste en place.
-- [ ] Si le temps le permet, à la toute fin : les idées de la section 23 (arcs comme classes, progression entre les parties, arc légendaire en 3 morceaux, grenade de flèches).
-- [ ] README, tests complets, préparation de la démo.
+- [x] Course aux bras et slide. Après les tests : direction donnée par le joystick (on peut reculer), les bras accélèrent la marche, slide plus long et plus rapide.
+- [ ] Coffres (codé, à monter et tester : `Docs/Guide_Coffres.md`).
+- [ ] Ennemis volants et tireurs (codé, à monter et tester : `Docs/Guide_Volants_Tireurs.md`).
+- [ ] Barricades et brasero (codé, à monter et tester : `Docs/Guide_Barricades_Brasero.md`).
+- [ ] Ambiance sonore et musiques (codé, boucles provisoires générées, à monter : `Docs/Guide_Ambiance.md`).
+- [ ] Effets visuels des coups (codé, à monter : `Docs/Guide_Effets.md`).
+- [ ] Carte finale (guide : `Docs/Guide_Carte.md`), équilibrage ; finitions avec des assets de l'Asset Store (lanterne et yeux qui brillent la nuit, décor, vraies musiques).
+- [x] Coup de flèche au corps à corps (section 4.5) : rien à monter, à tester (`Docs/Guide_CorpsACorps.md`).
+- [ ] Les idées de la section 23 (codées, à monter et tester) : grenade de flèches (`Docs/Guide_Grenade.md`), arc légendaire en 3 morceaux (`Docs/Guide_ArcLegendaire.md`), arcs comme classes et progression entre les parties (`Docs/Guide_Classes.md`).
+- [ ] README (rédigé, crédits et équipe à compléter), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
 
 ### En cas de retard
 
@@ -440,8 +475,6 @@ Tout ce qui est prévu en semaines 1 et 2 est indispensable. En semaine 3, on ab
 
 Notées pendant les tests, à faire une fois le reste en place et seulement si le temps le permet.
 
-- **Les arcs comme des classes** : on ne les achète plus en boutique. On en choisit un au début de la partie, chacun avec ses statistiques et sa particularité (anneau rapide, puissance, perçage…). La boutique garde les améliorations et les services de la tour.
-- **Progression entre les parties (roguelite)** : on garde quelque chose d'une partie à l'autre, par exemple de l'expérience ou une monnaie, pour débloquer les arcs peu à peu. Elle s'ajoute à la sauvegarde JSON (section 15).
-- **Un arc légendaire en 3 morceaux** : chaque morceau se trouve dans un coffre (section 13). Avec les trois, on obtient l'arc.
-- **Une grenade de flèches** : on l'attrape en bas du dos, on la lance, et elle projette des flèches dans toutes les directions. Elle a un temps de recharge, affiché sur la montre.
-- **Le coup de flèche au corps à corps** (section 4.5).
+- **Les arcs comme des classes** et la **progression entre les parties** : faits, en mode optionnel (`Docs/Guide_Classes.md`). Avec le composant `Bow Classes`, on choisit son arc au menu et la boutique n'en vend plus. Chaque partie rapporte de l'expérience (1 XP pour 10 points), gardée dans `progress.json`, qui débloque les arcs : composite à 300 XP, long à 1 000, runique à 2 500. Sans le composant, les arcs s'achètent en boutique comme avant.
+- **Un arc légendaire en 3 morceaux** : fait (`Docs/Guide_ArcLegendaire.md`). Tant qu'il n'est pas complet, un coffre a 35 % de chance de proposer un morceau à la place de sa troisième orbe. Au troisième, l'arc légendaire (62 m/s, 32 dégâts, anneau de 1 s aux bandes larges, flèches qui traversent 2 ennemis) remplace celui du joueur jusqu'à la fin de la partie.
+- **Une grenade de flèches** : faite (section 4.6, `Docs/Guide_Grenade.md`).

@@ -70,6 +70,16 @@ namespace Archery.Difficulty
         [Min(1f)]
         public float speedGrowthPerWave = 1.02f;
 
+        [Header("Début de partie plus doux")]
+        [Tooltip("PV et dégâts des ennemis à la vague 1, par rapport à la courbe normale (0,5 = moitié). " +
+                 "Ils remontent régulièrement jusqu'à la vague « Full Strength Wave ». 1 = pas d'adoucissement.")]
+        [Range(0.1f, 1f)]
+        public float earlyStrength = 1f;
+
+        [Tooltip("Vague où les ennemis retrouvent toute leur force (la courbe normale).")]
+        [Min(2)]
+        public int fullStrengthWave = 6;
+
         [Header("Score")]
         [Tooltip("Multiplie tous les points gagnés.")]
         [Min(0f)]
@@ -77,6 +87,19 @@ namespace Archery.Difficulty
 
         [Header("Ciel")]
         public SkySettings sky = SkySettings.Sunset();
+
+        /// <summary>
+        /// Force des ennemis au début de la partie (PV et dégâts) : <see cref="earlyStrength"/> à la vague 1,
+        /// puis une hausse régulière jusqu'à 1 à la vague <see cref="fullStrengthWave"/>.
+        /// </summary>
+        public float EarlyStrength(int wave)
+        {
+            if (earlyStrength >= 1f || wave >= fullStrengthWave)
+                return 1f;
+
+            var t = Mathf.Clamp01((wave - 1f) / Mathf.Max(1, fullStrengthWave - 1));
+            return Mathf.Lerp(earlyStrength, 1f, t);
+        }
 
         [ContextMenu("Valeurs du GDD : Facile")]
         void FillEasy()
@@ -97,6 +120,8 @@ namespace Archery.Difficulty
             damageGrowthPerWave = 1.03f;
             countGrowthPerWave = 1.04f;
             speedGrowthPerWave = 1.01f;
+            earlyStrength = 1f;
+            fullStrengthWave = 6;
             sky = SkySettings.Noon();
             EndFill();
         }
@@ -120,6 +145,8 @@ namespace Archery.Difficulty
             damageGrowthPerWave = 1.04f;
             countGrowthPerWave = 1.05f;
             speedGrowthPerWave = 1.02f;
+            earlyStrength = 1f;
+            fullStrengthWave = 6;
             sky = SkySettings.Sunset();
             EndFill();
         }
@@ -143,6 +170,8 @@ namespace Archery.Difficulty
             damageGrowthPerWave = 1.06f;
             countGrowthPerWave = 1.07f;
             speedGrowthPerWave = 1.025f;
+            earlyStrength = 1f;
+            fullStrengthWave = 6;
             sky = SkySettings.Night();
             EndFill();
         }
@@ -166,6 +195,8 @@ namespace Archery.Difficulty
             damageGrowthPerWave = 1.08f;
             countGrowthPerWave = 1.09f;
             speedGrowthPerWave = 1.03f;
+            earlyStrength = 0.5f;
+            fullStrengthWave = 6;
             sky = SkySettings.BloodMoon();
             EndFill();
         }

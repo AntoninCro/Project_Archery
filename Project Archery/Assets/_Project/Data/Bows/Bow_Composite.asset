@@ -16,6 +16,7 @@ MonoBehaviour:
   description: Anneau rapide, bandes larges.
   price: 120
   availableFromWave: 2
+  unlockXp: 300
   arrowSpeed: 40
   damage: 13
   maxDrawDistance: 0.35

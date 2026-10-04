@@ -19,9 +19,19 @@ MonoBehaviour:
   budgetIncrease: 3
   spawnWindow: 0.8
   maxAlive: 12
+  maxAliveCap: 40
+  maxSpeedScale: 2
   enemies:
   - prefab: {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
     cost: 1
     firstWave: 1
     weight: 1
+  endlessHealthGrowth: 1.12
+  endlessDamageGrowth: 1.06
+  endlessCountGrowth: 1.08
+  endlessSpeedGrowth: 1.03
+  bossPrefab: {fileID: 2636662766082353518, guid: 8a6a93d2b0201414f85e7807f8ade015, type: 3}
+  bossEvery: 5
+  bossSpawnDelay: 4
+  bossWaveBudget: 0.6
   clearBonusPerWave: 50

@@ -17,7 +17,7 @@ Le panneau propose :
 
 Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section 7) :
 - **+10 % à chaque vague** (la relance aussi) ;
-- **+5 % à chaque amélioration achetée** : plus tu en as, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
+- **+5 % à chaque amélioration obtenue** (achetée, ou trouvée dans un coffre) : plus tu en as, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
 - **en mode infini, ×1,2 à chaque vague**, pour tout (relance, arc et tour compris).
 
 L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.

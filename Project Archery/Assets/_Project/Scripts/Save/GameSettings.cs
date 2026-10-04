@@ -19,10 +19,14 @@ namespace Archery.Save
 
         /// <summary>Rotation par crans au joystick (GDD, section 12) : pratique à désactiver avec le câble Link.</summary>
         public bool snapTurn = true;
+
+        /// <summary>Force de la vignette de confort pendant le slide (0 = désactivée, 1 = la plus forte).</summary>
+        public float comfortVignette = 0.5f;
     }
 
     /// <summary>
-    /// Paramètres du joueur (GDD, sections 14 et 15) : volumes général, musique et effets, rotation par crans.
+    /// Paramètres du joueur (GDD, sections 14 et 15) : volumes général, musique et effets, rotation par crans,
+    /// vignette de confort.
     /// Ils sont enregistrés dans <c>settings.json</c> et appliqués au lancement.
     /// </summary>
     /// <remarks>
@@ -90,6 +94,17 @@ namespace Archery.Save
         {
             get => Data.effectsVolume;
             set => SetVolume(ref Data.effectsVolume, value);
+        }
+
+        /// <summary>Force de la vignette de confort (0 à 1), lue par la course aux bras à chaque slide.</summary>
+        public float ComfortVignette
+        {
+            get => Data.comfortVignette;
+            set
+            {
+                Data.comfortVignette = Mathf.Clamp01(value);
+                MarkDirty();
+            }
         }
 
         public bool SnapTurn

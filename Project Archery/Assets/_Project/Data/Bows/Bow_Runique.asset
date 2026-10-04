@@ -16,6 +16,7 @@ MonoBehaviour:
   description: "Ses fl\xE8ches traversent un ennemi."
   price: 350
   availableFromWave: 7
+  unlockXp: 2500
   arrowSpeed: 55
   damage: 24
   maxDrawDistance: 0.35

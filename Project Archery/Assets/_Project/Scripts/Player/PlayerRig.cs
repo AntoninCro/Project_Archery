@@ -3,6 +3,7 @@ using Archery.Bows;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Jump;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
 
 namespace Archery.Player
@@ -25,6 +26,10 @@ namespace Archery.Player
         [Tooltip("Désactive le déplacement « grab move » du XR Origin, qui utilise aussi le bouton de poignée.")]
         [SerializeField]
         bool m_DisableGrabMove = true;
+
+        [Tooltip("Désactive le saut du XR Origin (bouton A) : A et X servent au slide de la course aux bras.")]
+        [SerializeField]
+        bool m_DisableJump = true;
 
         readonly List<XRBaseInputInteractor> m_Hands = new List<XRBaseInputInteractor>();
 
@@ -93,6 +98,12 @@ namespace Archery.Player
                 foreach (var provider in root.GetComponentsInChildren<GrabMoveProvider>(true))
                     provider.enabled = false;
                 foreach (var provider in root.GetComponentsInChildren<TwoHandedGrabMoveProvider>(true))
+                    provider.enabled = false;
+            }
+
+            if (m_DisableJump)
+            {
+                foreach (var provider in root.GetComponentsInChildren<JumpProvider>(true))
                     provider.enabled = false;
             }
         }

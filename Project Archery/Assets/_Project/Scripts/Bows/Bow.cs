@@ -190,6 +190,9 @@ namespace Archery.Bows
         public float RingSpeedMultiplier { get; set; } = 1f;
         public float BandWidthMultiplier { get; set; } = 1f;
         public float GoldWidthMultiplier { get; set; } = 1f;
+
+        /// <summary>Tout tir lâché pendant l'anneau compte comme parfait (bonus « Tirs parfaits » des coffres).</summary>
+        public bool ForcePerfect { get; set; }
         public int BonusPierce { get; set; }
 
         BowDefinition Def
@@ -206,6 +209,12 @@ namespace Archery.Bows
 
         ShotTuning Tuning => m_ShotTuning != null ? m_ShotTuning : ShotTuning.Fallback;
         float MaxDraw => Mathf.Max(0.05f, Def.maxDrawDistance);
+
+        /// <summary>
+        /// Dégâts d'un coup de flèche au corps à corps (GDD, section 4.5) : ceux d'un tir de cette qualité
+        /// à pleine tension, bonus de dégâts compris.
+        /// </summary>
+        public float MeleeDamage(ShotGrade grade) => Def.damage * Tuning.Get(grade).damage * DamageMultiplier;
 
         protected override void Awake()
         {
@@ -329,6 +338,8 @@ namespace Archery.Bows
             StopCreak();
 
             var grade = m_TimingRing != null && m_TimingRing.IsRunning ? m_TimingRing.Release() : ShotGrade.None;
+            if (ForcePerfect && grade != ShotGrade.None)
+                grade = ShotGrade.Perfect;
             if (!canFire || ratio < Def.minDrawToFire)
             {
                 if (m_TimingRing != null)

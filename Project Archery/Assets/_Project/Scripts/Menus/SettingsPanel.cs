@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Archery.Menus
 {
     /// <summary>
-    /// Page des paramètres (GDD, section 14) : volumes général, musique et effets, rotation par crans.
+    /// Page des paramètres (GDD, section 14) : volumes général, musique et effets, rotation par crans, vignette de confort.
     /// Les changements s'appliquent tout de suite et sont enregistrés dans settings.json.
     /// </summary>
     /// <remarks>Les curseurs vont de 0 à 1 (valeurs par défaut d'un Slider). Tous les champs sont optionnels.</remarks>
@@ -32,6 +32,13 @@ namespace Archery.Menus
         [SerializeField]
         TMP_Text m_EffectsValue;
 
+        [Tooltip("Force de la vignette de confort pendant le slide (0 = désactivée).")]
+        [SerializeField]
+        Slider m_VignetteSlider;
+
+        [SerializeField]
+        TMP_Text m_VignetteValue;
+
         [Tooltip("Rotation au joystick avec un Toggle…")]
         [SerializeField]
         Toggle m_SnapTurnToggle;
@@ -55,6 +62,8 @@ namespace Archery.Menus
                 m_MusicSlider.onValueChanged.AddListener(value => Apply(settings => settings.MusicVolume = value, m_MusicValue, value));
             if (m_EffectsSlider != null)
                 m_EffectsSlider.onValueChanged.AddListener(value => Apply(settings => settings.EffectsVolume = value, m_EffectsValue, value));
+            if (m_VignetteSlider != null)
+                m_VignetteSlider.onValueChanged.AddListener(OnVignetteChanged);
             if (m_SnapTurnToggle != null)
                 m_SnapTurnToggle.onValueChanged.AddListener(OnSnapTurnChanged);
         }
@@ -66,6 +75,9 @@ namespace Archery.Menus
             Show(m_MasterSlider, m_MasterValue, data.masterVolume);
             Show(m_MusicSlider, m_MusicValue, data.musicVolume);
             Show(m_EffectsSlider, m_EffectsValue, data.effectsVolume);
+            if (m_VignetteSlider != null)
+                m_VignetteSlider.SetValueWithoutNotify(data.comfortVignette);
+            ShowVignette(data.comfortVignette);
             ShowSnapTurn(data.snapTurn);
         }
 
@@ -77,6 +89,18 @@ namespace Archery.Menus
             else
                 Debug.LogWarning("SettingsPanel : aucun Game Settings dans la scène.", this);
             SetLabel(label, value);
+        }
+
+        void OnVignetteChanged(float value)
+        {
+            Apply(settings => settings.ComfortVignette = value, null, value);
+            ShowVignette(value);
+        }
+
+        void ShowVignette(float value)
+        {
+            if (m_VignetteValue != null)
+                m_VignetteValue.text = value < 0.01f ? "Aucune" : Mathf.RoundToInt(value * 100f) + " %";
         }
 
         void OnSnapTurnChanged(bool isOn)

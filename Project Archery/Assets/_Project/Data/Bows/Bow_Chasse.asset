@@ -16,6 +16,7 @@ MonoBehaviour:
   description: "\xC9quilibr\xE9. L'arc de d\xE9part."
   price: 0
   availableFromWave: 0
+  unlockXp: 0
   arrowSpeed: 35
   damage: 10
   maxDrawDistance: 0.35

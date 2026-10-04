@@ -63,7 +63,7 @@ namespace Archery.Shop
         [Min(0f)]
         public float priceGrowthPerWave = 0.1f;
 
-        [Tooltip("Chaque amélioration achetée fait monter le prix de toutes les suivantes, en se cumulant " +
+        [Tooltip("Chaque amélioration obtenue (boutique ou coffre) fait monter le prix de toutes les suivantes, en se cumulant " +
                  "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20).")]
         [Min(0f)]
         public float priceIncreasePerPurchase = 0.05f;
@@ -90,12 +90,20 @@ namespace Archery.Shop
         public int repairPrice = 40;
         public int rebuildPrice = 250;
 
+        [Header("Défenses")]
+        [Tooltip("Prix de la réparation de toutes les barricades.")]
+        public int barricadePrice = 60;
+
+        [Tooltip("Prix du brasero (une seule fois).")]
+        public int brazierPrice = 100;
+
         [Header("Couleurs")]
         public Color commonColor = new Color(0.9f, 0.9f, 0.9f);
         public Color rareColor = new Color(0.35f, 0.6f, 1f);
         public Color legendaryColor = new Color(1f, 0.78f, 0.2f);
         public Color bowColor = new Color(0.6f, 0.9f, 0.5f);
         public Color towerColor = new Color(0.9f, 0.68f, 0.45f);
+        public Color defenseColor = new Color(1f, 0.55f, 0.25f);
 
         public Color ColorOf(UpgradeRarity rarity) => rarity switch
         {
@@ -239,6 +247,8 @@ namespace Archery.Shop
             repairFraction = 0.25f;
             repairPrice = 40;
             rebuildPrice = 250;
+            barricadePrice = 60;
+            brazierPrice = 100;
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
 #endif

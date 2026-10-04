@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Difficulty;
 using Archery.Economy;
@@ -46,6 +47,10 @@ namespace Archery.Menus
         [Tooltip("Optionnel : message après l'enregistrement (« 3e place ! »).")]
         [SerializeField]
         TMP_Text m_MessageText;
+
+        [Tooltip("Optionnel, avec Bow Classes : expérience gagnée et arcs débloqués.")]
+        [SerializeField]
+        TMP_Text m_XpText;
 
         [SerializeField]
         LeaderboardView m_Leaderboard;
@@ -116,6 +121,8 @@ namespace Archery.Menus
                 m_TitleText.text = victory ? "Victoire !" : "Fin de partie";
             if (m_SummaryText != null)
                 m_SummaryText.text = Summary();
+            if (m_XpText != null)
+                m_XpText.text = XpSummary();
             if (m_NameInput != null)
             {
                 m_NameInput.characterLimit = m_MaxNameLength;
@@ -201,6 +208,20 @@ namespace Archery.Menus
             return $"Score : <b>{points}</b>\n" +
                    $"Vague {wave} · {difficulty}\n" +
                    $"Ennemis tués : {score.Kills} · Tirs à la tête : {score.Headshots} · Tirs parfaits : {score.PerfectShots}";
+        }
+
+        // « +120 XP (total 760) », puis « Nouvel arc : Arc long ! » pour chaque arc débloqué.
+        static string XpSummary()
+        {
+            var classes = BowClasses.Instance;
+            if (!BowClasses.IsActive)
+                return "";
+
+            var gained = classes.AwardGameXp();
+            var text = $"+{gained} XP (total {classes.Xp})";
+            foreach (var bow in classes.NewlyUnlocked)
+                text += $"\nNouvel arc : {bow.displayName} !";
+            return text;
         }
 
         // Sans balises de texte enrichi, sans espaces autour, pas trop long.

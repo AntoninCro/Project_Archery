@@ -1,0 +1,21 @@
+# Feuille de route : les guides à monter
+
+Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monter dans Unity, dans cet ordre. Chaque guide se teste seul ; commite après chacun.
+
+| # | Guide | Ce qu'il ajoute | Dépend de | Durée estimée |
+|---|---|---|---|---|
+| 1 | `Guide_Coffres.md` | Coffres, ralenti, orbes, bonus temporaires | — | 1 h 30 |
+| 2 | `Guide_Volants_Tireurs.md` | Ennemis volants et tireurs, projectiles | — | 1 h 30 |
+| 3 | `Guide_Barricades_Brasero.md` | Barricades, brasero, flèches enflammées, 2 cartes de boutique | — | 1 h 30 |
+| 4 | `Guide_CorpsACorps.md` | Coup de flèche au corps à corps | — (rien à monter) | 10 min |
+| 5 | `Guide_Effets.md` | Particules d'impact et de mort | — | 45 min |
+| 6 | `Guide_Ambiance.md` | Ambiance jour et nuit, musiques | — | 20 min |
+| 7 | `Guide_Grenade.md` | Grenade de flèches en bas du dos | — | 45 min |
+| 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 morceaux | coffres (1) | 30 min |
+| 9 | `Guide_Classes.md` | Arcs choisis au menu, expérience entre les parties | — (optionnel) | 45 min |
+| 10 | `Guide_Carte.md` | Clairière, forêt, 4 chemins, NavMesh, emplacements | barricades (3), coffres (1) | une journée |
+| 11 | `Checklist_Demo.md` | Tests complets, build, démo | tout | une demi-journée |
+
+**Pourquoi cet ordre** : les ennemis et les défenses d'abord, parce qu'ils changent le plus le jeu et méritent d'être testés longtemps. Les étapes courtes (4 à 9) peuvent se glisser n'importe quand. La carte vient à la fin, quand on sait où placer les barricades, les coffres et les points d'apparition. L'équilibrage se fait en dernier, sur la carte finale.
+
+**Si le temps manque** : la carte (10) et les tests (11) passent avant les idées de fin de projet (7, 8, 9), qui sont des bonus.

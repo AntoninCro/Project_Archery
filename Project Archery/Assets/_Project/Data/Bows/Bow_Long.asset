@@ -16,6 +16,7 @@ MonoBehaviour:
   description: "Puissant mais lent \xE0 charger."
   price: 200
   availableFromWave: 4
+  unlockXp: 1000
   arrowSpeed: 50
   damage: 20
   maxDrawDistance: 0.4

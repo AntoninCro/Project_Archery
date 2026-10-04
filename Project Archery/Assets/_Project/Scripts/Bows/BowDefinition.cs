@@ -24,6 +24,9 @@ namespace Archery.Bows
                  "Vide : l'arc change de caractéristiques mais garde son apparence.")]
         public BowVisual visualPrefab;
 
+        [Tooltip("Arcs comme des classes (Bow Classes) : expérience totale nécessaire pour débloquer cet arc.")]
+        public int unlockXp;
+
         [Header("Tir")]
         [Tooltip("Vitesse de la flèche (m/s) à tension maximale, avant le bonus de timing.")]
         public float arrowSpeed = 35f;

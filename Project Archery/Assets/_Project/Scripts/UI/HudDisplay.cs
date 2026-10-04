@@ -1,9 +1,11 @@
 using System.Globalization;
+using Archery.Bows;
 using Archery.Defense;
 using Archery.Difficulty;
 using Archery.Economy;
 using Archery.Enemies;
 using Archery.Player;
+using Archery.Upgrades;
 using Archery.Waves;
 using TMPro;
 using UnityEngine;
@@ -59,6 +61,14 @@ namespace Archery.UI
         [SerializeField]
         Image m_BossHealthBar;
 
+        [Tooltip("Optionnel : bonus temporaires des coffres en cours, avec leur temps restant.")]
+        [SerializeField]
+        TMP_Text m_BuffText;
+
+        [Tooltip("Optionnel : état de la grenade de flèches (« Grenade prête », « Grenade · 12 s »).")]
+        [SerializeField]
+        TMP_Text m_GrenadeText;
+
         [Tooltip("Couleur du chrono pendant les 5 dernières secondes.")]
         [SerializeField]
         Color m_TimerWarningColor = new Color(1f, 0.35f, 0.25f);
@@ -72,6 +82,8 @@ namespace Archery.UI
         int m_Seconds = -1;
         int m_Wave = -1;
         int m_BossHealth = -2;
+        int m_BuffKey = -1;
+        int m_GrenadeSeconds = -2;
         bool m_BossWave;
         WavePhase? m_Phase;
         DifficultyDefinition m_Difficulty;
@@ -91,6 +103,57 @@ namespace Archery.UI
             UpdatePlayerHealth();
             UpdateTowerHealth();
             UpdateDifficulty();
+            UpdateBuffs();
+            UpdateGrenade();
+        }
+
+        void UpdateGrenade()
+        {
+            if (m_GrenadeText == null)
+                return;
+
+            var holster = GrenadeHolster.Instance;
+            var seconds = holster != null ? Mathf.CeilToInt(holster.CooldownLeft) : -1;
+            if (seconds == m_GrenadeSeconds)
+                return;
+
+            m_GrenadeSeconds = seconds;
+            m_GrenadeText.text = seconds < 0 ? "" : seconds == 0 ? "Grenade prête" : $"Grenade · {seconds} s";
+        }
+
+        // « Dégâts ×2 · 23 s », une ligne par bonus. Le texte n'est reconstruit que quand une seconde change.
+        void UpdateBuffs()
+        {
+            if (m_BuffText == null)
+                return;
+
+            var upgrades = PlayerUpgrades.Instance;
+            var key = 0;
+            if (upgrades != null)
+            {
+                foreach (TemporaryBuff buff in System.Enum.GetValues(typeof(TemporaryBuff)))
+                    key = key * 61 + Mathf.CeilToInt(upgrades.BuffTimeLeft(buff));
+            }
+
+            if (key == m_BuffKey)
+                return;
+
+            m_BuffKey = key;
+            var text = new System.Text.StringBuilder();
+            if (upgrades != null)
+            {
+                foreach (TemporaryBuff buff in System.Enum.GetValues(typeof(TemporaryBuff)))
+                {
+                    var seconds = Mathf.CeilToInt(upgrades.BuffTimeLeft(buff));
+                    if (seconds <= 0)
+                        continue;
+                    if (text.Length > 0)
+                        text.Append('\n');
+                    text.Append(PlayerUpgrades.NameOf(buff)).Append(" · ").Append(seconds).Append(" s");
+                }
+            }
+
+            m_BuffText.text = text.ToString();
         }
 
         void UpdateScore()

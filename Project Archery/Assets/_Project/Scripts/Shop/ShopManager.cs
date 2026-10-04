@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Archery.Bows;
+using Archery.Chests;
 using Archery.Defense;
 using Archery.Economy;
 using Archery.Upgrades;
@@ -35,6 +36,8 @@ namespace Archery.Shop
         readonly List<Upgrade> m_Candidates = new List<Upgrade>();
         ShopOffer m_BowOffer;
         ShopOffer m_TowerOffer;
+        ShopOffer m_BarricadeOffer;
+        ShopOffer m_BrazierOffer;
         WaveManager m_Waves;
         int m_Wave;
         int m_Rerolls;
@@ -46,6 +49,8 @@ namespace Archery.Shop
         public IReadOnlyList<ShopOffer> UpgradeOffers => m_UpgradeOffers;
         public ShopOffer BowOffer => m_BowOffer;
         public ShopOffer TowerOffer => m_TowerOffer;
+        public ShopOffer BarricadeOffer => m_BarricadeOffer;
+        public ShopOffer BrazierOffer => m_BrazierOffer;
         public int RerollCost => m_Catalog != null
             ? ShopCatalog.RoundPrice((m_Catalog.rerollCost + m_Catalog.rerollCostIncrease * m_Rerolls) *
                                      m_Catalog.WaveFactor(m_Wave) * EndlessFactor)
@@ -115,6 +120,7 @@ namespace Archery.Shop
             RollUpgrades();
             RefreshBowOffer();
             RefreshTowerOffer();
+            RefreshDefenseOffers();
             Changed?.Invoke();
         }
 
@@ -148,6 +154,8 @@ namespace Archery.Shop
                     if (tower == null)
                         return ShopResult.Failed("Il n'y a pas de tour dans la scène");
                     break;
+                case ShopOfferKind.Brazier when Brazier.Instance == null:
+                    return ShopResult.Failed("Il n'y a pas de brasero dans la scène");
             }
 
             var score = ScoreManager.Instance;
@@ -175,6 +183,16 @@ namespace Archery.Shop
                     result = ShopResult.Done("Tour réparée", offer.Color);
                     break;
 
+                case ShopOfferKind.Barricades:
+                    Barricade.RebuildAll();
+                    result = ShopResult.Done("Barricades réparées", offer.Color);
+                    break;
+
+                case ShopOfferKind.Brazier:
+                    Brazier.Instance.Build();
+                    result = ShopResult.Done("Brasero allumé : trempe une flèche dans le feu !", offer.Color);
+                    break;
+
                 default:
                     tower.Rebuild();
                     result = ShopResult.Done("Tour reconstruite !", offer.Color);
@@ -182,6 +200,7 @@ namespace Archery.Shop
             }
 
             RefreshTowerOffer();
+            RefreshDefenseOffers();
             Changed?.Invoke();
             return result;
         }
@@ -292,6 +311,20 @@ namespace Archery.Shop
             var index = current != null ? bows.IndexOf(current) : 0;
             var next = index + 1 < bows.Count ? bows[index + 1] : null;
 
+            if (BowClasses.IsActive)
+            {
+                var name = current != null ? current.displayName : "Ton arc";
+                m_BowOffer = ShopOffer.Info("Arc", $"{name} : l'arc se choisit au menu, avant la partie.", color);
+                return;
+            }
+
+            var legendary = LegendaryBow.Instance;
+            if (legendary != null && legendary.IsAssembled)
+            {
+                m_BowOffer = ShopOffer.Info("Arc légendaire", "Tu as assemblé l'arc légendaire : aucun arc ne le vaut.", legendary.Color);
+                return;
+            }
+
             if (m_Bow == null || next == null)
             {
                 m_BowOffer = ShopOffer.Info("Arcs", "Tu as déjà le meilleur arc.", color);
@@ -356,6 +389,53 @@ namespace Archery.Shop
             else
             {
                 m_TowerOffer = ShopOffer.Info("Tour", "La tour est intacte.", color);
+            }
+        }
+
+        // Barricades : les réparer toutes d'un coup. Brasero : l'allumer, une seule fois.
+        void RefreshDefenseOffers()
+        {
+            var color = m_Catalog.defenseColor;
+            if (Barricade.All.Count == 0)
+            {
+                m_BarricadeOffer = ShopOffer.Info("Barricades", "Il n'y a pas de barricades sur la carte.", color);
+            }
+            else
+            {
+                Barricade.TotalHealth(out var current, out var max);
+                m_BarricadeOffer = current < max - 0.5f
+                    ? new ShopOffer
+                    {
+                        Kind = ShopOfferKind.Barricades,
+                        Title = "Réparer les barricades",
+                        Subtitle = "Défense",
+                        Description = $"Toutes les barricades reviennent avec tous leurs PV.\nPV : {Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}",
+                        Color = color,
+                        Price = ShopCatalog.RoundPrice(m_Catalog.barricadePrice * EndlessFactor),
+                    }
+                    : ShopOffer.Info("Barricades", "Les barricades sont intactes.", color);
+            }
+
+            var brazier = Brazier.Instance;
+            if (brazier == null)
+            {
+                m_BrazierOffer = ShopOffer.Info("Brasero", "Il n'y a pas de brasero sur la tour.", color);
+            }
+            else if (brazier.IsBuilt)
+            {
+                m_BrazierOffer = ShopOffer.Info("Brasero", "Allumé. Trempe la pointe d'une flèche dans le feu : sa cible brûlera.", color);
+            }
+            else
+            {
+                m_BrazierOffer = new ShopOffer
+                {
+                    Kind = ShopOfferKind.Brazier,
+                    Title = "Brasero",
+                    Subtitle = "Défense · une seule fois",
+                    Description = "Un feu en haut de la tour. Trempe une flèche dedans : sa cible brûle 3 s.",
+                    Color = color,
+                    Price = ShopCatalog.RoundPrice(m_Catalog.brazierPrice * EndlessFactor),
+                };
             }
         }
 
