@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c80d8441badc4254891d9589d3a98680, type: 3}
+  m_Name: WaveSettings
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Waves.WaveSettings
+  wavesToWin: 10
+  firstWaveDuration: 30
+  durationIncrease: 5
+  firstWaveBudget: 6
+  budgetIncrease: 3
+  spawnWindow: 0.8
+  maxAlive: 12
+  enemies:
+  - prefab: {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
+    cost: 1
+    firstWave: 1
+    weight: 1
+  clearBonusPerWave: 50

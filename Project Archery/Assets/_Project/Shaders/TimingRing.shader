@@ -1,20 +1,18 @@
-// Anneau de timing : bandes concentriques symétriques autour du doré + cercle d'approche.
-// Toutes les largeurs sont en fraction du rayon du disque (0 = centre, 1 = bord).
+// Anneau de timing : bandes concentriques symétriques autour du vert (parfait), puis orange (bon), puis rouge (raté),
+// et le cercle d'approche. Toutes les largeurs sont en fraction du rayon du disque (0 = centre, 1 = bord).
 Shader "Archery/TimingRing"
 {
     Properties
     {
-        _GoldCenter ("Rayon du doré", Range(0, 1)) = 0.5
-        _GoldHalfWidth ("Demi-largeur du doré", Range(0, 0.5)) = 0.06
-        _GreenWidth ("Largeur du vert", Range(0, 0.5)) = 0.08
-        _OrangeWidth ("Largeur de l'orange", Range(0, 0.5)) = 0.1
+        _GoldCenter ("Rayon du vert", Range(0, 1)) = 0.5
+        _GoldHalfWidth ("Demi-largeur du vert", Range(0, 0.5)) = 0.06
+        _GoodWidth ("Largeur de l'orange", Range(0, 0.5)) = 0.14
         _Approach ("Rayon du cercle d'approche", Range(0, 1)) = 1
         _ApproachThickness ("Épaisseur du cercle d'approche", Range(0, 0.2)) = 0.05
         _Alpha ("Opacité", Range(0, 1)) = 1
-        _RedColor ("Rouge", Color) = (0.86, 0.16, 0.12, 0.75)
-        _OrangeColor ("Orange", Color) = (1, 0.55, 0.1, 0.85)
-        _GreenColor ("Vert", Color) = (0.3, 0.82, 0.3, 0.9)
-        _GoldColor ("Doré", Color) = (1, 0.82, 0.15, 1)
+        _RedColor ("Rouge (raté)", Color) = (0.86, 0.16, 0.12, 0.75)
+        _GoodColor ("Orange (bon)", Color) = (1, 0.5, 0.08, 0.9)
+        _PerfectColor ("Vert (parfait)", Color) = (0.3, 0.92, 0.35, 1)
         _ApproachColor ("Cercle d'approche", Color) = (1, 1, 1, 1)
         _FlashColor ("Couleur du résultat", Color) = (0, 0, 0, 0)
     }
@@ -49,15 +47,13 @@ Shader "Archery/TimingRing"
             CBUFFER_START(UnityPerMaterial)
                 float _GoldCenter;
                 float _GoldHalfWidth;
-                float _GreenWidth;
-                float _OrangeWidth;
+                float _GoodWidth;
                 float _Approach;
                 float _ApproachThickness;
                 float _Alpha;
                 half4 _RedColor;
-                half4 _OrangeColor;
-                half4 _GreenColor;
-                half4 _GoldColor;
+                half4 _GoodColor;
+                half4 _PerfectColor;
                 half4 _ApproachColor;
                 half4 _FlashColor;
             CBUFFER_END
@@ -93,16 +89,14 @@ Shader "Archery/TimingRing"
                 float r = length(input.uv * 2.0 - 1.0) / DISC_SCALE;
                 float aa = max(fwidth(r), 1e-4);
 
-                // Bandes symétriques autour du doré : rouge, orange, vert, doré, vert, orange, rouge.
+                // Bandes symétriques autour du vert : rouge, orange, vert, orange, rouge.
                 float d = abs(r - _GoldCenter);
-                float goldEdge = _GoldHalfWidth;
-                float greenEdge = goldEdge + _GreenWidth;
-                float orangeEdge = greenEdge + _OrangeWidth;
+                float perfectEdge = _GoldHalfWidth;
+                float goodEdge = perfectEdge + _GoodWidth;
 
                 half4 color = _RedColor;
-                color = lerp(color, _OrangeColor, 1.0 - smoothstep(orangeEdge - aa, orangeEdge + aa, d));
-                color = lerp(color, _GreenColor, 1.0 - smoothstep(greenEdge - aa, greenEdge + aa, d));
-                color = lerp(color, _GoldColor, 1.0 - smoothstep(goldEdge - aa, goldEdge + aa, d));
+                color = lerp(color, _GoodColor, 1.0 - smoothstep(goodEdge - aa, goodEdge + aa, d));
+                color = lerp(color, _PerfectColor, 1.0 - smoothstep(perfectEdge - aa, perfectEdge + aa, d));
 
                 // Teinte du résultat après le tir.
                 color.rgb = lerp(color.rgb, _FlashColor.rgb, _FlashColor.a * 0.65);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace Archery.Core
 {
@@ -15,12 +16,16 @@ namespace Archery.Core
         static Transform s_Root;
         static int s_Next;
 
+        /// <summary>Groupe du mixer par lequel passent ces sons (volume des effets). Réglé par les paramètres du jeu.</summary>
+        public static AudioMixerGroup Output { get; set; }
+
         public static void Play(AudioClip clip, Vector3 position, float volume = 1f, float pitch = 1f, float spatialBlend = 1f)
         {
             if (clip == null)
                 return;
 
             var source = NextSource();
+            source.outputAudioMixerGroup = Output;
             source.transform.position = position;
             source.clip = clip;
             source.volume = volume;
@@ -71,6 +76,7 @@ namespace Archery.Core
             s_Sources.Clear();
             s_Root = null;
             s_Next = 0;
+            Output = null;
         }
     }
 }

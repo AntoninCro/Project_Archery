@@ -46,6 +46,13 @@ namespace Archery.Player
         public Health Health => m_Health;
         public bool IsAlive => m_Health != null && m_Health.IsAlive;
 
+        /// <summary>Recharge la scène après la mort. L'écran de fin de partie le désactive : c'est lui qui relance.</summary>
+        public bool ReloadSceneOnDeath
+        {
+            get => m_ReloadSceneOnDeath;
+            set => m_ReloadSceneOnDeath = value;
+        }
+
         /// <summary>Point visé par les ennemis : les pieds du joueur.</summary>
         public Vector3 BodyPosition => m_Rig.BodyPosition;
 

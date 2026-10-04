@@ -4,17 +4,17 @@ using UnityEngine;
 namespace Archery.Bows
 {
     /// <summary>
-    /// Anneau de timing (GDD, section 4.2) : des bandes rouge, orange, vert, doré, vert, orange, rouge
+    /// Anneau de timing (GDD, section 4.2) : des bandes rouge, orange, vert, orange, rouge
     /// et un cercle d'approche qui rétrécit du bord vers le centre. La bande sous le cercle au moment
-    /// du lâcher donne la qualité du tir. Le rendu est fait par le shader « Archery/TimingRing ».
+    /// du lâcher donne la qualité du tir : vert = parfait, orange = bon, rouge = raté.
+    /// Le rendu est fait par le shader « Archery/TimingRing ».
     /// </summary>
     [DisallowMultipleComponent]
     public class TimingRing : MonoBehaviour
     {
         static readonly int k_GoldCenterId = Shader.PropertyToID("_GoldCenter");
         static readonly int k_GoldHalfWidthId = Shader.PropertyToID("_GoldHalfWidth");
-        static readonly int k_GreenWidthId = Shader.PropertyToID("_GreenWidth");
-        static readonly int k_OrangeWidthId = Shader.PropertyToID("_OrangeWidth");
+        static readonly int k_GoodWidthId = Shader.PropertyToID("_GoodWidth");
         static readonly int k_ApproachId = Shader.PropertyToID("_Approach");
         static readonly int k_AlphaId = Shader.PropertyToID("_Alpha");
         static readonly int k_FlashColorId = Shader.PropertyToID("_FlashColor");
@@ -22,7 +22,7 @@ namespace Archery.Bows
         [SerializeField]
         Renderer m_Renderer;
 
-        [Tooltip("Rayon (0 à 1) du milieu de la bande dorée.")]
+        [Tooltip("Rayon (0 à 1) du milieu de la bande verte (parfait).")]
         [Range(0.3f, 0.7f)]
         [SerializeField]
         float m_GoldCenter = 0.5f;
@@ -40,7 +40,7 @@ namespace Archery.Bows
         [SerializeField]
         bool m_FaceCamera = true;
 
-        /// <summary>Le cercle d'approche vient d'entrer dans la bande dorée.</summary>
+        /// <summary>Le cercle d'approche vient d'entrer dans la bande verte (parfait).</summary>
         public event Action GoldEntered;
 
         /// <summary>Le cercle a atteint le centre sans tir et repart du bord.</summary>
@@ -48,8 +48,7 @@ namespace Archery.Bows
 
         float m_Duration = 1.2f;
         float m_GoldHalfWidth = 0.06f;
-        float m_GreenWidth = 0.08f;
-        float m_OrangeWidth = 0.1f;
+        float m_GoodWidth = 0.14f;
         float m_Approach = 1f;
         float m_Alpha;
         float m_VisibleUntil;
@@ -73,18 +72,18 @@ namespace Archery.Bows
         }
 
         /// <summary>
-        /// Démarre l'anneau. Les largeurs sont en fraction du rayon ; elles sont réduites
-        /// si besoin pour que les bandes ne dépassent pas de l'anneau.
+        /// Démarre l'anneau. Les largeurs sont en fraction du rayon : demi-largeur du vert (parfait),
+        /// puis largeur de l'orange (bon) de chaque côté. Elles sont réduites si besoin pour que les bandes
+        /// ne dépassent pas de l'anneau.
         /// </summary>
-        public void Begin(float duration, float goldHalfWidth, float greenWidth, float orangeWidth)
+        public void Begin(float duration, float goldHalfWidth, float goodWidth)
         {
             m_Duration = Mathf.Max(0.1f, duration);
             var limit = Mathf.Min(m_GoldCenter, 1f - m_GoldCenter) - 0.02f;
-            var total = goldHalfWidth + greenWidth + orangeWidth;
+            var total = goldHalfWidth + goodWidth;
             var scale = total > limit && total > 0f ? limit / total : 1f;
             m_GoldHalfWidth = goldHalfWidth * scale;
-            m_GreenWidth = greenWidth * scale;
-            m_OrangeWidth = orangeWidth * scale;
+            m_GoodWidth = goodWidth * scale;
 
             m_Approach = 1f;
             m_WasInGold = false;
@@ -121,10 +120,8 @@ namespace Archery.Bows
             var distance = Mathf.Abs(radius - m_GoldCenter);
             if (distance <= m_GoldHalfWidth)
                 return ShotGrade.Perfect;
-            if (distance <= m_GoldHalfWidth + m_GreenWidth)
+            if (distance <= m_GoldHalfWidth + m_GoodWidth)
                 return ShotGrade.Good;
-            if (distance <= m_GoldHalfWidth + m_GreenWidth + m_OrangeWidth)
-                return ShotGrade.Ok;
             return ShotGrade.Miss;
         }
 
@@ -163,8 +160,7 @@ namespace Archery.Bows
             m_Renderer.GetPropertyBlock(m_PropertyBlock);
             m_PropertyBlock.SetFloat(k_GoldCenterId, m_GoldCenter);
             m_PropertyBlock.SetFloat(k_GoldHalfWidthId, m_GoldHalfWidth);
-            m_PropertyBlock.SetFloat(k_GreenWidthId, m_GreenWidth);
-            m_PropertyBlock.SetFloat(k_OrangeWidthId, m_OrangeWidth);
+            m_PropertyBlock.SetFloat(k_GoodWidthId, m_GoodWidth);
             m_PropertyBlock.SetFloat(k_ApproachId, m_Approach);
             m_PropertyBlock.SetFloat(k_AlphaId, m_Alpha);
             m_PropertyBlock.SetColor(k_FlashColorId, m_FlashColor);

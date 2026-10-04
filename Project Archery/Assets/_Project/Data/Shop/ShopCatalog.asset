@@ -1,0 +1,186 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86307ff1e3d132c45bb189321707ec72, type: 3}
+  m_Name: ShopCatalog
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Shop.ShopCatalog
+  upgrades:
+  - displayName: "D\xE9g\xE2ts"
+    description: "+10 % de d\xE9g\xE2ts."
+    rarity: 0
+    effect: 0
+    value: 0.1
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Fl\xE8ches rapides"
+    description: "+8 % de vitesse : les fl\xE8ches vont plus loin et tombent moins."
+    rarity: 0
+    effect: 1
+    value: 0.08
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Charge rapide"
+    description: "L'anneau va 15 % plus vite, et toutes ses bandes s'\xE9largissent un peu."
+    rarity: 0
+    effect: 2
+    value: 0.15
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Pr\xE9cision"
+    description: "Bande verte (tir parfait) 15 % plus large."
+    rarity: 0
+    effect: 3
+    value: 0.15
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Vitalit\xE9"
+    description: "+15 PV max."
+    rarity: 0
+    effect: 4
+    value: 15
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Butin"
+    description: "Plus de points chang\xE9s en or : +5 points (25 % \u2192 30 %)."
+    rarity: 0
+    effect: 5
+    value: 0.05
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Chasseur de t\xEAtes"
+    description: "+25 % de d\xE9g\xE2ts \xE0 la t\xEAte."
+    rarity: 0
+    effect: 6
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Chance"
+    description: "Les cartes rares et l\xE9gendaires sortent 25 % plus souvent."
+    rarity: 0
+    effect: 14
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Multitir"
+    description: "+50 % de chance de tirer une fl\xE8che en plus. Avec 2 exemplaires, une fl\xE8che en plus \xE0 chaque tir ; avec 3, 50 % de chance d'une deuxi\xE8me, etc."
+    rarity: 1
+    effect: 7
+    value: 0.5
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Fl\xE8che de foudre"
+    description: "Chaque fl\xE8che a 20 % de chance d'appeler un \xE9clair qui blesse la cible et la ralentit. Au-del\xE0 de 100 % : \xE9clairs plus forts."
+    rarity: 1
+    effect: 8
+    value: 0.2
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Per\xE7age"
+    description: "Chaque fl\xE8che a 25 % de chance de traverser un ennemi. Au-del\xE0 de 100 % : plusieurs ennemis travers\xE9s."
+    rarity: 1
+    effect: 9
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Vampirisme"
+    description: "Chaque tir \xE0 la t\xEAte rend 2 PV."
+    rarity: 1
+    effect: 10
+    value: 2
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Tir \xE9cho"
+    description: "25 % de chance que la vol\xE9e se r\xE9p\xE8te un instant apr\xE8s, \xE0 la m\xEAme puissance. Au-del\xE0 de 100 % : plusieurs \xE9chos."
+    rarity: 1
+    effect: 15
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Fl\xE8che de glace"
+    description: "Chaque fl\xE8che a 25 % de chance de laisser au sol une zone de glace qui ralentit les ennemis. Au-del\xE0 de 100 % : glace plus forte et plus grande."
+    rarity: 1
+    effect: 16
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "D\xE9luge"
+    description: "En vol, chaque fl\xE8che a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisi\xE8me fl\xE8che, etc."
+    rarity: 2
+    effect: 11
+    value: 0.5
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Cha\xEEne d'\xE9clairs"
+    description: "La foudre rebondit sur 3 ennemis proches de plus. Sans Fl\xE8che de foudre, 20 % des fl\xE8ches l'appellent."
+    rarity: 2
+    effect: 12
+    value: 3
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Fl\xE8che explosive"
+    description: "Chaque fl\xE8che a 25 % de chance d'exploser et de toucher les ennemis autour. Au-del\xE0 de 100 % : explosions plus fortes et plus larges."
+    rarity: 2
+    effect: 13
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Auto-vis\xE9e"
+    description: "Les fl\xE8ches d\xE9vient vers l'ennemi le plus proche, s'il est \xE0 moins de 12 m devant elles. Encore : elles tournent plus vite."
+    rarity: 2
+    effect: 17
+    value: 30
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Tir ricochet"
+    description: "Apr\xE8s avoir touch\xE9 un ennemi, la fl\xE8che rebondit vers un autre ennemi proche. Encore : un rebond de plus."
+    rarity: 2
+    effect: 18
+    value: 1
+    maxStacks: 0
+    icon: {fileID: 0}
+  rarityOdds:
+  - fromWave: 1
+    common: 80
+    rare: 18
+    legendary: 2
+  - fromWave: 4
+    common: 65
+    rare: 30
+    legendary: 5
+  - fromWave: 7
+    common: 50
+    rare: 40
+    legendary: 10
+  - fromWave: 11
+    common: 40
+    rare: 45
+    legendary: 15
+  upgradeOffers: 4
+  commonPrice: 25
+  rarePrice: 60
+  legendaryPrice: 140
+  priceIncreasePerWave: 0.08
+  endlessPriceGrowth: 1.2
+  rerollCost: 10
+  rerollCostIncrease: 5
+  bows:
+  - {fileID: 11400000, guid: 9c6f1dda086f0454495bdee8563e4798, type: 2}
+  - {fileID: 11400000, guid: 1a8cd5315c9b8ac4bb46388bfaeb3d56, type: 2}
+  - {fileID: 11400000, guid: 1d4ff1130f180bd4bb6c940a44ec39cb, type: 2}
+  - {fileID: 11400000, guid: 8b58969b99e94e346aa89bb272a5e4db, type: 2}
+  repairFraction: 0.25
+  repairPrice: 40
+  rebuildPrice: 250
+  commonColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  rareColor: {r: 0.35, g: 0.6, b: 1, a: 1}
+  legendaryColor: {r: 1, g: 0.78, b: 0.2, a: 1}
+  bowColor: {r: 0.6, g: 0.9, b: 0.5, a: 1}
+  towerColor: {r: 0.9, g: 0.68, b: 0.45, a: 1}

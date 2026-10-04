@@ -27,16 +27,45 @@ namespace Archery.Defense
         [SerializeField]
         AudioClip m_DestroyedClip;
 
+        [Tooltip("Joué quand la tour est réparée ou reconstruite (boutique).")]
+        [SerializeField]
+        AudioClip m_RepairClip;
+
         Health m_Health;
         Collider[] m_Colliders = Array.Empty<Collider>();
+        float? m_TopHeight;
 
         public static Tower Instance { get; private set; }
 
         public Health Health => m_Health;
         public bool IsStanding => m_Health != null && m_Health.IsAlive;
 
+        /// <summary>Hauteur (m) du sommet de la tour : le haut de ses colliders.</summary>
+        public float TopHeight
+        {
+            get
+            {
+                if (m_TopHeight == null)
+                {
+                    var top = transform.position.y;
+                    foreach (var collider in m_Colliders)
+                    {
+                        if (collider != null)
+                            top = Mathf.Max(top, collider.bounds.max.y);
+                    }
+
+                    m_TopHeight = top;
+                }
+
+                return m_TopHeight.Value;
+            }
+        }
+
         /// <summary>La tour vient d'être détruite (malus, effondrement…).</summary>
         public event Action Destroyed;
+
+        /// <summary>La tour vient d'être reconstruite (boutique).</summary>
+        public event Action Rebuilt;
 
         void Awake()
         {
@@ -92,6 +121,32 @@ namespace Archery.Defense
             }
 
             return best;
+        }
+
+        /// <summary>Rend des PV à la tour debout (réparation en boutique). Les PV ne remontent jamais tout seuls.</summary>
+        public void Repair(float amount)
+        {
+            if (!IsStanding || amount <= 0f)
+                return;
+
+            m_Health.Heal(amount);
+            Sfx.Play(m_RepairClip, transform.position + Vector3.up * 2f);
+        }
+
+        /// <summary>Relève la tour détruite avec tous ses PV (boutique).</summary>
+        public void Rebuild()
+        {
+            if (IsStanding)
+                return;
+
+            m_Health.ResetHealth(m_Health.Max);
+            if (m_IntactVisual != null)
+                m_IntactVisual.SetActive(true);
+            if (m_RuinedVisual != null)
+                m_RuinedVisual.SetActive(false);
+
+            Sfx.Play(m_RepairClip, transform.position + Vector3.up * 2f);
+            Rebuilt?.Invoke();
         }
 
         void OnDamaged(Health health, DamageInfo info) => Sfx.Play(m_HitClip, info.Point, 0.8f);

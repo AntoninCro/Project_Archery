@@ -1,5 +1,6 @@
 using System;
 using Archery.Core;
+using Archery.Difficulty;
 using Archery.Player;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -85,15 +86,21 @@ namespace Archery.Bows
 
         [Tooltip("Distance (m) entre l'encoche de la flèche et la corde pour encocher.")]
         [SerializeField]
-        float m_NockRadius = 0.12f;
+        float m_NockRadius = 0.2f;
 
-        [Tooltip("Marge (m) au-delà de la tension maximale avant que la flèche se décroche.")]
+        [Tooltip("Une flèche posée sur le repose-flèche, encoche derrière l'arc, s'encoche aussi " +
+                 "si son axe passe à moins de cette distance (m) du repose-flèche.")]
         [SerializeField]
-        float m_UnnockSlack = 0.3f;
+        float m_RestCatchRadius = 0.1f;
+
+        [Tooltip("Marge (m) au-delà de la tension maximale avant que la flèche se décroche. " +
+                 "Au-delà de la tension maximale, la corde reste bloquée au maximum.")]
+        [SerializeField]
+        float m_UnnockSlack = 1f;
 
         [Tooltip("Angle maximal (°) entre l'arc et la corde tirée avant que la flèche se décroche.")]
         [SerializeField]
-        float m_MaxPullAngle = 75f;
+        float m_MaxPullAngle = 85f;
 
         [Range(0.5f, 1f)]
         [SerializeField]
@@ -114,6 +121,16 @@ namespace Archery.Bows
 
         [SerializeField]
         float m_ReturnSpeed = 6f;
+
+        [Header("Aide à la visée")]
+        [Tooltip("Ligne droite dans l'axe de la flèche pendant la tension (elle ne montre pas la chute). " +
+                 "Masquée aussi quand la difficulté l'interdit (Difficile et Impossible).")]
+        [SerializeField]
+        bool m_ShowAimGuide = true;
+
+        [Tooltip("Optionnel : créé automatiquement s'il n'y en a pas sous l'arc.")]
+        [SerializeField]
+        AimGuide m_AimGuide;
 
         [Header("Sons")]
         [Tooltip("Grincement en boucle pendant la tension.")]
@@ -151,6 +168,10 @@ namespace Archery.Bows
         float m_StringVibration;
         float m_TimeSinceRelease;
         bool m_Holstered;
+        float m_RecacheTimer;
+        Transform m_DefaultArrowRest;
+        Transform m_DefaultStringTop;
+        Transform m_DefaultStringBottom;
         Collider[] m_OwnColliders = Array.Empty<Collider>();
 
         public BowDefinition Definition
@@ -162,7 +183,8 @@ namespace Archery.Bows
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
 
-        // Multiplicateurs donnés par les améliorations, les coffres et la difficulté.
+        // Multiplicateurs donnés par les améliorations et les coffres. Celui de la difficulté
+        // (largeur du vert) s'y ajoute au lancement de l'anneau.
         public float SpeedMultiplier { get; set; } = 1f;
         public float DamageMultiplier { get; set; } = 1f;
         public float RingSpeedMultiplier { get; set; } = 1f;
@@ -197,8 +219,13 @@ namespace Archery.Bows
             if (m_LowerLimb != null)
                 m_LowerLimbRest = m_LowerLimb.localRotation;
 
+            // Pièces du prefab, gardées quand un modèle importé ne fournit pas les siennes.
+            m_DefaultArrowRest = m_ArrowRest;
+            m_DefaultStringTop = m_StringTop;
+            m_DefaultStringBottom = m_StringBottom;
             ApplyVisual();
             CacheGeometry();
+            EnsureAimGuide();
 
             if (m_String != null)
             {
@@ -264,6 +291,7 @@ namespace Archery.Bows
             switch (updatePhase)
             {
                 case XRInteractionUpdateOrder.UpdatePhase.Dynamic:
+                    UpdateRecache(Time.deltaTime);
                     if (isSelected)
                     {
                         TryNock();
@@ -340,6 +368,7 @@ namespace Archery.Bows
 
             ShotFired?.Invoke(this, new ShotInfo
             {
+                Arrow = arrow,
                 Grade = grade,
                 DrawRatio = ratio,
                 Speed = speed,
@@ -349,20 +378,56 @@ namespace Archery.Bows
             });
         }
 
+        /// <summary>
+        /// Change d'arc (boutique) : nouvelles caractéristiques et, si la définition en a un, nouveau modèle 3D.
+        /// Une flèche encochée reste dans la main.
+        /// </summary>
+        public void SetDefinition(BowDefinition definition)
+        {
+            if (definition == null || definition == m_Definition)
+                return;
+
+            Unnock();
+            m_Definition = definition;
+
+            if (definition.visualPrefab != null && m_Model != null)
+            {
+                if (m_Visual != null)
+                {
+                    m_Visual.gameObject.SetActive(false);
+                    Destroy(m_Visual.gameObject);
+                }
+
+                m_Visual = Instantiate(definition.visualPrefab, m_Model);
+                m_Visual.name = definition.visualPrefab.name;
+                ApplyVisual();
+            }
+
+            CacheGeometry();
+            m_RecacheTimer = 0.25f;
+        }
+
+        // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde un peu après.
+        void UpdateRecache(float deltaTime)
+        {
+            if (m_RecacheTimer <= 0f)
+                return;
+
+            m_RecacheTimer -= deltaTime;
+            if (m_RecacheTimer <= 0f && m_Nocked == null)
+                CacheGeometry();
+        }
+
         // Un modèle importé (BowVisual) fournit ses propres points d'accroche de la corde.
         void ApplyVisual()
         {
             if (m_Visual == null && m_Model != null)
                 m_Visual = m_Model.GetComponentInChildren<BowVisual>();
-            if (m_Visual == null)
-                return;
 
-            if (m_Visual.StringTop != null)
-                m_StringTop = m_Visual.StringTop;
-            if (m_Visual.StringBottom != null)
-                m_StringBottom = m_Visual.StringBottom;
-            if (m_Visual.ArrowRest != null)
-                m_ArrowRest = m_Visual.ArrowRest;
+            var hasVisual = m_Visual != null;
+            m_StringTop = hasVisual && m_Visual.StringTop != null ? m_Visual.StringTop : m_DefaultStringTop;
+            m_StringBottom = hasVisual && m_Visual.StringBottom != null ? m_Visual.StringBottom : m_DefaultStringBottom;
+            m_ArrowRest = hasVisual && m_Visual.ArrowRest != null ? m_Visual.ArrowRest : m_DefaultArrowRest;
         }
 
         void CacheGeometry()
@@ -378,11 +443,19 @@ namespace Archery.Bows
             m_BraceHeight = Mathf.Max(0.05f, m_RestLocal.z - stringAtRest.z);
         }
 
+        // Extrémités de la corde dans le repère du modèle, reculées si le modèle importé le demande
+        // (sinon la corde disparaît dans l'épaisseur des branches).
+        Vector3 StringEndLocal(Transform end)
+        {
+            var offset = m_Visual != null ? m_Visual.StringEndOffset : Vector3.zero;
+            return m_Model.InverseTransformPoint(end.position) + offset;
+        }
+
         // Point de la corde au repos, à la hauteur du repose-flèche (repère du modèle).
         Vector3 StringPointAtRestHeight()
         {
-            var top = m_Model.InverseTransformPoint(m_StringTop.position);
-            var bottom = m_Model.InverseTransformPoint(m_StringBottom.position);
+            var top = StringEndLocal(m_StringTop);
+            var bottom = StringEndLocal(m_StringBottom);
             var t = Mathf.InverseLerp(bottom.y, top.y, m_RestLocal.y);
             var point = Vector3.Lerp(bottom, top, t);
             point.x = m_RestLocal.x;
@@ -397,7 +470,9 @@ namespace Archery.Bows
             if (m_Nocked != null || m_Model == null)
                 return;
 
+            var root = transform;
             var nockPoint = m_Model.TransformPoint(NockLocal(0f));
+            var restPoint = m_Model.TransformPoint(m_RestLocal);
             var bestSqrDistance = m_NockRadius * m_NockRadius;
             Arrow best = null;
             var heldArrows = Arrow.HeldArrows;
@@ -407,10 +482,16 @@ namespace Archery.Bows
                 if (arrow == null || arrow.CurrentState != Arrow.State.Held || arrow.Hand == null || arrow.Hand == m_BowHand)
                     continue;
 
+                // Encoche près de la corde.
                 var sqrDistance = (arrow.NockPosition - nockPoint).sqrMagnitude;
                 if (sqrDistance < bestSqrDistance)
                 {
                     bestSqrDistance = sqrDistance;
+                    best = arrow;
+                }
+                else if (best == null && IsLaidOnRest(arrow, root, restPoint))
+                {
+                    // Ou flèche posée sur le repose-flèche, comme avec un vrai arc.
                     best = arrow;
                 }
             }
@@ -426,6 +507,28 @@ namespace Archery.Bows
             Haptics.Pulse(best.Hand, 0.35f, 0.05f);
             Haptics.Pulse(m_BowHand, 0.2f, 0.04f);
             Sfx.Play(m_NockClip, nockPoint, 0.8f);
+        }
+
+        // La flèche pointe vers l'avant de l'arc, son encoche est derrière l'arc à portée de tirage,
+        // et sa tige passe tout près du repose-flèche.
+        bool IsLaidOnRest(Arrow arrow, Transform root, Vector3 restPoint)
+        {
+            var arrowTransform = arrow.transform;
+            var forward = arrowTransform.forward;
+            if (Vector3.Dot(forward, root.forward) < 0.5f)
+                return false;
+
+            var nockToRest = restPoint - arrow.NockPosition;
+            var behindRest = Vector3.Dot(nockToRest, root.forward);
+            if (behindRest < 0f || behindRest > m_BraceHeight + MaxDraw + 0.1f)
+                return false;
+
+            var along = Vector3.Dot(nockToRest, forward);
+            if (along < 0f || along > arrow.Length)
+                return false;
+
+            var closestOnShaft = arrow.NockPosition + forward * along;
+            return (restPoint - closestOnShaft).sqrMagnitude < m_RestCatchRadius * m_RestCatchRadius;
         }
 
         void Unnock()
@@ -539,11 +642,11 @@ namespace Archery.Bows
         {
             var def = Def;
             var widthScale = Mathf.Max(0.1f, BandWidthMultiplier);
+            var goldScale = Mathf.Max(0.1f, GoldWidthMultiplier) * DifficultyManager.Current.goldBandWidth;
             m_TimingRing.Begin(
                 def.ringDuration / Mathf.Max(0.1f, RingSpeedMultiplier),
-                def.goldHalfWidth * widthScale * Mathf.Max(0.1f, GoldWidthMultiplier),
-                def.greenWidth * widthScale,
-                def.orangeWidth * widthScale);
+                def.goldHalfWidth * widthScale * goldScale,
+                def.goodWidth * widthScale);
         }
 
         void UpdateReturn(float deltaTime)
@@ -617,9 +720,9 @@ namespace Archery.Bows
                     middle.z += Mathf.Sin(Time.time * 95f) * 0.015f * m_StringVibration;
                 }
 
-                m_String.SetPosition(0, m_Model.InverseTransformPoint(m_StringTop.position));
+                m_String.SetPosition(0, StringEndLocal(m_StringTop));
                 m_String.SetPosition(1, middle);
-                m_String.SetPosition(2, m_Model.InverseTransformPoint(m_StringBottom.position));
+                m_String.SetPosition(2, StringEndLocal(m_StringBottom));
             }
 
             if (m_TimingRing != null)
@@ -628,6 +731,38 @@ namespace Archery.Bows
                 offset.x = Mathf.Abs(offset.x) * OutsideSign();
                 m_TimingRing.transform.position = m_Model.TransformPoint(offset);
             }
+
+            UpdateAimGuide(drawRatio);
+        }
+
+        void EnsureAimGuide()
+        {
+            if (m_AimGuide != null)
+                return;
+
+            m_AimGuide = GetComponentInChildren<AimGuide>(true);
+            if (m_AimGuide != null)
+                return;
+
+            var guideObject = new GameObject("Aim Guide");
+            guideObject.transform.SetParent(transform, false);
+            m_AimGuide = guideObject.AddComponent<AimGuide>();
+        }
+
+        // Ligne droite depuis la pointe de la flèche, plus visible à mesure que la corde se tend.
+        void UpdateAimGuide(float drawRatio)
+        {
+            if (m_AimGuide == null)
+                return;
+
+            if (!m_ShowAimGuide || m_Nocked == null || drawRatio < 0.05f)
+            {
+                m_AimGuide.Hide();
+                return;
+            }
+
+            var tip = m_Nocked.NockPosition + m_AimDirection * m_Nocked.Length;
+            m_AimGuide.Show(tip, m_AimDirection, Mathf.Lerp(0.35f, 1f, drawRatio));
         }
 
         // Côté extérieur de l'arc : à gauche pour un arc tenu de la main gauche, à droite sinon.

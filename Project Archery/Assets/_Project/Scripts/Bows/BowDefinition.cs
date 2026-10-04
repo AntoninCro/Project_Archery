@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Archery.Bows
 {
@@ -18,6 +19,10 @@ namespace Archery.Bows
 
         [Tooltip("Première vague où l'arc peut apparaître en boutique.")]
         public int availableFromWave;
+
+        [Tooltip("Optionnel : modèle 3D de l'arc (prefab avec un Bow Visual), mis à la place de l'ancien quand on l'achète. " +
+                 "Vide : l'arc change de caractéristiques mais garde son apparence.")]
+        public BowVisual visualPrefab;
 
         [Header("Tir")]
         [Tooltip("Vitesse de la flèche (m/s) à tension maximale, avant le bonus de timing.")]
@@ -42,14 +47,13 @@ namespace Archery.Bows
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]
         public float ringDuration = 1.2f;
 
-        [Tooltip("Demi-largeur de la bande dorée, en fraction du rayon de l'anneau.")]
+        [Tooltip("Demi-largeur de la bande verte (tir parfait), en fraction du rayon de l'anneau.")]
         [Range(0f, 0.2f)]
         public float goldHalfWidth = 0.06f;
 
-        [Range(0f, 0.2f)]
-        public float greenWidth = 0.08f;
-
-        [Range(0f, 0.2f)]
-        public float orangeWidth = 0.1f;
+        [Tooltip("Largeur de la bande orange (bon tir) de chaque côté du vert. Au-delà, c'est le rouge (raté).")]
+        [FormerlySerializedAs("greenWidth")]
+        [Range(0f, 0.3f)]
+        public float goodWidth = 0.14f;
     }
 }

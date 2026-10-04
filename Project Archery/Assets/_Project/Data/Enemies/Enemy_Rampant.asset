@@ -18,6 +18,6 @@ MonoBehaviour:
   attackDamage: 10
   attackRange: 1.2
   attackInterval: 1.5
-  attackWindup: 0.4
+  attackWindup: 0.5
   playerAggroRange: 8
   points: 10

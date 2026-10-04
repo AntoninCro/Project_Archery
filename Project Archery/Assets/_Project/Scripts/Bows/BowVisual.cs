@@ -29,6 +29,11 @@ namespace Archery.Bows
         [SerializeField]
         Transform m_ArrowRest;
 
+        [Tooltip("Décalage des deux extrémités de la corde, dans le repère de l'arc (Z négatif = vers l'archer). " +
+                 "Sert à faire sortir la corde de l'épaisseur des branches.")]
+        [SerializeField]
+        Vector3 m_StringEndOffset = new Vector3(0f, 0f, -0.025f);
+
 #if ARCHERY_ANIMATION_RIGGING
         [Tooltip("Optionnel : contrainte qui fait passer la corde du repos (source 0) à la tension maximale (source 1). Easy Weapons : StringDraw.")]
         [SerializeField]
@@ -40,6 +45,7 @@ namespace Archery.Bows
         public Transform StringTop => m_StringTop;
         public Transform StringBottom => m_StringBottom;
         public Transform ArrowRest => m_ArrowRest;
+        public Vector3 StringEndOffset => m_StringEndOffset;
 
         /// <summary>Plie l'arc : 0 = corde au repos, 1 = tension maximale.</summary>
         public void SetDraw(float ratio)

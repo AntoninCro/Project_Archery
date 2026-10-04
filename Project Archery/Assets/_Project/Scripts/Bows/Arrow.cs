@@ -36,6 +36,12 @@ namespace Archery.Bows
         /// <summary>Déclenché à chaque impact, quel que soit l'objet touché.</summary>
         public static event Action<ArrowHit> AnyHit;
 
+        /// <summary>
+        /// Déclenché une fois par flèche tirée, quand elle a fini son vol (plantée ou perdue).
+        /// Sert par exemple à casser le combo si elle n'a touché aucun ennemi.
+        /// </summary>
+        public static event Action<Arrow> ShotEnded;
+
         [Header("Pièces")]
         [Tooltip("Pointe de la flèche. La racine de l'objet est l'encoche.")]
         [SerializeField]
@@ -67,6 +73,10 @@ namespace Archery.Bows
         [SerializeField]
         LayerMask m_HitMask = Physics.DefaultRaycastLayers;
 
+        [Tooltip("Si la flèche traverse le corps puis la tête du même ennemi sur cette distance (m), c'est la tête qui compte.")]
+        [SerializeField]
+        float m_ZonePreferenceDepth = 0.6f;
+
         [Header("Sons d'impact")]
         [SerializeField]
         AudioClip m_ImpactDefault;
@@ -88,6 +98,7 @@ namespace Archery.Bows
         ShotGrade m_Grade;
         int m_PierceLeft;
         bool m_IsShot;
+        bool m_ShotPending;
         Vector3 m_LaunchPosition;
         float m_FlightTime;
         readonly HashSet<Component> m_Pierced = new HashSet<Component>();
@@ -97,6 +108,10 @@ namespace Archery.Bows
         Quaternion m_StuckLocalRotation;
         float m_StuckTime;
 
+        bool m_HandlingHit;
+        bool m_DeflectPending;
+        Vector3 m_DeflectVelocity;
+
         public State CurrentState => m_State;
 
         /// <summary>Interacteur (main) qui tient la flèche, ou null.</summary>
@@ -105,6 +120,25 @@ namespace Archery.Bows
         public Vector3 NockPosition => transform.position;
         public float Length => m_Length;
         public ArrowPool Pool { get; set; }
+
+        /// <summary>Flèche ajoutée par le multitir ou le déluge (voir <see cref="ArrowLaunch.IsExtra"/>).</summary>
+        public bool IsExtra { get; private set; }
+
+        /// <summary>Nombre d'ennemis que la flèche peut encore traverser.</summary>
+        public int PierceLeft => m_PierceLeft;
+
+        public Color TrailColor { get; private set; }
+
+        /// <summary>Vitesse en vol. Modifiable pendant le vol, par exemple pour guider la flèche.</summary>
+        public Vector3 Velocity
+        {
+            get => m_Body != null ? m_Body.linearVelocity : Vector3.zero;
+            set
+            {
+                if (m_State == State.Flying)
+                    m_Body.linearVelocity = value;
+            }
+        }
 
         // La flèche est toujours tenue dans la main, même si le rayon de la main visait au loin.
         public InteractableFarAttachMode farAttachMode
@@ -227,6 +261,8 @@ namespace Archery.Bows
             m_Grade = launch.Grade;
             m_PierceLeft = Mathf.Max(0, launch.Pierce);
             m_IsShot = launch.IsShot;
+            m_ShotPending = launch.IsShot;
+            IsExtra = launch.IsExtra;
             m_LaunchPosition = transform.position;
             m_FlightTime = 0f;
             m_Pierced.Clear();
@@ -244,12 +280,10 @@ namespace Archery.Bows
             if (m_Trail != null)
             {
                 m_Trail.Clear();
-                var color = launch.TrailColor;
-                m_Trail.startColor = color;
-                color.a = 0f;
-                m_Trail.endColor = color;
                 m_Trail.emitting = launch.IsShot;
             }
+
+            SetTrailColor(launch.TrailColor);
 
             if (m_FlightAudio != null && launch.IsShot)
             {
@@ -262,12 +296,41 @@ namespace Archery.Bows
         public void Drop(Vector3 velocity) =>
             Launch(new ArrowLaunch { Velocity = velocity, IsShot = false, TrailColor = Color.clear });
 
+        /// <summary>Change la couleur de la traînée en vol (flèches spéciales).</summary>
+        public void SetTrailColor(Color color)
+        {
+            TrailColor = color;
+            if (m_Trail == null)
+                return;
+
+            m_Trail.startColor = color;
+            color.a = 0f;
+            m_Trail.endColor = color;
+        }
+
+        /// <summary>Permet à la flèche en vol de traverser des ennemis en plus (perçage).</summary>
+        public void AddPierce(int count) => m_PierceLeft += Mathf.Max(0, count);
+
+        /// <summary>
+        /// À appeler pendant <see cref="AnyHit"/> : au lieu de se planter, la flèche repart du point d'impact
+        /// avec cette vitesse (ricochet). Elle ne peut plus toucher ce qu'elle vient de toucher.
+        /// </summary>
+        public void Deflect(Vector3 velocity)
+        {
+            if (!m_HandlingHit || velocity.sqrMagnitude < 1e-4f)
+                return;
+
+            m_DeflectPending = true;
+            m_DeflectVelocity = velocity;
+        }
+
         /// <summary>Renvoie la flèche dans le pool. Sans effet si elle est en main.</summary>
         public void Despawn()
         {
             if (m_State == State.Held || m_State == State.Nocked)
                 return;
 
+            EndShot();
             ResetState();
             if (Pool != null)
                 Pool.Release(this);
@@ -341,7 +404,38 @@ namespace Archery.Bows
                 }
             }
 
+            if (found)
+                closest = PreferPriorityZone(closest, count);
             return found;
+        }
+
+        // Le collider du corps englobe souvent un peu la tête : si le trajet traverse ensuite
+        // une zone prioritaire du même ennemi, c'est elle qui est touchée.
+        RaycastHit PreferPriorityZone(RaycastHit closest, int count)
+        {
+            var closestZone = closest.collider.GetComponentInParent<IArrowHitPriority>();
+            if (closestZone == null)
+                return closest;
+
+            var best = closest;
+            var bestPriority = closestZone.HitPriority;
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_RaycastHits[i];
+                if (hit.collider == null || hit.collider == closest.collider || hit.distance > closest.distance + m_ZonePreferenceDepth)
+                    continue;
+                if (ArrowIgnore.IsIgnored(hit.collider) || m_Pierced.Contains(PierceKey(hit)))
+                    continue;
+
+                var zone = hit.collider.GetComponentInParent<IArrowHitPriority>();
+                if (zone != null && zone.HitGroup == closestZone.HitGroup && zone.HitPriority > bestPriority)
+                {
+                    best = hit;
+                    bestPriority = zone.HitPriority;
+                }
+            }
+
+            return best;
         }
 
         void HandleHit(RaycastHit raycastHit, Vector3 velocity)
@@ -364,10 +458,27 @@ namespace Archery.Bows
 
             var handler = raycastHit.collider.GetComponentInParent<IArrowHitHandler>();
             var hitLivingThing = handler != null && handler.OnArrowHit(hit);
-            AnyHit?.Invoke(hit);
+
+            // Pendant AnyHit, un script peut demander un ricochet (Deflect).
+            m_HandlingHit = true;
+            try
+            {
+                AnyHit?.Invoke(hit);
+            }
+            finally
+            {
+                m_HandlingHit = false;
+            }
 
             var impactClip = hitLivingThing ? m_ImpactLiving : m_ImpactDefault;
             Sfx.Play(impactClip, raycastHit.point, Mathf.Clamp01(0.35f + speed / 50f), UnityEngine.Random.Range(0.92f, 1.08f));
+
+            if (m_DeflectPending)
+            {
+                m_DeflectPending = false;
+                Ricochet(raycastHit);
+                return;
+            }
 
             if (hitLivingThing && m_PierceLeft > 0)
             {
@@ -383,6 +494,21 @@ namespace Archery.Bows
         // Un ennemi a plusieurs colliders (tête, corps) mais un seul Rigidbody :
         // on évite ainsi qu'une flèche perçante le touche deux fois.
         static Component PierceKey(RaycastHit hit) => hit.rigidbody != null ? hit.rigidbody : hit.collider;
+
+        // La pointe repart du point d'impact, dans la nouvelle direction, un peu moins forte (comme le perçage).
+        void Ricochet(RaycastHit hit)
+        {
+            m_Pierced.Add(PierceKey(hit));
+            m_Damage *= 0.8f;
+
+            var direction = m_DeflectVelocity.normalized;
+            var rotation = Quaternion.LookRotation(direction);
+            var position = hit.point - direction * m_Length;
+            transform.SetPositionAndRotation(position, rotation);
+            m_Body.position = position;
+            m_Body.rotation = rotation;
+            m_Body.linearVelocity = m_DeflectVelocity;
+        }
 
         void StickInto(RaycastHit hit, Vector3 direction)
         {
@@ -408,6 +534,17 @@ namespace Archery.Bows
                 m_FlightAudio.Stop();
             if (Pool != null)
                 Pool.NotifyStuck(this);
+
+            EndShot();
+        }
+
+        void EndShot()
+        {
+            if (!m_ShotPending)
+                return;
+
+            m_ShotPending = false;
+            ShotEnded?.Invoke(this);
         }
 
         void ResetState()
@@ -419,6 +556,9 @@ namespace Archery.Bows
             m_Damage = 0f;
             m_Grade = ShotGrade.None;
             m_IsShot = false;
+            m_ShotPending = false;
+            m_DeflectPending = false;
+            IsExtra = false;
 
             if (m_Body != null)
             {
@@ -448,6 +588,7 @@ namespace Archery.Bows
         {
             s_HeldArrows.Clear();
             AnyHit = null;
+            ShotEnded = null;
         }
     }
 }

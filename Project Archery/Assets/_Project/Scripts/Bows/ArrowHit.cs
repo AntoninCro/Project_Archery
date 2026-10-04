@@ -24,6 +24,19 @@ namespace Archery.Bows
     }
 
     /// <summary>
+    /// Optionnel, avec <see cref="IArrowHitHandler"/> : quand le trajet de la flèche traverse plusieurs zones
+    /// d'un même objet (corps puis tête), celle de plus haute priorité l'emporte.
+    /// </summary>
+    public interface IArrowHitPriority
+    {
+        /// <summary>Plus grand = prioritaire (par exemple tête &gt; corps).</summary>
+        int HitPriority { get; }
+
+        /// <summary>Objet auquel appartient la zone (ex. le Health de l'ennemi).</summary>
+        Object HitGroup { get; }
+    }
+
+    /// <summary>
     /// Implémenté par ce qui réagit aux flèches : zones de touche des ennemis, cibles d'entraînement…
     /// </summary>
     public interface IArrowHitHandler

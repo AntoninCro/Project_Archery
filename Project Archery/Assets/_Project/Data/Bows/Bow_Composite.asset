@@ -47,5 +47,4 @@ MonoBehaviour:
   pierceCount: 0
   ringDuration: 1
   goldHalfWidth: 0.075
-  greenWidth: 0.095
-  orangeWidth: 0.11
+  goodWidth: 0.16

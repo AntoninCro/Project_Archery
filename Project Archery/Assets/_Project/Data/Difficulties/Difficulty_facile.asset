@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 016b855b35500b44881bf441f4367c73, type: 3}
+  m_Name: Difficulty_facile
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Difficulty.DifficultyDefinition
+  displayName: Facile
+  color: {r: 0.45, g: 0.85, b: 0.4, a: 1}
+  description: "Ennemis lents et fragiles\nGrosse t\xEAte, aide \xE0 la vis\xE9e\nScore
+    \xD70,75"
+  enemyHealth: 0.7
+  enemySpeed: 0.8
+  headSize: 1.3
+  damageTaken: 0.6
+  enemyCount: 0.75
+  goldBandWidth: 1.3
+  aimGuide: 1
+  scoreMultiplier: 0.75
+  healthGrowthPerWave: 1.06
+  damageGrowthPerWave: 1.03
+  countGrowthPerWave: 1.04
+  sky:
+    elevation: 75
+    azimuth: 30
+    discSize: 2.2
+    discColor: {r: 1, g: 0.97, b: 0.88, a: 1}
+    glowColor: {r: 0.45, g: 0.42, b: 0.32, a: 1}
+    glowSize: 9
+    moonSurface: 0
+    zenithColor: {r: 0.24, g: 0.52, b: 0.92, a: 1}
+    horizonColor: {r: 0.7, g: 0.85, b: 0.97, a: 1}
+    groundColor: {r: 0.36, g: 0.4, b: 0.32, a: 1}
+    horizonSharpness: 3
+    stars: 0
+    lightColor: {r: 1, g: 0.96, b: 0.88, a: 1}
+    lightIntensity: 1.25
+    shadowStrength: 0.75
+    ambientSky: {r: 0.55, g: 0.65, b: 0.8, a: 1}
+    ambientEquator: {r: 0.5, g: 0.55, b: 0.55, a: 1}
+    ambientGround: {r: 0.3, g: 0.3, b: 0.25, a: 1}
+    fogDensity: 0.004
+    reflections: 1
+    night: 0

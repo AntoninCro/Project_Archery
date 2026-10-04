@@ -106,6 +106,13 @@ def main():
     if not build(runtime):
         return 1
 
+    # Même code, compilé comme dans l'éditeur (UNITY_EDITOR défini) : vérifie les blocs #if UNITY_EDITOR.
+    print("== Archery.Runtime (comme dans l'éditeur) ==")
+    runtime_in_editor = write_project("Archery.Runtime.InEditor", references, defines,
+                                      os.path.join(SCRIPTS, "**", "*.cs"), os.path.join(SCRIPTS, "Editor", "**"))
+    if not build(runtime_in_editor):
+        return 1
+
     if not os.path.isdir(os.path.join(SCRIPTS, "Editor")):
         return 0
 

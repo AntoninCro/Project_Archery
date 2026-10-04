@@ -3,9 +3,10 @@ using UnityEngine;
 namespace Archery.Bows
 {
     /// <summary>
-    /// Réglages globaux des qualités de tir (GDD, section 4.2).
+    /// Réglages globaux des qualités de tir (GDD, section 4.2) : rouge = raté, orange = bon, vert = parfait.
     /// La portée varie comme le carré de la vitesse : ×1,5 en vitesse donne ×2,25 en portée.
     /// </summary>
+    /// <remarks>« Moyen » (Ok) n'est plus donné par l'anneau ; ses réglages restent pour plus tard.</remarks>
     [CreateAssetMenu(fileName = "ShotTuning", menuName = "Archery/Shot Tuning")]
     public class ShotTuning : ScriptableObject
     {
@@ -19,10 +20,10 @@ namespace Archery.Bows
         GradeModifiers m_Ok = new GradeModifiers("Moyen", new Color(1f, 0.58f, 0.12f), 0.9f, 1f, 1f);
 
         [SerializeField]
-        GradeModifiers m_Good = new GradeModifiers("Bon", new Color(0.35f, 0.86f, 0.32f), 1.15f, 1.25f, 1.25f);
+        GradeModifiers m_Good = new GradeModifiers("Bon", new Color(1f, 0.55f, 0.1f), 1.15f, 1.25f, 1.25f);
 
         [SerializeField]
-        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(1f, 0.82f, 0.18f), 1.5f, 2f, 2f);
+        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(0.3f, 0.92f, 0.35f), 1.5f, 2f, 2f);
 
         static ShotTuning s_Fallback;
 

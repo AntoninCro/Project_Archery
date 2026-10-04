@@ -6,11 +6,12 @@ using UnityEngine.AI;
 namespace Archery.Enemies
 {
     /// <summary>
-    /// Fait apparaître des ennemis à intervalle régulier sur des points d'apparition.
-    /// Version simple pour tester : la gestion des vagues la remplacera.
+    /// Points d'apparition des ennemis. Le gestionnaire de vagues s'en sert pour faire apparaître
+    /// chaque ennemi ; seul, il peut aussi en faire apparaître à intervalle régulier (« Spawn On Start »).
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
+        [Tooltip("Ennemi utilisé quand le spawner fonctionne seul (sans gestionnaire de vagues).")]
         [SerializeField]
         Enemy m_EnemyPrefab;
 
@@ -26,6 +27,7 @@ namespace Archery.Enemies
         [SerializeField]
         int m_MaxAlive = 6;
 
+        [Tooltip("Fait apparaître des ennemis tout seul. À décocher quand un Wave Manager s'en occupe.")]
         [SerializeField]
         bool m_SpawnOnStart = true;
 
@@ -55,8 +57,14 @@ namespace Archery.Enemies
             Spawn();
         }
 
-        public Enemy Spawn()
+        public Enemy Spawn() => Spawn(m_EnemyPrefab);
+
+        /// <summary>Fait apparaître cet ennemi sur un point d'apparition au hasard.</summary>
+        public Enemy Spawn(Enemy prefab)
         {
+            if (prefab == null)
+                return null;
+
             var point = m_SpawnPoints.Length > 0 ? m_SpawnPoints[Random.Range(0, m_SpawnPoints.Length)] : transform;
             if (point == null)
                 point = transform;
@@ -78,9 +86,30 @@ namespace Archery.Enemies
                     rotation = Quaternion.LookRotation(toTower);
             }
 
-            var enemy = Instantiate(m_EnemyPrefab, hit.position, rotation);
+            var enemy = Instantiate(prefab, hit.position, rotation);
             m_Spawned.Add(enemy);
             return enemy;
+        }
+
+        /// <summary>Point d'apparition le plus proche : c'est par là que les ennemis s'enfuient.</summary>
+        public Vector3 NearestSpawnPoint(Vector3 from)
+        {
+            var best = transform.position;
+            var bestSqrDistance = float.MaxValue;
+            foreach (var point in m_SpawnPoints)
+            {
+                if (point == null)
+                    continue;
+
+                var sqrDistance = (point.position - from).sqrMagnitude;
+                if (sqrDistance < bestSqrDistance)
+                {
+                    bestSqrDistance = sqrDistance;
+                    best = point.position;
+                }
+            }
+
+            return best;
         }
 
         void OnDrawGizmos()

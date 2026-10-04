@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Difficulty;
 using Archery.Player;
 using UnityEngine;
 using UnityEngine.AI;
@@ -16,6 +17,8 @@ namespace Archery.Enemies
     /// <remarks>
     /// L'Animator est optionnel. S'il existe, il peut utiliser les paramètres Speed (float),
     /// Attack, Hit et Die (triggers) ; ceux qui manquent sont simplement ignorés.
+    /// À son apparition, l'ennemi applique la difficulté (PV, vitesse, dégâts, taille de la tête)
+    /// et le renforcement de la vague en cours (<see cref="EnemyScaling"/>).
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NavMeshAgent), typeof(Health))]
@@ -25,6 +28,7 @@ namespace Archery.Enemies
         {
             Moving,
             Attacking,
+            Fleeing,
             Dead,
         }
 
@@ -46,6 +50,10 @@ namespace Archery.Enemies
         [SerializeField]
         float m_CorpseLifetime = 4f;
 
+        [Tooltip("Multiplie la vitesse quand l'ennemi s'enfuit à la fin de la vague.")]
+        [SerializeField]
+        float m_FleeSpeedMultiplier = 1.5f;
+
         [SerializeField]
         AudioClip m_AttackClip;
 
@@ -64,6 +72,11 @@ namespace Archery.Enemies
         float m_HitDelay = -1f;
         float m_DeathTime;
         Quaternion m_DeathRotation;
+        Vector3 m_FleePoint;
+        float m_FleeTime;
+        float m_MoveSpeed;
+        float m_SlowMultiplier = 1f;
+        float m_SlowTimer;
         bool m_HasSpeed;
         bool m_HasAttack;
         bool m_HasHit;
@@ -72,6 +85,9 @@ namespace Archery.Enemies
         /// <summary>Ennemis vivants dans la scène.</summary>
         public static IReadOnlyList<Enemy> Alive => s_Alive;
 
+        /// <summary>Un ennemi vient d'être touché (score, combo…).</summary>
+        public static event Action<Enemy, DamageInfo> Damaged;
+
         /// <summary>Un ennemi vient de mourir (score, argent…). Le DamageInfo décrit le coup fatal.</summary>
         public static event Action<Enemy, DamageInfo> Killed;
 
@@ -79,10 +95,13 @@ namespace Archery.Enemies
         public Health Health => m_Health;
         public bool IsAlive => m_State != State.Dead;
 
-        /// <summary>Ralentissements (flèches de foudre…) : 1 = vitesse normale.</summary>
+        /// <summary>Multiplicateur de vitesse durable (1 = vitesse normale). Pour un ralentissement passager, voir <see cref="Slow"/>.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
-        /// <summary>Multiplicateur des dégâts infligés (difficulté).</summary>
+        /// <summary>Vitesse effective : difficulté, multiplicateur durable et ralentissement en cours.</summary>
+        float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
+
+        /// <summary>Multiplicateur des dégâts infligés : celui de la difficulté au départ.</summary>
         public float DamageMultiplier { get; set; } = 1f;
 
         EnemyDefinition Def
@@ -109,8 +128,16 @@ namespace Archery.Enemies
             if (m_Definition == null)
                 Debug.LogError("Enemy : aucune Enemy Definition assignée, valeurs par défaut utilisées.", this);
 
-            m_Health.ResetHealth(Def.maxHealth);
-            m_Agent.speed = Def.moveSpeed;
+            WarnAboutCollidersWithoutHitbox();
+
+            // Difficulté, puis renforcement selon la vague (courbe exponentielle).
+            var difficulty = DifficultyManager.Current;
+            m_Health.ResetHealth(Def.maxHealth * difficulty.enemyHealth * EnemyScaling.Health);
+            m_MoveSpeed = Def.moveSpeed * difficulty.enemySpeed;
+            DamageMultiplier = difficulty.damageTaken * EnemyScaling.Damage;
+            ScaleHeadHitboxes(difficulty.headSize);
+
+            m_Agent.speed = m_MoveSpeed;
             m_Agent.stoppingDistance = Def.attackRange * 0.8f;
         }
 
@@ -135,6 +162,21 @@ namespace Archery.Enemies
             if (m_State == State.Dead)
             {
                 UpdateCorpse(deltaTime);
+                return;
+            }
+
+            if (m_SlowTimer > 0f)
+            {
+                m_SlowTimer -= deltaTime;
+                if (m_SlowTimer <= 0f)
+                    m_SlowMultiplier = 1f;
+            }
+
+            if (m_State == State.Fleeing)
+            {
+                UpdateFlee(deltaTime);
+                if (m_HasSpeed)
+                    m_Animator.SetFloat(k_SpeedId, m_Agent.enabled ? m_Agent.velocity.magnitude : 0f);
                 return;
             }
 
@@ -196,7 +238,7 @@ namespace Archery.Enemies
 
             m_Agent.isStopped = false;
             m_Agent.updateRotation = true;
-            m_Agent.speed = Def.moveSpeed * SpeedMultiplier;
+            m_Agent.speed = CurrentSpeed;
 
             m_RepathTimer -= deltaTime;
             if (m_RepathTimer <= 0f)
@@ -269,8 +311,53 @@ namespace Archery.Enemies
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 360f * deltaTime);
         }
 
+        /// <summary>
+        /// Fin de vague : l'ennemi arrête d'attaquer et court vers la sortie, puis disparaît.
+        /// On peut encore le tuer pendant sa fuite.
+        /// </summary>
+        public void Flee(Vector3 exitPoint)
+        {
+            if (m_State == State.Dead || m_State == State.Fleeing)
+                return;
+
+            m_State = State.Fleeing;
+            m_FleePoint = exitPoint;
+            m_FleeTime = 0f;
+            m_HitDelay = -1f;
+            m_Target = null;
+
+            if (!m_Agent.isOnNavMesh)
+                return;
+
+            m_Agent.isStopped = false;
+            m_Agent.updateRotation = true;
+            m_Agent.speed = CurrentSpeed * m_FleeSpeedMultiplier;
+            m_Agent.SetDestination(exitPoint);
+        }
+
+        /// <summary>
+        /// Ralentit l'ennemi pendant un moment (flèche de foudre). 0,6 = 40 % plus lent.
+        /// Si plusieurs ralentissements se cumulent, le plus fort et le plus long l'emportent.
+        /// </summary>
+        public void Slow(float multiplier, float duration)
+        {
+            if (m_State == State.Dead || duration <= 0f)
+                return;
+
+            m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, Mathf.Clamp01(multiplier));
+            m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
+        }
+
+        void UpdateFlee(float deltaTime)
+        {
+            m_FleeTime += deltaTime;
+            if (HorizontalDistance(transform.position, m_FleePoint) < 2f || m_FleeTime > 15f)
+                Destroy(gameObject);
+        }
+
         void OnDamaged(Health health, DamageInfo info)
         {
+            Damaged?.Invoke(this, info);
             if (m_HasHit && health.IsAlive)
                 m_Animator.SetTrigger(k_HitId);
         }
@@ -297,8 +384,14 @@ namespace Archery.Enemies
 
             m_DeathTime = 0f;
             m_DeathRotation = transform.rotation;
+            if (m_HasSpeed)
+                m_Animator.SetFloat(k_SpeedId, 0f);
+
+            // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
             if (m_HasDie)
                 m_Animator.SetTrigger(k_DieId);
+            else if (m_Animator != null)
+                m_Animator.speed = 0f;
 
             Sfx.Play(m_DeathClip, transform.position + Vector3.up, 0.9f);
             Killed?.Invoke(this, info);
@@ -340,6 +433,29 @@ namespace Archery.Enemies
             }
         }
 
+        // Difficulté : tête plus grosse en Facile, plus petite en Difficile et Impossible.
+        void ScaleHeadHitboxes(float scale)
+        {
+            if (Mathf.Approximately(scale, 1f))
+                return;
+
+            foreach (var hitbox in GetComponentsInChildren<Hitbox>(true))
+            {
+                if (hitbox.Zone == HitZone.Head)
+                    hitbox.SetSizeMultiplier(scale);
+            }
+        }
+
+        // Une flèche qui touche un collider sans Hitbox se plante sans faire de dégâts : on prévient.
+        void WarnAboutCollidersWithoutHitbox()
+        {
+            foreach (var collider in m_Colliders)
+            {
+                if (collider != null && !collider.isTrigger && collider.GetComponentInParent<Hitbox>() == null)
+                    Debug.LogWarning($"Enemy : le collider « {collider.name} » n'a pas de Hitbox, les flèches qui le touchent ne feront pas de dégâts.", collider);
+            }
+        }
+
         static float HorizontalDistance(Vector3 a, Vector3 b)
         {
             a.y = 0f;
@@ -351,6 +467,7 @@ namespace Archery.Enemies
         static void ResetStatics()
         {
             s_Alive.Clear();
+            Damaged = null;
             Killed = null;
         }
     }

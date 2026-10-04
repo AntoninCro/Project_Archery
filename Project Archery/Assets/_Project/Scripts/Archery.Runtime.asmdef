@@ -6,6 +6,7 @@
         "Unity.XR.CoreUtils",
         "Unity.InputSystem",
         "Unity.TextMeshPro",
+        "UnityEngine.UI",
         "Unity.Animation.Rigging"
     ],
     "includePlatforms": [],

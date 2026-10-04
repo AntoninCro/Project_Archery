@@ -103,6 +103,21 @@ namespace Archery.Player
                 Instance = null;
         }
 
+        public bool TryGetHand(InteractorHandedness handedness, out XRBaseInputInteractor hand)
+        {
+            foreach (var candidate in m_Hands)
+            {
+                if (candidate != null && candidate.handedness == handedness)
+                {
+                    hand = candidate;
+                    return true;
+                }
+            }
+
+            hand = null;
+            return false;
+        }
+
         public bool TryGetBowHolsterPose(out Pose pose)
         {
             var head = Head;

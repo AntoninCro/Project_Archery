@@ -50,6 +50,19 @@ namespace Archery.Combat
             m_Current = m_MaxHealth;
         }
 
+        /// <summary>
+        /// Change les PV max sans remettre la vie au maximum : les PV gagnés s'ajoutent aux PV actuels
+        /// (amélioration Vitalité).
+        /// </summary>
+        public void SetMaxHealth(float max)
+        {
+            max = Mathf.Max(1f, max);
+            var gained = max - m_MaxHealth;
+            m_MaxHealth = max;
+            if (IsAlive)
+                m_Current = Mathf.Clamp(m_Current + Mathf.Max(0f, gained), 1f, m_MaxHealth);
+        }
+
         public void Heal(float amount)
         {
             if (IsAlive && amount > 0f)

@@ -13,6 +13,9 @@ namespace Archery.Bows
         public int Pierce;
         public Color TrailColor;
         public bool IsShot;
+
+        /// <summary>Flèche ajoutée par le multitir ou le déluge : si elle rate, le combo n'est pas cassé.</summary>
+        public bool IsExtra;
     }
 
     /// <summary>
@@ -20,6 +23,9 @@ namespace Archery.Bows
     /// </summary>
     public struct ShotInfo
     {
+        /// <summary>La flèche tirée, déjà lancée.</summary>
+        public Arrow Arrow;
+
         public ShotGrade Grade;
         public float DrawRatio;
         public float Speed;
