@@ -19,7 +19,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades, brasero ; les prix montent après chaque achat.
-- [ ] Coffre : rayon de lumière, couvercle, ralenti, 3 orbes, récompense ; il disparaît en fin de vague.
+- [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
 - [ ] Déplacements : marche, course aux bras, slide, téléporteur, descente de la tour à pied.
 - [ ] Victoire après la vague 10, puis mode infini.

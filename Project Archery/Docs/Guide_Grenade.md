@@ -34,7 +34,7 @@ Une sphère hérissée de pointes de flèches, en formes simples.
 | Nom | Création | Position | Rotation | Scale | Matériau |
 |---|---|---|---|---|---|
 | `Core` | *Sphere* | `(0, 0, 0)` | `(0, 0, 0)` | `(0.14, 0.14, 0.14)` | `Brazier_Coal` (ou un gris sombre) |
-| `Spike X+` | *Cylinder* | `(0.09, 0, 0)` | `(0, 0, 90)` | `(0.015, 0.04, 0.015)` | `Chest_Metal` (ou un doré) |
+| `Spike X+` | *Cylinder* | `(0.09, 0, 0)` | `(0, 0, 90)` | `(0.015, 0.04, 0.015)` | `Gong_Bronze` (ou un doré) |
 | `Spike X-` | *Cylinder* | `(-0.09, 0, 0)` | `(0, 0, 90)` | `(0.015, 0.04, 0.015)` | idem |
 | `Spike Y+` | *Cylinder* | `(0, 0.09, 0)` | `(0, 0, 0)` | `(0.015, 0.04, 0.015)` | idem |
 | `Spike Y-` | *Cylinder* | `(0, -0.09, 0)` | `(0, 0, 0)` | `(0.015, 0.04, 0.015)` | idem |

@@ -302,6 +302,7 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 - **Apparition** : 1 coffre par vague, et 50 % de chance d'un deuxième, après 15 % puis 55 % du chrono. Ils se posent à 15–30 m de la tour, sur le sol des ennemis, ou sur des emplacements choisis (dans la forêt de la carte finale). Un message les annonce, et un rayon de lumière doré, qui pulse, les signale depuis la tour.
 - **Risque** : ils sont gratuits, mais il faut quitter la tour pendant la vague et courir les chercher. Ils disparaissent à la fin de la vague, ouverts ou non.
 - **Ouverture** : on attrape le couvercle à la main (pas au rayon) et on le soulève ; il tourne autour de sa charnière en suivant la main. Passé 45°, le coffre s'ouvre : le temps ralentit (×0,3), et 3 orbes montent du coffre, chacune avec le nom de sa récompense dans sa couleur.
+- **Modèle** : le coffre animé du pack *Animated PBR Chest Demo*. Il tombe du ciel et rebondit en apparaissant, puis sautille sur place en attendant. Il s'immobilise quand on attrape le couvercle ; passé 45°, son animation finit d'ouvrir le couvercle d'un coup, avec un rebond, et une lueur dorée sort du coffre.
 - **Choix** : on attrape une orbe, les autres disparaissent. Le ralenti s'arrête au choix, ou au bout de 6 s ; les orbes restent alors jusqu'à la fin de la vague.
 - **Récompenses** : il y a toujours au moins une amélioration pour toute la partie, tirée comme en boutique (raretés et Chance comprises), et un bonus temporaire. La troisième orbe est l'un ou l'autre. Bonus possibles :
   - 30 s de dégâts doublés ;
@@ -382,7 +383,7 @@ Assets/_Project/
 ```
 
 - Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`, `Guide_Vagues.md`, `Guide_Difficultes.md`, `Guide_Boutique.md`, `Guide_Teleporteur.md`, `Guide_Menus.md`, `Guide_Boss.md`, `Guide_Deplacements.md`, `Guide_Coffres.md`, `Guide_Volants_Tireurs.md`, `Guide_Barricades_Brasero.md`, `Guide_CorpsACorps.md`, `Guide_Ambiance.md`, `Guide_Effets.md`, `Guide_Carte.md`, `Guide_Grenade.md`, `Guide_ArcLegendaire.md`, `Guide_Classes.md`).
-- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol.
+- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol, coffre d'Animated PBR Chest Demo (son couvercle est un os que `ChestLid` fait tourner à la main, puis son Animator prend le relais).
 - Outils : `Tools/compile_check.py` vérifie que les scripts compilent sans ouvrir Unity, `Tools/shader_check.py` vérifie la syntaxe HLSL des shaders.
 - Les réglages (arcs, améliorations, ennemis, vagues, difficultés) sont des ScriptableObjects : on équilibre le jeu sans toucher au code.
 - `GameManager` enchaîne les états Menu → Vague → Pause → Fin de partie.

@@ -4,7 +4,7 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 
 | # | Guide | Ce qu'il ajoute | Dépend de | Durée estimée |
 |---|---|---|---|---|
-| 1 | `Guide_Coffres.md` | Coffres, ralenti, orbes, bonus temporaires | — | 1 h 30 |
+| 1 | `Guide_Coffres.md` | Coffres animés (modèle du pack), ralenti, orbes, bonus temporaires | — | 2 h |
 | 2 | `Guide_Volants_Tireurs.md` | Ennemis volants et tireurs, projectiles | — | 1 h 30 |
 | 3 | `Guide_Barricades_Brasero.md` | Barricades, brasero, flèches enflammées, 2 cartes de boutique | — | 1 h 30 |
 | 4 | `Guide_CorpsACorps.md` | Coup de flèche au corps à corps | — (rien à monter) | 10 min |

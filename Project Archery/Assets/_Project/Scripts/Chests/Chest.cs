@@ -44,6 +44,10 @@ namespace Archery.Chests
         [SerializeField]
         GameObject m_Beam;
 
+        [Tooltip("Optionnel : effet allumé à l'ouverture, par exemple la lueur du pack de coffre. Il est éteint au départ.")]
+        [SerializeField]
+        GameObject m_OpenEffect;
+
         [Header("Ralenti")]
         [Tooltip("Vitesse du temps pendant le choix d'une orbe (0,3 = trois fois plus lent).")]
         [Range(0.05f, 1f)]
@@ -86,6 +90,8 @@ namespace Archery.Chests
         void Awake()
         {
             m_BaseScale = transform.localScale;
+            if (m_OpenEffect != null)
+                m_OpenEffect.SetActive(false);
             if (m_Lid == null)
                 m_Lid = GetComponentInChildren<ChestLid>(true);
             if (m_Lid != null)
@@ -133,6 +139,8 @@ namespace Archery.Chests
             IsOpened = true;
             if (m_Beam != null)
                 m_Beam.SetActive(false);
+            if (m_OpenEffect != null)
+                m_OpenEffect.SetActive(true);
 
             Sfx.Play(m_OpenClip, transform.position + Vector3.up * 0.5f);
             SpawnOrbs();
