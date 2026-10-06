@@ -15,6 +15,8 @@ namespace Archery.Enemies
     /// Il n'utilise pas le NavMesh et ne se cogne à rien : il vole au-dessus de la clairière.
     /// Ses réglages de base (PV, vitesse, dégâts, temps entre deux piqués, durée du sur-place) viennent
     /// de son <see cref="EnemyDefinition"/>.
+    /// Son pivot est le centre de son corps : un modèle dont le pivot est au sol (corps en l'air) se place
+    /// plus bas, en enfant, et le réglage Corpse Height indique ce décalage pour la chute.
     /// </remarks>
     public class FlyingEnemy : EnemyBehaviour
     {
@@ -83,6 +85,16 @@ namespace Archery.Enemies
         [Tooltip("Optionnel : cri juste avant le piqué.")]
         [SerializeField]
         AudioClip m_ScreechClip;
+
+        [Header("Mort")]
+        [Tooltip("Il tournoie en tombant. À décocher pour un modèle qui a sa propre animation de mort : il tombe alors bien droit.")]
+        [SerializeField]
+        bool m_SpinWhileFalling = true;
+
+        [Tooltip("Hauteur (m) à laquelle son pivot s'arrête au-dessus du sol. 0 pour des formes simples ; pour un modèle " +
+                 "placé plus bas que le pivot, ce décalage : le modèle touche alors le sol, et son animation de mort le couche.")]
+        [SerializeField]
+        float m_CorpseHeight;
 
         Phase m_Phase = Phase.Circling;
         Vector3 m_Velocity;
@@ -327,30 +339,72 @@ namespace Archery.Enemies
             UpdateWings(0f, 1f);
         }
 
-        // Il tombe, en tournoyant, jusqu'au sol.
+        // Il tombe jusqu'au sol, en tournoyant, ou bien droit pour laisser jouer son animation de mort.
         public override bool TickCorpse(float deltaTime)
         {
             if (m_Phase == Phase.Landed)
                 return true;
 
+            // Mort tout près du sol (pendant un piqué) : il se pose tout de suite.
+            if (m_CorpseHeight > 0f && TryFindObstacle(transform.position, Vector3.down, m_CorpseHeight, out var below))
+            {
+                Land(below + Vector3.up * m_CorpseHeight);
+                return true;
+            }
+
+            // Le bas du corps (le pied du modèle) avance avec le pivot ; il s'arrête au premier obstacle.
             m_Velocity += Physics.gravity * deltaTime;
             var step = m_Velocity * deltaTime;
-            if (Physics.Raycast(transform.position, step.normalized, out var hit, step.magnitude + 0.2f,
-                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && hit.collider.GetComponentInParent<Enemy>() == null)
+            var bottom = transform.position + Vector3.down * m_CorpseHeight;
+            if (TryFindObstacle(bottom, step.normalized, step.magnitude + 0.2f, out var point))
             {
-                transform.position = hit.point;
-                m_Velocity = Vector3.zero;
-                m_Phase = Phase.Landed;
+                Land(point + Vector3.up * m_CorpseHeight);
                 return true;
             }
 
             transform.position += step;
-            transform.Rotate(new Vector3(200f, 0f, 320f) * deltaTime, Space.Self);
+            if (m_SpinWhileFalling)
+                transform.Rotate(new Vector3(200f, 0f, 320f) * deltaTime, Space.Self);
+            else
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, Upright(), 240f * deltaTime);
 
             // Sécurité : sous le sol de la carte, il s'arrête.
             if (transform.position.y < -50f)
                 m_Phase = Phase.Landed;
             return true;
+        }
+
+        void Land(Vector3 position)
+        {
+            transform.position = position;
+            if (!m_SpinWhileFalling)
+                transform.rotation = Upright();
+            m_Velocity = Vector3.zero;
+            m_Phase = Phase.Landed;
+        }
+
+        // Droit, tourné dans le sens de son vol.
+        Quaternion Upright()
+        {
+            var forward = Flat(transform.forward);
+            return forward.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(forward) : transform.rotation;
+        }
+
+        // Le premier obstacle sur ce trajet, sans compter les ennemis ni le joueur.
+        static bool TryFindObstacle(Vector3 from, Vector3 direction, float distance, out Vector3 point)
+        {
+            point = default;
+            var best = float.MaxValue;
+            foreach (var hit in Physics.RaycastAll(from, direction, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.distance >= best || ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<Enemy>() != null)
+                    continue;
+
+                best = hit.distance;
+                point = hit.point;
+            }
+
+            return best < float.MaxValue;
         }
     }
 }

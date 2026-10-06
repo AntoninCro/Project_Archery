@@ -6,7 +6,8 @@ namespace Archery.UI
 {
     /// <summary>
     /// Barre de PV dans le monde, au-dessus d'un ennemi (le boss…) : une Image « Filled » dans un Canvas
-    /// en World Space, toujours tournée vers le joueur. Elle disparaît à la mort.
+    /// en World Space, toujours tournée vers le joueur. Elle se cache à la mort, et revient si les PV remontent
+    /// (barricade réparée).
     /// </summary>
     [DisallowMultipleComponent]
     public class HealthBar : MonoBehaviour
@@ -32,11 +33,13 @@ namespace Archery.UI
         bool m_FaceCamera = true;
 
         Camera m_Camera;
+        Canvas m_Canvas;
 
         void Awake()
         {
             if (m_Health == null)
                 m_Health = GetComponentInParent<Health>();
+            m_Canvas = GetComponent<Canvas>();
         }
 
         void LateUpdate()
@@ -46,10 +49,11 @@ namespace Archery.UI
 
             if (!m_Health.IsAlive)
             {
-                gameObject.SetActive(false);
+                SetVisible(false);
                 return;
             }
 
+            SetVisible(true);
             if (m_Fill != null)
             {
                 var amount = m_Health.Normalized;
@@ -78,6 +82,15 @@ namespace Archery.UI
                 if (away.sqrMagnitude > 1e-4f)
                     transform.rotation = Quaternion.LookRotation(away, Vector3.up);
             }
+        }
+
+        // Le Canvas se cache sans désactiver l'objet : LateUpdate continue, et peut la réafficher.
+        void SetVisible(bool visible)
+        {
+            if (m_Canvas != null)
+                m_Canvas.enabled = visible;
+            else if (!visible)
+                gameObject.SetActive(false);
         }
     }
 }

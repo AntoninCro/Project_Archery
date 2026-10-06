@@ -5,8 +5,8 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | # | Guide | Ce qu'il ajoute | Dépend de | Durée estimée |
 |---|---|---|---|---|
 | 1 | `Guide_Coffres.md` | Coffres animés (modèle du pack), ralenti, orbes, bonus temporaires | — | 2 h |
-| 2 | `Guide_Volants_Tireurs.md` | Ennemis volants et tireurs, projectiles | — | 1 h 30 |
-| 3 | `Guide_Barricades_Brasero.md` | Barricades, brasero, flèches enflammées, 2 cartes de boutique | — | 1 h 30 |
+| 2 | `Guide_Volants_Tireurs.md` | Volant (Beholder) et tireur (mage), projectiles | — | 2 h |
+| 3 | `Guide_Barricades_Brasero.md` | Barricades, brasero, flèches enflammées, 1 carte de boutique | — | 1 h 30 |
 | 4 | `Guide_CorpsACorps.md` | Coup de flèche au corps à corps | — (rien à monter) | 10 min |
 | 5 | `Guide_Effets.md` | Particules d'impact et de mort | — | 45 min |
 | 6 | `Guide_Ambiance.md` | Ambiance jour et nuit, musiques | — | 20 min |
@@ -15,6 +15,8 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | 9 | `Guide_Classes.md` | Arcs choisis au menu, expérience entre les parties | — (optionnel) | 45 min |
 | 10 | `Guide_Carte.md` | Clairière, forêt, 4 chemins, NavMesh, emplacements | barricades (3), coffres (1) | une journée |
 | 11 | `Checklist_Demo.md` | Tests complets, build, démo | tout | une demi-journée |
+
+**Fait le 6 octobre** : les coffres (1) et le volant (partie de 2), par toi ; le tireur (partie de 2), les barricades et le brasero (3), et le corps à corps (4, rien à monter), par Claude. Il reste à tester 2 à 4, puis les guides 5 à 11.
 
 **Pourquoi cet ordre** : les ennemis et les défenses d'abord, parce qu'ils changent le plus le jeu et méritent d'être testés longtemps. Les étapes courtes (4 à 9) peuvent se glisser n'importe quand. La carte vient à la fin, quand on sait où placer les barricades, les coffres et les points d'apparition. L'équilibrage se fait en dernier, sur la carte finale.
 

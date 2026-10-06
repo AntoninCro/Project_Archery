@@ -14,9 +14,6 @@ namespace Archery.Shop
         /// <summary>Réparer ou reconstruire toutes les barricades.</summary>
         Barricades,
 
-        /// <summary>Allumer le brasero (une seule fois).</summary>
-        Brazier,
-
         /// <summary>Carte d'information, qu'on ne peut pas acheter (« La tour est intacte »…).</summary>
         Unavailable,
     }

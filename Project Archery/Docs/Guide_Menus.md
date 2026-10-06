@@ -164,7 +164,7 @@ Il se place tout seul devant toi quand il apparaît : sa position dans la scène
 | `Summary` | texte | taille 30, centré ; *Preferred Height* 140 |
 | `Name Section` | *Create Empty* | *Horizontal Layout Group* : *Spacing* 20, *Control Child Size* coché (W et H), *Child Force Expand* décoché ; *Preferred Height* 80 |
 | ↳ `Name Label` | texte | « Ton nom : », taille 32 ; *Preferred Width* 200 |
-| ↳ `Input Field Global Keyboard` | prefab du sample (glisse-le depuis `Spatial Keyboard/Prefabs`) | *Flexible Width* 1, *Preferred Height* 70 |
+| ↳ `Input Field Global Keyboard` | prefab du sample (glisse-le depuis `Spatial Keyboard/Prefabs`) | **Scale `(1, 1, 1)`** : le prefab est réglé à 0,003 pour un Canvas autonome, et serait minuscule ici. Décoche son *Content Size Fitter* ; dans son *Vertical Layout Group*, coche *Control Child Size* et *Child Force Expand* (W et H). Textes `Text` et `Placeholder` en taille 34. *Flexible Width* 1, *Preferred Height* 70 |
 | ↳ `Save` | *Button - TextMeshPro* | « Enregistrer », taille 30 ; *Preferred Width* 260 |
 | `Message` | texte | taille 32, centré, doré ; *Preferred Height* 50 |
 | `Table` | texte | taille 24, aligné en haut à gauche ; *Flexible Height* 1 ; *Add Component > Leaderboard View* |
@@ -203,7 +203,10 @@ Il se place tout seul devant toi quand il apparaît : sa position dans la scène
 - **Le volume ne change pas** :
   - les paramètres du mixer doivent être exposés et nommés exactement `MasterVolume`, `MusicVolume` et `EffectsVolume` (sinon, la console le signale) ;
   - les *Audio Source* des prefabs doivent avoir *Output* `Effects`.
-- **Le clavier n'apparaît pas** : il faut le `XRI Global Keyboard Manager` dans la scène, et un champ qui vient du prefab `Input Field Global Keyboard`.
+- **Le clavier n'apparaît pas** :
+  - il faut le `XRI Global Keyboard Manager` dans la scène, et un champ qui vient du prefab `Input Field Global Keyboard` ;
+  - le champ doit être à l'échelle `(1, 1, 1)` (section 5) : à 0,003, il est minuscule et on ne peut pas le viser.
+  - L'écran de fin ouvre le clavier tout seul ; si tu le fermes, vise le champ du nom pour le rouvrir.
 - **La scène se recharge pendant que je tape mon nom** : il manque le `Game Over Panel` dans la scène, ou il est désactivé.
 - **Le menu reste affiché pendant la partie** : *Content* doit être rempli dans `Main Menu Panel`.
 - **Je veux vider le classement** : supprime `leaderboard.json` dans le dossier indiqué en haut de ce guide.

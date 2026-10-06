@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Archery.Bows;
 using Archery.Combat;
 using UnityEngine;
@@ -5,11 +6,12 @@ using UnityEngine;
 namespace Archery.Enemies
 {
     /// <summary>
-    /// Brûlure d'une flèche enflammée (GDD, section 6.2) : des dégâts réguliers pendant quelques secondes,
+    /// Brûlure d'une flèche enflammée (GDD, section 6.2) : des dégâts en plus, étalés régulièrement sur quelques secondes,
     /// avec des flammes sur l'ennemi. Ajoutée en jeu par le <see cref="Defense.Brazier"/> : rien à placer à la main.
     /// </summary>
     /// <remarks>
-    /// Une nouvelle flèche enflammée prolonge la brûlure (la plus longue et la plus forte l'emportent).
+    /// Chaque flèche enflammée ajoute sa propre brûlure : l'ennemi touché par deux flèches brûle des deux.
+    /// Les dégâts tombent toutes les 0,5 s, et le total est exact (le reste tombe à la fin).
     /// Un ennemi tué par la brûlure rapporte ses points comme s'il était tué par la flèche.
     /// </remarks>
     [AddComponentMenu("")]
@@ -17,17 +19,24 @@ namespace Archery.Enemies
     {
         const float k_TickInterval = 0.5f;
 
+        struct Burn
+        {
+            public float DamagePerSecond;
+            public float TimeLeft;
+        }
+
+        readonly List<Burn> m_Burns = new List<Burn>();
         Enemy m_Enemy;
         GameObject m_Effect;
-        float m_TimeLeft;
-        float m_DamagePerSecond;
+        float m_Pending;
         float m_TickTimer;
         ShotGrade m_Grade;
         float m_Distance;
 
-        public static void Apply(Enemy enemy, float damagePerSecond, float duration, ShotGrade grade, float distance, GameObject effectPrefab)
+        /// <summary>Ajoute une brûlure qui inflige <paramref name="totalDamage"/> en tout, étalés sur <paramref name="duration"/> secondes.</summary>
+        public static void Apply(Enemy enemy, float totalDamage, float duration, ShotGrade grade, float distance, GameObject effectPrefab)
         {
-            if (enemy == null || !enemy.IsAlive || duration <= 0f || damagePerSecond <= 0f)
+            if (enemy == null || !enemy.IsAlive || duration <= 0f || totalDamage <= 0f)
                 return;
 
             var burning = enemy.GetComponent<Burning>();
@@ -38,8 +47,7 @@ namespace Archery.Enemies
                 burning.m_TickTimer = k_TickInterval;
             }
 
-            burning.m_TimeLeft = Mathf.Max(burning.m_TimeLeft, duration);
-            burning.m_DamagePerSecond = Mathf.Max(burning.m_DamagePerSecond, damagePerSecond);
+            burning.m_Burns.Add(new Burn { DamagePerSecond = totalDamage / duration, TimeLeft = duration });
             burning.m_Grade = grade;
             burning.m_Distance = distance;
 
@@ -55,26 +63,49 @@ namespace Archery.Enemies
                 return;
             }
 
+            // Chaque brûlure verse ses dégâts au fil du temps, jusqu'à la fin de sa durée.
             var deltaTime = Time.deltaTime;
-            m_TimeLeft -= deltaTime;
-            m_TickTimer -= deltaTime;
-            if (m_TickTimer <= 0f)
+            for (var i = m_Burns.Count - 1; i >= 0; i--)
             {
-                m_TickTimer = k_TickInterval;
-                m_Enemy.Health.TakeDamage(new DamageInfo
-                {
-                    Amount = m_DamagePerSecond * k_TickInterval,
-                    Zone = HitZone.Body,
-                    Grade = m_Grade,
-                    Distance = m_Distance,
-                    Point = m_Enemy.Center,
-                    Direction = Vector3.up,
-                    Source = this,
-                });
+                var burn = m_Burns[i];
+                var step = Mathf.Min(deltaTime, burn.TimeLeft);
+                m_Pending += burn.DamagePerSecond * step;
+                burn.TimeLeft -= step;
+                if (burn.TimeLeft <= 0f)
+                    m_Burns.RemoveAt(i);
+                else
+                    m_Burns[i] = burn;
             }
 
-            if (m_TimeLeft <= 0f)
+            m_TickTimer -= deltaTime;
+            var finished = m_Burns.Count == 0;
+            if (m_TickTimer <= 0f || finished)
+            {
+                m_TickTimer += k_TickInterval;
+                DealPending();
+            }
+
+            if (finished)
                 Stop();
+        }
+
+        void DealPending()
+        {
+            if (m_Pending <= 0f)
+                return;
+
+            var amount = m_Pending;
+            m_Pending = 0f;
+            m_Enemy.Health.TakeDamage(new DamageInfo
+            {
+                Amount = amount,
+                Zone = HitZone.Body,
+                Grade = m_Grade,
+                Distance = m_Distance,
+                Point = m_Enemy.Center,
+                Direction = Vector3.up,
+                Source = this,
+            });
         }
 
         void Stop()

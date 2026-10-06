@@ -2,7 +2,7 @@
 
 Ce guide ajoute la boutique du GDD (sections 5, 6 et 7) à la scène `Prototype_Tir`.
 
-À la fin de chaque vague, un panneau s'ouvre en haut de la tour, à ta gauche. On vise une carte avec le rayon de la main libre et on appuie sur la **gâchette** pour l'acheter.
+À la fin de chaque vague, un panneau s'ouvre devant toi, à ta gauche, où que tu sois. Pendant la pause, il te suit et ne rentre jamais dans un mur. On vise une carte avec le rayon de la main libre et on appuie sur la **gâchette** pour l'acheter.
 
 Le panneau propose :
 - **4 améliorations** tirées au sort selon leur rareté : **communes** (blanc, 70 %), **rares** (bleu, 25 %) et **légendaires** (doré, 5 %), avec les mêmes chances toute la partie. Elles sont listées juste en dessous ;
@@ -167,6 +167,26 @@ Sur `Shop` : *Add Component > Shop Panel* :
 
 Le panneau est caché au lancement. Il apparaît à la fin de chaque vague et disparaît au début de la suivante.
 
+### Sa place pendant la pause
+
+Le panneau s'ouvre devant toi, à ta gauche, où que tu sois : en haut de la tour, au pied d'un mur ou dans la forêt. Ensuite, il te suit sans te coller :
+- tu peux te pencher vers lui ou tourner la tête pour le lire : il ne bouge pas ;
+- si tu t'éloignes de plus de 1,2 m, ou si tu te retournes et qu'il sort de ta vue, il glisse jusqu'à ta gauche ;
+- après une téléportation, il réapparaît directement à côté de toi.
+
+Il ne rentre jamais dans un mur, un arbre ou un coffre, et rien ne le cache : si sa place préférée est prise, il en cherche une autre autour de toi. Il essaie d'abord un peu plus à gauche ou plus près, puis devant, à droite, et en dernier derrière toi.
+
+Les réglages sont dans le *Shop Panel*, partie *Placement* :
+
+| Réglage | Par défaut | Effet |
+|---|---|---|
+| *Follow Player* | coché | décoché : le panneau reste à sa place dans la scène |
+| *Offset From Head* | `(-1.4, -0.4, 1.6)` | sa place préférée par rapport à ta tête (X à droite, Y en haut, Z devant) |
+| *Tilt* | `15` | inclinaison du haut du panneau vers l'arrière |
+| *Follow Dead Zone* | `1.2` | distance (m) dont il faut s'éloigner pour qu'il suive |
+| *Follow Angle* | `90` | angle (°) entre ton regard et le panneau au-delà duquel il revient devant toi |
+| *Follow Smoothing* | `0.35` | temps (s) qu'il met à glisser vers sa nouvelle place |
+
 ## 5. Les modèles des arcs (optionnel)
 
 Sans modèle, un nouvel arc change de caractéristiques mais garde son apparence. Pour lui donner son propre modèle, fais ceci pour chacun des arcs composite, long et runique :
@@ -242,6 +262,8 @@ Les effets à vérifier :
   - le Canvas doit avoir le *Tracked Device Graphic Raycaster* ;
   - la main qui vise doit être vide.
 - **Le panneau n'apparaît jamais** : il faut un `Shop Manager` sur `Game` avec son catalogue, et *Content* doit être branché. La boutique ne s'ouvre qu'à la fin d'une vague.
+- **Le panneau me suit trop, ou pas assez** : *Follow Dead Zone* et *Follow Angle* dans le *Shop Panel* (section 4).
+- **Le panneau est trop à gauche, trop loin ou trop bas** : *Offset From Head* (X négatif : à gauche ; Z : devant ; Y : sous les yeux).
 - **« Il manque un Player Upgrades dans la scène »** : ajoute `Player Upgrades` sur `Game`.
 - **Les cartes affichent « Rupture de stock »** : la liste *Upgrades* du catalogue est vide (menu ⋮ > *Remplir avec le GDD*).
 - **Le prochain arc ne s'affiche pas** : la liste *Bows* du catalogue est vide, ou l'arc de la scène n'utilise pas un des assets de la liste.

@@ -1,0 +1,369 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2576541633086635714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3366434541033596676}
+  - component: {fileID: 3436765252902004947}
+  - component: {fileID: 8814849815323736829}
+  m_Layer: 0
+  m_Name: Body Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3366434541033596676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2576541633086635714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3006894316176842371}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &3436765252902004947
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2576541633086635714}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8814849815323736829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2576541633086635714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 724fd077bb685e44fbbd5cb6e21e5163, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Hitbox
+  m_Zone: 0
+  m_DamageMultiplier: 1
+  m_Owner: {fileID: 0}
+  m_HitClip: {fileID: 0}
+--- !u!1 &5417450357463913207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 907462968275696474}
+  - component: {fileID: 4667830852729413928}
+  - component: {fileID: 6595918711166494495}
+  m_Layer: 0
+  m_Name: Eye Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &907462968275696474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5417450357463913207}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3006894316176842383}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &4667830852729413928
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5417450357463913207}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.26
+  m_Center: {x: 0, y: -0.03, z: 0}
+--- !u!114 &6595918711166494495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5417450357463913207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 724fd077bb685e44fbbd5cb6e21e5163, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Hitbox
+  m_Zone: 1
+  m_DamageMultiplier: 2
+  m_Owner: {fileID: 0}
+  m_HitClip: {fileID: 8300000, guid: 3fe9787fe1ca0034e958f0f120887b9d, type: 3}
+--- !u!1 &5609823944168455868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2472594594708146059}
+  - component: {fileID: 7363221466678819150}
+  - component: {fileID: 5964984199854942538}
+  - component: {fileID: 4525739273563080954}
+  - component: {fileID: 9179762062131775466}
+  - component: {fileID: 5206902200395949276}
+  m_Layer: 0
+  m_Name: Enemy_Volant
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2472594594708146059
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3006894316176842375}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &7363221466678819150
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!114 &5964984199854942538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24d5eb0a551f71d4bb93c5fa165ce3c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Health
+  m_MaxHealth: 100
+  m_Invulnerable: 0
+  m_RegenPerSecond: 0
+  m_RegenDelay: 2
+  m_OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Current: 0
+--- !u!114 &4525739273563080954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35f12640c148dce499f473d6eb64bc4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Enemy
+  m_Definition: {fileID: 11400000, guid: 7df52091910b418469d5406d36dd0205, type: 2}
+  m_Animator: {fileID: 0}
+  m_CorpseLifetime: 4
+  m_FleeSpeedMultiplier: 1.5
+  m_CenterHeight: 0
+  m_AttackClip: {fileID: 0}
+  m_DeathClip: {fileID: 0}
+--- !u!114 &9179762062131775466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0cdd2ab7e258b74eae22557010ce156, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.UI.DamagePopups
+  m_BodyColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HeadColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  m_ShotTuning: {fileID: 11400000, guid: b7821c1902af53e40931b94ce46aa34b, type: 2}
+--- !u!114 &5206902200395949276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609823944168455868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08446252057e0f54d9ec64d66f9f8ab5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.FlyingEnemy
+  m_CruiseHeight: 7
+  m_CircleRadius: 11
+  m_Variation: 3
+  m_TurnRate: 140
+  m_Acceleration: 8
+  m_SpawnHeight: 4
+  m_DiveSpeedMultiplier: 1.8
+  m_DiveTurnRate: 70
+  m_HitRadius: 1
+  m_MaxDiveDistance: 25
+  m_RecoverTime: 1.5
+  m_Wings: {fileID: 0}
+  m_ScreechClip: {fileID: 8300000, guid: 6411ef5dada8d334397e1c4eebe212b7, type: 3}
+  m_SpinWhileFalling: 0
+  m_CorpseHeight: 1.45
+--- !u!1001 &1686435824324979197
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2472594594708146059}
+    m_Modifications:
+    - target: {fileID: 4530003305994672282, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 607c185c0f71e424099d69d90463888d, type: 2}
+    - target: {fileID: 4530003306004163418, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_Name
+      value: Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4530003306004526974, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3366434541033596676}
+    - targetCorrespondingSourceObject: {fileID: 4530003306004526962, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 907462968275696474}
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+--- !u!4 &3006894316176842371 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4530003306004526974, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+  m_PrefabInstance: {fileID: 1686435824324979197}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3006894316176842375 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4530003306004526970, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+  m_PrefabInstance: {fileID: 1686435824324979197}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3006894316176842383 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4530003306004526962, guid: a281aaaef0214dbbb7a0c5e5d4d370d1, type: 3}
+  m_PrefabInstance: {fileID: 1686435824324979197}
+  m_PrefabAsset: {fileID: 0}

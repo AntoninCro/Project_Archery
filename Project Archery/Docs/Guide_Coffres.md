@@ -7,11 +7,11 @@ Ce guide ajoute les coffres du GDD (section 13) à la scène `Prototype_Tir`, av
 - ils sont **gratuits**, mais il faut descendre et courir pour aller les ouvrir. **Ils disparaissent à la fin de la vague**, ouverts ou non ;
 - on **soulève le couvercle à la main** : on l'attrape par l'avant et on lève la main. Le coffre s'immobilise et le couvercle suit la main ;
 - passé 45°, le **temps ralentit**, le couvercle s'ouvre d'un coup avec un rebond, une lueur dorée sort du coffre et **3 orbes** montent ;
-- on **attrape une orbe** : les deux autres disparaissent. Il y a toujours au moins :
-  - une **amélioration** pour toute la partie, tirée comme en boutique ;
-  - un **bonus** : 30 s de dégâts ×2, de tirs parfaits ou d'anneau rapide, ou un soin (seulement si tu as perdu des PV).
+- on **attrape une orbe** : les deux autres disparaissent. Les trois orbes sont toujours, de gauche à droite :
+  - deux **améliorations permanentes**, différentes, tirées comme en boutique ;
+  - un **bonus temporaire** : 30 s de dégâts ×2, de tirs parfaits ou d'anneau rapide.
 
-Le nom de chaque récompense flotte au-dessus de son orbe, dans sa couleur : blanc, bleu ou doré pour une amélioration, comme en boutique ; rouge (dégâts), vert (tirs parfaits), cyan (anneau rapide) ou rose (soin) pour un bonus.
+Au-dessus de chaque orbe, « PERMANENT » ou « TEMPORAIRE », puis le nom de la récompense dans sa couleur : blanc, bleu ou doré pour une amélioration, comme en boutique (avec sa rareté dessous) ; rouge (dégâts), vert (tirs parfaits) ou cyan (anneau rapide) pour un bonus (avec sa durée dessous).
 
 Le ralenti dure jusqu'au choix d'une orbe, au plus 6 s ; les orbes restent ensuite jusqu'à la fin de la vague.
 
@@ -171,7 +171,7 @@ Par défaut, les coffres se posent au hasard sur le sol des ennemis (NavMesh), e
    - le coffre s'immobilise et le couvercle suit ta main ;
    - passé 45°, le temps ralentit, le couvercle s'ouvre d'un coup (au ralenti), la lueur sort du coffre et 3 orbes montent.
 3. Lâche le couvercle avant 45° : il retombe, et le coffre se remet à sautiller.
-4. Approche la main d'une orbe : elle grossit. Attrape-la : un message annonce la récompense, et les deux autres disparaissent.
+4. Les trois orbes montrent, de gauche à droite : « PERMANENT », « PERMANENT » et « TEMPORAIRE ». Approche la main d'une orbe : elle grossit. Attrape-la : un message annonce la récompense, et les deux autres disparaissent.
 5. Si c'est un bonus, il s'affiche sur la montre (section 6) :
    - *Dégâts ×2* : les chiffres de dégâts doublent ;
    - *Tirs parfaits* : l'anneau est presque entièrement vert ;

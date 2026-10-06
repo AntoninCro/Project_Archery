@@ -78,7 +78,7 @@ Les volants ne sont pas concernés : ils passent au-dessus.
 ## 5. Les ennemis, les barricades et les coffres
 
 1. **Points d'apparition** : place `Enemy Spawner` en `(0, 0, 0)`. Garde ses enfants `Spawn A`, `Spawn B` et `Spawn C`, ajoute-en un quatrième (Ctrl+D), et place les quatre aux bouts des chemins (tableau du plan). Mets les 4 dans la liste *Spawn Points*.
-2. **Barricades** (`Guide_Barricades_Brasero.md`) : une à chaque entrée, avec la position et la rotation du tableau. Leur flèche bleue pointe vers la forêt. Le mur doit couvrir toute la largeur du chemin.
+2. **Barricades** (`Guide_Barricades_Brasero.md`) : elles sont déjà à ces positions, avec ces rotations ; leur flèche bleue pointe vers la forêt. Vérifie que chaque mur couvre toute la largeur de son chemin, sinon agrandis son *Scale X*.
 3. **Coffres** (`Guide_Coffres.md`) : place 6 à 8 objets vides le long des chemins, entre 25 et 50 m de la tour, par exemple dans de petites clairières à côté du chemin. Glisse-les dans *Spawn Points* du `Chest Spawner`. Chacun doit être accessible à pied.
 
 ## 6. La tour

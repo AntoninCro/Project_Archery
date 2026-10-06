@@ -23,7 +23,7 @@ namespace Archery.Chests
         [SerializeField]
         Renderer m_Renderer;
 
-        [Tooltip("Nom de la récompense, au-dessus de l'orbe.")]
+        [Tooltip("Au-dessus de l'orbe : « Permanent » ou « Temporaire », puis le nom de la récompense.")]
         [SerializeField]
         TMP_Text m_Label;
 
@@ -82,7 +82,8 @@ namespace Archery.Chests
 
             if (m_Label != null)
             {
-                m_Label.text = $"<b>{reward.Title}</b>\n<size=70%>{reward.Subtitle}</size>";
+                var kind = reward.IsPermanent ? "PERMANENT" : "TEMPORAIRE";
+                m_Label.text = $"<size=55%><color=#FFFFFFC0>{kind}</color></size>\n<b>{reward.Title}</b>\n<size=70%>{reward.Subtitle}</size>";
                 m_Label.color = reward.Color;
             }
         }

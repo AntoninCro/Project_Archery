@@ -2,7 +2,7 @@
 
 Ce guide ajoute l'arc légendaire, une idée de fin de projet du GDD (section 23). Il demande d'avoir monté **les coffres** (`Guide_Coffres.md`).
 
-- Tant que l'arc n'est pas complet, un coffre a **35 % de chance** de proposer un **morceau d'arc légendaire** (une orbe violette, « 1 / 3 »), à la place de sa troisième orbe.
+- Tant que l'arc n'est pas complet, un coffre a **35 % de chance** de proposer un **morceau d'arc légendaire** (une orbe violette, « 1 / 3 »), à la place de sa deuxième amélioration permanente (au milieu).
 - Prendre l'orbe donne le morceau, avec un son cristallin et le message « Morceau d'arc légendaire : 1 / 3 ».
 - Au **troisième morceau**, l'arc est assemblé :
   - il **remplace ton arc** jusqu'à la fin de la partie, même pendant que tu le tiens ;

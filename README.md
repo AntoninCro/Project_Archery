@@ -40,7 +40,7 @@ Aussi : un timing à l'anneau (rouge, orange, vert) qui récompense le tir parfa
 | Menus et boutique | Viser avec la main libre, gâchette |
 | Lancer une vague | Tirer dans le gong |
 | Ouvrir un coffre | Attraper le couvercle et le soulever, puis attraper une orbe |
-| Flèche enflammée | Tremper la pointe dans le brasero (une fois acheté) |
+| Flèche enflammée | Tremper la pointe dans le brasero, en haut de la tour |
 | Coup au corps à corps | Frapper un ennemi avec la flèche tenue en main |
 
 **Raccourcis de test** (dans l'éditeur) : **N** lance ou termine une vague, **K** fait mourir le joueur, **M** donne 500 pièces d'or, **C** pose un coffre devant soi, **1 à 4** choisissent la difficulté avant la première vague.
@@ -81,6 +81,7 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 - Arcs et flèches : pack *Easy Weapons*.
 - Chevaliers : *Toon RTS Units – Demo*.
 - Coffre animé : *Animated PBR Chest Demo*.
+- Volant (Beholder) : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
 - Décor : *à compléter avec les packs de la carte finale* (Kenney, Quaternius…).
 - Sons, ambiances et musiques : provisoires, générés par script pour le prototype.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.

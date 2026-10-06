@@ -26,6 +26,14 @@ MonoBehaviour:
     cost: 1
     firstWave: 1
     weight: 1
+  - prefab: {fileID: 1165822100067611713, guid: 4f236c123c5c4468811f9127f7ce237c, type: 3}
+    cost: 2
+    firstWave: 4
+    weight: 0.4
+  - prefab: {fileID: 4525739273563080954, guid: 2cd11e4d5545e0349bd1d9389613c626, type: 3}
+    cost: 1.5
+    firstWave: 2
+    weight: 0.6
   endlessHealthGrowth: 1.12
   endlessDamageGrowth: 1.06
   endlessCountGrowth: 1.08

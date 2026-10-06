@@ -137,6 +137,17 @@ namespace Archery.Menus
                 m_Content.SetActive(true);
             if (m_Leaderboard != null)
                 m_Leaderboard.Highlight(-1);
+
+            StartCoroutine(FocusName());
+        }
+
+        // Le clavier virtuel s'ouvre tout seul : le champ du nom prend le focus, et son XR Keyboard Display affiche le clavier.
+        // On attend une image, le temps que le champ, qui vient d'apparaître, s'abonne à son focus.
+        IEnumerator FocusName()
+        {
+            yield return null;
+            if (m_NameInput != null && m_NameInput.isActiveAndEnabled && !m_Saved)
+                m_NameInput.Select();
         }
 
         /// <summary>Pour l'événement « On Text Submitted » du clavier : la touche Entrée enregistre le score.</summary>

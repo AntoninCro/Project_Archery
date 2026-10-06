@@ -158,14 +158,14 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 - Auto-visée : les flèches dévient légèrement (30° par seconde et par exemplaire) vers l'ennemi le plus proche, s'il est à moins de 12 m devant elles.
 - Tir ricochet : après avoir touché un ennemi, la flèche rebondit vers un autre ennemi proche (un rebond par exemplaire, 20 % de dégâts en moins par rebond).
 
-**Flèches enflammées** : avec le brasero de la tour (voir section 9), on trempe une flèche dans le feu ; la cible brûle pendant 3 s (30 % des dégâts de la flèche par seconde). Les flèches en plus d'un tir enflammé brûlent aussi.
+**Flèches enflammées** : avec le brasero de la tour (voir section 9), on trempe une flèche dans le feu ; la cible brûle pendant 3 s et perd 30 % des dégâts de la flèche en plus, étalés sur la brûlure. Chaque flèche enflammée ajoute sa propre brûlure. Les flèches en plus d'un tir enflammé brûlent aussi.
 
 ## 7. La boutique
 
 - Elle s'ouvre entre les vagues, en haut de la tour : un panneau à gauche du joueur. On vise une carte avec le rayon de la main libre et on achète avec la gâchette.
 - Elle propose 4 améliorations tirées au sort selon les raretés, le prochain arc et les services de la tour.
 - Relancer les offres coûte 10, puis 5 de plus à chaque relance (le coût revient au départ à chaque pause). Il suit la hausse des vagues et du mode infini.
-- Services de la tour : réparation (+25 % des PV, 40), reconstruction après destruction (250), réparation de toutes les barricades (60), brasero (100, une seule fois). Chaque service a sa carte.
+- Services de la tour : réparation (+25 % des PV, 40), reconstruction après destruction (250), réparation de toutes les barricades (60). Chaque service a sa carte. Le brasero ne s'achète pas : il est sur la tour dès le début (section 9).
 
 **Prix des améliorations.** Aux premiers tests, en Impossible, on gagnait jusqu'à 5 000 pièces d'or vers la vague 10 et l'on achetait des dizaines d'améliorations par pause, au point de faire ramer le jeu. Les prix montent donc de trois façons, qui se cumulent :
 
@@ -209,11 +209,11 @@ Le score, lui, ne baisse pas.
 
 - 1000 PV, qui ne remontent pas tout seuls : il faut la réparer en boutique.
 - Un téléporteur au pied de la tour mène au sommet, avec un fondu au noir. On reste debout 1 s sur un cercle lumineux ; on arrive en haut tourné vers les ennemis. Au sol, on rejoint le cercle avec le joystick. Pour redescendre, on marche simplement dans le vide (un cercle au sommet reste possible).
-- À la fin d'une vague, si le joueur n'est pas en haut, le panneau de la boutique vient à côté de lui.
-- Le sommet est une plateforme à environ 6 m, avec une rambarde, la boutique, le gong et l'emplacement du brasero.
+- À la fin d'une vague, le panneau de la boutique s'ouvre devant le joueur, à sa gauche, où qu'il soit. Pendant la pause, il le suit quand il s'éloigne ou se retourne, et ne rentre jamais dans un mur : si sa place est prise, il en cherche une autre autour du joueur.
+- Le sommet est une plateforme à environ 6 m, avec une rambarde, le gong et le brasero.
 - À 0 PV, la tour s'effondre. Le joueur qui était en haut est téléporté au sol, devant le cercle du bas. Le téléporteur ne fonctionne plus et l'argent gagné est divisé par deux jusqu'à la reconstruction.
 - **Barricades** : des murs de planches aux 4 entrées de la clairière (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, côté forêt (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
-- **Brasero** : acheté une fois, il s'allume en haut de la tour. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd chaque seconde 30 % des dégâts de la flèche. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
+- **Brasero** : allumé en haut de la tour dès le début de la partie. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd 30 % des dégâts de la flèche en plus, étalés sur ces 3 s. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
 
 ## 10. Les ennemis
 
@@ -225,8 +225,8 @@ Le score, lui, ne baisse pas.
 | Boss | au sol | la tour | 1500 | 1 m/s | frappe la tour, appelle des Rampants | 250 | 5, 10, 15… |
 
 - Zones de touche : la tête et le corps. Le boss a en plus des points faibles lumineux (dégâts ×3).
-- **Volant** : il tourne en l'air autour du joueur, à 6–8 m de haut. De temps en temps, il fait du sur-place en criant (0,6 s, le moment de le viser), puis pique sur la tête du joueur, en corrigeant lentement sa trajectoire : un pas de côté suffit à l'esquiver. Touché ou raté, il remonte et recommence (un piqué toutes les 6 s environ). Tué, il tombe au sol en tournoyant. Il ne passe pas par le NavMesh ; la glace, posée au sol, ne le ralentit pas.
-- **Tireur** : il marche vers le joueur et s'arrête vers 20 m (80 % de sa portée de 25 m). Toutes les 3,5 s, il lance un projectile lent (9 m/s) vers la tête du joueur. On peut l'esquiver, ou l'abattre d'une flèche (5 points). Le projectile se brise sur le décor.
+- **Volant** : un Beholder, gros œil volant à tentacules ; son œil est sa tête (dégâts ×2). Il tourne en l'air autour du joueur, à 6–8 m de haut. De temps en temps, il fait du sur-place en se cabrant et en criant (0,6 s, le moment de le viser), puis pique sur la tête du joueur, en corrigeant lentement sa trajectoire : un pas de côté suffit à l'esquiver. Touché ou raté, il remonte et recommence (un piqué toutes les 5 s environ). Tué, il tombe et s'effondre au sol. Il ne passe pas par le NavMesh ; la glace, posée au sol, ne le ralentit pas.
+- **Tireur** : un mage. Il marche vers le joueur et s'arrête vers 20 m (80 % de sa portée de 25 m). Toutes les 3 s, il abat son bâton vers le joueur, et un projectile lent (9 m/s) part du bout du bâton vers sa tête. On peut l'esquiver, ou l'abattre d'une flèche (5 points). Le projectile se brise sur le décor.
 - Le volant et le tireur visent toujours le joueur, jamais la tour.
 - Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive 4 s après le début de la vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11) : le boss de la vague 10 est plus coriace que celui de la vague 5. Une vague de boss compte 40 % de Rampants ordinaires en moins.
 - Les ennemis sortent de la forêt par 4 chemins autour de la clairière.
@@ -304,11 +304,10 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 - **Ouverture** : on attrape le couvercle à la main (pas au rayon) et on le soulève ; il tourne autour de sa charnière en suivant la main. Passé 45°, le coffre s'ouvre : le temps ralentit (×0,3), et 3 orbes montent du coffre, chacune avec le nom de sa récompense dans sa couleur.
 - **Modèle** : le coffre animé du pack *Animated PBR Chest Demo*. Il tombe du ciel et rebondit en apparaissant, puis sautille sur place en attendant. Il s'immobilise quand on attrape le couvercle ; passé 45°, son animation finit d'ouvrir le couvercle d'un coup, avec un rebond, et une lueur dorée sort du coffre.
 - **Choix** : on attrape une orbe, les autres disparaissent. Le ralenti s'arrête au choix, ou au bout de 6 s ; les orbes restent alors jusqu'à la fin de la vague.
-- **Récompenses** : il y a toujours au moins une amélioration pour toute la partie, tirée comme en boutique (raretés et Chance comprises), et un bonus temporaire. La troisième orbe est l'un ou l'autre. Bonus possibles :
+- **Récompenses** : toujours les mêmes, dans le même ordre (de gauche à droite pour le joueur face au coffre) : **deux améliorations permanentes** différentes, tirées comme en boutique (raretés et Chance comprises) et dans la couleur de leur rareté, puis **un bonus temporaire**. Au-dessus de chaque orbe, « PERMANENT » ou « TEMPORAIRE », puis le nom de la récompense et sa rareté ou sa durée. Bonus possibles, au hasard :
   - 30 s de dégâts doublés ;
   - 30 s de tirs parfaits : l'anneau est presque entièrement vert, et tout tir lâché à pleine tension compte comme parfait ;
-  - 30 s d'anneau accéléré (×1,75, bandes un peu plus larges) ;
-  - un soin complet, proposé seulement si le joueur a perdu des PV.
+  - 30 s d'anneau accéléré (×1,75, bandes un peu plus larges).
 - Les bonus en cours s'affichent sur la montre avec leur temps restant ; un message annonce leur fin. Une amélioration trouvée dans un coffre compte pour la hausse des prix de la boutique (section 7).
 
 ## 14. L'interface
@@ -383,7 +382,7 @@ Assets/_Project/
 ```
 
 - Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`, `Guide_Vagues.md`, `Guide_Difficultes.md`, `Guide_Boutique.md`, `Guide_Teleporteur.md`, `Guide_Menus.md`, `Guide_Boss.md`, `Guide_Deplacements.md`, `Guide_Coffres.md`, `Guide_Volants_Tireurs.md`, `Guide_Barricades_Brasero.md`, `Guide_CorpsACorps.md`, `Guide_Ambiance.md`, `Guide_Effets.md`, `Guide_Carte.md`, `Guide_Grenade.md`, `Guide_ArcLegendaire.md`, `Guide_Classes.md`).
-- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol, coffre d'Animated PBR Chest Demo (son couvercle est un os que `ChestLid` fait tourner à la main, puis son Animator prend le relais).
+- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol, coffre d'Animated PBR Chest Demo (son couvercle est un os que `ChestLid` fait tourner à la main, puis son Animator prend le relais), Beholder de RPG Monster Partners PBR Polyart pour le volant (modèle descendu sous le pivot, qui est le centre du corps), mage de Wizard PolyArt pour le tireur (projectiles depuis la tête de son bâton).
 - Outils : `Tools/compile_check.py` vérifie que les scripts compilent sans ouvrir Unity, `Tools/shader_check.py` vérifie la syntaxe HLSL des shaders.
 - Les réglages (arcs, améliorations, ennemis, vagues, difficultés) sont des ScriptableObjects : on équilibre le jeu sans toucher au code.
 - `GameManager` enchaîne les états Menu → Vague → Pause → Fin de partie.
@@ -439,9 +438,9 @@ Objectif : toutes les consignes du cours sont couvertes.
 ### Semaine 3 (16 au 22 octobre) : la vision
 
 - [x] Course aux bras et slide. Après les tests : direction donnée par le joystick (on peut reculer), les bras accélèrent la marche, slide plus long et plus rapide.
-- [ ] Coffres (codé, à monter et tester : `Docs/Guide_Coffres.md`).
-- [ ] Ennemis volants et tireurs (codé, à monter et tester : `Docs/Guide_Volants_Tireurs.md`).
-- [ ] Barricades et brasero (codé, à monter et tester : `Docs/Guide_Barricades_Brasero.md`).
+- [ ] Coffres (montés, à tester : `Docs/Guide_Coffres.md`).
+- [ ] Ennemis volants et tireurs (montés, dans les vagues, à tester : `Docs/Guide_Volants_Tireurs.md`).
+- [ ] Barricades et brasero (montés, à tester : `Docs/Guide_Barricades_Brasero.md`). Après réflexion, le brasero est sur la tour dès le début et ne s'achète plus ; sa brûlure ajoute 30 % des dégâts de la flèche en 3 s.
 - [ ] Ambiance sonore et musiques (codé, boucles provisoires générées, à monter : `Docs/Guide_Ambiance.md`).
 - [ ] Effets visuels des coups (codé, à monter : `Docs/Guide_Effets.md`).
 - [ ] Carte finale (guide : `Docs/Guide_Carte.md`), équilibrage ; finitions avec des assets de l'Asset Store (lanterne et yeux qui brillent la nuit, décor, vraies musiques).
@@ -477,5 +476,5 @@ Tout ce qui est prévu en semaines 1 et 2 est indispensable. En semaine 3, on ab
 Notées pendant les tests, à faire une fois le reste en place et seulement si le temps le permet.
 
 - **Les arcs comme des classes** et la **progression entre les parties** : faits, en mode optionnel (`Docs/Guide_Classes.md`). Avec le composant `Bow Classes`, on choisit son arc au menu et la boutique n'en vend plus. Chaque partie rapporte de l'expérience (1 XP pour 10 points), gardée dans `progress.json`, qui débloque les arcs : composite à 300 XP, long à 1 000, runique à 2 500. Sans le composant, les arcs s'achètent en boutique comme avant.
-- **Un arc légendaire en 3 morceaux** : fait (`Docs/Guide_ArcLegendaire.md`). Tant qu'il n'est pas complet, un coffre a 35 % de chance de proposer un morceau à la place de sa troisième orbe. Au troisième, l'arc légendaire (62 m/s, 32 dégâts, anneau de 1 s aux bandes larges, flèches qui traversent 2 ennemis) remplace celui du joueur jusqu'à la fin de la partie.
+- **Un arc légendaire en 3 morceaux** : fait (`Docs/Guide_ArcLegendaire.md`). Tant qu'il n'est pas complet, un coffre a 35 % de chance de proposer un morceau à la place de sa deuxième amélioration permanente. Au troisième, l'arc légendaire (62 m/s, 32 dégâts, anneau de 1 s aux bandes larges, flèches qui traversent 2 ennemis) remplace celui du joueur jusqu'à la fin de la partie.
 - **Une grenade de flèches** : faite (section 4.6, `Docs/Guide_Grenade.md`).

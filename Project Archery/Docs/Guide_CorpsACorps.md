@@ -2,6 +2,8 @@
 
 Ce guide présente le coup au corps à corps du GDD (section 4.5). **Il n'y a rien à monter** : tout est déjà dans le script de la flèche, et marche dès que tu ouvres le projet.
 
+> **Où en est ce guide** (6 octobre) : rien à monter, c'est vérifié : le prefab `Arrow` garde les réglages par défaut ci-dessous. Il te reste à **tester** (section « Tester »).
+
 - Tiens une flèche en main (pas encochée) et **frappe un ennemi** avec sa pointe, d'un geste franc (plus de 2 m/s).
 - Il subit les **dégâts d'un tir orange** de ton arc, bonus de dégâts compris. Un coup à la tête compte double, comme une flèche.
 - La flèche **reste plantée** dans l'ennemi et quitte ta main : il faut en reprendre une dans ton dos.

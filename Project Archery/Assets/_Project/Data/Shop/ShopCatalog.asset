@@ -27,29 +27,31 @@ MonoBehaviour:
     value: 0.08
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Charge rapide"
-    description: "L'anneau va 15 % plus vite, et toutes ses bandes s'\xE9largissent un peu."
+  - displayName: Charge rapide
+    description: "L'anneau va 15 % plus vite, et toutes ses bandes s'\xE9largissent
+      un peu."
     rarity: 0
     effect: 2
     value: 0.15
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Pr\xE9cision"
-    description: "Bande verte (tir parfait) 15 % plus large."
+    description: Bande verte (tir parfait) 15 % plus large.
     rarity: 0
     effect: 3
     value: 0.15
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Vitalit\xE9"
-    description: "+15 PV max."
+    description: +15 PV max.
     rarity: 0
     effect: 4
     value: 15
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Butin"
-    description: "+20 % d'or : 30 % des points deviennent de l'or au lieu de 25 %."
+  - displayName: Butin
+    description: '+20 % d''or : 30 % des points deviennent de l''or au lieu de 25
+      %.'
     rarity: 0
     effect: 5
     value: 0.05
@@ -62,35 +64,40 @@ MonoBehaviour:
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Chance"
-    description: "Les cartes rares et l\xE9gendaires sortent plus souvent (+25 % de poids). Il reste toujours des cartes communes."
+  - displayName: Chance
+    description: "Les cartes rares et l\xE9gendaires sortent plus souvent (+25 %
+      de poids). Il reste toujours des cartes communes."
     rarity: 0
     effect: 14
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Multitir"
-    description: "+50 % de chance de tirer une fl\xE8che en plus. Avec 2 exemplaires, une fl\xE8che en plus \xE0 chaque tir ; avec 3, 50 % de chance d'une deuxi\xE8me, etc. La fl\xE8che de l'arc part toujours tout droit."
+  - displayName: Multitir
+    description: "+50 % de chance de tirer une fl\xE8che en plus. Avec 2 exemplaires,
+      une fl\xE8che en plus \xE0 chaque tir ; avec 3, 50 % de chance d'une deuxi\xE8me,
+      etc. La fl\xE8che de l'arc part toujours tout droit."
     rarity: 1
     effect: 7
     value: 0.5
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Fl\xE8che de foudre"
-    description: "Chaque fl\xE8che a 20 % de chance d'appeler un \xE9clair qui blesse la cible et la ralentit. Au-del\xE0 de 100 % : \xE9clairs plus forts."
+    description: "Chaque fl\xE8che a 20 % de chance d'appeler un \xE9clair qui blesse
+      la cible et la ralentit. Au-del\xE0 de 100 % : \xE9clairs plus forts."
     rarity: 1
     effect: 8
     value: 0.2
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Per\xE7age"
-    description: "Chaque fl\xE8che a 25 % de chance de traverser un ennemi. Au-del\xE0 de 100 % : plusieurs ennemis travers\xE9s."
+    description: "Chaque fl\xE8che a 25 % de chance de traverser un ennemi. Au-del\xE0
+      de 100 % : plusieurs ennemis travers\xE9s."
     rarity: 1
     effect: 9
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Vampirisme"
+  - displayName: Vampirisme
     description: "Chaque tir \xE0 la t\xEAte rend 2 PV."
     rarity: 1
     effect: 10
@@ -98,49 +105,58 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Tir \xE9cho"
-    description: "25 % de chance que la vol\xE9e se r\xE9p\xE8te un instant apr\xE8s, \xE0 la m\xEAme puissance. Au-del\xE0 de 100 % : plusieurs \xE9chos."
+    description: "25 % de chance que la vol\xE9e se r\xE9p\xE8te un instant apr\xE8s,
+      \xE0 la m\xEAme puissance. Au-del\xE0 de 100 % : plusieurs \xE9chos."
     rarity: 1
     effect: 15
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Fl\xE8che de glace"
-    description: "Chaque fl\xE8che a 25 % de chance de laisser au sol une zone de glace qui ralentit les ennemis. Au-del\xE0 de 100 % : glace plus forte et plus grande."
+    description: "Chaque fl\xE8che a 25 % de chance de laisser au sol une zone de
+      glace qui ralentit les ennemis. Au-del\xE0 de 100 % : glace plus forte et plus
+      grande."
     rarity: 1
     effect: 16
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "D\xE9luge"
-    description: "En vol, chaque fl\xE8che a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisi\xE8me fl\xE8che, etc. Elle continue tout droit."
+    description: "En vol, chaque fl\xE8che a 50 % de chance de se diviser en deux.
+      Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisi\xE8me fl\xE8che,
+      etc. Elle continue tout droit."
     rarity: 2
     effect: 11
     value: 0.5
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Cha\xEEne d'\xE9clairs"
-    description: "La foudre rebondit sur 3 ennemis proches de plus. Sans Fl\xE8che de foudre, 20 % des fl\xE8ches l'appellent."
+    description: "La foudre rebondit sur 3 ennemis proches de plus. Sans Fl\xE8che
+      de foudre, 20 % des fl\xE8ches l'appellent."
     rarity: 2
     effect: 12
     value: 3
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Fl\xE8che explosive"
-    description: "Chaque fl\xE8che a 25 % de chance d'exploser et de toucher les ennemis autour. Au-del\xE0 de 100 % : explosions plus fortes et plus larges."
+    description: "Chaque fl\xE8che a 25 % de chance d'exploser et de toucher les
+      ennemis autour. Au-del\xE0 de 100 % : explosions plus fortes et plus larges."
     rarity: 2
     effect: 13
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "Auto-vis\xE9e"
-    description: "Les fl\xE8ches d\xE9vient vers l'ennemi le plus proche, s'il est \xE0 moins de 12 m devant elles. Encore : elles tournent plus vite."
+    description: "Les fl\xE8ches d\xE9vient vers l'ennemi le plus proche, s'il est
+      \xE0 moins de 12 m devant elles. Encore : elles tournent plus vite."
     rarity: 2
     effect: 17
     value: 30
     maxStacks: 0
     icon: {fileID: 0}
-  - displayName: "Tir ricochet"
-    description: "Apr\xE8s avoir touch\xE9 un ennemi, la fl\xE8che rebondit vers un autre ennemi proche. Encore : un rebond de plus."
+  - displayName: Tir ricochet
+    description: "Apr\xE8s avoir touch\xE9 un ennemi, la fl\xE8che rebondit vers
+      un autre ennemi proche. Encore : un rebond de plus."
     rarity: 2
     effect: 18
     value: 1
@@ -157,7 +173,7 @@ MonoBehaviour:
   rarePrice: 60
   legendaryPrice: 140
   priceGrowthPerWave: 0.1
-  priceIncreasePerPurchase: 0.05
+  priceIncreasePerPurchase: 0.02
   endlessPriceGrowth: 1.2
   rerollCost: 10
   rerollCostIncrease: 5
@@ -169,8 +185,10 @@ MonoBehaviour:
   repairFraction: 0.25
   repairPrice: 40
   rebuildPrice: 250
+  barricadePrice: 60
   commonColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   rareColor: {r: 0.35, g: 0.6, b: 1, a: 1}
   legendaryColor: {r: 1, g: 0.78, b: 0.2, a: 1}
   bowColor: {r: 0.6, g: 0.9, b: 0.5, a: 1}
   towerColor: {r: 0.9, g: 0.68, b: 0.45, a: 1}
+  defenseColor: {r: 1, g: 0.55, b: 0.25, a: 1}

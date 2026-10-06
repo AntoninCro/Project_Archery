@@ -1,8 +1,10 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Economy;
+using Archery.Enemies;
 using Archery.Player;
 using Archery.Upgrades;
 using TMPro;
@@ -14,6 +16,7 @@ namespace Archery.Shop
     /// <summary>
     /// Le panneau de la boutique (Canvas en World Space). Il affiche les offres du <see cref="ShopManager"/>
     /// pendant les pauses et transmet les clics. Les sons partent du panneau.
+    /// Pendant la pause, il suit le joueur, devant lui à gauche, sans jamais rentrer dans un mur.
     /// </summary>
     /// <remarks>
     /// Pour cliquer au rayon de la manette, le Canvas a besoin d'un <c>Tracked Device Graphic Raycaster</c>,
@@ -40,10 +43,6 @@ namespace Archery.Shop
         [SerializeField]
         ShopCard m_BarricadeCard;
 
-        [Tooltip("Optionnel : carte « Brasero ».")]
-        [SerializeField]
-        ShopCard m_BrazierCard;
-
         [SerializeField]
         Button m_RerollButton;
 
@@ -66,22 +65,30 @@ namespace Archery.Shop
         float m_MessageDuration = 3f;
 
         [Header("Placement")]
-        [Tooltip("Si le joueur est loin du panneau quand la boutique s'ouvre (tombé de la tour, tour détruite), " +
-                 "le panneau vient à côté de lui. Sinon, il reste à sa place dans la scène.")]
+        [Tooltip("Pendant la pause, le panneau suit le joueur, devant lui à gauche, en évitant les murs. " +
+                 "Décoché : il reste à sa place dans la scène.")]
         [SerializeField]
         bool m_FollowPlayer = true;
 
-        [Tooltip("Distance (m) entre la tête du joueur et le panneau au-delà de laquelle le panneau vient près de lui.")]
-        [SerializeField]
-        float m_FollowDistance = 3.5f;
-
-        [Tooltip("Position du panneau par rapport à la tête du joueur, quand il vient près de lui (X à droite, Z devant).")]
+        [Tooltip("Place préférée du panneau par rapport à la tête du joueur (X à droite, Y en haut, Z devant) : devant à gauche.")]
         [SerializeField]
         Vector3 m_OffsetFromHead = new Vector3(-1.4f, -0.4f, 1.6f);
 
-        [Tooltip("Rotation du panneau par rapport au regard du joueur, quand il vient près de lui.")]
+        [Tooltip("Inclinaison (°) du haut du panneau vers l'arrière, pour le lire sans baisser la tête.")]
         [SerializeField]
-        Vector3 m_RotationFromHead = new Vector3(15f, -41f, 0f);
+        float m_Tilt = 15f;
+
+        [Tooltip("Distance (m) dont le joueur doit s'éloigner pour que le panneau le rejoigne : on peut se pencher vers lui sans qu'il recule.")]
+        [SerializeField]
+        float m_FollowDeadZone = 1.2f;
+
+        [Tooltip("Angle (°) entre le regard et le panneau au-delà duquel il revient devant le joueur : on peut tourner la tête pour le lire.")]
+        [SerializeField]
+        float m_FollowAngle = 90f;
+
+        [Tooltip("Temps (s) que met le panneau à glisser vers sa nouvelle place.")]
+        [SerializeField]
+        float m_FollowSmoothing = 0.35f;
 
         [Header("Sons")]
         [SerializeField]
@@ -97,6 +104,12 @@ namespace Archery.Shop
         [SerializeField]
         AudioClip m_OpenClip;
 
+        // Places essayées autour du joueur, en degrés à partir de la place préférée (négatif : vers sa gauche).
+        static readonly float[] k_AngleSteps = { 0f, -15f, 15f, -30f, 30f, -50f, 45f, 65f, 85f, -75f, 110f, -105f, 140f, 180f };
+        static readonly float[] k_DistanceScales = { 1f, 0.7f };
+        static readonly Collider[] s_Overlaps = new Collider[16];
+        static readonly RaycastHit[] s_Hits = new RaycastHit[16];
+
         readonly StringBuilder m_Builder = new StringBuilder();
         ShopManager m_Shop;
         ScoreManager m_Score;
@@ -105,6 +118,10 @@ namespace Archery.Shop
         bool m_WasOpen;
         Vector3 m_HomePosition;
         Quaternion m_HomeRotation;
+        Vector3 m_AnchorPosition;
+        Vector3 m_TargetPosition;
+        Quaternion m_TargetRotation;
+        float m_NextFollowCheck;
 
         void Awake()
         {
@@ -123,8 +140,6 @@ namespace Archery.Shop
                 m_TowerCard.Clicked += OnCardClicked;
             if (m_BarricadeCard != null)
                 m_BarricadeCard.Clicked += OnCardClicked;
-            if (m_BrazierCard != null)
-                m_BrazierCard.Clicked += OnCardClicked;
             if (m_RerollButton != null)
                 m_RerollButton.onClick.AddListener(OnRerollClicked);
             if (m_Content != null)
@@ -201,8 +216,6 @@ namespace Archery.Shop
                 m_TowerCard.Show(m_Shop.TowerOffer, money);
             if (m_BarricadeCard != null)
                 m_BarricadeCard.Show(m_Shop.BarricadeOffer, money);
-            if (m_BrazierCard != null)
-                m_BrazierCard.Show(m_Shop.BrazierOffer, money);
             if (m_RerollText != null)
                 m_RerollText.text = $"Relancer\n{m_Shop.RerollCost} or";
             if (m_MoneyText != null)
@@ -211,20 +224,142 @@ namespace Archery.Shop
                 m_OwnedText.text = OwnedSummary();
         }
 
-        // À sa place dans la scène si le joueur est en haut de la tour, sinon à côté de lui.
+        // À l'ouverture : devant le joueur, à sa gauche. Sans suivi, à sa place dans la scène.
         void PlaceForPlayer()
         {
             var rig = PlayerRig.Instance;
             var head = rig != null ? rig.Head : null;
-            if (!m_FollowPlayer || head == null || Vector3.Distance(head.position, m_HomePosition) <= m_FollowDistance)
+            if (!m_FollowPlayer || head == null)
             {
                 transform.SetPositionAndRotation(m_HomePosition, m_HomeRotation);
                 return;
             }
 
-            var yaw = rig.HeadYaw;
-            transform.SetPositionAndRotation(head.position + yaw * m_OffsetFromHead, yaw * Quaternion.Euler(m_RotationFromHead));
+            MoveNextTo(head.position, rig.HeadYaw, true);
         }
+
+        // Pendant la pause, le panneau suit le joueur sans le coller : il ne bouge que si le joueur s'éloigne,
+        // ou s'il le perd de vue en se tournant. Il glisse alors vers sa nouvelle place.
+        void LateUpdate()
+        {
+            if (!m_WasOpen || !m_FollowPlayer)
+                return;
+
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            if (head == null)
+                return;
+
+            var headPosition = head.position;
+            if (Time.unscaledTime >= m_NextFollowCheck)
+            {
+                var moved = headPosition - m_AnchorPosition;
+                var lookAway = Vector3.Angle(rig.HeadYaw * Vector3.forward, Flat(m_TargetPosition - headPosition)) > m_FollowAngle;
+                if (Flat(moved).magnitude > m_FollowDeadZone || Mathf.Abs(moved.y) > 0.6f || lookAway)
+                {
+                    MoveNextTo(headPosition, rig.HeadYaw, false);
+                    m_NextFollowCheck = Time.unscaledTime + 0.4f;
+                }
+            }
+
+            var t = 1f - Mathf.Exp(-Time.unscaledDeltaTime / Mathf.Max(0.01f, m_FollowSmoothing));
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, m_TargetPosition, t),
+                                             Quaternion.Slerp(transform.rotation, m_TargetRotation, t));
+        }
+
+        void MoveNextTo(Vector3 head, Quaternion yaw, bool snap)
+        {
+            m_AnchorPosition = head;
+            FindPlace(head, yaw, out m_TargetPosition, out m_TargetRotation);
+
+            // À l'ouverture, ou après une téléportation, il apparaît directement à sa place.
+            if (snap || (transform.position - m_TargetPosition).sqrMagnitude > 36f)
+                transform.SetPositionAndRotation(m_TargetPosition, m_TargetRotation);
+        }
+
+        // La place préférée (devant à gauche), sinon la plus proche autour du joueur où le panneau ne rentre
+        // dans rien (mur de la tour, arbre…) et reste visible. Si aucune n'est libre : la place préférée.
+        void FindPlace(Vector3 head, Quaternion yaw, out Vector3 position, out Quaternion rotation)
+        {
+            var flat = Flat(m_OffsetFromHead);
+            var distance = Mathf.Max(0.5f, flat.magnitude);
+            var baseAngle = Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
+            var halfExtents = HalfExtents();
+            position = default;
+            rotation = default;
+            var first = true;
+            foreach (var step in k_AngleSteps)
+            {
+                foreach (var scale in k_DistanceScales)
+                {
+                    var direction = yaw * Quaternion.Euler(0f, baseAngle + step, 0f) * Vector3.forward;
+                    var candidate = AboveGround(head + direction * (distance * scale) + Vector3.up * m_OffsetFromHead.y, halfExtents.y);
+                    var candidateRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(m_Tilt, 0f, 0f);
+                    if (first)
+                    {
+                        position = candidate;
+                        rotation = candidateRotation;
+                        first = false;
+                    }
+
+                    if (IsFree(head, candidate, candidateRotation, halfExtents))
+                    {
+                        position = candidate;
+                        rotation = candidateRotation;
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Moitié de la taille du panneau dans le monde (Canvas en World Space).
+        Vector3 HalfExtents()
+        {
+            var size = transform is RectTransform rect ? Vector2.Scale(rect.rect.size, transform.lossyScale) : new Vector2(1.4f, 1.3f);
+            return new Vector3(size.x * 0.5f, size.y * 0.5f, 0.05f);
+        }
+
+        // Le bas du panneau reste au-dessus du sol, même si le joueur est accroupi.
+        static Vector3 AboveGround(Vector3 position, float halfHeight)
+        {
+            if (Physics.Raycast(position + Vector3.up * halfHeight, Vector3.down, out var hit, halfHeight * 2f + 0.1f,
+                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && IsObstacle(hit.collider))
+                position.y = Mathf.Max(position.y, hit.point.y + halfHeight + 0.05f);
+            return position;
+        }
+
+        // Le panneau ne rentre dans rien, et rien ne le cache aux yeux du joueur.
+        static bool IsFree(Vector3 head, Vector3 position, Quaternion rotation, Vector3 halfExtents)
+        {
+            var count = Physics.OverlapBoxNonAlloc(position, halfExtents, s_Overlaps, rotation, Physics.DefaultRaycastLayers,
+                                                   QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (IsObstacle(s_Overlaps[i]))
+                    return false;
+            }
+
+            var toPanel = position - head;
+            var distance = toPanel.magnitude;
+            if (distance < 0.01f)
+                return true;
+
+            count = Physics.RaycastNonAlloc(head, toPanel / distance, s_Hits, distance, Physics.DefaultRaycastLayers,
+                                            QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (IsObstacle(s_Hits[i].collider))
+                    return false;
+            }
+
+            return true;
+        }
+
+        // Le joueur, son arc et les ennemis (qui s'en vont à la fin de la vague) ne comptent pas comme obstacles.
+        static bool IsObstacle(Collider collider) =>
+            collider != null && !ArrowIgnore.IsIgnored(collider) && collider.GetComponentInParent<Enemy>() == null;
+
+        static Vector3 Flat(Vector3 vector) => new Vector3(vector.x, 0f, vector.z);
 
         void OnCardClicked(ShopCard card)
         {

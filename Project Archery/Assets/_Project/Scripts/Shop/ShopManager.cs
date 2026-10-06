@@ -37,7 +37,6 @@ namespace Archery.Shop
         ShopOffer m_BowOffer;
         ShopOffer m_TowerOffer;
         ShopOffer m_BarricadeOffer;
-        ShopOffer m_BrazierOffer;
         WaveManager m_Waves;
         int m_Wave;
         int m_Rerolls;
@@ -50,7 +49,6 @@ namespace Archery.Shop
         public ShopOffer BowOffer => m_BowOffer;
         public ShopOffer TowerOffer => m_TowerOffer;
         public ShopOffer BarricadeOffer => m_BarricadeOffer;
-        public ShopOffer BrazierOffer => m_BrazierOffer;
         public int RerollCost => m_Catalog != null
             ? ShopCatalog.RoundPrice((m_Catalog.rerollCost + m_Catalog.rerollCostIncrease * m_Rerolls) *
                                      m_Catalog.WaveFactor(m_Wave) * EndlessFactor)
@@ -154,8 +152,6 @@ namespace Archery.Shop
                     if (tower == null)
                         return ShopResult.Failed("Il n'y a pas de tour dans la scène");
                     break;
-                case ShopOfferKind.Brazier when Brazier.Instance == null:
-                    return ShopResult.Failed("Il n'y a pas de brasero dans la scène");
             }
 
             var score = ScoreManager.Instance;
@@ -186,11 +182,6 @@ namespace Archery.Shop
                 case ShopOfferKind.Barricades:
                     Barricade.RebuildAll();
                     result = ShopResult.Done("Barricades réparées", offer.Color);
-                    break;
-
-                case ShopOfferKind.Brazier:
-                    Brazier.Instance.Build();
-                    result = ShopResult.Done("Brasero allumé : trempe une flèche dans le feu !", offer.Color);
                     break;
 
                 default:
@@ -392,7 +383,7 @@ namespace Archery.Shop
             }
         }
 
-        // Barricades : les réparer toutes d'un coup. Brasero : l'allumer, une seule fois.
+        // Barricades : les réparer toutes d'un coup.
         void RefreshDefenseOffers()
         {
             var color = m_Catalog.defenseColor;
@@ -414,28 +405,6 @@ namespace Archery.Shop
                         Price = ShopCatalog.RoundPrice(m_Catalog.barricadePrice * EndlessFactor),
                     }
                     : ShopOffer.Info("Barricades", "Les barricades sont intactes.", color);
-            }
-
-            var brazier = Brazier.Instance;
-            if (brazier == null)
-            {
-                m_BrazierOffer = ShopOffer.Info("Brasero", "Il n'y a pas de brasero sur la tour.", color);
-            }
-            else if (brazier.IsBuilt)
-            {
-                m_BrazierOffer = ShopOffer.Info("Brasero", "Allumé. Trempe la pointe d'une flèche dans le feu : sa cible brûlera.", color);
-            }
-            else
-            {
-                m_BrazierOffer = new ShopOffer
-                {
-                    Kind = ShopOfferKind.Brazier,
-                    Title = "Brasero",
-                    Subtitle = "Défense · une seule fois",
-                    Description = "Un feu en haut de la tour. Trempe une flèche dedans : sa cible brûle 3 s.",
-                    Color = color,
-                    Price = ShopCatalog.RoundPrice(m_Catalog.brazierPrice * EndlessFactor),
-                };
             }
         }
 

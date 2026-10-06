@@ -439,6 +439,8 @@ namespace Archery.Enemies
             if (m_Agent == null || !m_Agent.isOnNavMesh)
                 return;
 
+            // Il court jusqu'à la sortie elle-même : un tireur s'arrêterait sinon à sa distance de tir (20 m).
+            m_Agent.stoppingDistance = 0.5f;
             m_Agent.isStopped = false;
             m_Agent.updateRotation = true;
             m_Agent.speed = CurrentSpeed * m_FleeSpeedMultiplier;

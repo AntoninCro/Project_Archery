@@ -9,8 +9,8 @@ namespace Archery.Chests
 {
     /// <summary>
     /// Un coffre de la forêt (GDD, section 13), gratuit. On soulève le couvercle à la main : le temps ralentit,
-    /// des orbes sortent du coffre, et on en attrape une. Chaque orbe donne une amélioration pour toute la partie
-    /// (tirée comme en boutique) ou un bonus temporaire (dégâts doublés, tirs parfaits, anneau rapide, soin).
+    /// trois orbes sortent du coffre, et on en attrape une : deux améliorations permanentes (tirées comme en boutique)
+    /// et un bonus temporaire (dégâts doublés, tirs parfaits ou anneau rapide).
     /// </summary>
     /// <remarks>
     /// Un rayon de lumière le signale de loin ; il s'éteint à l'ouverture. Le coffre disparaît à la fin de la vague
@@ -30,11 +30,6 @@ namespace Archery.Chests
         [Tooltip("Point au-dessus du coffre où flottent les orbes. Vide : 1,1 m au-dessus du coffre.")]
         [SerializeField]
         Transform m_OrbAnchor;
-
-        [Tooltip("Nombre d'orbes.")]
-        [Range(1, 5)]
-        [SerializeField]
-        int m_OrbCount = 3;
 
         [Tooltip("Écart (m) entre deux orbes.")]
         [SerializeField]
@@ -149,7 +144,8 @@ namespace Archery.Chests
             m_SlowMotionLeft = m_SlowMotionMaxDuration;
         }
 
-        // Les orbes sortent du coffre et s'alignent au-dessus, face à l'avant du coffre.
+        // Les orbes sortent du coffre et s'alignent au-dessus. Vues par le joueur, qui fait face au coffre, de gauche à droite :
+        // les deux améliorations permanentes, puis le bonus temporaire.
         void SpawnOrbs()
         {
             if (m_OrbPrefab == null)
@@ -158,14 +154,14 @@ namespace Archery.Chests
                 return;
             }
 
-            var rewards = ChestRewards.Roll(m_OrbCount, m_BuffDuration, m_Colors);
+            var rewards = ChestRewards.Roll(m_BuffDuration, m_Colors);
             var anchor = m_OrbAnchor != null ? m_OrbAnchor.position : transform.position + transform.up * 1.1f;
             var from = transform.position + transform.up * 0.4f;
             for (var i = 0; i < rewards.Count; i++)
             {
                 var offset = (i - (rewards.Count - 1) * 0.5f) * m_OrbSpacing;
                 var orb = Instantiate(m_OrbPrefab, from, Quaternion.identity);
-                orb.Setup(this, rewards[i], from, anchor + transform.right * offset);
+                orb.Setup(this, rewards[i], from, anchor - transform.right * offset);
                 m_Orbs.Add(orb);
             }
         }

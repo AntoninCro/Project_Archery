@@ -18,7 +18,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Ennemis : Rampants (vague 1), Volants (vague 2), Tireurs (vague 4), boss (vague 5).
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
-- [ ] Boutique : améliorations, relance, arc suivant, tour, barricades, brasero ; les prix montent après chaque achat.
+- [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
 - [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
 - [ ] Déplacements : marche, course aux bras, slide, téléporteur, descente de la tour à pied.
@@ -54,7 +54,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 **Déroulé conseillé (5 à 10 minutes)**
 1. Le menu : changer de difficulté et montrer le ciel qui change.
 2. Les cibles d'entraînement : le tir, l'anneau, un tir parfait.
-3. Le gong : vague 1, puis la boutique (une amélioration, le brasero).
+3. Le gong : vague 1, une flèche enflammée au brasero, puis la boutique (une amélioration).
 4. Une vague avec un coffre : descendre, courir, glisser, ouvrir le coffre.
 5. Montrer le boss (dans l'éditeur, **N** jusqu'à la vague 5).
 6. Mourir, saisir son nom, montrer le classement.

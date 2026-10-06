@@ -94,9 +94,6 @@ namespace Archery.Shop
         [Tooltip("Prix de la réparation de toutes les barricades.")]
         public int barricadePrice = 60;
 
-        [Tooltip("Prix du brasero (une seule fois).")]
-        public int brazierPrice = 100;
-
         [Header("Couleurs")]
         public Color commonColor = new Color(0.9f, 0.9f, 0.9f);
         public Color rareColor = new Color(0.35f, 0.6f, 1f);
@@ -248,7 +245,6 @@ namespace Archery.Shop
             repairPrice = 40;
             rebuildPrice = 250;
             barricadePrice = 60;
-            brazierPrice = 100;
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
 #endif

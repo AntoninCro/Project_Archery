@@ -6,14 +6,14 @@ using UnityEngine;
 namespace Archery.Defense
 {
     /// <summary>
-    /// Brasero du sommet de la tour (GDD, sections 6.2 et 9). Il s'achète une fois en boutique ; ensuite,
-    /// on y trempe la pointe d'une flèche tenue en main pour l'enflammer. La cible d'une flèche enflammée
-    /// brûle pendant 3 s. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
+    /// Brasero du sommet de la tour (GDD, sections 6.2 et 9), allumé dès le début de la partie. On y trempe la pointe
+    /// d'une flèche tenue en main pour l'enflammer : sa cible brûle pendant 3 s et perd en plus 30 % des dégâts
+    /// de la flèche, étalés sur la brûlure. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
     /// </summary>
     [DisallowMultipleComponent]
     public class Brazier : MonoBehaviour
     {
-        [Tooltip("Le feu : flammes, lumière, son. Caché tant que le brasero n'est pas acheté.")]
+        [Tooltip("Le feu : flammes, lumière, son.")]
         [SerializeField]
         GameObject m_Fire;
 
@@ -37,23 +37,14 @@ namespace Archery.Defense
         [SerializeField]
         float m_BurnDuration = 3f;
 
-        [Tooltip("Dégâts de brûlure par seconde, en part des dégâts de la flèche (0,3 = 30 % par seconde, soit 90 % en 3 s).")]
+        [Tooltip("Dégâts de la brûlure, en part des dégâts de la flèche (0,3 = 30 % en plus), étalés sur toute sa durée.")]
         [SerializeField]
-        float m_BurnDamagePerSecond = 0.3f;
-
-        [Tooltip("Pour tester : le brasero est déjà acheté au lancement.")]
-        [SerializeField]
-        bool m_StartBuilt;
-
-        [SerializeField]
-        AudioClip m_BuildClip;
+        float m_BurnDamage = 0.3f;
 
         [SerializeField]
         AudioClip m_IgniteClip;
 
         public static Brazier Instance { get; private set; }
-
-        public bool IsBuilt { get; private set; }
 
         Vector3 DipPoint => m_DipPoint != null ? m_DipPoint.position : transform.position + Vector3.up * 0.4f;
 
@@ -63,9 +54,8 @@ namespace Archery.Defense
                 Debug.LogWarning("Il y a plusieurs Brazier dans la scène.", this);
             Instance = this;
 
-            IsBuilt = m_StartBuilt;
             if (m_Fire != null)
-                m_Fire.SetActive(IsBuilt);
+                m_Fire.SetActive(true);
         }
 
         void OnEnable() => Arrow.AnyHit += OnArrowHit;
@@ -78,24 +68,9 @@ namespace Archery.Defense
                 Instance = null;
         }
 
-        /// <summary>Allume le brasero (achat en boutique).</summary>
-        public void Build()
-        {
-            if (IsBuilt)
-                return;
-
-            IsBuilt = true;
-            if (m_Fire != null)
-                m_Fire.SetActive(true);
-            Sfx.Play(m_BuildClip, DipPoint, 0.9f);
-        }
-
         // Une flèche tenue en main dont la pointe touche les flammes s'enflamme.
         void Update()
         {
-            if (!IsBuilt)
-                return;
-
             var dipPoint = DipPoint;
             foreach (var arrow in Arrow.HeldArrows)
             {
@@ -122,7 +97,7 @@ namespace Archery.Defense
 
             var enemy = hit.Collider.GetComponentInParent<Enemy>();
             if (enemy != null)
-                Burning.Apply(enemy, hit.Damage * m_BurnDamagePerSecond, m_BurnDuration, hit.Grade, hit.TravelDistance, m_BurnEffect);
+                Burning.Apply(enemy, hit.Damage * m_BurnDamage, m_BurnDuration, hit.Grade, hit.TravelDistance, m_BurnEffect);
         }
 
         void OnDrawGizmosSelected()
