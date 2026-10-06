@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using Archery.Bows;
 using Archery.Core;
+using Archery.Defense;
 using Archery.Economy;
 using Archery.Enemies;
 using Archery.Player;
@@ -17,6 +18,7 @@ namespace Archery.Shop
     /// Le panneau de la boutique (Canvas en World Space). Il affiche les offres du <see cref="ShopManager"/>
     /// pendant les pauses et transmet les clics. Les sons partent du panneau.
     /// Pendant la pause, il suit le joueur, devant lui à gauche, sans jamais rentrer dans un mur.
+    /// Son bouton « Retour à la tour » ramène le joueur en haut de la tour.
     /// </summary>
     /// <remarks>
     /// Pour cliquer au rayon de la manette, le Canvas a besoin d'un <c>Tracked Device Graphic Raycaster</c>,
@@ -49,6 +51,14 @@ namespace Archery.Shop
         [Tooltip("Texte du bouton de relance (son prix).")]
         [SerializeField]
         TMP_Text m_RerollText;
+
+        [Tooltip("Optionnel : bouton « Retour à la tour », caché quand le joueur y est déjà.")]
+        [SerializeField]
+        Button m_TowerButton;
+
+        [Tooltip("Téléporteur du pied de la tour : le bouton envoie le joueur à son point d'arrivée.")]
+        [SerializeField]
+        TowerTeleporter m_TowerTeleporter;
 
         [SerializeField]
         TMP_Text m_MoneyText;
@@ -142,6 +152,8 @@ namespace Archery.Shop
                 m_BarricadeCard.Clicked += OnCardClicked;
             if (m_RerollButton != null)
                 m_RerollButton.onClick.AddListener(OnRerollClicked);
+            if (m_TowerButton != null)
+                m_TowerButton.onClick.AddListener(OnTowerClicked);
             if (m_Content != null)
                 m_Content.SetActive(false);
         }
@@ -177,6 +189,7 @@ namespace Archery.Shop
 
         void Update()
         {
+            UpdateTowerButton();
             if (m_MessageTimer <= 0f)
                 return;
 
@@ -371,6 +384,25 @@ namespace Archery.Shop
         {
             if (m_Shop != null)
                 Report(m_Shop.TryReroll(), m_RerollClip);
+        }
+
+        // Le bouton se cache quand le joueur est déjà en haut de la tour, et se grise tant qu'elle est détruite.
+        void UpdateTowerButton()
+        {
+            if (m_TowerButton == null || !m_WasOpen)
+                return;
+
+            var show = m_TowerTeleporter != null && !m_TowerTeleporter.IsPlayerAtDestination;
+            if (m_TowerButton.gameObject.activeSelf != show)
+                m_TowerButton.gameObject.SetActive(show);
+            if (show)
+                m_TowerButton.interactable = m_TowerTeleporter.IsUsable;
+        }
+
+        void OnTowerClicked()
+        {
+            if (m_TowerTeleporter == null || !m_TowerTeleporter.SendPlayer())
+                Sfx.Play(m_ErrorClip, transform.position, 0.9f);
         }
 
         void Report(ShopResult result, AudioClip successClip)

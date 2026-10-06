@@ -17,7 +17,7 @@ Le panneau propose :
 
 Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section 7) :
 - **+10 % à chaque vague** (la relance aussi) ;
-- **+5 % à chaque amélioration obtenue** (achetée, ou trouvée dans un coffre) : plus tu en as, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
+- **+5 % à chaque amélioration achetée** (celles des coffres ne comptent pas) : plus tu en achètes, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
 - **en mode infini, ×1,2 à chaque vague**, pour tout (relance, arc et tour compris).
 
 L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
@@ -162,6 +162,7 @@ Sur `Shop` : *Add Component > Shop Panel* :
 - *Upgrade Cards* : 4 éléments, `Card 1` à `Card 4` ;
 - *Bow Card* : `Bow Card`, *Tower Card* : `Tower Card` ;
 - *Reroll Button* : `Reroll`, *Reroll Text* : son enfant `Text (TMP)` ;
+- *Tower Button* : `Tower Button`, *Tower Teleporter* : `Teleporter Bottom` (le bouton « Retour à la tour », voir `Guide_Teleporteur.md`, section 4) ;
 - *Money Text*, *Message Text*, *Owned Text* : les textes du même nom ;
 - sons : *Buy Clip* `shop_buy`, *Error Clip* `shop_error`, *Reroll Clip* `shop_reroll`.
 
@@ -173,6 +174,8 @@ Le panneau s'ouvre devant toi, à ta gauche, où que tu sois : en haut de la tou
 - tu peux te pencher vers lui ou tourner la tête pour le lire : il ne bouge pas ;
 - si tu t'éloignes de plus de 1,2 m, ou si tu te retournes et qu'il sort de ta vue, il glisse jusqu'à ta gauche ;
 - après une téléportation, il réapparaît directement à côté de toi.
+
+En haut à gauche, le bouton bleu « Retour à la tour » te ramène en haut de la tour. Il est caché quand tu y es déjà.
 
 Il ne rentre jamais dans un mur, un arbre ou un coffre, et rien ne le cache : si sa place préférée est prise, il en cherche une autre autour de toi. Il essaie d'abord un peu plus à gauche ou plus près, puis devant, à droite, et en dernier derrière toi.
 

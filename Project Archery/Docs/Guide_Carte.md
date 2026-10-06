@@ -80,6 +80,10 @@ Les volants ne sont pas concernés : ils passent au-dessus.
 1. **Points d'apparition** : place `Enemy Spawner` en `(0, 0, 0)`. Garde ses enfants `Spawn A`, `Spawn B` et `Spawn C`, ajoute-en un quatrième (Ctrl+D), et place les quatre aux bouts des chemins (tableau du plan). Mets les 4 dans la liste *Spawn Points*.
 2. **Barricades** (`Guide_Barricades_Brasero.md`) : elles sont déjà à ces positions, avec ces rotations ; leur flèche bleue pointe vers la forêt. Vérifie que chaque mur couvre toute la largeur de son chemin, sinon agrandis son *Scale X*.
 3. **Coffres** (`Guide_Coffres.md`) : place 6 à 8 objets vides le long des chemins, entre 25 et 50 m de la tour, par exemple dans de petites clairières à côté du chemin. Glisse-les dans *Spawn Points* du `Chest Spawner`. Chacun doit être accessible à pied.
+4. **Pour plus tard** (rien à faire maintenant, mais prévois la place) :
+   - les **matériaux de défense** (prochaine étape, GDD section 9) se ramasseront sur la carte, sans doute à des emplacements choisis comme les coffres : garde quelques petits recoins accessibles à pied, dans la clairière et le long des chemins ;
+   - pour **construire des défenses** (balistes, casernes…), garde des emplacements plats et dégagés d'environ 3 m : 4 à 6 dans la clairière, entre 15 et 30 m de la tour, et un près de l'entrée de chaque chemin, à côté de la barricade. Rien à poser pour l'instant ;
+   - pour les **totems** (fin de projet), laisse un peu de place dégagée au bout de chaque chemin, à côté du point d'apparition.
 
 ## 6. La tour
 
@@ -88,7 +92,7 @@ Pour remplacer le cube par une vraie tour (palissade, tour de guet en bois…) :
 2. Glisse le modèle de tour **à côté** de `Tower`, pas dedans : `Tower` est étiré `(5, 4, 5)`, et le modèle le serait aussi. Place-le en `(0, 0, 0)` et règle son *Scale* pour que son sommet arrive à 4 m.
 3. Si le haut du modèle a une rambarde, ajoute des *Box Collider* fins sur ses bords, sur des objets vides **dans** `Tower` : on ne tombe plus par mégarde. Garde-les à moins de 1,2 m au-dessus de la plateforme : le téléporteur se sert du haut des colliders de la tour pour savoir si tu es en haut.
 
-Le sommet reste à 4 m : le XR Origin, `Tower Top Arrival` et le téléporteur n'ont pas à bouger.
+Le sommet reste à 4 m : le XR Origin, `Tower Top Arrival` et le téléporteur n'ont pas à bouger. Si la tour n'a plus 5 m de côté, règle *Tower Size* du téléporteur (`Teleporter Bottom`) à sa nouvelle taille ; pour une tour ronde, *Tower Size* au diamètre et *Tower Corner Radius* à la moitié.
 
 ## 7. La lumière et la fluidité
 

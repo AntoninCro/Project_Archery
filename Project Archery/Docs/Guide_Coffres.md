@@ -17,7 +17,7 @@ Le ralenti dure jusqu'au choix d'une orbe, au plus 6 s ; les orbes restent ensui
 
 Pendant **Tirs parfaits**, l'anneau est presque entièrement vert, et tout tir lâché à pleine tension compte comme parfait.
 
-Une amélioration trouvée dans un coffre compte comme une amélioration achetée : les prix de la boutique montent de 5 %.
+Une amélioration trouvée dans un coffre ne fait pas monter les prix de la boutique : seules les améliorations achetées comptent.
 
 ## Les scripts
 

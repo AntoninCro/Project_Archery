@@ -63,8 +63,8 @@ namespace Archery.Shop
         [Min(0f)]
         public float priceGrowthPerWave = 0.1f;
 
-        [Tooltip("Chaque amélioration obtenue (boutique ou coffre) fait monter le prix de toutes les suivantes, en se cumulant " +
-                 "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20).")]
+        [Tooltip("Chaque amélioration achetée en boutique fait monter le prix de toutes les suivantes, en se cumulant " +
+                 "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20). Celles des coffres ne comptent pas.")]
         [Min(0f)]
         public float priceIncreasePerPurchase = 0.05f;
 

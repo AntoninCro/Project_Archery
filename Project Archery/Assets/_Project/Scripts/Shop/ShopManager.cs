@@ -40,6 +40,7 @@ namespace Archery.Shop
         WaveManager m_Waves;
         int m_Wave;
         int m_Rerolls;
+        int m_UpgradesBought;
 
         public static ShopManager Instance { get; private set; }
 
@@ -56,8 +57,8 @@ namespace Archery.Shop
 
         int WavesToWin => m_Waves != null ? m_Waves.WavesToWin : 0;
 
-        // Chaque amélioration achetée fait monter le prix des suivantes.
-        static int Purchases => PlayerUpgrades.Instance != null ? PlayerUpgrades.Instance.Count : 0;
+        // Chaque amélioration achetée en boutique fait monter le prix des suivantes. Celles des coffres, non : ce sont des cadeaux.
+        int Purchases => m_UpgradesBought;
 
         // En mode infini, tous les prix montent de 20 % par vague, en se cumulant.
         float EndlessFactor => m_Catalog != null ? m_Catalog.EndlessFactor(m_Wave, WavesToWin) : 1f;
@@ -163,6 +164,7 @@ namespace Archery.Shop
             {
                 case ShopOfferKind.Upgrade:
                     upgrades.Add(offer.Upgrade);
+                    m_UpgradesBought++;
                     offer.Sold = true;
                     RefreshUpgradePrices();
                     result = ShopResult.Done(offer.Upgrade.displayName + " !", offer.Color);

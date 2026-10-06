@@ -171,7 +171,7 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 
 - prix de base : commune 25, rare 60, légendaire 140 ;
 - **+10 % à chaque vague**, en se cumulant (×2,4 après la vague 10) ;
-- **+5 % à chaque amélioration obtenue** (achetée, ou trouvée dans un coffre), en se cumulant (×1,6 après 10, ×2,7 après 20, ×7 après 40) : plus on en a, plus la suivante coûte cher ;
+- **+5 % à chaque amélioration achetée** en boutique (celles des coffres ne comptent pas), en se cumulant (×1,6 après 10, ×2,7 après 20, ×7 après 40) : plus on en achète, plus la suivante coûte cher ;
 - **en mode infini, ×1,2 à chaque vague**, en se cumulant, pour tous les prix de la boutique (améliorations, arc, tour, relance).
 
 | Prix d'une rare (commune, légendaire) | 0 achat | 10 achats | 20 achats | 40 achats |
@@ -208,12 +208,15 @@ Le score, lui, ne baisse pas.
 ## 9. La tour
 
 - 1000 PV, qui ne remontent pas tout seuls : il faut la réparer en boutique.
-- Un téléporteur au pied de la tour mène au sommet, avec un fondu au noir. On reste debout 1 s sur un cercle lumineux ; on arrive en haut tourné vers les ennemis. Au sol, on rejoint le cercle avec le joystick. Pour redescendre, on marche simplement dans le vide (un cercle au sommet reste possible).
+- Un téléporteur au pied de la tour mène au sommet, avec un fondu au noir : une bande lumineuse fait le tour de la tour, et on reste debout 1 s dessus, de n'importe quel côté ; on arrive en haut tourné vers les ennemis. Pour redescendre, on marche simplement dans le vide : en retombant sur la bande, on ne remonte pas tout de suite, il faut d'abord en sortir (un cercle au sommet reste possible).
+- Pendant la pause, le bouton « Retour à la tour » de la boutique ramène directement en haut. Il est caché quand le joueur y est déjà, et grisé tant que la tour est détruite.
 - À la fin d'une vague, le panneau de la boutique s'ouvre devant le joueur, à sa gauche, où qu'il soit. Pendant la pause, il le suit quand il s'éloigne ou se retourne, et ne rentre jamais dans un mur : si sa place est prise, il en cherche une autre autour du joueur.
 - Le sommet est une plateforme à environ 6 m, avec une rambarde, le gong et le brasero.
-- À 0 PV, la tour s'effondre. Le joueur qui était en haut est téléporté au sol, devant le cercle du bas. Le téléporteur ne fonctionne plus et l'argent gagné est divisé par deux jusqu'à la reconstruction.
+- À 0 PV, la tour s'effondre. Le joueur qui était en haut est téléporté au sol, juste à côté de la bande, de son côté. Le téléporteur ne fonctionne plus et l'argent gagné est divisé par deux jusqu'à la reconstruction.
 - **Barricades** : des murs de planches aux 4 entrées de la clairière (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, côté forêt (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
 - **Brasero** : allumé en haut de la tour dès le début de la partie. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd 30 % des dégâts de la flèche en plus, étalés sur ces 3 s. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
+- **Matériaux de défense** (décidé le 7 octobre, à faire après la carte finale) : aux tests, rester en haut de la tour rapportait plus que d'aller chercher les coffres. Pour donner une vraie raison de descendre, sans baisser l'or des ennemis ni renforcer les coffres, une deuxième monnaie se ramasse **seulement sur la carte**, pendant les vagues ; ce qui n'est pas ramassé disparaît à la fin de la vague, comme les coffres. En boutique, les matériaux achètent des améliorations de défense que l'or n'achète pas, par exemple : barricades à pointes ou plus solides, baliste sur la tour qui tire seule, brasero plus chaud, tour qui se répare toute seule. La liste, les prix et les emplacements restent à fixer.
+  - **Piste du 7 octobre, à préciser au démarrage** : aller à fond vers le tower defense. Des emplacements prédéfinis sur la carte, où l'on construit au choix des balistes, des barricades, des casernes qui font apparaître des soldats, etc., et où l'on améliore ensuite ces bâtiments. Les balistes gardent une partie des améliorations de l'arc.
 
 ## 10. Les ennemis
 
@@ -293,9 +296,9 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
   - On accélère et on freine progressivement : en pleine course, un demi-tour freine d'abord. En l'air, on garde son élan.
 - **Slide** : A ou X pendant la course, à partir de 3,5 m/s. On repart 40 % plus vite (10 m/s au plus), puis on glisse 2,5 s dans la même direction, avec peu de frottement, les mains libres pour tirer. Un son, une vibration et la vignette de confort l'accompagnent.
 - Ces déplacements passent par le système de locomotion d'XRI : on ne traverse pas les murs, et l'on tombe si l'on court dans le vide. Le script remplace le déplacement au joystick d'XRI, et le saut d'XRI (bouton A) est désactivé, puisque A sert au slide.
-- Rotation par crans de 45° au joystick, désactivable : pratique avec le câble Link.
+- Rotation par crans de 45° au joystick droit, désactivable : pratique avec le câble Link. Le joystick droit ne fait rien d'autre : la flèche de téléportation d'XRI est désactivée.
 - Vignette de confort pendant le slide (et, en option, pendant la course), réglable dans les paramètres.
-- Le téléporteur de la tour.
+- Le téléporteur de la tour (une bande tout autour de son pied) et le bouton « Retour à la tour » de la boutique.
 
 ## 13. Les coffres
 
@@ -308,7 +311,7 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
   - 30 s de dégâts doublés ;
   - 30 s de tirs parfaits : l'anneau est presque entièrement vert, et tout tir lâché à pleine tension compte comme parfait ;
   - 30 s d'anneau accéléré (×1,75, bandes un peu plus larges).
-- Les bonus en cours s'affichent sur la montre avec leur temps restant ; un message annonce leur fin. Une amélioration trouvée dans un coffre compte pour la hausse des prix de la boutique (section 7).
+- Les bonus en cours s'affichent sur la montre avec leur temps restant ; un message annonce leur fin. Une amélioration trouvée dans un coffre ne fait pas monter les prix de la boutique (section 7) : c'est un vrai cadeau.
 
 ## 14. L'interface
 
@@ -444,6 +447,7 @@ Objectif : toutes les consignes du cours sont couvertes.
 - [ ] Ambiance sonore et musiques (codé, boucles provisoires générées, à monter : `Docs/Guide_Ambiance.md`).
 - [ ] Effets visuels des coups (codé, à monter : `Docs/Guide_Effets.md`).
 - [ ] Carte finale (guide : `Docs/Guide_Carte.md`), équilibrage ; finitions avec des assets de l'Asset Store (lanterne et yeux qui brillent la nuit, décor, vraies musiques).
+- [ ] Matériaux de défense (section 9), une fois la carte finale faite.
 - [x] Coup de flèche au corps à corps (section 4.5) : rien à monter, à tester (`Docs/Guide_CorpsACorps.md`).
 - [ ] Les idées de la section 23 (codées, à monter et tester) : grenade de flèches (`Docs/Guide_Grenade.md`), arc légendaire en 3 morceaux (`Docs/Guide_ArcLegendaire.md`), arcs comme classes et progression entre les parties (`Docs/Guide_Classes.md`).
 - [ ] README (rédigé, crédits et équipe à compléter), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
@@ -478,3 +482,5 @@ Notées pendant les tests, à faire une fois le reste en place et seulement si l
 - **Les arcs comme des classes** et la **progression entre les parties** : faits, en mode optionnel (`Docs/Guide_Classes.md`). Avec le composant `Bow Classes`, on choisit son arc au menu et la boutique n'en vend plus. Chaque partie rapporte de l'expérience (1 XP pour 10 points), gardée dans `progress.json`, qui débloque les arcs : composite à 300 XP, long à 1 000, runique à 2 500. Sans le composant, les arcs s'achètent en boutique comme avant.
 - **Un arc légendaire en 3 morceaux** : fait (`Docs/Guide_ArcLegendaire.md`). Tant qu'il n'est pas complet, un coffre a 35 % de chance de proposer un morceau à la place de sa deuxième amélioration permanente. Au troisième, l'arc légendaire (62 m/s, 32 dégâts, anneau de 1 s aux bandes larges, flèches qui traversent 2 ennemis) remplace celui du joueur jusqu'à la fin de la partie.
 - **Une grenade de flèches** : faite (section 4.6, `Docs/Guide_Grenade.md`).
+- **4 totems** (gardé pour la fin, 7 octobre) : un totem au bout de chaque chemin, protégé par un bouclier tant que le joueur est à plus de 15 m. Chaque totem détruit fait venir moins d'ennemis par son chemin et donne une récompense ; les 4 détruits font venir le boss final plus tôt, avec un gros bonus de score. Les 10 vagues restent.
+- **L'arc légendaire gardé par un boss** (gardé pour la fin, 7 octobre) : ses morceaux ne sont plus dans les coffres, mais dans la forêt, gardés par un ennemi plus fort qu'il faut aller battre.

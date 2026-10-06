@@ -62,7 +62,7 @@ Le curseur va de « Aucune » à 100 % (50 % par défaut). Le réglage est enreg
 
 La course se teste **dans le casque** : il faut vraiment balancer les bras.
 
-1. Lance Play et descends de la tour (le cercle du bas, ou marche dans le vide).
+1. Lance Play et descends de la tour en marchant dans le vide.
 2. Pousse le joystick gauche : tu marches. Tire-le en arrière : tu recules, en regardant toujours devant toi.
 3. Joystick poussé, balance les deux bras : tu accélères nettement, avec des pas plus espacés. Arrête de balancer : tu reviens à la marche. Lâche le joystick : tu t'arrêtes.
 4. En courant, appuie sur A ou X : tu glisses 2,5 s, avec un « chhh », une petite vibration et les bords de la vue qui s'assombrissent. Tire pendant le slide.

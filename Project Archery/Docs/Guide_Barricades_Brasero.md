@@ -78,7 +78,7 @@ Trois *Particle Systems* au matériau `Fire_Particles`, en *Simulation Space* `W
 | Effet | Où | *Shape* | *Start Lifetime* | *Start Speed* | *Start Size* | *Emission* |
 |---|---|---|---|---|---|---|
 | `Flames` | dans le brasero, `Brazier > Fire` | *Cone*, angle 15, rayon 0,25 | 0,6 à 1 | 0,8 à 1,5 | 0,25 à 0,5 | 40 / s |
-| `Arrow Fire` | prefab : la pointe d'une flèche enflammée | *Cone*, angle 10, rayon 0,02 | 0,3 à 0,5 | 0,2 à 0,4 | 0,05 à 0,12 | 30 / s |
+| `Arrow Fire` | prefab : la pointe d'une flèche enflammée | *Cone*, angle 10, rayon 0,02 | 0,3 à 0,5 | 0,2 à 0,4 | 0,05 à 0,12 | 30 / s, et 5 par mètre parcouru (*Rate over Distance*) |
 | `Burn Fire` | prefab : un ennemi qui brûle | *Sphere*, rayon 0,4 | 0,4 à 0,8 | 0,5 à 1 | 0,2 à 0,4 | 25 / s |
 
 Pour les trois :

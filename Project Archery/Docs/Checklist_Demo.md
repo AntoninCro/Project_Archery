@@ -21,7 +21,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
 - [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
-- [ ] Déplacements : marche, course aux bras, slide, téléporteur, descente de la tour à pied.
+- [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
 - [ ] Victoire après la vague 10, puis mode infini.
 - [ ] Mort : écran de fin, nom au clavier virtuel, classement avec la nouvelle ligne, *Rejouer*.
 - [ ] Les paramètres et le classement sont gardés après avoir relancé le jeu.

@@ -46,6 +46,18 @@ Ajoute aussi à chacun :
 - *Color over Lifetime* : l'opacité tombe à 0 à la fin ;
 - *Size over Lifetime* : la taille descend vers 0,3, sauf pour `Death Smoke` où elle **grandit** jusqu'à 1,5.
 
+Dans le projet, ces deux modules sont déjà réglés dans les prefabs :
+
+| Effet | *Color over Lifetime* | *Size over Lifetime* |
+|---|---|---|
+| `Hit Body` | fonce un peu ; opaque jusqu'à la moitié, puis s'efface | de 1 à 0,3 |
+| `Hit Head` | vire à l'orange ; opaque jusqu'à 40 %, puis s'efface | de 1 à 0,3 |
+| `Hit Surface` | s'efface tout du long | de 1 à 0,3 |
+| `Death Smoke` | apparaît en douceur (15 %), puis s'efface | de 1 à 1,5, vite au début |
+| `Explosion` | tes couleurs, orange puis rouge foncé ; opaque jusqu'à 40 %, puis s'efface | de 1 à 0 |
+
+Pour les modifier : clique sur la barre du dégradé pour ouvrir le *Gradient Editor* (repères du haut : opacité, du bas : couleur), et sur la courbe pour l'ouvrir en bas de l'Inspector, dans *Particle System Curves*.
+
 Le cône de *Shape* part vers l'axe Z (bleu) de l'effet : le script le tourne vers l'extérieur de la surface touchée.
 
 Glisse les quatre dans `Prefabs` (dans un dossier `Prefabs/Effects` par exemple), puis supprime-les de la scène.
