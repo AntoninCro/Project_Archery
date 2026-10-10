@@ -3,6 +3,19 @@ using UnityEngine;
 
 namespace Archery.Difficulty
 {
+    /// <summary>Aide à la visée pendant la tension de l'arc (GDD, section 4.3).</summary>
+    public enum AimGuideMode
+    {
+        /// <summary>Aucune aide (Impossible).</summary>
+        None,
+
+        /// <summary>Une ligne droite dans l'axe de la flèche, sans la chute (Difficile).</summary>
+        Line,
+
+        /// <summary>La trajectoire complète de la flèche, chute comprise, jusqu'à son point d'arrivée (Facile, Normal).</summary>
+        Trajectory,
+    }
+
     /// <summary>
     /// Une difficulté (GDD, section 11) : multiplicateurs appliqués aux ennemis, au tir et au score,
     /// et le ciel qui va avec. Un asset par difficulté.
@@ -49,8 +62,9 @@ namespace Archery.Difficulty
         [Min(0.1f)]
         public float goldBandWidth = 1f;
 
-        [Tooltip("Affiche l'aide à la visée (ligne droite dans l'axe de la flèche).")]
-        public bool aimGuide = true;
+        [Tooltip("Aide à la visée : rien, une ligne droite dans l'axe de la flèche, ou la trajectoire complète, chute comprise. " +
+                 "Sa couleur suit l'anneau de timing.")]
+        public AimGuideMode aimGuideMode = AimGuideMode.Trajectory;
 
         [Header("Progression d'une vague à l'autre (exponentielle)")]
         [Tooltip("Multiplie les PV des ennemis à chaque nouvelle vague, en se cumulant (1,08 : ×2 à la vague 10).")]
@@ -114,7 +128,7 @@ namespace Archery.Difficulty
             damageTaken = 0.6f;
             enemyCount = 0.75f;
             goldBandWidth = 1.3f;
-            aimGuide = true;
+            aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 0.75f;
             healthGrowthPerWave = 1.06f;
             damageGrowthPerWave = 1.03f;
@@ -139,7 +153,7 @@ namespace Archery.Difficulty
             damageTaken = 1f;
             enemyCount = 1f;
             goldBandWidth = 1f;
-            aimGuide = true;
+            aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 1f;
             healthGrowthPerWave = 1.08f;
             damageGrowthPerWave = 1.04f;
@@ -164,7 +178,7 @@ namespace Archery.Difficulty
             damageTaken = 1.3f;
             enemyCount = 1.25f;
             goldBandWidth = 0.85f;
-            aimGuide = false;
+            aimGuideMode = AimGuideMode.Line;
             scoreMultiplier = 1.5f;
             healthGrowthPerWave = 1.11f;
             damageGrowthPerWave = 1.06f;
@@ -189,7 +203,7 @@ namespace Archery.Difficulty
             damageTaken = 1.8f;
             enemyCount = 1.6f;
             goldBandWidth = 0.7f;
-            aimGuide = false;
+            aimGuideMode = AimGuideMode.None;
             scoreMultiplier = 2f;
             healthGrowthPerWave = 1.14f;
             damageGrowthPerWave = 1.08f;

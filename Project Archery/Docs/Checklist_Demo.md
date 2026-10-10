@@ -8,18 +8,19 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 
 **Tir**
 - [ ] Prendre l'arc dans chaque main ; prendre une flèche dans le dos, l'encocher, tendre, tirer.
-- [ ] Anneau : rouge, orange, vert ; « ding » et vibration en entrant dans le vert ; tir parfait plus rapide et plus fort.
-- [ ] Aide à la visée en Facile et Normal, absente en Difficile et Impossible.
+- [ ] Anneau vide au centre : rouge, orange, vert, vert pastel ; « ding » et vibration en entrant dans le vert ; tir parfait plus rapide et plus fort ; le cercle s'arrête dans le vert pastel sans recommencer.
+- [ ] Aide à la visée de la couleur de l'anneau : trajectoire complète en Facile et Normal, ligne droite en Difficile, rien en Impossible.
 - [ ] Coup au corps à corps : la flèche reste plantée dans l'ennemi.
 
 **Partie**
 - [ ] Menu : Jouer, difficulté (le ciel change), Paramètres (volumes, rotation, confort), Classement, Quitter.
 - [ ] Gong, chrono, montre (score, chrono, vague, PV, tour, or, combo, difficulté, bonus).
+- [ ] Voile rouge autour de la vision quand les PV baissent, qui bat sous 25 % des PV.
 - [ ] Ennemis : Rampants (vague 1), Volants (vague 2), Tireurs (vague 4), boss (vague 5).
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
-- [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes, récompense ; il disparaît en fin de vague.
+- [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes avec leur nom, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
 - [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
 - [ ] Victoire après la vague 10, puis mode infini.

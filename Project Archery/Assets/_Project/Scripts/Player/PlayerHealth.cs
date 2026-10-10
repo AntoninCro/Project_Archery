@@ -7,7 +7,8 @@ using UnityEngine.SceneManagement;
 namespace Archery.Player
 {
     /// <summary>
-    /// PV du joueur (GDD, section 3) : vibrations et voile rouge quand il est touché.
+    /// PV du joueur (GDD, section 3) : vibrations et voile rouge quand il est touché, et un voile rouge permanent
+    /// autour de la vision, selon les PV perdus (<see cref="HurtVignette"/>, ajouté tout seul).
     /// À placer sur le XR Origin, avec un <see cref="Health"/> et le <see cref="PlayerRig"/>.
     /// </summary>
     [DisallowMultipleComponent]
@@ -28,6 +29,10 @@ namespace Archery.Player
 
         [SerializeField]
         AudioClip m_HurtClip;
+
+        [Tooltip("Voile rouge autour de la vision, de plus en plus marqué avec les PV perdus (Hurt Vignette, ajouté tout seul).")]
+        [SerializeField]
+        bool m_HurtVignette = true;
 
         [Tooltip("En attendant le vrai écran de fin de partie : recharge la scène après la mort.")]
         [SerializeField]
@@ -64,6 +69,8 @@ namespace Archery.Player
             m_PropertyBlock = new MaterialPropertyBlock();
             if (m_DamageOverlay != null)
                 m_DamageOverlay.enabled = false;
+            if (m_HurtVignette && GetComponent<HurtVignette>() == null)
+                gameObject.AddComponent<HurtVignette>();
         }
 
         void OnEnable()

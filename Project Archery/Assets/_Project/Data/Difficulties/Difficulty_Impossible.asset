@@ -22,7 +22,7 @@ MonoBehaviour:
   damageTaken: 1.8
   enemyCount: 1.6
   goldBandWidth: 0.7
-  aimGuide: 0
+  aimGuideMode: 0
   scoreMultiplier: 2
   healthGrowthPerWave: 1.14
   damageGrowthPerWave: 1.08

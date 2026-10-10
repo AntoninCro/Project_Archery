@@ -54,7 +54,7 @@ Dans `Materials` :
 
 ### Leur place dans la scène
 
-Les 4 barricades sont déjà aux entrées de la future clairière, aux positions du plan de `Guide_Carte.md`. Leur flèche bleue (axe Z) pointe vers la forêt.
+Les 4 barricades sont déjà aux entrées de l'ancienne clairière. Leur flèche bleue (axe Z) pointe vers la forêt. **Avec la carte finale à trois voies**, il n'en reste que 3, déplacées sur les voies : voir `Guide_Carte.md`, section 7.
 
 | Objet | Position | Rotation Y |
 |---|---|---|

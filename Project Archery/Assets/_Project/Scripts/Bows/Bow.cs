@@ -123,8 +123,8 @@ namespace Archery.Bows
         float m_ReturnSpeed = 6f;
 
         [Header("Aide à la visée")]
-        [Tooltip("Ligne droite dans l'axe de la flèche pendant la tension (elle ne montre pas la chute). " +
-                 "Masquée aussi quand la difficulté l'interdit (Difficile et Impossible).")]
+        [Tooltip("Pendant la tension, selon la difficulté : la trajectoire complète de la flèche, chute comprise (Facile, Normal), " +
+                 "ou une ligne droite dans son axe (Difficile). Sa couleur suit l'anneau. Rien en Impossible.")]
         [SerializeField]
         bool m_ShowAimGuide = true;
 
@@ -146,6 +146,7 @@ namespace Archery.Bows
         [SerializeField]
         AudioClip m_GoldClip;
 
+        [Tooltip("Joué quand le cercle quitte le vert et finit sa course dans le vert pastel.")]
         [SerializeField]
         AudioClip m_RingLoopClip;
 
@@ -182,6 +183,10 @@ namespace Archery.Bows
 
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
+
+        /// <summary>Partie visuelle qui pivote pendant la visée, et son repose-flèche : la main gantée s'y cale.</summary>
+        public Transform Model => m_Model;
+        public Transform ArrowRest => m_ArrowRest;
 
         // Multiplicateurs donnés par les améliorations et les coffres. Celui de la difficulté
         // (largeur du vert) s'y ajoute au lancement de l'anneau.
@@ -245,7 +250,7 @@ namespace Archery.Bows
             if (m_TimingRing != null)
             {
                 m_TimingRing.GoldEntered += OnGoldEntered;
-                m_TimingRing.Looped += OnRingLooped;
+                m_TimingRing.HoldEntered += OnRingHeld;
             }
 
             // Au lancement, l'arc vient directement se placer près du joueur.
@@ -258,7 +263,7 @@ namespace Archery.Bows
             if (m_TimingRing != null)
             {
                 m_TimingRing.GoldEntered -= OnGoldEntered;
-                m_TimingRing.Looped -= OnRingLooped;
+                m_TimingRing.HoldEntered -= OnRingHeld;
             }
 
             base.OnDestroy();
@@ -760,20 +765,28 @@ namespace Archery.Bows
             m_AimGuide = guideObject.AddComponent<AimGuide>();
         }
 
-        // Ligne droite depuis la pointe de la flèche, plus visible à mesure que la corde se tend.
+        // Depuis la pointe de la flèche, plus visible à mesure que la corde se tend. La vitesse et la couleur sont
+        // celles d'un tir lâché maintenant : la trajectoire montre où irait la flèche, dans la couleur de l'anneau.
         void UpdateAimGuide(float drawRatio)
         {
             if (m_AimGuide == null)
                 return;
 
-            if (!m_ShowAimGuide || m_Nocked == null || drawRatio < 0.05f)
+            if (!m_ShowAimGuide || m_Nocked == null || drawRatio < Mathf.Max(0.05f, Def.minDrawToFire))
             {
                 m_AimGuide.Hide();
                 return;
             }
 
+            var grade = m_TimingRing != null ? m_TimingRing.CurrentGrade : ShotGrade.None;
+            if (ForcePerfect && grade != ShotGrade.None)
+                grade = ShotGrade.Perfect;
+
+            var modifiers = Tuning.Get(grade);
+            var speed = Def.arrowSpeed * Def.drawToPower.Evaluate(drawRatio) * modifiers.speed * SpeedMultiplier;
+            var color = grade == ShotGrade.None ? Color.white : modifiers.color;
             var tip = m_Nocked.NockPosition + m_AimDirection * m_Nocked.Length;
-            m_AimGuide.Show(tip, m_AimDirection, Mathf.Lerp(0.35f, 1f, drawRatio));
+            m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio));
         }
 
         // Côté extérieur de l'arc : à gauche pour un arc tenu de la main gauche, à droite sinon.
@@ -810,7 +823,8 @@ namespace Archery.Bows
             Sfx.Play(m_GoldClip, m_TimingRing.transform.position, 0.5f);
         }
 
-        void OnRingLooped()
+        // Le vert est passé : le cercle finit sa course dans le vert pastel et y attend.
+        void OnRingHeld()
         {
             if (m_Nocked != null)
                 Haptics.Pulse(m_Nocked.Hand, 0.12f, 0.02f);

@@ -72,6 +72,13 @@ MonoBehaviour:
     value: 0.25
     maxStacks: 0
     icon: {fileID: 0}
+  - displayName: Puissance
+    description: "+25 % de d\xE9g\xE2ts."
+    rarity: 1
+    effect: 0
+    value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
   - displayName: Multitir
     description: "+50 % de chance de tirer une fl\xE8che en plus. Avec 2 exemplaires,
       une fl\xE8che en plus \xE0 chaque tir ; avec 3, 50 % de chance d'une deuxi\xE8me,
@@ -119,6 +126,13 @@ MonoBehaviour:
     rarity: 1
     effect: 16
     value: 0.25
+    maxStacks: 0
+    icon: {fileID: 0}
+  - displayName: "Force du g\xE9ant"
+    description: "+60 % de d\xE9g\xE2ts."
+    rarity: 2
+    effect: 0
+    value: 0.6
     maxStacks: 0
     icon: {fileID: 0}
   - displayName: "D\xE9luge"
@@ -169,11 +183,11 @@ MonoBehaviour:
     legendary: 5
   minCommonShare: 0.4
   upgradeOffers: 4
-  commonPrice: 25
-  rarePrice: 60
-  legendaryPrice: 140
+  commonPrice: 10
+  rarePrice: 25
+  legendaryPrice: 45
   priceGrowthPerWave: 0.1
-  priceIncreasePerPurchase: 0.02
+  priceIncreasePerPurchase: 0
   endlessPriceGrowth: 1.2
   rerollCost: 10
   rerollCostIncrease: 5

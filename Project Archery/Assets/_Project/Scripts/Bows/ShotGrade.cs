@@ -14,6 +14,9 @@ namespace Archery.Bows
         Ok,
         Good,
         Perfect,
+
+        /// <summary>Vert pastel : le cercle a dépassé le vert et attend au bout de l'anneau. Portée d'un tir parfait, dégâts moindres.</summary>
+        Held,
     }
 
     /// <summary>

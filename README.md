@@ -16,7 +16,7 @@ Inspirations : *Megabonk*, et *Longbow* dans *The Lab*.
 | Interactions XR, geste naturel | Prendre l'arc, attraper une flèche dans son dos, l'encocher, tendre la corde, lâcher. Soulever le couvercle d'un coffre, attraper une orbe, tremper une flèche dans le feu, frapper au corps à corps. |
 | Trajectoire physique | Flèches soumises à la gravité, portée selon la tension et la qualité du tir. |
 | Plusieurs arcs et flèches | 4 arcs à acheter ; flèches spéciales (foudre, glace, explosion, multitir, déluge, ricochet…) ; flèches enflammées. |
-| Améliorations entre les niveaux | Boutique entre les vagues : 19 améliorations de trois raretés, sans limite d'achat. |
+| Améliorations entre les niveaux | Boutique entre les vagues : 21 améliorations de trois raretés, sans limite d'achat. |
 | Zones de score, cibles mobiles, score en direct | Tête et corps des ennemis (et points faibles du boss) ; cibles d'entraînement, dont une mobile ; score, combo et argent sur la montre. |
 | Niveaux de difficulté | Facile, Normal, Difficile, Impossible, chacun avec son ciel (jour, coucher de soleil, nuit, lune de sang). |
 | Mode entraînement | Cibles et mannequins au menu et pendant les pauses. |
@@ -24,7 +24,7 @@ Inspirations : *Megabonk*, et *Longbow* dans *The Lab*.
 | Clavier virtuel, sauvegarde, classement | Nom saisi au clavier virtuel d'XRI ; classement et paramètres en JSON. |
 | Sons 3D | Sons spatialisés (arc, impacts, ennemis), ambiance jour et nuit, musiques. |
 
-Aussi : un timing à l'anneau (rouge, orange, vert) qui récompense le tir parfait, des ennemis volants et tireurs, un boss toutes les 5 vagues, des coffres dans la forêt, la course en balançant les bras et le slide, un mode infini.
+Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense le tir parfait, une aide à la visée qui montre la trajectoire selon la difficulté, des ennemis volants et tireurs, un boss toutes les 5 vagues, des coffres dans la forêt, la course en balançant les bras et le slide, un mode infini.
 
 ## Commandes
 
@@ -82,7 +82,7 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 - Chevaliers : *Toon RTS Units – Demo*.
 - Coffre animé : *Animated PBR Chest Demo*.
 - Volant (Beholder) : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
-- Décor : *à compléter avec les packs de la carte finale* (Kenney, Quaternius…).
+- Décor : *Nature Kit* (2.1) de Kenney (www.kenney.nl), licence CC0.
 - Sons, ambiances et musiques : provisoires, générés par script pour le prototype.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
 

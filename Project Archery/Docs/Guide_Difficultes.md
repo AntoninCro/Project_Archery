@@ -8,7 +8,7 @@ Ce guide ajoute les 4 difficultés du GDD (section 11) à la scène `Prototype_T
    - les ennemis : PV, vitesse, dégâts, taille de la tête et nombre ;
    - la courbe de difficulté : de combien les PV, les dégâts, le nombre et la vitesse des ennemis augmentent à chaque vague ;
    - la largeur du vert (tir parfait) de l'anneau ;
-   - l'aide à la visée ;
+   - l'aide à la visée : trajectoire complète, ligne droite ou rien ;
    - le score ;
 4. la nuit, une **lanterne** s'allume sur la tour et les **yeux des chevaliers** brillent.
 
@@ -28,14 +28,14 @@ La difficulté est verrouillée dès que la vague 1 commence. Elle reste la mêm
 | Vitesse des ennemis, à chaque vague | ×1,01 | ×1,02 | ×1,025 | ×1,03 |
 | Début plus doux (PV et dégâts) | non | non | non | ×0,5 à la vague 1, en remontant jusqu'à ×1 à la vague 6 |
 | Largeur de la bande verte (tir parfait) | ×1,3 | ×1 | ×0,85 | ×0,7 |
-| Aide à la visée | oui | oui | non | non |
+| Aide à la visée | trajectoire complète | trajectoire complète | ligne droite | aucune |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
 
 Les lignes « à chaque vague » font une **courbe exponentielle** : elles se multiplient d'une vague à l'autre. En Normal, un Rampant a 30 PV à la vague 1, 60 à la vague 10 et 402 à la vague 20 ; il court à 2,5 m/s, puis 3 m/s, puis 4,9 m/s. La vitesse ne fait au plus que doubler (*Max Speed Scale* de `WaveSettings`). En mode infini, la courbe s'accélère encore (partie *Mode infini* de `Data/Waves/WaveSettings`). Le GDD (section 11) donne le tableau complet.
 
 En Impossible, le **début de partie est plus doux** : à la vague 1, les ennemis n'ont que la moitié de leurs PV et de leurs dégâts, puis ils regagnent 10 % par vague jusqu'à retrouver toute leur force à la vague 6 (*Early Strength* et *Full Strength Wave*, partie *Début de partie plus doux*). Leur nombre ne change pas.
 
-> **Tes 4 difficultés sont déjà créées ?** Il n'y a rien à refaire : les nouvelles valeurs ont été ajoutées à leurs assets. Tu les trouves dans les parties *Progression d'une vague à l'autre* et *Début de partie plus doux* de chaque asset.
+> **Tes 4 difficultés sont déjà créées ?** Il n'y a rien à refaire : les nouvelles valeurs ont été ajoutées à leurs assets. Tu les trouves dans les parties *Progression d'une vague à l'autre* et *Début de partie plus doux* de chaque asset. L'ancienne case *Aim Guide* est devenue la liste *Aim Guide Mode* (`None`, `Line`, `Trajectory`), déjà réglée dans les 4 assets (GDD, section 4.3).
 
 ## Les scripts
 

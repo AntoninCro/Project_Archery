@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Archery.Bows;
 using Unity.XR.CoreUtils;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Jump;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
@@ -31,7 +33,21 @@ namespace Archery.Player
         [SerializeField]
         bool m_DisableJump = true;
 
+        [Tooltip("Ce que le joueur tient en main (arc, grenade…) ne compte pas comme sol et ne heurte pas son corps. " +
+                 "Sinon, en courant, l'arc passé sous la tête faisait croire à la gravité d'XRI qu'on touchait le sol : on courait dans le vide.")]
+        [SerializeField]
+        bool m_HeldObjectsAreNotGround = true;
+
+        // Calque « Ignore Raycast » : la gravité d'XRI cherche le sol sur tous les calques sauf celui-ci.
+        const int k_HeldLayer = 2;
+
+        static readonly List<Collider> s_DestroyedColliders = new List<Collider>();
+
         readonly List<XRBaseInputInteractor> m_Hands = new List<XRBaseInputInteractor>();
+
+        // Colliders des objets tenus, avec leur calque d'origine.
+        readonly Dictionary<Collider, int> m_HeldLayers = new Dictionary<Collider, int>();
+        CharacterController m_Body;
 
         public static PlayerRig Instance { get; private set; }
 
@@ -92,6 +108,7 @@ namespace Archery.Player
 
             // Les flèches traversent le corps du joueur.
             ArrowIgnore.Register(root.GetComponentsInChildren<Collider>(true));
+            m_Body = root.GetComponentInChildren<CharacterController>(true);
 
             if (m_DisableGrabMove)
             {
@@ -108,10 +125,111 @@ namespace Archery.Player
             }
         }
 
+        void OnEnable()
+        {
+            if (!m_HeldObjectsAreNotGround)
+                return;
+
+            foreach (var hand in m_Hands)
+            {
+                hand.selectEntered.AddListener(OnSelectEntered);
+                hand.selectExited.AddListener(OnSelectExited);
+            }
+        }
+
+        void OnDisable()
+        {
+            foreach (var hand in m_Hands)
+            {
+                if (hand == null)
+                    continue;
+
+                hand.selectEntered.RemoveListener(OnSelectEntered);
+                hand.selectExited.RemoveListener(OnSelectExited);
+            }
+
+            foreach (var pair in m_HeldLayers)
+            {
+                if (pair.Key != null)
+                    Release(pair.Key, pair.Value);
+            }
+
+            m_HeldLayers.Clear();
+        }
+
         void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
+        }
+
+        void OnSelectEntered(SelectEnterEventArgs args) => SetHeld(args.interactableObject, true);
+
+        void OnSelectExited(SelectExitEventArgs args)
+        {
+            // Encore tenu par l'autre main : il reste « tenu » jusqu'à ce qu'elle le lâche aussi.
+            if (args.interactableObject != null && args.interactableObject.isSelected)
+                return;
+
+            SetHeld(args.interactableObject, false);
+        }
+
+        // Pendant qu'on le tient, l'objet passe sur le calque « Ignore Raycast » et ne heurte plus le corps du joueur.
+        // Il retrouve son calque quand on le lâche.
+        void SetHeld(IXRSelectInteractable interactable, bool held)
+        {
+            if (interactable is not Object unityObject || unityObject == null)
+                return;
+
+            if (held)
+                ForgetDestroyedColliders();
+
+            foreach (var collider in interactable.colliders)
+            {
+                if (collider == null)
+                    continue;
+
+                if (held)
+                {
+                    if (!m_HeldLayers.ContainsKey(collider))
+                        m_HeldLayers.Add(collider, collider.gameObject.layer);
+                    collider.gameObject.layer = k_HeldLayer;
+                    IgnoreBody(collider, true);
+                }
+                else if (m_HeldLayers.TryGetValue(collider, out var layer))
+                {
+                    m_HeldLayers.Remove(collider);
+                    Release(collider, layer);
+                }
+            }
+        }
+
+        void Release(Collider collider, int layer)
+        {
+            collider.gameObject.layer = layer;
+            IgnoreBody(collider, false);
+        }
+
+        void IgnoreBody(Collider collider, bool ignore)
+        {
+            // Unity refuse d'ignorer une collision avec un collider désactivé.
+            if (m_Body != null && m_Body.enabled && m_Body.gameObject.activeInHierarchy &&
+                collider.enabled && collider.gameObject.activeInHierarchy)
+                Physics.IgnoreCollision(m_Body, collider, ignore);
+        }
+
+        // Un objet détruit dans la main (orbe de coffre) ne passe pas toujours par « lâché ».
+        void ForgetDestroyedColliders()
+        {
+            s_DestroyedColliders.Clear();
+            foreach (var collider in m_HeldLayers.Keys)
+            {
+                if (collider == null)
+                    s_DestroyedColliders.Add(collider);
+            }
+
+            foreach (var collider in s_DestroyedColliders)
+                m_HeldLayers.Remove(collider);
         }
 
         public bool TryGetHand(InteractorHandedness handedness, out XRBaseInputInteractor hand)

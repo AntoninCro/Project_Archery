@@ -42,3 +42,9 @@ MonoBehaviour:
     speed: 1.5
     damage: 2
     points: 2
+  m_Held:
+    label: "Très bon"
+    color: {r: 0.62, g: 0.95, b: 0.72, a: 1}
+    speed: 1.5
+    damage: 1.6
+    points: 1.6

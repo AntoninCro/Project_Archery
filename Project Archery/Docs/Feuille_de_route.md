@@ -13,7 +13,7 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | 7 | `Guide_Grenade.md` | Grenade de flèches en bas du dos | — | 45 min |
 | 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 morceaux | coffres (1) | 30 min |
 | 9 | `Guide_Classes.md` | Arcs choisis au menu, expérience entre les parties | — (optionnel) | 45 min |
-| 10 | `Guide_Carte.md` | Clairière, forêt, 4 chemins, NavMesh, emplacements | barricades (3), coffres (1) | une journée |
+| 10 | `Guide_Carte.md` | Carte cubique à trois voies (blocs sur une grille, jungle en terrasses, rampes, rivière qui ralentit, montagnes, antre fermé), NavMesh, emplacements | barricades (3), coffres (1) | deux à trois journées |
 | 11 | (à écrire) matériaux de défense | Deuxième monnaie ramassée sur la carte, améliorations de défense en boutique (GDD, section 9) | carte (10) | à estimer |
 | 12 | `Checklist_Demo.md` | Tests complets, build, démo | tout | une demi-journée |
 
@@ -25,4 +25,4 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 
 **Si le temps manque** : la carte (10) et les tests (12) passent avant les idées de fin de projet (7, 8, 9), qui sont des bonus.
 
-**Gardé pour la fin, si le temps le permet** : les 4 totems et l'arc légendaire gardé par un boss (GDD, section 23).
+**Gardé pour la fin, si le temps le permet** (GDD, sections 12, 17 bis, 21 et 23), dans l'ordre conseillé : le boss final dans son antre, la lumière et l'éclairage, les finitions (menus, icônes, arcs), le tutoriel, le saut aux bras, les totems, l'arc légendaire gardé par un boss, puis les cinématiques.

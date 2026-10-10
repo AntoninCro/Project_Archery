@@ -29,7 +29,7 @@ namespace Archery.Shop
     /// Contenu et prix de la boutique (GDD, sections 5, 6 et 7) : améliorations, raretés, arcs, services de la tour.
     /// </summary>
     /// <remarks>
-    /// Le menu ⋮ de l'asset propose « Remplir avec le GDD » : les 19 améliorations, les chances et les prix.
+    /// Le menu ⋮ de l'asset propose « Remplir avec le GDD » : les 21 améliorations, les chances et les prix.
     /// Les arcs se glissent à la main dans la liste « Bows ».
     /// </remarks>
     [CreateAssetMenu(fileName = "ShopCatalog", menuName = "Archery/Shop Catalog")]
@@ -213,12 +213,14 @@ namespace Archery.Shop
                 new Upgrade("Butin", "+20 % d'or : 30 % des points deviennent de l'or au lieu de 25 %.", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
                 new Upgrade("Chasseur de têtes", "+25 % de dégâts à la tête.", UpgradeRarity.Common, UpgradeEffect.HeadHunter, 0.25f),
                 new Upgrade("Chance", "Les cartes rares et légendaires sortent plus souvent (+25 % de poids). Il reste toujours des cartes communes.", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
+                new Upgrade("Puissance", "+25 % de dégâts.", UpgradeRarity.Rare, UpgradeEffect.Damage, 0.25f),
                 new Upgrade("Multitir", "+50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, 50 % de chance d'une deuxième, etc. La flèche de l'arc part toujours tout droit.", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
                 new Upgrade("Flèche de foudre", "Chaque flèche a 20 % de chance d'appeler un éclair qui blesse la cible et la ralentit. Au-delà de 100 % : éclairs plus forts.", UpgradeRarity.Rare, UpgradeEffect.Lightning, 0.2f),
                 new Upgrade("Perçage", "Chaque flèche a 25 % de chance de traverser un ennemi. Au-delà de 100 % : plusieurs ennemis traversés.", UpgradeRarity.Rare, UpgradeEffect.Piercing, 0.25f),
                 new Upgrade("Vampirisme", "Chaque tir à la tête rend 2 PV.", UpgradeRarity.Rare, UpgradeEffect.Vampirism, 2f),
                 new Upgrade("Tir écho", "25 % de chance que la volée se répète un instant après, à la même puissance. Au-delà de 100 % : plusieurs échos.", UpgradeRarity.Rare, UpgradeEffect.Echo, 0.25f),
                 new Upgrade("Flèche de glace", "Chaque flèche a 25 % de chance de laisser au sol une zone de glace qui ralentit les ennemis. Au-delà de 100 % : glace plus forte et plus grande.", UpgradeRarity.Rare, UpgradeEffect.Frost, 0.25f),
+                new Upgrade("Force du géant", "+60 % de dégâts.", UpgradeRarity.Legendary, UpgradeEffect.Damage, 0.6f),
                 new Upgrade("Déluge", "En vol, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisième flèche, etc. Elle continue tout droit.", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
                 new Upgrade("Chaîne d'éclairs", "La foudre rebondit sur 3 ennemis proches de plus. Sans Flèche de foudre, 20 % des flèches l'appellent.", UpgradeRarity.Legendary, UpgradeEffect.ChainLightning, 3f),
                 new Upgrade("Flèche explosive", "Chaque flèche a 25 % de chance d'exploser et de toucher les ennemis autour. Au-delà de 100 % : explosions plus fortes et plus larges.", UpgradeRarity.Legendary, UpgradeEffect.Explosive, 0.25f),

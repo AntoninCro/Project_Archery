@@ -22,7 +22,7 @@ Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section
 
 L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
 
-### Les 19 améliorations
+### Les 21 améliorations
 
 | Amélioration | Rareté | Effet de chaque exemplaire |
 |---|---|---|
@@ -34,12 +34,14 @@ L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèch
 | Butin | commune | +20 % d'or : 30 % des points deviennent de l'or au lieu de 25 % |
 | Chasseur de têtes | commune | +25 % de dégâts à la tête |
 | Chance | commune | les cartes rares et légendaires sortent plus souvent (+25 % de poids) ; il reste toujours au moins 40 % de communes |
+| Puissance | rare | +25 % de dégâts |
 | Multitir | rare | +50 % de chance de tirer une flèche en plus : à côté de la flèche de l'arc, puis en éventail de chaque côté |
 | Flèche de foudre | rare | +20 % de chance par flèche : éclair, cible ralentie de 40 % pendant 2 s |
 | Perçage | rare | +25 % de chance par flèche de traverser un ennemi |
 | Vampirisme | rare | chaque tir à la tête rend 2 PV |
 | Tir écho | rare | +25 % de chance que la volée se répète 0,25 s après, à la même puissance |
 | Flèche de glace | rare | +25 % de chance par flèche : zone de glace au sol (3 m, 5 s) qui ralentit les ennemis de 50 % |
+| Force du géant | légendaire | +60 % de dégâts |
 | Déluge | légendaire | +50 % de chance que chaque flèche se divise en deux, en vol ; elle continue tout droit |
 | Chaîne d'éclairs | légendaire | la foudre rebondit sur 3 ennemis proches de plus |
 | Flèche explosive | légendaire | +25 % de chance par flèche d'exploser et de toucher les ennemis autour |
@@ -47,6 +49,7 @@ L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèch
 | Tir ricochet | légendaire | après un ennemi, la flèche rebondit vers un autre ennemi proche (+1 rebond) |
 
 Quelques règles :
+- **Des dégâts dans chaque rareté** : Dégâts (+10 %), Puissance (+25 %) et Force du géant (+60 %) s'additionnent entre elles. Plus la carte est rare, plus elle rapporte pour son prix.
 - **Les flèches spéciales se reconnaissent à leur traînée** : bleue pour la foudre, orange pour l'explosion, bleu pâle pour la glace.
 - **Les flèches en plus sont de vraies flèches** : celles du multitir, du tir écho et du déluge tirent au sort leurs propres effets (foudre, explosion, glace, perçage). Elles profitent de l'auto-visée et du ricochet, et ne cassent pas le combo quand elles ratent. Elles ne rapportent pas de points de touche (seulement leurs éliminations) et ne sifflent pas en vol.
 - **La volée reste centrée sur la visée** : la flèche de l'arc part toujours tout droit, et les autres se placent par paires, à gauche et à droite. Avec un nombre pair de flèches, celle qui n'a pas de paire part 20 cm à côté de la flèche de l'arc, dans la même direction. Avec 2 flèches, les deux vont donc là où tu vises. Le déluge suit la même règle autour de la flèche qui se divise.
@@ -72,7 +75,7 @@ Les sons sont dans `Audio/Placeholder` : `shop_buy`, `shop_error`, `shop_reroll`
 
 1. Dans `Assets/_Project/Data`, crée un dossier `Shop`.
 2. Dedans : clic droit > *Create > Archery > Shop Catalog*, nomme-le `ShopCatalog`.
-3. Menu **⋮** de l'Inspector > *Remplir avec le GDD*. Cela remplit les 19 améliorations du tableau, les chances des raretés et les prix.
+3. Menu **⋮** de l'Inspector > *Remplir avec le GDD*. Cela remplit les 21 améliorations du tableau, les chances des raretés et les prix.
 4. Dans la liste *Bows*, glisse les 4 arcs de `Data/Bows`, dans l'ordre : `Bow_Chasse`, `Bow_Composite`, `Bow_Long`, `Bow_Runique`.
    - Le premier est l'arc de départ.
    - La boutique propose toujours le suivant, à partir de la vague indiquée dans son asset : composite avant la vague 2, long avant la vague 4, runique avant la vague 7.
@@ -81,7 +84,7 @@ Chaque amélioration a un nom, une description, une rareté, un effet, une valeu
 
 Par exemple, pour que **chaque** tir ait son écho, mets la *Value* du *Tir écho* à `1` (100 %). Pense alors à changer sa description.
 
-> **Ta boutique est déjà montée ?** Il n'y a rien à refaire : l'asset `ShopCatalog` a été mis à jour avec les nouvelles valeurs (19 améliorations sans limite, raretés fixes, prix progressifs). Si tu l'as modifié à la main depuis, refais *Remplir avec le GDD* : la liste *Bows* n'est pas touchée.
+> **Ta boutique est déjà montée ?** Il n'y a rien à refaire : l'asset `ShopCatalog` a été mis à jour avec les nouvelles valeurs (21 améliorations sans limite, dont les dégâts rares et légendaires, raretés fixes, prix progressifs). Si tu l'as modifié à la main depuis, refais *Remplir avec le GDD* : la liste *Bows* n'est pas touchée.
 
 ## 2. Les gestionnaires
 

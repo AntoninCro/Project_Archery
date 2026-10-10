@@ -21,7 +21,7 @@ Inspirations : *Megabonk* (survivor, style low-poly) et *Longbow* dans *The Lab*
 | Temps disponible | 10 à 20 h par semaine, soit 30 à 60 h jusqu'au rendu |
 | Casque | Meta Quest 3 / 3S, démo branchée à un PC (Link ou Air Link) |
 | Moteur | Unity 6000.5.10f1, URP, XR Interaction Toolkit 3.5.1, OpenXR |
-| Graphismes | low-poly, packs gratuits (Quaternius, Kenney, licence CC0) |
+| Graphismes | low-poly : décor des kits *Nature Kit* et *Castle Kit* de Kenney (licence CC0), monstres de l'Asset Store |
 | Consignes | adaptables : par exemple, les points du headshot remplacent ceux du centre de la cible |
 
 ## 3. Déroulement d'une partie
@@ -30,7 +30,7 @@ Inspirations : *Megabonk* (survivor, style low-poly) et *Longbow* dans *The Lab*
 2. **Vague** : un chrono tourne et les ennemis sortent de la forêt. Quand le chrono atteint zéro, la vague est finie et les ennemis restants s'enfuient.
 3. **Pause** : la boutique s'ouvre en haut de la tour et les cibles d'entraînement réapparaissent. Les PV du joueur sont restaurés, pas ceux de la tour. On tire dans un gong pour lancer la vague suivante.
 4. **Boss** aux vagues 5 et 10, puis toutes les 5 vagues. Une vague de boss ne se termine qu'à la mort du boss : le chrono arrête seulement les renforts.
-5. **Victoire** après la vague 10. Le joueur peut ensuite continuer en mode infini pour le score.
+5. **Victoire** après la vague 10. Le joueur peut ensuite continuer en mode infini pour le score. (Idée gardée pour la suite : la vague 10 devient le combat contre le boss final, dans son antre, section 23.)
 6. **Défaite** quand les PV du joueur tombent à 0. La destruction de la tour ne termine pas la partie, mais pénalise fortement (voir section 9).
 7. **Fin de partie** : résumé, saisie du nom au clavier virtuel, classement, retour au menu.
 
@@ -46,18 +46,21 @@ Durée des vagues : 30 s à la vague 1, puis 5 s de plus à chaque vague (75 s �
 4. Tendre : reculer la main. La puissance dépend de la distance de tirage (main à environ 50 cm de l'arc à tension maximale, selon l'arc). La vibration et le grincement augmentent avec la tension.
 5. Lâcher le bouton : la flèche part, propulsée par le moteur physique.
 
+On voit des mains d'archer gantées de cuir à la place des manettes : le gant low-poly de Quaternius. Elles se ferment avec la poignée et la gâchette, serrent la poignée de l'arc sous le repose-flèche, tiennent la flèche dans le poing et crochètent la corde à l'encoche (prise méditerranéenne : index au-dessus de la flèche). Elles tendent l'index vers les menus. La main droite porte un gant à trois doigts : pouce et auriculaire nus. Le composant `GlovedHands` du XR Origin les règle ; le décocher rend les manettes.
+
 ### 4.2 L'anneau de timing
 
 - Il apparaît quand la corde est tendue au maximum, sur l'arc, près de la main.
-- Ses bandes, de l'extérieur vers le centre : rouge, orange, vert, orange, rouge. Trois couleurs, comme un feu tricolore : rouge pour un tir raté, orange pour un bon tir, vert pour un tir parfait. Aux premiers tests, l'ancien doré du tir parfait se confondait avec du jaune.
-- Un cercle d'approche rétrécit du bord vers le centre (en 1,2 s avec l'arc de départ). La bande où il se trouve au moment du lâcher donne la qualité du tir.
+- C'est un anneau épais, vide au centre. Ses bandes, de l'extérieur vers l'intérieur : rouge, orange, vert, puis vert pastel. Les trois premières suivent un feu tricolore : rouge pour un tir raté, orange pour un bon tir, vert pour un tir parfait. Aux premiers tests, l'ancien doré du tir parfait se confondait avec du jaune.
+- Un cercle d'approche rétrécit du bord vers l'intérieur (en 1,2 s du bord au centre avec l'arc de départ). La bande où il se trouve au moment du lâcher donne la qualité du tir.
 - Une vibration et un « ding » marquent l'entrée dans le vert, pour le sentir sans regarder l'anneau.
-- Si le cercle atteint le centre sans tir, l'anneau recommence.
+- Après le vert, le cercle finit sa course dans le vert pastel et s'y arrête jusqu'au tir : l'anneau ne recommence plus. Un tir « très bon » va aussi loin qu'un tir parfait, mais fait moins de dégâts et rapporte moins de points. Aux tests, la boucle était frustrante pour les débutants : après avoir raté le vert, il fallait attendre un tour complet, en passant par le rouge.
 - Un tir lâché avant la tension maximale est faible et sans bonus.
 
 | Qualité | Bande | Vitesse | Portée | Dégâts | Points |
 |---|---|---|---|---|---|
 | Parfait | vert | ×1,5 | ×2,25 | ×2 | ×2 |
+| Très bon | vert pastel (le cercle y attend) | ×1,5 | ×2,25 | ×1,6 | ×1,6 |
 | Bon | orange | ×1,15 | ×1,3 | ×1,25 | ×1,25 |
 | Raté | rouge | ×0,6 | ×0,36 | ×0,75 | ×0,5 |
 | Sans anneau (tension incomplète) | — | ×0,6 | ×0,36 | ×0,75 | ×0,5 |
@@ -66,7 +69,13 @@ La portée varie comme le carré de la vitesse : un tir parfait va environ 6 foi
 
 ### 4.3 L'aide à la visée
 
-Pendant la tension, une ligne droite part de la pointe de la flèche, dans son axe. Elle ne montre pas la chute de la flèche : elle aide à viser sans tout faire à la place du joueur. Elle s'arrête au premier obstacle et devient plus visible à mesure que la corde se tend. Elle est disponible en Facile et Normal, et retirée en Difficile et Impossible (section 11).
+Pendant la tension, un trait part de la pointe de la flèche. Il devient plus visible à mesure que la corde se tend, et il prend la couleur de l'anneau à cet instant (blanc avant la tension maximale, puis rouge, orange, vert ou vert pastel). Sa forme dépend de la difficulté (section 11) :
+
+- **Facile et Normal : la trajectoire complète.** Le trait suit la courbe qu'aurait la flèche lâchée maintenant, chute comprise, jusqu'à son point d'arrivée, marqué d'un petit cercle. La courbe s'allonge avec la tension et avec la bande de l'anneau : un tir rouge tombe vite, un tir vert ou vert pastel va loin.
+- **Difficile : une ligne droite** dans l'axe de la flèche, sans la chute. Elle aide à viser sans tout faire à la place du joueur, et s'arrête au premier obstacle. Aux premiers tests, il n'y avait aucune aide en Difficile.
+- **Impossible : aucune aide.**
+
+La trajectoire est calculée comme le vol de la flèche (gravité, sans frottement), avec la vitesse qu'elle aurait au lâcher : arc, tension, bande de l'anneau et améliorations de vitesse comprises. Réglage *Aim Guide Mode* de chaque difficulté (`Data/Difficulties`).
 
 ### 4.4 La flèche
 
@@ -106,8 +115,8 @@ Un arc de départ, puis des arcs plus puissants à acheter en boutique.
 | Rareté | Couleur | Rôle | Chances |
 |---|---|---|---|
 | Commune | blanc | statistiques | 70 % |
-| Rare | bleu | effets qui se déclenchent parfois | 25 % |
-| Légendaire | doré | effets puissants ou uniques | 5 % |
+| Rare | bleu | effets qui se déclenchent parfois, bonus de dégâts plus gros | 25 % |
+| Légendaire | doré | effets puissants ou uniques, très gros bonus de dégâts | 5 % |
 
 Les chances sont les mêmes toute la partie. Aux premiers tests, elles montaient avec les vagues, et les boutiques de fin de partie n'avaient plus aucune carte commune. L'amélioration Chance augmente le poids des rares et des légendaires, mais les communes gardent toujours au moins 40 % des tirages.
 
@@ -141,8 +150,11 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 - Chasseur de têtes : +25 % de dégâts à la tête.
 - Chance : les cartes rares et légendaires sortent plus souvent en boutique (+25 % de poids face aux communes). Les communes gardent toujours au moins 40 % des tirages.
 
-**Rares** (se déclenchent au hasard)
+**Des dégâts dans chaque rareté.** Aux tests, seules les cartes communes augmentaient les dégâts. Chaque rareté a donc la sienne, un peu plus rentable pour son prix à mesure qu'elle est rare : Dégâts (+10 % pour 25), Puissance (+25 % pour 60), Force du géant (+60 % pour 140). Elles s'additionnent entre elles.
 
+**Rares** (surtout des effets qui se déclenchent au hasard)
+
+- Puissance : +25 % de dégâts.
 - Multitir : +50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, une flèche en plus et 50 % de chance d'une deuxième ; etc. Avec 2 flèches, elles partent côte à côte ; à partir de 3, l'éventail s'ouvre de chaque côté.
 - Flèche de foudre : chaque flèche a 20 % de chance d'appeler un éclair qui blesse la cible (75 % des dégâts de la flèche) et la ralentit de 40 % pendant 2 s.
 - Perçage : chaque flèche a 25 % de chance de traverser un ennemi ; au-delà de 100 %, elle en traverse plusieurs. Chaque ennemi traversé enlève 20 % des dégâts.
@@ -152,6 +164,7 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 
 **Légendaires**
 
+- Force du géant : +60 % de dégâts.
 - Déluge : en vol, environ 0,2 s après son départ, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, en deux, et 50 % de chance en trois ; etc. La flèche continue tout droit, la nouvelle part juste à côté d'elle, et les suivantes s'écartent par paires.
 - Chaîne d'éclairs : la foudre rebondit sur 3 ennemis proches de plus par exemplaire. Sans flèche de foudre, 20 % des flèches appellent l'éclair.
 - Flèche explosive : chaque flèche a 25 % de chance d'exploser et de toucher tous les ennemis autour (3,5 m).
@@ -213,7 +226,7 @@ Le score, lui, ne baisse pas.
 - À la fin d'une vague, le panneau de la boutique s'ouvre devant le joueur, à sa gauche, où qu'il soit. Pendant la pause, il le suit quand il s'éloigne ou se retourne, et ne rentre jamais dans un mur : si sa place est prise, il en cherche une autre autour du joueur.
 - Le sommet est une plateforme à environ 6 m, avec une rambarde, le gong et le brasero.
 - À 0 PV, la tour s'effondre. Le joueur qui était en haut est téléporté au sol, juste à côté de la bande, de son côté. Le téléporteur ne fonctionne plus et l'argent gagné est divisé par deux jusqu'à la reconstruction.
-- **Barricades** : des murs de planches aux 4 entrées de la clairière (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, côté forêt (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
+- **Barricades** : des murs de planches sur les 3 voies, vers 30 m de la tour (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, du côté de son apparition (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
 - **Brasero** : allumé en haut de la tour dès le début de la partie. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd 30 % des dégâts de la flèche en plus, étalés sur ces 3 s. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
 - **Matériaux de défense** (décidé le 7 octobre, à faire après la carte finale) : aux tests, rester en haut de la tour rapportait plus que d'aller chercher les coffres. Pour donner une vraie raison de descendre, sans baisser l'or des ennemis ni renforcer les coffres, une deuxième monnaie se ramasse **seulement sur la carte**, pendant les vagues ; ce qui n'est pas ramassé disparaît à la fin de la vague, comme les coffres. En boutique, les matériaux achètent des améliorations de défense que l'or n'achète pas, par exemple : barricades à pointes ou plus solides, baliste sur la tour qui tire seule, brasero plus chaud, tour qui se répare toute seule. La liste, les prix et les emplacements restent à fixer.
   - **Piste du 7 octobre, à préciser au démarrage** : aller à fond vers le tower defense. Des emplacements prédéfinis sur la carte, où l'on construit au choix des balistes, des barricades, des casernes qui font apparaître des soldats, etc., et où l'on améliore ensuite ces bâtiments. Les balistes gardent une partie des améliorations de l'arc.
@@ -232,7 +245,7 @@ Le score, lui, ne baisse pas.
 - **Tireur** : un mage. Il marche vers le joueur et s'arrête vers 20 m (80 % de sa portée de 25 m). Toutes les 3 s, il abat son bâton vers le joueur, et un projectile lent (9 m/s) part du bout du bâton vers sa tête. On peut l'esquiver, ou l'abattre d'une flèche (5 points). Le projectile se brise sur le décor.
 - Le volant et le tireur visent toujours le joueur, jamais la tour.
 - Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive 4 s après le début de la vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11) : le boss de la vague 10 est plus coriace que celui de la vague 5. Une vague de boss compte 40 % de Rampants ordinaires en moins.
-- Les ennemis sortent de la forêt par 4 chemins autour de la clairière.
+- Les ennemis arrivent par 3 voies : à gauche et à droite depuis les coins de la carte voisins de la base, au milieu depuis le centre de la carte (section 17).
 - Chaque vague dispose d'un budget qui augmente de vague en vague. Chaque ennemi a un coût, et le budget est dépensé tout au long du chrono.
 - Les PV, les dégâts, le nombre et la vitesse des ennemis suivent une courbe exponentielle (section 11). Le tableau ci-dessus donne leurs valeurs à la vague 1, en Normal. Quand ils vont plus vite, leur animation de course accélère aussi.
 - Pour que le jeu reste fluide dans le casque : 500 ennemis au plus par vague, et 40 en vie en même temps (12 à la vague 1 en Normal ; ce maximum grandit avec la difficulté et les vagues). À la fin du chrono, ceux qui ne sont pas encore sortis ne viennent plus.
@@ -253,7 +266,7 @@ Le score, lui, ne baisse pas.
 | Vitesse des ennemis, à chaque vague | ×1,01 | ×1,02 | ×1,025 | ×1,03 |
 | Début plus doux (PV et dégâts) | non | non | non | ×0,5 à la vague 1, en remontant jusqu'à ×1 à la vague 6 |
 | Largeur de la bande verte (parfait) | ×1,3 | ×1 | ×0,85 | ×0,7 |
-| Aide à la visée | oui | oui | non | non |
+| Aide à la visée (section 4.3) | trajectoire complète | trajectoire complète | ligne droite | aucune |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
 
 La nuit, les yeux des ennemis brillent et une lanterne éclaire la tour, pour que le jeu reste lisible.
@@ -299,6 +312,8 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 - Rotation par crans de 45° au joystick droit, désactivable : pratique avec le câble Link. Le joystick droit ne fait rien d'autre : la flèche de téléportation d'XRI est désactivée.
 - Vignette de confort pendant le slide (et, en option, pendant la course), réglable dans les paramètres.
 - Le téléporteur de la tour (une bande tout autour de son pied) et le bouton « Retour à la tour » de la boutique.
+- **Prévu** : le slide accélère dans les descentes et ralentit dans les montées (les rampes de la carte, section 17).
+- **Prévu, en fin de projet : le saut aux bras.** Lever les deux bras d'un coup, en poussant le joystick, fait sauter. Il faut les deux mains, vite et vers le haut : prendre une flèche dans le carquois ou lever l'arc ne fait pas sauter. Pratique pour franchir la rivière ou monter sur un rocher.
 
 ## 13. Les coffres
 
@@ -318,6 +333,7 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 - **Menu principal**, dans le décor en haut de la tour, avant la première vague : Jouer (avec le choix de la difficulté), Paramètres, Classement, Quitter. Le gong et les panneaux de difficulté marchent aussi. On clique au rayon de la main libre, avec la gâchette.
 - **Paramètres** : volumes général, musique et effets (Audio Mixer) ; rotation au joystick par crans ; vignette de confort pendant le slide, de « Aucune » à 100 %.
 - **Montre au poignet** : score, chrono, numéro de vague, PV du joueur, PV de la tour, argent, combo, difficulté, bonus des coffres en cours.
+- **Voile rouge des PV** : aux tests, il était difficile de surveiller ses PV sur la montre en plein combat. Un voile rouge borde donc la vision, comme la vignette du slide : il apparaît après 10 % de PV perdus, puis rougit et se resserre vers le centre à mesure que les PV baissent. Il suit les PV lentement (environ 1 s), bat comme un cœur sous 25 % des PV, et s'efface quand les PV remontent ou à la mort. Ajouté tout seul par le composant `Player Health` (case *Hurt Vignette*).
 - **Retours dans le monde** : chiffres de dégâts, « Headshot ! », « Parfait ! » ; particules à l'impact (giclée au corps, étincelles dorées à la tête, poussière dans le décor) et fumée à la mort d'un ennemi.
 - **Fin de partie** : un écran apparaît devant le joueur après sa mort, et les ennemis s'enfuient. Il affiche le résumé (score, vague atteinte, difficulté, ennemis tués, headshots, tirs parfaits) et fait saisir le nom au clavier virtuel de XRI (exemple *Spatial Keyboard*). Le classement s'affiche ensuite avec la nouvelle ligne en doré ; *Rejouer* ramène au menu avec un fondu.
 - **Classement** : les 10 meilleurs scores, avec le nom, le score, la difficulté et la vague atteinte, du meilleur au moins bon.
@@ -346,10 +362,32 @@ Tous les sons du jeu sont spatialisés.
 
 ## 17. La carte
 
-- Une seule scène : une clairière d'environ 35 m de rayon, la tour au centre, une forêt dense autour (de 37 à 75 m), percée de 4 chemins de 4 m de large (nord, est, sud, ouest), avec les points d'apparition à leur bout (65 m) et une barricade à chaque entrée (36 m).
-- La forêt n'est pas praticable pour les ennemis au sol (NavMesh « Not Walkable ») : ils passent par les chemins. Les coffres apparaissent à des emplacements choisis le long des chemins.
-- Décors et monstres : packs nature et monstres animés de Quaternius, Nature Kit de Kenney.
-- Sol : un grand plan au matériau d'herbe, avec des bandes de terre pour les chemins. Pas de Terrain d'Unity, dont le rendu lisse jure avec le style low-poly.
+Refaite le 7 octobre sur le modèle de *League of Legends* : défendre une tour attaquée à 360° tout en allant chercher des coffres était trop difficile. Avec un front d'environ 90°, on peut quitter la tour sans être pris à revers.
+
+- Une seule scène : un carré d'environ 75 m de côté, aligné sur la grille. La **base** (la tour) est dans le coin sud-ouest, les montagnes dans son dos ; en haut de la tour, le joueur regarde vers le nord-est, le centre de la carte.
+- **3 voies** de 5 m de large, qui zigzaguent un peu :
+  - à gauche et à droite, le long des bords, depuis les coins voisins de la base, où apparaissent leurs ennemis (environ 70 m de voie) ;
+  - au milieu, en diagonale (en escalier sur la grille), depuis le centre de la carte (53 m).
+
+  Une barricade sur chaque voie, vers 30 m de la tour.
+- De la **jungle** en terrasses entre les voies : des arbres, des clairières pour les coffres (et plus tard les matériaux et les emplacements de construction). Les ennemis au sol n'y montent pas et restent sur les voies : la jungle protège des monstres au sol, pas des volants ni des mages.
+- **Plan final** (croquis du 9 octobre) : près de la base, de chaque côté de la voie du milieu, une **clairière** au niveau du sol et sans arbres, pour bien voir venir les ennemis. Un escalier de deux étages la relie à la jungle : à droite, le long d'une lisière perpendiculaire à la voie ; à gauche, le long d'une lisière en biais (escalier en dents de scie). Plus loin, entre la voie de gauche et celle du milieu, une forêt traversée par la rivière : elle descend du nord et se sépare en deux bras, l'un vers la voie de gauche, l'autre vers la voie du milieu puis celle de droite. Entre la voie du milieu et celle de droite, une forêt plus montagneuse, avec des rochers.
+- Une **rivière** coupe les trois voies juste devant les barricades : les ennemis au sol y avancent 40 % moins vite (`Slow Water`), là où le joueur les vise. Les volants ne sont pas ralentis. Elle passe dans la jungle par un chenal, avec des cascades et des ponts.
+- Des **montagnes** tout autour, trop raides pour être gravies : la limite de la carte.
+- L'**antre du boss** au fond de la voie du milieu, fermé par une porte (boss final, section 23).
+- **Sol et voie du milieu** : on garde les aplats de couleur « low-poly » du kit. La voie du milieu et la forêt qui la borde suivent deux droites en diagonale : demi-cases de terre coupées en diagonale, blocs de forêt et pièces d'escalier coupés eux aussi (`Docs/Guide_Carte.md`, section 3). Les côtés d'escalier à découvert sont habillés de bordures d'escalier : de la roche à lèvre d'herbe, dont le dessus suit les marches (section 5). Un sol peint a été essayé le 9 octobre, puis abandonné : son vert ne correspondait pas au reste de la carte.
+- **Style cubique**, comme l'image d'exemple du Nature Kit : pas de collines lisses, mais des blocs posés sur une grille de 3 m. Les voies sont au niveau du sol, la jungle en terrasses de 3 m (des falaises le long des voies), avec quelques terrasses à 6 m, des cascades et des ponts. On monte par des rampes et des escaliers à 27° (une pente invisible sous les marches), où l'on peut glisser en slide ; on descend en sautant. Les voies montent et descendent aussi : les ennemis les suivent, mais ne montent pas dans la jungle (ses accès sont interdits dans leur NavMesh).
+- Modèles : *Nature Kit* (arbres, rochers, décor) et *Castle Kit* (tour, porte de l'antre ; balistes et catapultes pour plus tard) de Kenney, en licence CC0.
+- Montage : `Docs/Guide_Carte.md`.
+
+## 17 bis. Lumière et éclairage
+
+À faire en finition. C'est un gros bonus pour l'ambiance, surtout la nuit (Difficile, Impossible) :
+- **Lucioles** : des particules lentes et lumineuses dans la jungle et au bord de la rivière, plus nombreuses la nuit.
+- **Pierres qui brillent** : quelques rochers et cristaux au matériau émissif (une lueur douce, bleue ou verte), le long des voies et dans les clairières. Ils guident aussi le joueur dans la jungle.
+- **Touches « néon »** : des runes ou des lignes lumineuses sur la tour, la porte de l'antre et les futurs emplacements de construction ; des champignons de la jungle légèrement lumineux.
+- Un **bloom** léger (post-traitement d'URP) pour que ces matériaux rayonnent.
+- Le moins possible de vraies lumières, coûteuses en VR : les matériaux émissifs et le bloom suffisent. Une seule lumière projette des ombres.
 
 ## 18. Architecture technique
 
@@ -361,13 +399,13 @@ Assets/_Project/
 │   ├── Combat/      PV, zones de touche, dégâts
 │   ├── Enemies/     ennemi au sol, volant, tireur et ses projectiles, boss, données des ennemis, apparition
 │   ├── Defense/     la tour, son téléporteur, les barricades, le brasero
-│   ├── Player/      accès au joueur (tête, mains, arc rangé), PV du joueur, téléportation, fondu au noir
+│   ├── Player/      accès au joueur (tête, mains, arc rangé), mains gantées, PV du joueur, téléportation, fondu au noir
 │   ├── Training/    cibles d'entraînement, cibles mobiles
 │   ├── UI/          textes flottants (points, dégâts), affichage de la partie (montre, panneau), barres de PV
 │   ├── Waves/       gestion des vagues, réglages des vagues, gong
 │   ├── Economy/     score, combo, argent
 │   ├── Difficulty/  difficultés, choix de la difficulté (panneaux)
-│   ├── World/       ciel (skybox, soleil ou lune, ambiance, brouillard), objets de nuit, ambiance sonore et musiques
+│   ├── World/       ciel (skybox, soleil ou lune, ambiance, brouillard), objets de nuit, ambiance sonore et musiques, rivières
 │   ├── Upgrades/    améliorations achetées, bonus temporaires, flèches spéciales (division, écho, foudre, explosion, glace, auto-visée, ricochet), éclairs, zones de glace
 │   ├── Chests/      coffres, couvercle à soulever, orbes, récompenses, apparition pendant les vagues, arc légendaire
 │   ├── Effects/     particules d'impact et de mort
@@ -385,7 +423,7 @@ Assets/_Project/
 ```
 
 - Les scènes et les prefabs sont montés à la main dans Unity, en suivant les guides de `Docs/` (`Guide_Ennemis.md`, `Guide_Modeles.md`, `Guide_Vagues.md`, `Guide_Difficultes.md`, `Guide_Boutique.md`, `Guide_Teleporteur.md`, `Guide_Menus.md`, `Guide_Boss.md`, `Guide_Deplacements.md`, `Guide_Coffres.md`, `Guide_Volants_Tireurs.md`, `Guide_Barricades_Brasero.md`, `Guide_CorpsACorps.md`, `Guide_Ambiance.md`, `Guide_Effets.md`, `Guide_Carte.md`, `Guide_Grenade.md`, `Guide_ArcLegendaire.md`, `Guide_Classes.md`).
-- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol, coffre d'Animated PBR Chest Demo (son couvercle est un os que `ChestLid` fait tourner à la main, puis son Animator prend le relais), Beholder de RPG Monster Partners PBR Polyart pour le volant (modèle descendu sous le pivot, qui est le centre du corps), mage de Wizard PolyArt pour le tireur (projectiles depuis la tête de son bâton).
+- Modèles : arcs et flèches du pack Easy Weapons (arcs riggés avec Animation Rigging, pilotés par `BowVisual`), chevalier de Toon RTS Units – Demo pour l'ennemi au sol, coffre d'Animated PBR Chest Demo (son couvercle est un os que `ChestLid` fait tourner à la main, puis son Animator prend le relais), Beholder de RPG Monster Partners PBR Polyart pour le volant (modèle descendu sous le pivot, qui est le centre du corps), mage de Wizard PolyArt pour le tireur (projectiles depuis la tête de son bâton), gant low-poly de Quaternius (CC0, sans os) pour les mains : `Art/Hands/Glove Rig.json` lui donne un squelette et des poids, et `GlovedHand` construit la main au lancement.
 - Outils : `Tools/compile_check.py` vérifie que les scripts compilent sans ouvrir Unity, `Tools/shader_check.py` vérifie la syntaxe HLSL des shaders.
 - Les réglages (arcs, améliorations, ennemis, vagues, difficultés) sont des ScriptableObjects : on équilibre le jeu sans toucher au code.
 - `GameManager` enchaîne les états Menu → Vague → Pause → Fin de partie.
@@ -430,11 +468,12 @@ Objectif : tirer sur des ennemis qui attaquent la tour.
 - [x] Gestion des vagues : budget, durée croissante, 10 vagues puis mode infini, boss toutes les 5 vagues.
 - [x] Les 4 difficultés et leurs ciels (la lanterne et les yeux qui brillent attendent les décors définitifs, en fin de projet).
 - [x] Score complet (timing, distance, combo) et argent.
-- [x] Boutique, raretés, améliorations (19), flèches spéciales, arcs à acheter, réparation et reconstruction de la tour.
+- [x] Boutique, raretés, améliorations (21), flèches spéciales, arcs à acheter, réparation et reconstruction de la tour.
 - [x] Menu principal, paramètres, fin de partie, clavier virtuel, sauvegarde JSON, classement (montage corrigé après les premiers tests).
 - [x] Anneau de timing à 3 couleurs (rouge, orange, vert pour le tir parfait), après les tests.
 - [x] Après les tests : améliorations sans limite d'achat (chances, puis effets plus forts), flèches en plus avec leurs propres effets, déluge qui divise les flèches en vol, courbe de difficulté exponentielle, prix du mode infini (+20 % par vague).
 - [x] Après les tests suivants : prix qui montent à chaque vague et à chaque achat, or en baisse à partir de la vague 5, flèches en plus sans points de touche, raretés fixes, ennemis de plus en plus rapides, volées centrées sur la visée, début de partie plus doux en Impossible (vagues 1 à 5).
+- [ ] Après les tests du 9 octobre (codé, à tester en casque) : anneau vide au centre, où le cercle s'arrête dans le vert pastel au lieu de recommencer (tir « très bon ») ; aide à la visée selon la difficulté (trajectoire complète en Facile et Normal, ligne droite en Difficile) et à la couleur de l'anneau ; voile rouge des PV autour de la vision ; améliorations de dégâts rares et légendaires ; nom des récompenses des coffres à nouveau visible.
 
 Objectif : toutes les consignes du cours sont couvertes.
 
@@ -445,12 +484,20 @@ Objectif : toutes les consignes du cours sont couvertes.
 - [ ] Ennemis volants et tireurs (montés, dans les vagues, à tester : `Docs/Guide_Volants_Tireurs.md`).
 - [ ] Barricades et brasero (montés, à tester : `Docs/Guide_Barricades_Brasero.md`). Après réflexion, le brasero est sur la tour dès le début et ne s'achète plus ; sa brûlure ajoute 30 % des dégâts de la flèche en 3 s.
 - [ ] Ambiance sonore et musiques (codé, boucles provisoires générées, à monter : `Docs/Guide_Ambiance.md`).
-- [ ] Effets visuels des coups (codé, à monter : `Docs/Guide_Effets.md`).
-- [ ] Carte finale (guide : `Docs/Guide_Carte.md`), équilibrage ; finitions avec des assets de l'Asset Store (lanterne et yeux qui brillent la nuit, décor, vraies musiques).
+- [x] Effets visuels des coups (montés ; couleur et taille des particules réglées : `Docs/Guide_Effets.md`).
+- [ ] Carte finale à trois voies, avec relief, jungle, rivière et montagnes (guide : `Docs/Guide_Carte.md`), puis l'équilibrage.
 - [ ] Matériaux de défense (section 9), une fois la carte finale faite.
 - [x] Coup de flèche au corps à corps (section 4.5) : rien à monter, à tester (`Docs/Guide_CorpsACorps.md`).
 - [ ] Les idées de la section 23 (codées, à monter et tester) : grenade de flèches (`Docs/Guide_Grenade.md`), arc légendaire en 3 morceaux (`Docs/Guide_ArcLegendaire.md`), arcs comme classes et progression entre les parties (`Docs/Guide_Classes.md`).
 - [ ] README (rédigé, crédits et équipe à compléter), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
+
+### Finitions
+
+- [ ] Embellissement de la base (fait le 9 octobre, à tester au casque, images par seconde comprises) : ombres jusqu'à 80 m, occlusion ambiante, couleurs (post-traitement), falaises habillées, décors en touffes, bosquets, rebords et camp d'archers derrière la tour (`Docs/Guide_Carte.md`, section 10).
+- [ ] Lumière et éclairage (section 17 bis).
+- [ ] De beaux menus : panneaux et boutons avec de vrais contours (par exemple le *UI Pack* de Kenney), et des icônes pour les améliorations de la boutique (*Game Icons* de Kenney).
+- [ ] Des arcs et des flèches dans la direction artistique low-poly : les modèles actuels (*Easy Weapons*) sont trop réalistes.
+- [ ] Les vraies musiques, la lanterne et les yeux qui brillent la nuit.
 
 ### En cas de retard
 
@@ -467,7 +514,6 @@ Tout ce qui est prévu en semaines 1 et 2 est indispensable. En semaine 3, on ab
 
 - À la fin du chrono, les ennemis restants s'enfuient.
 - Une vague de boss ne se termine qu'à la mort du boss.
-- L'anneau recommence si le cercle atteint le centre.
 - Les PV du joueur sont restaurés entre les vagues ; ceux de la tour ne remontent qu'en boutique.
 - On lance la vague suivante en tirant dans un gong.
 - Il faut survivre à 10 vagues pour gagner.
@@ -482,5 +528,8 @@ Notées pendant les tests, à faire une fois le reste en place et seulement si l
 - **Les arcs comme des classes** et la **progression entre les parties** : faits, en mode optionnel (`Docs/Guide_Classes.md`). Avec le composant `Bow Classes`, on choisit son arc au menu et la boutique n'en vend plus. Chaque partie rapporte de l'expérience (1 XP pour 10 points), gardée dans `progress.json`, qui débloque les arcs : composite à 300 XP, long à 1 000, runique à 2 500. Sans le composant, les arcs s'achètent en boutique comme avant.
 - **Un arc légendaire en 3 morceaux** : fait (`Docs/Guide_ArcLegendaire.md`). Tant qu'il n'est pas complet, un coffre a 35 % de chance de proposer un morceau à la place de sa deuxième amélioration permanente. Au troisième, l'arc légendaire (62 m/s, 32 dégâts, anneau de 1 s aux bandes larges, flèches qui traversent 2 ennemis) remplace celui du joueur jusqu'à la fin de la partie.
 - **Une grenade de flèches** : faite (section 4.6, `Docs/Guide_Grenade.md`).
-- **4 totems** (gardé pour la fin, 7 octobre) : un totem au bout de chaque chemin, protégé par un bouclier tant que le joueur est à plus de 15 m. Chaque totem détruit fait venir moins d'ennemis par son chemin et donne une récompense ; les 4 détruits font venir le boss final plus tôt, avec un gros bonus de score. Les 10 vagues restent.
+- **Les totems** (gardé pour la fin, 7 octobre) : un totem au bout de chaque voie, protégé par un bouclier tant que le joueur est à plus de 15 m. Chaque totem détruit fait venir moins d'ennemis par sa voie et donne une récompense ; tous détruits, ils font venir le boss final plus tôt, avec un gros bonus de score. Les 10 vagues restent.
 - **L'arc légendaire gardé par un boss** (gardé pour la fin, 7 octobre) : ses morceaux ne sont plus dans les coffres, mais dans la forêt, gardés par un ennemi plus fort qu'il faut aller battre.
+- **Le boss final dans son antre** (gardé pour la suite, 7 octobre) : à la place de la vague 10, le boss final invite le joueur dans son antre. Un message lui dit d'y aller, et la porte au fond de la voie du milieu s'ouvre. Le combat a plusieurs phases. Idée : les tourelles construites se téléportent dans l'arène pendant le combat pour aider, puis retournent à leur place. Une fois le boss tué, le joueur choisit de finir la partie (victoire) ou de continuer en mode infini.
+- **Un tutoriel** (en fin de projet) : le jeu s'est beaucoup enrichi. Un mode d'apprentissage, choisi comme une difficulté, présente les gestes un par un : l'arc et l'anneau, la course aux bras et le slide, le téléporteur, la boutique, les coffres, les constructions.
+- **Des cinématiques** (tout à la fin, si le temps le permet) : une courte introduction du jeu, et une scène quand on bat le boss final.

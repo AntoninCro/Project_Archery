@@ -74,3 +74,29 @@ InitTestScene*.unity*
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db.meta
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers.meta
+
+# Nature Kit de Kenney : seuls les modèles FBX servent. Les autres formats (les mêmes modèles)
+# et les 1 600 images d'aperçu alourdiraient le dépôt de près de 40 Mo.
+/[Aa]ssets/kenney_nature-kit/Isometric/
+/[Aa]ssets/kenney_nature-kit/Isometric.meta
+/[Aa]ssets/kenney_nature-kit/Side/
+/[Aa]ssets/kenney_nature-kit/Side.meta
+/[Aa]ssets/kenney_nature-kit/Models/DAE format/
+/[Aa]ssets/kenney_nature-kit/Models/DAE format.meta
+/[Aa]ssets/kenney_nature-kit/Models/GLTF format/
+/[Aa]ssets/kenney_nature-kit/Models/GLTF format.meta
+/[Aa]ssets/kenney_nature-kit/Models/OBJ format/
+/[Aa]ssets/kenney_nature-kit/Models/OBJ format.meta
+/[Aa]ssets/kenney_nature-kit/Models/STL format/
+/[Aa]ssets/kenney_nature-kit/Models/STL format.meta
+
+# Castle Kit de Kenney : seuls les FBX (avec leur dossier Textures) et les variantes de couleurs servent.
+/[Aa]ssets/kenney_castle-kit/Previews/
+/[Aa]ssets/kenney_castle-kit/Previews.meta
+/[Aa]ssets/kenney_castle-kit/Models/GLB format/
+/[Aa]ssets/kenney_castle-kit/Models/GLB format.meta
+/[Aa]ssets/kenney_castle-kit/Models/OBJ format/
+/[Aa]ssets/kenney_castle-kit/Models/OBJ format.meta
+
+# Archives téléchargées (packs d'assets) laissées à la racine du projet Unity
+/*.zip
