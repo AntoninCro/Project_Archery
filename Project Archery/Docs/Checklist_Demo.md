@@ -22,6 +22,8 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
 - [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes avec leur nom, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
+- [ ] Tower defense : gisements de cristaux pendant la vague, récolte, matériaux sur la montre ; socle visé à la poignée, panneau, plan bleu, marteau, 3 coups, l'arc revient ; amélioration d'un bâtiment.
+- [ ] Bâtiments : la baliste pivote et tire (volants compris), la tour de givre ralentit, les piques jaillissent, les ennemis s'arrêtent devant une barricade construite ; le message « Défenses : … % des dégâts » en fin de vague.
 - [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
 - [ ] Victoire après la vague 10, puis mode infini.
 - [ ] Mort : écran de fin, nom au clavier virtuel, classement avec la nouvelle ligne, *Rejouer*.

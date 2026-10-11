@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Pieges
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 1
+  displayName: "Pi\xE8ges \xE0 piques"
+  slot: 0
+  prefab: {fileID: 529631301920650295, guid: 40ada162d7669bb19ee51950adabcccd, type: 3}
+  color: {r: 0.95, g: 0.5, b: 0.45, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 25
+    description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les 0,5 s."
+  - cost: 35
+    description: "D\xE9g\xE2ts \xD71,5."
+  - cost: 50
+    description: "D\xE9g\xE2ts \xD72,25.\nIls sont aussi ralentis de 20 %."

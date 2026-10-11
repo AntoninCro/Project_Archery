@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Archery.Core;
 using Archery.Difficulty;
 using Archery.Player;
@@ -174,6 +175,8 @@ namespace Archery.Bows
         Transform m_DefaultStringTop;
         Transform m_DefaultStringBottom;
         Collider[] m_OwnColliders = Array.Empty<Collider>();
+        bool m_Stowed;
+        readonly List<Renderer> m_StowedRenderers = new List<Renderer>();
 
         public BowDefinition Definition
         {
@@ -184,9 +187,15 @@ namespace Archery.Bows
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
 
+        /// <summary>Arc rangé pendant une construction au marteau (GDD, section 9) : invisible et impossible à prendre.</summary>
+        public bool IsStowed => m_Stowed;
+
         /// <summary>Partie visuelle qui pivote pendant la visée, et son repose-flèche : la main gantée s'y cale.</summary>
         public Transform Model => m_Model;
         public Transform ArrowRest => m_ArrowRest;
+
+        /// <summary>Milieu de la poignée du modèle importé, s'il le donne ; sinon null.</summary>
+        public Transform Grip => m_Visual != null ? m_Visual.Grip : null;
 
         // Multiplicateurs donnés par les améliorations et les coffres. Celui de la difficulté
         // (largeur du vert) s'y ajoute au lancement de l'anneau.
@@ -271,7 +280,57 @@ namespace Archery.Bows
 
         // Une seule main tient l'arc : l'autre ne peut pas le lui « voler » en approchant pour encocher.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            base.IsSelectableBy(interactor) && (!isSelected || IsSelected(interactor));
+            base.IsSelectableBy(interactor) && !m_Stowed && (!isSelected || IsSelected(interactor));
+
+        public override bool IsHoverableBy(IXRHoverInteractor interactor) => base.IsHoverableBy(interactor) && !m_Stowed;
+
+        /// <summary>
+        /// Range l'arc (construction au marteau) : la main le lâche, il disparaît à sa place près du joueur.
+        /// Ressorti, il y réapparaît et se reprend comme d'habitude.
+        /// </summary>
+        public void SetStowed(bool stowed)
+        {
+            if (stowed == m_Stowed)
+                return;
+
+            m_Stowed = stowed;
+            if (stowed)
+            {
+                if (isSelected && interactionManager != null)
+                    interactionManager.CancelInteractableSelection((IXRSelectInteractable)this);
+                Unnock();
+                if (m_AimGuide != null)
+                    m_AimGuide.Hide();
+
+                m_StowedRenderers.Clear();
+                HideRenderers(gameObject);
+            }
+            else
+            {
+                foreach (var renderer in m_StowedRenderers)
+                {
+                    if (renderer != null)
+                        renderer.enabled = true;
+                }
+
+                m_StowedRenderers.Clear();
+            }
+
+            // Il reste (ou revient) directement à sa place près du joueur.
+            m_Holstered = true;
+            m_StringVibration = 0f;
+        }
+
+        void HideRenderers(GameObject root)
+        {
+            foreach (var renderer in root.GetComponentsInChildren<Renderer>())
+            {
+                if (!renderer.enabled)
+                    continue;
+                renderer.enabled = false;
+                m_StowedRenderers.Add(renderer);
+            }
+        }
 
         protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
@@ -416,6 +475,8 @@ namespace Archery.Bows
 
                 m_Visual = Instantiate(definition.visualPrefab, m_Model);
                 m_Visual.name = definition.visualPrefab.name;
+                if (m_Stowed)
+                    HideRenderers(m_Visual.gameObject);
                 ApplyVisual();
             }
 
@@ -455,6 +516,11 @@ namespace Archery.Bows
             }
 
             m_RestLocal = m_Model.InverseTransformPoint(m_ArrowRest.position);
+
+            // La flèche passe à côté de la poignée, du côté extérieur de l'arc.
+            if (m_Visual != null)
+                m_RestLocal.x += OutsideSign() * m_Visual.ArrowSideOffset;
+
             var stringAtRest = StringPointAtRestHeight();
             m_BraceHeight = Mathf.Max(0.05f, m_RestLocal.z - stringAtRest.z);
         }
@@ -473,8 +539,8 @@ namespace Archery.Bows
             var top = StringEndLocal(m_StringTop);
             var bottom = StringEndLocal(m_StringBottom);
             var t = Mathf.InverseLerp(bottom.y, top.y, m_RestLocal.y);
+            // Au repos, la corde reste droite entre ses deux extrémités, même si la flèche passe sur le côté.
             var point = Vector3.Lerp(bottom, top, t);
-            point.x = m_RestLocal.x;
             point.y = m_RestLocal.y;
             return point;
         }

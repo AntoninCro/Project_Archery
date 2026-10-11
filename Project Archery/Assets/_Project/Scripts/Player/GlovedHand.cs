@@ -336,10 +336,12 @@ namespace Archery.Player
             switch (m_Mode)
             {
                 case Mode.Bow when m_Bow != null:
-                    // Le poing serre la poignée sous le repose-flèche, paume vers l'intérieur de l'arc.
+                    // Le poing serre le milieu de la poignée (ou, si le modèle ne le donne pas, sous le repose-flèche),
+                    // paume vers l'intérieur de l'arc.
                     var model = m_Bow.Model;
                     targetRotation = Quaternion.LookRotation(model.up, model.right * side) * m_InverseHandBasis;
-                    targetPoint = m_Bow.ArrowRest.position - model.up * m_Owner.BowGripDrop;
+                    var bowGrip = m_Bow.Grip;
+                    targetPoint = bowGrip != null ? bowGrip.position : m_Bow.ArrowRest.position - model.up * m_Owner.BowGripDrop;
                     localPoint = m_GripCenter;
                     break;
                 case Mode.Draw when m_Arrow != null:
@@ -437,11 +439,12 @@ namespace Archery.Player
             renderer.shadowCastingMode = ShadowCastingMode.On;
         }
 
-        // Triangles du fichier (main droite) ; le miroir de la main gauche inverse leur sens.
+        // Les triangles du fichier sont dans le sens du FBX d'origine, dont l'axe X a été inversé sans les retourner :
+        // on les retourne pour la main droite. Le miroir de la main gauche les remet déjà à l'endroit.
         int[] Triangles(int[] indices)
         {
             var triangles = (int[])indices.Clone();
-            if (m_IsLeft)
+            if (!m_IsLeft)
             {
                 for (var t = 0; t + 2 < triangles.Length; t += 3)
                     (triangles[t + 1], triangles[t + 2]) = (triangles[t + 2], triangles[t + 1]);

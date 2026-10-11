@@ -1,5 +1,6 @@
 using System.Globalization;
 using Archery.Bows;
+using Archery.Building;
 using Archery.Defense;
 using Archery.Difficulty;
 using Archery.Economy;
@@ -76,6 +77,7 @@ namespace Archery.UI
         // Dernières valeurs affichées : on ne reconstruit un texte que s'il change.
         int m_Score = -1;
         int m_Money = -1;
+        int m_Materials = -1;
         int m_Combo = -1;
         int m_PlayerHealth = -1;
         int m_TowerHealth = -1;
@@ -168,10 +170,13 @@ namespace Archery.UI
                 m_ScoreText.text = "Score " + FormatNumber(m_Score);
             }
 
-            if (m_MoneyText != null && score.Money != m_Money)
+            // Les matériaux (GDD, section 9) suivent l'or sur la même ligne, dès qu'il y a des cristaux sur la carte.
+            if (m_MoneyText != null && (score.Money != m_Money || score.Materials != m_Materials))
             {
                 m_Money = score.Money;
-                m_MoneyText.text = "Or " + FormatNumber(m_Money);
+                m_Materials = score.Materials;
+                var materials = m_Materials > 0 || CrystalSpawner.Instance != null ? " · Mat. " + FormatNumber(m_Materials) : "";
+                m_MoneyText.text = "Or " + FormatNumber(m_Money) + materials;
             }
 
             if (m_ComboText != null && score.Combo != m_Combo)

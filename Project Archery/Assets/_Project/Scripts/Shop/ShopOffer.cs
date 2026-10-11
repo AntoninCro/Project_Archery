@@ -16,6 +16,9 @@ namespace Archery.Shop
 
         /// <summary>Carte d'information, qu'on ne peut pas acheter (« La tour est intacte »…).</summary>
         Unavailable,
+
+        /// <summary>Construction ou amélioration d'un bâtiment (panneau des socles, payée en matériaux).</summary>
+        Build,
     }
 
     /// <summary>Une offre de la boutique, telle qu'affichée sur une carte.</summary>
@@ -30,6 +33,10 @@ namespace Archery.Shop
         public Color Color = Color.white;
         public Sprite Icon;
         public int Price;
+
+        /// <summary>Monnaie affichée après le prix : « or », ou « mat. » pour les matériaux.</summary>
+        public string PriceUnit = "or";
+
         public bool Sold;
 
         public bool CanBuy => !Sold && Kind != ShopOfferKind.Unavailable;

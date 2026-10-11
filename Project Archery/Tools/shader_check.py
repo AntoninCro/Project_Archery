@@ -36,6 +36,17 @@ float3 TransformObjectToWorld(float3 positionOS) { return mul(_StubObjectToWorld
 float4 TransformWorldToHClip(float3 positionWS) { return mul(_StubViewProjection, float4(positionWS, 1.0)); }
 float3 TransformObjectToWorldNormal(float3 normalOS) { return normalize(mul((float3x3)_StubObjectToWorld, normalOS)); }
 float3 GetWorldSpaceViewDir(float3 positionWS) { return _WorldSpaceCameraPos - positionWS; }
+float4 ComputeScreenPos(float4 positionCS) { return positionCS * 0.5 + positionCS.w * 0.5; }
+float ComputeFogFactor(float z) { return z; }
+float3 MixFog(float3 color, float fogFactor) { return color * fogFactor; }
+float4 _ZBufferParams;
+float LinearEyeDepth(float depth, float4 zBufferParam) { return 1.0 / (zBufferParam.z * depth + zBufferParam.w); }
+Texture2D _StubDepth;
+SamplerState sampler_StubDepth;
+float SampleSceneDepth(float2 uv) { return _StubDepth.SampleLevel(sampler_StubDepth, uv, 0).r; }
+struct Light { float3 direction; float3 color; float distanceAttenuation; float shadowAttenuation; };
+Light GetMainLight() { Light light = (Light)0; light.direction = float3(0, 1, 0); light.color = 1; return light; }
+float3 SampleSH(float3 normalWS) { return normalWS * 0.5 + 0.5; }
 """
 
 
@@ -74,8 +85,10 @@ def main():
     for shader in sorted(glob.glob(os.path.join(SHADERS, "*.shader"))):
         with open(shader, encoding="utf-8") as file:
             text = file.read()
+        # Les blocs HLSLINCLUDE (CBUFFER partagé entre les passes…) précèdent le code de chaque passe.
+        shared = "\n".join(re.findall(r"HLSLINCLUDE(.*?)ENDHLSL", text, re.S))
         for block in re.findall(r"HLSLPROGRAM(.*?)ENDHLSL", text, re.S):
-            body = "\n".join(line for line in block.splitlines()
+            body = "\n".join(line for line in (shared + "\n" + block).splitlines()
                              if not line.strip().startswith(("#pragma", "#include")))
             for kind, target in (("vertex", "vs_5_0"), ("fragment", "ps_5_0")):
                 entry = re.search(rf"#pragma {kind} (\w+)", block).group(1)

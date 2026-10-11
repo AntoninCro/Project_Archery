@@ -42,6 +42,16 @@ namespace Archery.Effects
         int m_SpawnedThisFrame;
         int m_Frame = -1;
 
+        public static HitEffects Instance { get; private set; }
+
+        void Awake() => Instance = this;
+
+        void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
+
         void OnEnable()
         {
             Arrow.AnyHit += OnArrowHit;
@@ -77,17 +87,28 @@ namespace Archery.Effects
             if (!hit.IsShot || hit.Collider == null)
                 return;
 
-            var normal = hit.Normal.sqrMagnitude > 1e-4f ? hit.Normal : -hit.Direction;
-            var hitbox = hit.Collider.GetComponentInParent<Hitbox>();
+            PlayImpact(hit.Collider, hit.Point, hit.Normal.sqrMagnitude > 1e-4f ? hit.Normal : -hit.Direction);
+        }
+
+        /// <summary>
+        /// Effet d'un projectile qui touche ce collider (flèche, carreau de baliste) : sur un ennemi selon la zone touchée,
+        /// sinon sur le décor.
+        /// </summary>
+        public void PlayImpact(Collider collider, Vector3 point, Vector3 normal)
+        {
+            if (collider == null)
+                return;
+
+            var hitbox = collider.GetComponentInParent<Hitbox>();
             if (hitbox != null)
             {
                 var critical = hitbox.Zone != HitZone.Body;
-                Play(critical && m_HeadHitEffect != null ? m_HeadHitEffect : m_BodyHitEffect, hit.Point, normal);
+                Play(critical && m_HeadHitEffect != null ? m_HeadHitEffect : m_BodyHitEffect, point, normal);
                 return;
             }
 
-            if (hit.Collider.GetComponentInParent<Health>() == null)
-                Play(m_SurfaceHitEffect, hit.Point, normal);
+            if (collider.GetComponentInParent<Health>() == null)
+                Play(m_SurfaceHitEffect, point, normal);
         }
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)

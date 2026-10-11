@@ -3,10 +3,12 @@
 Compile les scripts avec le SDK .NET, contre les mêmes DLL qu'Unity
 (références lues dans Assembly-CSharp.csproj, généré par Unity) :
   - Archery.Runtime : comme un build joueur (sans UnityEditor) ;
+  - les scripts des assets importés (Assembly-CSharp), eux aussi comme un build joueur ;
   - Archery.Editor : les outils d'éditeur, s'il y a un dossier Scripts/Editor.
 
 Usage : python Tools/compile_check.py   (Unity doit avoir généré les .csproj au moins une fois)
 """
+import glob
 import json
 import os
 import re
@@ -112,6 +114,21 @@ def main():
                                       os.path.join(SCRIPTS, "**", "*.cs"), os.path.join(SCRIPTS, "Editor", "**"))
     if not build(runtime_in_editor):
         return 1
+
+    # Scripts des assets importés (hors asmdef) : un script qui utilise UnityEditor hors d'un dossier Editor
+    # passe dans l'éditeur mais fait échouer le build.
+    print("== Assembly-CSharp, scripts des assets (comme un build joueur) ==")
+    asset_files = [absolute(f.replace("\\", "/")) for f in re.findall(r'<Compile Include="([^"]+)"', source)]
+    asset_references = list(runtime_references)
+    known = {n for n, _ in asset_references}
+    for dll in sorted(glob.glob(os.path.join(PROJECT, "Library", "ScriptAssemblies", "*.dll"))):
+        name = os.path.basename(dll)[:-4]
+        if name not in known and not name.startswith("Assembly-CSharp") and not is_editor_dll(dll) and "Test" not in name:
+            asset_references.append((name, dll))
+    if asset_files:
+        assets = write_project("AssemblyCSharp.Player", asset_references, runtime_defines, ";".join(asset_files))
+        if not build(assets):
+            return 1
 
     if not os.path.isdir(os.path.join(SCRIPTS, "Editor")):
         return 0

@@ -26,8 +26,8 @@ namespace Archery.Upgrades
         float m_Age;
         float m_TickTimer;
 
-        // Disque de rayon 1 : centre un peu transparent, bord plus visible.
-        static Mesh Disc
+        // Disque de rayon 1 : centre un peu transparent, bord plus visible. Aussi la portée de la tour de givre.
+        internal static Mesh Disc
         {
             get
             {

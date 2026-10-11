@@ -5,9 +5,8 @@ Ce guide ajoute les coffres du GDD (section 13) à la scène `Prototype_Tir`, av
 - pendant chaque vague, **1 ou 2 coffres** apparaissent loin de la tour, à 15–30 m, avec le message « Un coffre est apparu ! ». Ils **tombent du ciel**, rebondissent, puis sautillent sur place ;
 - un **rayon de lumière** doré les signale, visible depuis la tour ;
 - ils sont **gratuits**, mais il faut descendre et courir pour aller les ouvrir. **Ils disparaissent à la fin de la vague**, ouverts ou non ;
-- on **soulève le couvercle à la main** : on l'attrape par l'avant et on lève la main. Le coffre s'immobilise et le couvercle suit la main ;
-- passé 45°, le **temps ralentit**, le couvercle s'ouvre d'un coup avec un rebond, une lueur dorée sort du coffre et **3 orbes** montent ;
-- on **attrape une orbe** : les deux autres disparaissent. Les trois orbes sont toujours, de gauche à droite :
+- on **vise le coffre et on appuie sur la gâchette de prise**, à 5 m au plus (ou on l'attrape de près) : le **temps ralentit**, le couvercle s'ouvre d'un coup avec un rebond, une lueur dorée sort du coffre et **3 orbes** montent (simplifié le 11 octobre : avant, il fallait soulever le couvercle à la main) ;
+- on **prend une orbe** de la même façon, en la visant à 6 m au plus, ou à la main : les deux autres disparaissent. Les trois orbes sont toujours, de gauche à droite :
   - deux **améliorations permanentes**, différentes, tirées comme en boutique ;
   - un **bonus temporaire** : 30 s de dégâts ×2, de tirs parfaits ou d'anneau rapide.
 
@@ -25,8 +24,8 @@ Une amélioration trouvée dans un coffre ne fait pas monter les prix de la bout
 |---|---|---|
 | `Chest Spawner` | Fait apparaître les coffres pendant les vagues, les retire à la fin | Objet `Game` |
 | `Chest` | Un coffre : ouverture, orbes, ralenti, récompenses, lueur | Racine du prefab `Chest` |
-| `Chest Lid` | Couvercle à soulever à la main ; arrête l'animation du coffre pendant qu'on le tient, puis lance l'ouverture | Collider du couvercle, enfant de l'os `Cap` du modèle |
-| `Chest Orb` | Une orbe à attraper | Racine du prefab `Chest Orb` |
+| `Chest Lid` | Ouvre le coffre quand on le vise (couvercle ou caisse) et qu'on appuie sur la gâchette de prise, à 5 m au plus ; lance l'animation d'ouverture | Collider du couvercle, enfant de l'os `Cap` du modèle |
+| `Chest Orb` | Une orbe à prendre, en la visant (6 m au plus) ou à la main | Racine du prefab `Chest Orb` |
 | Shader `Archery/LightBeam` | Rayon de lumière qui pulse et s'efface vers le haut | Matériau du rayon |
 | `Hud Display` (déjà là) | Nouveau champ optionnel : les bonus en cours | Montre |
 
@@ -167,11 +166,9 @@ Par défaut, les coffres se posent au hasard sur le sol des ennemis (NavMesh), e
 **Raccourci de test** (éditeur) : la touche **C** pose un coffre 2,5 m devant toi, tourné vers toi, à tout moment.
 
 1. Lance Play et appuie sur **C**. Le coffre tombe devant toi et rebondit, avec son rayon de lumière et un son. Il sautille ensuite de temps en temps.
-2. Avec la main libre, attrape le couvercle par l'avant, près de la serrure, puis lève la main :
-   - le coffre s'immobilise et le couvercle suit ta main ;
-   - passé 45°, le temps ralentit, le couvercle s'ouvre d'un coup (au ralenti), la lueur sort du coffre et 3 orbes montent.
-3. Lâche le couvercle avant 45° : il retombe, et le coffre se remet à sautiller.
-4. Les trois orbes montrent, de gauche à droite : « PERMANENT », « PERMANENT » et « TEMPORAIRE ». Approche la main d'une orbe : elle grossit. Attrape-la : un message annonce la récompense, et les deux autres disparaissent.
+2. À quelques mètres du coffre, vise-le avec la main libre et appuie sur la gâchette de prise : le temps ralentit, le couvercle s'ouvre d'un coup (au ralenti), la lueur sort du coffre et 3 orbes montent.
+3. Au-delà de 5 m, rien ne se passe : approche-toi.
+4. Les trois orbes montrent, de gauche à droite : « PERMANENT », « PERMANENT » et « TEMPORAIRE ». Vise une orbe : elle grossit. Appuie sur la gâchette de prise : un message annonce la récompense, et les deux autres disparaissent.
 5. Si c'est un bonus, il s'affiche sur la montre (section 6) :
    - *Dégâts ×2* : les chiffres de dégâts doublent ;
    - *Tirs parfaits* : l'anneau est presque entièrement vert ;
@@ -189,13 +186,12 @@ Par défaut, les coffres se posent au hasard sur le sol des ennemis (NavMesh), e
 - **Il n'y a pas d'os `Cap` sous `Model`** : *Optimize Game Objects* est encore coché (section 1.1). Après *Apply*, supprime `Model` et glisse de nouveau le FBX.
 - **Le coffre ne tombe pas et ne bouge pas** : le *Controller* de l'Animator de `Model` est vide, ou `Start` n'est pas l'état par défaut.
 - **Il ne sautille qu'une fois** : *Loop Time* n'est pas coché sur `Animated PBR Chest _Idle`.
-- **Le couvercle ne s'attrape pas** :
-  - attrape-le à la main, pas au rayon, avec la main libre ;
+- **Le coffre ne s'ouvre pas** :
+  - vise-le avec la main libre (le rayon doit toucher le coffre), à 5 m au plus (*Max Open Distance* sur `Lid`) ;
   - `Lid` doit avoir son *Box Collider* et le `Chest Lid`, et la boîte verte doit entourer le couvercle.
 - **Le couvercle tourne dans le mauvais sens ou se décroche** :
   - `Lid` doit être l'enfant de `Cap`, avec *Hinge* vide ;
   - `Model` doit avoir la Rotation `(0, 0, 0)`.
-- **À l'ouverture, le couvercle se referme puis se rouvre** : *Open State Start* est trop bas. Monte-le par pas de `0.02`.
 - **Le couvercle s'ouvre moins haut que dans l'animation** : la console indique que l'état `Opening` n'existe pas. Le script finit alors d'ouvrir le couvercle seul, jusqu'à *Max Angle*. Vérifie le nom de l'état (section 1.4).
 - **Les orbes sont blanches** : le matériau `Orb` doit utiliser *Universal Render Pipeline/Unlit* (le script change sa *Base Color*).
 - **Le rayon est rose ou invisible** : `Light_Beam` doit utiliser le shader *Archery/LightBeam*. Sélectionne le shader et lis l'erreur dans l'Inspector.
