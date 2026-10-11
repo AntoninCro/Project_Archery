@@ -98,5 +98,13 @@ InitTestScene*.unity*
 /[Aa]ssets/kenney_castle-kit/Models/OBJ format/
 /[Aa]ssets/kenney_castle-kit/Models/OBJ format.meta
 
+# Tower Defense Kit de Kenney : seuls les FBX (avec leur dossier Textures) servent, pas les ~300 images d'aperçu.
+/[Aa]ssets/kenney_tower-defense-kit/Previews/
+/[Aa]ssets/kenney_tower-defense-kit/Previews.meta
+
+# Game Icons de Kenney : les icônes PNG servent, pas les fichiers vectoriels (Illustrator, SVG).
+/[Aa]ssets/kenney_game-icons/Vector/
+/[Aa]ssets/kenney_game-icons/Vector.meta
+
 # Archives téléchargées (packs d'assets) laissées à la racine du projet Unity
 /*.zip

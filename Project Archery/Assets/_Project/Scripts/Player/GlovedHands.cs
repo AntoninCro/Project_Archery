@@ -45,7 +45,8 @@ namespace Archery.Player
         [SerializeField]
         float m_GripRadius = 0.016f;
 
-        [Tooltip("Distance (m) entre le repose-flèche et le centre du poing qui tient l'arc.")]
+        [Tooltip("Distance (m) entre le repose-flèche et le centre du poing qui tient l'arc, " +
+                 "pour un modèle d'arc qui ne donne pas le milieu de sa poignée (Grip du Bow Visual).")]
         [SerializeField]
         float m_BowGripDrop = 0.05f;
 

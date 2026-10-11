@@ -8,8 +8,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 namespace Archery.Chests
 {
     /// <summary>
-    /// Un coffre de la forêt (GDD, section 13), gratuit. On soulève le couvercle à la main : le temps ralentit,
-    /// trois orbes sortent du coffre, et on en attrape une : deux améliorations permanentes (tirées comme en boutique)
+    /// Un coffre de la forêt (GDD, section 13), gratuit. On l'ouvre en le visant (gâchette de prise, à quelques mètres) :
+    /// le temps ralentit, trois orbes sortent du coffre, et on en prend une de la même façon : deux améliorations permanentes (tirées comme en boutique)
     /// et un bonus temporaire (dégâts doublés, tirs parfaits ou anneau rapide).
     /// </summary>
     /// <remarks>

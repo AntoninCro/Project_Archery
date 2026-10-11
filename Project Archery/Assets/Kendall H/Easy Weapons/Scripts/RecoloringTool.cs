@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace EasyWeapon
@@ -130,6 +132,7 @@ namespace EasyWeapon
 
             public void LockInAndCreateNewPrefab()
             {
+#if UNITY_EDITOR
 
                 if (!inPlayMode)
                 {
@@ -221,6 +224,9 @@ namespace EasyWeapon
                     Debug.Log("prefab Creation failed. Be sure you have already recolored the mesh");
                 }
 
+#else
+                Debug.Log("RecoloringTool : la création de prefab ne marche que dans l'éditeur.");
+#endif
             }
         }
     }

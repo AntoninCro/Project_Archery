@@ -14,7 +14,7 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 morceaux | coffres (1) | 30 min |
 | 9 | `Guide_Classes.md` | Arcs choisis au menu, expérience entre les parties | — (optionnel) | 45 min |
 | 10 | `Guide_Carte.md` | Carte cubique à trois voies (blocs sur une grille, jungle en terrasses, rampes, rivière qui ralentit, montagnes, antre fermé), NavMesh, emplacements | barricades (3), coffres (1) | deux à trois journées |
-| 11 | (à écrire) matériaux de défense | Deuxième monnaie ramassée sur la carte, améliorations de défense en boutique (GDD, section 9) | carte (10) | à estimer |
+| 11 | `Guide_TowerDefense.md` | Tower defense (GDD, section 9) : cristaux et matériaux (étape 1, montée le 11 octobre), socles, panneau, plan bleu et marteau (étape 2, montée par Claude le 11 octobre), les quatre bâtiments et leurs niveaux (étape 3) et l'équilibrage (étape 4), montés par Claude le 12 octobre ; reste à tester | carte (10) | tests : 1 h |
 | 12 | `Checklist_Demo.md` | Tests complets, build, démo | tout | une demi-journée |
 
 **Fait le 6 octobre** : les coffres (1) et le volant (partie de 2), par toi ; le tireur (partie de 2), les barricades et le brasero (3), et le corps à corps (4, rien à monter), par Claude. Il reste à tester 2 à 4, puis les guides 5 à 11.

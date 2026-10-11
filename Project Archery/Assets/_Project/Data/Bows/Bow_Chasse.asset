@@ -16,6 +16,7 @@ MonoBehaviour:
   description: "\xC9quilibr\xE9. L'arc de d\xE9part."
   price: 0
   availableFromWave: 0
+  visualPrefab: {fileID: 1000000003, guid: 3308f27d4e6019828e085e0d83b3d0c1, type: 3}
   unlockXp: 0
   arrowSpeed: 35
   damage: 10

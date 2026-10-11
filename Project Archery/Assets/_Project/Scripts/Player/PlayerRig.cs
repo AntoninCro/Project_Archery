@@ -23,7 +23,7 @@ namespace Archery.Player
 
         [Tooltip("Position de l'arc rangé, dans le repère horizontal de la tête : x vers la main de l'arc, y vers le haut, z vers l'avant.")]
         [SerializeField]
-        Vector3 m_BowHolsterOffset = new Vector3(0.2f, -0.5f, 0.3f);
+        Vector3 m_BowHolsterOffset = new Vector3(0.2f, -0.5f, 0.5f);
 
         [Tooltip("Désactive le déplacement « grab move » du XR Origin, qui utilise aussi le bouton de poignée.")]
         [SerializeField]

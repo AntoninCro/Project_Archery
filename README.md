@@ -5,7 +5,7 @@ Jeu de tir à l'arc en réalité virtuelle pour Meta Quest 3, réalisé avec Uni
 On défend une tour au milieu d'une clairière contre des vagues de monstres de plus en plus fortes. Le jeu mélange trois genres :
 - **survivor** : tenir le plus longtemps possible ;
 - **roguelike** : des améliorations tirées au sort entre les vagues, qui se cumulent sans limite ;
-- **tower defense** : la tour, ses barricades et son brasero.
+- **tower defense** : la tour, ses barricades et son brasero ; des cristaux à récolter sur la carte, et 12 socles où construire au marteau barricades, pièges à piques, tours de givre et balistes, à 3 niveaux chacun.
 
 Inspirations : *Megabonk*, et *Longbow* dans *The Lab*.
 

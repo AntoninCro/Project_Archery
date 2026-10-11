@@ -8,8 +8,9 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 namespace Archery.Chests
 {
     /// <summary>
-    /// Une orbe qui flotte au-dessus d'un coffre ouvert (GDD, section 13). On l'attrape à la main pour prendre
-    /// sa récompense ; les autres orbes du coffre disparaissent.
+    /// Une orbe qui flotte au-dessus d'un coffre ouvert (GDD, section 13). On la prend en la visant et en appuyant sur
+    /// la gâchette de prise, à quelques mètres au plus, ou de près à la main : sa récompense est donnée, les autres
+    /// orbes du coffre disparaissent.
     /// </summary>
     /// <remarks>
     /// Elle bouge en temps réel : elle reste vive pendant le ralenti. Son texte se tourne vers le joueur.
@@ -27,9 +28,9 @@ namespace Archery.Chests
         [SerializeField]
         TMP_Text m_Label;
 
-        [Tooltip("Distance maximale (m) entre la main et l'orbe : il faut la prendre à la main, pas au rayon.")]
+        [Tooltip("Distance maximale (m) entre la main et l'orbe pour la prendre en la visant.")]
         [SerializeField]
-        float m_MaxGrabDistance = 0.35f;
+        float m_MaxPickDistance = 6f;
 
         [Tooltip("Durée (s) de la montée hors du coffre.")]
         [SerializeField]
@@ -129,19 +130,16 @@ namespace Archery.Chests
         }
 
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            base.IsSelectableBy(interactor) && !m_Leaving && m_Age >= m_RiseTime * 0.5f && IsNear(interactor);
+            base.IsSelectableBy(interactor) && !m_Leaving && m_Age >= m_RiseTime * 0.5f && IsInReach(interactor);
 
-        bool IsNear(IXRInteractor interactor)
+        // La main (la manette, pas le point visé) doit être à moins de quelques mètres de l'orbe.
+        bool IsInReach(IXRInteractor interactor)
         {
-            var attach = interactor.GetAttachTransform(this);
-            if (attach == null)
-                return false;
-
-            var hand = attach.position;
+            var hand = interactor.transform.position;
             foreach (var collider in colliders)
             {
                 if (collider != null && collider.enabled &&
-                    (collider.ClosestPoint(hand) - hand).sqrMagnitude <= m_MaxGrabDistance * m_MaxGrabDistance)
+                    (collider.ClosestPoint(hand) - hand).sqrMagnitude <= m_MaxPickDistance * m_MaxPickDistance)
                     return true;
             }
 

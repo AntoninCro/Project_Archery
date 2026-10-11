@@ -125,13 +125,13 @@ Toutes les pièces ont leur pivot au centre de leur base : posée en `(4.5, 0, 7
 2. **La base** : l'herbe du sol, sur environ 12 m autour de la tour.
 3. **Les voies**, 2 cases de large (3 cases par rangée pour celle du milieu), au niveau du sol près de la base. Plus loin, elles peuvent monter et descendre par des rampes ou des escaliers (section 5), jusqu'aux apparitions :
    - `ground_pathOpen` (de la terre partout) ou, au bord, `ground_pathSide` tourné pour que l'herbe touche la falaise ;
-   - la surface de ces cases est 15 cm sous leur pivot : pose-les à `y = 0.16` pour qu'elles dépassent de 1 cm l'herbe du sol.
+   - la surface de ces cases est 15 cm sous leur pivot : pose-les à `y = 0.15`, leur terre est alors au niveau exact de l'herbe. Le sol (`Floor`) est creusé sous les voies : sans cela, la terre et l'herbe se superposent et clignotent. Si tu ajoutes une voie, demande-moi de recreuser le sol dessous.
 4. Là où la rivière coupe une voie (section 7), des cases de rivière remplacent la terre, à la même hauteur.
 
 ### La voie du milieu en diagonale droite
 
 La voie du milieu suit la diagonale : sur la grille, ses bords et les falaises de la forêt faisaient un escalier. Ils suivent maintenant deux droites, z = x + 6 et z = x - 6 (3 cases par rangée, environ 8,5 m de large) :
-- **Au sol** : le prefab `Prefabs/Path Diagonal` est un triangle de terre (la moitié d'une case coupée en diagonale, même couleur que les voies). Rotation : `0` = terre au sud-est, `90` = sud-ouest, `180` = nord-ouest, `270` = nord-est. Il est posé au centre de la case, à `y = 0`, dans chaque creux le long des clairières et au pied des falaises coupées (`Map > Lanes > Path Diagonals`).
+- **Au sol** : le prefab `Prefabs/Path Diagonal` est une case coupée en diagonale : un triangle de terre (même couleur que les voies) et un triangle d'herbe, au niveau du sol. Rotation : `0` = terre au sud-est, `90` = sud-ouest, `180` = nord-ouest, `270` = nord-est. Il est posé au centre de la case, à `y = 0`, dans chaque creux le long des clairières et au pied des falaises coupées (`Map > Lanes > Path Diagonals`).
 - **La forêt** : les cases de forêt qui faisaient des marches le long de la voie sont des blocs coupés en diagonale du kit (`cliff_blockDiagonal_*`, un par couche de 3 m), dans `Map > Jungle > Mid Lane Diagonals`. À rotation 0, la moitié pleine est au sud-ouest : `90` la met au nord-ouest (côté haut de la voie), `270` au sud-est (côté bas). Leur face coupée est habillée par `cliff_topDiagonal_*` (couche du haut, avec la lèvre d'herbe) et `cliff_diagonal_*` (couches du dessous), à la même rotation, dans `Dressing > Cliffs`.
 - **Les escaliers** : là où ils touchent la voie, leurs pièces sont coupées sur la même diagonale. Le kit n'en a pas : ces modèles sont générés à partir des FBX de Kenney (mêmes matériaux), dans `Art/Diagonal Cuts` (`cliff_steps_rock_halfSW`, `cliff_stepsCornerInner_rock_halfSE`, `ground_pathOpen_halfSE` ; le suffixe dit quelle moitié est gardée à rotation 0). Les demi-blocs sous l'étage du haut sont des `cliff_blockDiagonal_rock` en *Scale Y* `0.5`. Leur face coupée est habillée par des bordures d'escalier diagonales (section 5).
 - Pour prolonger une diagonale ailleurs : demande-moi, je peux générer d'autres pièces coupées.
@@ -204,7 +204,23 @@ On les pose comme l'habillage des falaises (section 10), en *Scale* `(1, 1, 1)`,
 > - l'escalier de gauche au gué de la voie de gauche ;
 > - l'escalier de droite au gué de la voie de droite.
 >
+> Et le 11 octobre, celles des montées du 2e étage, à droite puis à gauche (ci-dessous).
+>
 > Elles avancent de 0,8 m sur la case voisine, comme l'habillage. Le dessus de leurs marches est trop étroit pour le NavMesh : les ennemis ne montent pas dessus.
+
+### Les montées du 2e étage
+
+Les deux terrasses de 6 m, dans la jungle de droite et dans celle de gauche, se font face de part et d'autre de la voie du milieu : celle de gauche est le miroir de celle de droite (on échange x et z), sauf la rivière qui la traverse. On y monte par des escaliers et des rampes mélangés, avec des paliers à mi-hauteur, sans marche de plus de 30 cm :
+- **Jungle de droite** (`Map > Ramps > Upper Climb West` et `Upper Climb East`) :
+  - montée ouest (colonne 18, entre les obélisques) : un escalier de 3 à 4,5 m, puis une rampe à murets jusqu'en (18, 14), avec un rebord à 4,5 m à droite de l'escalier ;
+  - montée est (rangées 10 et 11), en Y : deux escaliers côte à côte, un palier de deux cases à 4,5 m, puis un escalier creusé dans la terrasse jusqu'en (23, 10). Le haut côté nord est laissé au grand rocher (`stone_tallB`).
+- **Jungle de gauche** (`Upper Climb Northwest` et `Upper Climb Falls`) :
+  - montée nord-ouest : le miroir de la montée est (escaliers en (10-11, 20), palier en (10-11, 21), escalier creusé en (10, 22), arrivée en (10, 23)) ;
+  - montée de la cascade : le même plan que la montée ouest (escalier en (14, 17), rampe à murets en (14, 18), arrivée en (14, 19), à côté de la cascade) ; son miroir exact tombait dans la rivière.
+- **L'habillage** : chaque face des montées et du bord de la terrasse qui donne sur le vide est en pierre. On utilise `cliff_top_stone` (en *Scale Y* `0.5` devant un demi-bloc), `cliff_cornerTop_stone` aux coins extérieurs, `cliff_halfCornerInner_stone` aux coins intérieurs des paliers, et une bordure d'escalier (section ci-dessus) sur chaque côté d'escalier à découvert.
+- **Le décor** : des obélisques et un anneau au pied des montées, de grands rochers (`stone_tall*`), une statue et une souche sur la terrasse. À gauche, c'est le même décor en miroir ; l'anneau et la souche sont déplacés hors de la rivière.
+
+Pour en faire une autre ailleurs : un étage de 1,5 m par case, un palier (`cliff_blockHalf_*`) pour changer de sens ou de type de pièce, et une bordure d'escalier sur chaque côté d'escalier qui donne sur le vide.
 
 ### Sur les voies et vers la jungle
 
@@ -218,43 +234,48 @@ On les pose comme l'habillage des falaises (section 10), en *Scale* `(1, 1, 1)`,
 - Dessus : des sapins (`tree_pine*`) et de grands rochers (`stone_tall*`, *Scale* 2 à 3).
 - Elles ferment la carte : vérifie depuis le haut de la tour qu'elles ferment l'horizon.
 
+> **Habillées le 11 octobre**, comme ton mur ouest (`Map > Dressing > Cliffs > Map Walls`, 357 pièces) : chaque face visible depuis la carte (y compris les marches entre deux blocs de hauteurs différentes) reçoit une colonne de `cliff_stone` / `cliff_rock` (selon le bloc) tous les 3 m, avec un `cliff_top` à lèvre d'herbe au sommet. Pour casser la régularité : des colonnes décalées de 1,5 m (`cliff_half` en bas et en haut), des `cliff_half` en saillie en haut de certaines colonnes, des colonnes un peu renfoncées, et des coins (`cliff_corner…` saillants, `cliff_cornerInner…` rentrants). Les faces tournées vers l'extérieur de la carte ne sont pas habillées (on ne les voit pas).
+>
+> **Le coin du fond est devenu une face** (`Map > Lair > End Wall`) : au bout de la voie du milieu, le coin nord-est est coupé en diagonale, perpendiculairement à la voie, de (60, 75) à (75, 60). La face fait 21 m de large et 18 m de haut (blocs pleins derrière, demi-blocs `cliff_blockDiagonal_stone` à rotation `180` sur la diagonale). Au-dessus des deux terrasses, elle est habillée de roche taillée (`cliff_diagonal_stone`) ; tout en haut, une lèvre d'herbe (`cliff_topDiagonal_stone`) court sur toute la largeur. Au-dessus de la voie, la pierre reste lisse sur 12 m de large et 15 m de haut : c'est la place de la porte du boss final et du nom du jeu.
+
 ## 7. La rivière
 
-1. **Son trajet** (plan final, GDD section 17) : elle descend du nord en cascade depuis la montagne, traverse la forêt de gauche et s'y sépare en deux bras. L'un rejoint la voie de gauche, l'autre la voie du milieu ; il traverse ensuite la clairière de droite jusqu'à la voie de droite.
+> **Fait le 11 octobre**, d'après ton tracé (`Map > River`, le groupe de 75 pièces) :
+> - **Le cours** : la source sort de la montagne (cascade de 9 m), descend en chenal large sur la terrasse de 6 m, tombe en cascade sur la terrasse de 3 m et s'élargit en bassin. De là partent deux bras. Celui de l'ouest tombe en cascade sur la voie de gauche et quitte la carte. Celui du sud tombe en cascade dans la falaise qui borde la voie du milieu (à plat, dans l'alignement du bord coupé), traverse la voie du milieu tout droit (3 cases), fait un méandre en S dans la clairière, puis traverse la voie de droite et quitte la carte.
+> - **L'eau** est construite au lancement par `Map > River Water` (section 7 bis).
 
-### Pourquoi l'eau disparaît dans le sol
+### Une rivière creusée dans le terrain
 
-Les cases `ground_river*` sont une simple peau, sans épaisseur : leur pivot est au niveau de leurs berges (l'herbe), et leur eau est 15 cm plus bas. Posée à `y = 0` sur le sol (`Floor`, dont l'herbe est aussi à `y = 0`), l'eau se retrouve 15 cm **dans** le bloc : l'herbe du sol la recouvre, et les berges clignotent avec cette herbe (même hauteur). Il faut donc toujours que ce qui est sous une case de rivière soit **plus bas que son eau**.
+1. **Les pièces du lit** sont les `ground_path*` du kit (terre et berges d'herbe). Le pivot est au niveau des berges : pose-les **au ras du terrain** (`y = 0` au sol et sur une voie, `3` ou `6` sur une terrasse), au centre d'une case, en *Scale* `(1, 2.5, 1)`. Le lit est alors 37,5 cm sous les berges.
+2. **Le terrain dessous est découpé** : le bloc qui couvrait la case (forêt, ou `Floor` au sol) n'y passe plus, et un bloc plus bas le remplace sous le lit (dessus 45 cm sous les berges). Sans cela, le terrain cache le lit. Les voies sont découpées de la même façon sous les passages.
+3. **Sur une voie**, les berges vertes juraient avec la terre : `Art/River/ground_pathStraight_lane` est la même pièce, avec des berges en terre. Elle sert aux trois passages (voie de gauche, voie du milieu, voie de droite).
+4. **Au bord de la forêt coupée**, la case (8, 10) est coupée en diagonale comme ses voisines : rien ne dépasse dans la voie du milieu. Le lit y arrive par l'ouest dans un virage coupé en deux, qui touche la diagonale à angle droit :
+   - en haut (`y = 3`), `Art/River/ground_pathBend_halfSW` à rotation `90` : la moitié nord-ouest du virage, sur le bloc diagonal ;
+   - en bas (`y = 0`), `Art/River/ground_pathBend_lane_halfNE` à rotation `90` : la moitié sud-est du même virage, berges en terre, qui renvoie le lit vers le sud ;
+   - entre les deux, `Art/River/cliff_waterfall_rock_narrow` (la cascade du kit réduite à sa nappe) à rotation `135`, le dos sur la diagonale, dans une encoche de l'habillage diagonal `Art/River/cliff_topDiagonal_rock_notch` (rotation `90`, comme ses voisines).
+   Pour arriver par l'ouest, le lit d'en haut passe par la colonne 7 (cases (7, 12) à (7, 10)) ; les cases (8, 11) et (8, 12) sont redevenues de la forêt.
 
-### Au niveau du sol (gués, clairières)
-
-2. Pose les cases à **`y = 0.16`**, comme la terre des voies : l'eau est alors 1 cm au-dessus de l'herbe du sol.
-3. À découvert, prends **`ground_riverOpen`** (de l'eau partout, sans berges) : l'eau est à fleur de l'herbe, comme les gués actuels. Les cases à berges (`Straight`, `Bend`...) ont leurs berges 16 cm au-dessus du sol, et l'on voit le vide sous leurs bords : garde-les pour les couloirs entre deux falaises, qui cachent ces bords.
-
-### Sur une terrasse (la forêt) : une rivière creusée, avec ses berges
-
-4. Sous le tracé, découpe la terrasse en blocs d'une case et passe ceux de la rivière en *Scale Y* **`0.933`** : leur dessus descend à 2,80 m.
-5. Pose les cases de rivière par-dessus à **`y = 3`** : les berges sont au niveau de l'herbe de la terrasse, l'eau 15 cm plus bas, au-dessus du bloc abaissé. Les bords des blocs voisins sont cachés sous les berges.
+Pour changer le tracé : déplace ou ajoute des pièces dans `Map > River`, puis demande-moi de refaire le découpage du terrain. L'eau suit toute seule au lancement suivant.
 
 ### Les pièces
 
-6. Toutes en *Scale* `(1, 1, 1)`, au centre d'une case (`3k + 1.5`). Le chenal fait la moitié de la case (1,5 m d'eau, une berge de chaque côté). À rotation Y `0` (vue de dessus, nord = +Z) :
+À rotation Y `0` (vue de dessus, nord = +Z) :
 
-| Pièce | L'eau va vers |
+| Pièce | Le lit va vers |
 |---|---|
-| `ground_riverStraight` (et `Rocks`, avec des rochers) | le nord et le sud |
-| `ground_riverBend` | le sud et l'est (virage) |
-| `ground_riverSplit` | l'ouest, l'est et le sud (pour le fork des deux bras) |
-| `ground_riverCross` | les quatre côtés |
-| `ground_riverEnd` | le sud seulement (une source, ou la fin d'un bras) |
-| `ground_riverOpen` | partout (gués, rivière large) |
-| `ground_riverSide`, `Corner`, `CornerSmall`, `SideOpen` | bords d'une rivière large de plusieurs cases (berge au nord pour `Side`) |
+| `ground_pathStraight` | le nord et le sud |
+| `ground_pathBend` | le sud et l'est (virage) |
+| `ground_pathSplit` | l'ouest, l'est et le sud (embranchement) |
+| `ground_pathCross` | les quatre côtés |
+| `ground_pathEndClosed` | le sud seulement (fin d'un bras) |
+| `ground_pathOpen` | partout (bassin, rivière large) |
+| `ground_pathSide`, `Corner`, `CornerSmall`, `SideOpen` | bords d'une rivière large de plusieurs cases (berge au nord pour `Side`) |
 
 Chaque +90° en Y tourne la pièce d'un quart de tour vers la droite (nord → est → sud → ouest). Par exemple, `Bend` relie le sud et l'est à 0, l'ouest et le sud à 90, le nord et l'ouest à 180, l'est et le nord à 270.
 
-### Les cascades et les ponts
+### Les cascades
 
-7. **Une cascade** (au bord d'une terrasse de 3 m) : `cliff_waterfallTop_rock` est une nappe d'eau de 3 m de haut, posée contre la falaise, sur la case du bas, à `y = 0`. Sa crête est à la hauteur de l'eau d'une rivière creusée sur la terrasse. Tourne-la pour que son dos touche la falaise :
+5. `cliff_waterfall_rock`, posée comme l'habillage des falaises (section 10), le dos contre la falaise, sur la case du bas :
 
 | Falaise de ce côté de la case | Rotation Y |
 |---|---|
@@ -263,11 +284,27 @@ Chaque +90° en Y tourne la pièce d'un quart de tour vers la droite (nord → e
 | nord | 180 |
 | est | 270 |
 
-   Pour une chute de 6 m : `cliff_waterfall_rock` en bas (`y = 0`) et `cliff_waterfallTop_rock` au-dessus (`y = 3`). Sous la cascade, la rivière repart au niveau du sol (étapes 2 et 3).
-8. **Un pont** : `bridge_wood` (3 m, tablier à 30-60 cm, rambardes au nord et au sud à rotation 0), à la hauteur des berges. À la même rotation qu'une case `Straight`, il l'enjambe.
-9. **Le ralentissement**, à chaque gué (là où la rivière coupe une voie) : *Create Empty* `Ford Left`, `Ford Mid` et `Ford Right`, à la surface de l'eau, puis *Add Component > Slow Water* :
-   - *Size* : la largeur de la voie plus 2 m (X), `3` (Y), la largeur de la rivière plus 2 m (Z). Tourne l'objet pour suivre la rivière : la boîte est dessinée en bleu quand il est sélectionné ;
-   - *Speed Multiplier* `0.6` : les ennemis au sol y avancent 40 % moins vite. Les volants ne sont pas concernés.
+   Elle descend jusqu'au lit : `y` = niveau du bas moins `0.375`. Avec *Scale Y* = hauteur de la chute / 3 (ton réglage), le haut de la pièce arrive au fond du lit d'en haut et l'eau passe par-dessus ; avec (hauteur + 0,375) / 3, la roche monte jusqu'aux berges. Dans les deux cas, la nappe d'eau part de la surface du lit d'en haut. Par exemple, une chute de 3 m au sol se pose à `y = -0.375` en *Scale Y* `1`, et *Scale X* `2` pour une rivière de deux cases.
+6. **Le ralentissement** : à chaque passage sur une voie, un objet `Ford Left`, `Ford Mid` ou `Ford Right` (*Slow Water*, *Speed Multiplier* `0.6`) couvre la rivière sur la voie. La boîte est dessinée en bleu quand il est sélectionné. Les volants ne sont pas concernés.
+
+## 7 bis. L'eau
+
+`Map > River Water` (composant `River Water`) construit l'eau au lancement d'après les pièces de `Map > River` :
+- **La surface** : une nappe dans chaque case du lit, 20 cm sous les berges, découpée en carrés de 1 m pour les vagues. Le sens du courant est calculé tout seul : l'eau part de la source (le bout du lit le plus haut), descend les cascades, se partage au bassin et file vers les deux sorties.
+- **Les cascades** : une nappe animée devant celle de chaque pièce `cliff_waterfall…`, avec un rebord qui déborde en haut, au niveau de l'eau du lit d'en haut.
+- **Au pied des cascades** : de l'écume (petits éclats blancs low-poly qui jaillissent et retombent), un peu d'embruns, et un son en boucle (`Audio/Placeholder/waterfall_loop`, provisoire).
+
+Les matériaux sont dans `Art/River`, avec le shader `Archery/Water` :
+- **`River Water`** :
+  - *Eau peu profonde* et *Eau profonde* : couleurs près des berges et au milieu ;
+  - *Largeur de l'écume des berges* ;
+  - *Vitesse du courant* ;
+  - *Quantité de traînées d'écume* ;
+  - *Hauteur des vagues*.
+- **`Waterfall Water`** : la même chose pour les cascades (*Cascade* à 1).
+- **`Water Foam`** : la couleur de l'écume.
+
+Le shader se sert de la profondeur de la scène pour la couleur et l'écume des berges : *Depth Texture* est cochée dans `Settings/Project Configuration/Quality URP Config` et `Performance URP Config`.
 
 ## 8. La tour, la base et l'antre
 
@@ -289,8 +326,8 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 
 ### L'antre du boss (porte fermée pour l'instant)
 
-- L'entrée, au fond de la voie du milieu : le `cliff_blockCave_stone` du prototype, en *Scale* `3`, à `(73.5, 0, 79.5)`, rotation Y `180` (son ouverture regarde la tour).
-- La porte : `gate` du Castle Kit, Scale 6 (4 m de large, 5,5 m de haut), à `(73.5, 0, 75.5)`, rotation Y `90` pour qu'elle barre l'entrée.
+- L'entrée est maintenant la grande face du fond de la voie du milieu (section 6). La grotte du prototype (`cliff_blockCave_stone`, à `(73.5, 0, 79.5)`) est cachée derrière : tu peux la supprimer.
+- La porte : au pied de la face, au milieu de la voie, en `(67.5, 0, 67.5)`, tournée vers la tour (vers le sud-ouest). Elle peut être très grande : la partie lisse fait 12 m de large et 15 m de haut. Le nom du jeu se gravera au-dessus.
 - Derrière, garde un replat d'environ 30 m pour l'arène : le combat final viendra plus tard (GDD, section 23).
 
 ## 9. Les ennemis, les barricades et les coffres
@@ -332,6 +369,8 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 | `rock_small*`, `rock_large*`, `rock_tall*` | 1 |
 | arbres (3,6 à 5 m de haut) | 1,3 à 1,8 |
 | `tent_detailedOpen` (1,7 m de haut) | 1,4 |
+
+> **Petits décors partout, le 11 octobre** (`Map > Dressing > Small Decor`, 828 pièces) : herbes, massifs de fleurs d'une même couleur, champignons près des arbres, cailloux plats, cailloux ronds au pied des falaises, petites plantes ; par groupes de 2 à 7, plus des touffes isolées. Ils sont posés seulement sur le dessus des blocs de terrain (jungle, terrasses, clairières), à plat : ni sur les voies, ni dans la rivière, ni sur les escaliers et les rampes, et à l'écart de la tour, des coffres, des arbres et du décor existant. Herbes, fleurs, champignons et plantes n'ont pas de collider (on marche au travers) ; les cailloux en ont un, d'où les cailloux plats sur les zones de passage. Le groupe peut être effacé et refait d'un coup si la carte change.
 
 ## 11. Vérifier
 

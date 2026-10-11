@@ -92,6 +92,9 @@ namespace Archery.Economy
         public int Score { get; private set; }
         public int Money => Mathf.FloorToInt(m_Money);
 
+        /// <summary>Matériaux de construction (GDD, section 9) : seconde monnaie, gagnée seulement sur la carte.</summary>
+        public int Materials { get; private set; }
+
         /// <summary>Nombre de touches consécutives sur des ennemis.</summary>
         public int Combo { get; private set; }
 
@@ -190,6 +193,27 @@ namespace Archery.Economy
                 return false;
 
             m_Money -= amount;
+            Changed?.Invoke();
+            return true;
+        }
+
+        /// <summary>Ajoute des matériaux de construction (cristaux récoltés sur la carte, GDD section 9).</summary>
+        public void AddMaterials(int amount)
+        {
+            if (amount <= 0)
+                return;
+
+            Materials += amount;
+            Changed?.Invoke();
+        }
+
+        /// <summary>Dépense des matériaux (construction). Renvoie faux s'il n'y en a pas assez.</summary>
+        public bool TrySpendMaterials(int amount)
+        {
+            if (amount < 0 || Materials < amount)
+                return false;
+
+            Materials -= amount;
             Changed?.Invoke();
             return true;
         }

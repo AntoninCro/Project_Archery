@@ -88,11 +88,15 @@ namespace Archery.Defense
         }
 
         /// <summary>Remet la barricade debout, avec tous ses PV.</summary>
-        public void Rebuild()
+        public void Rebuild() => Rebuild(true);
+
+        /// <summary>Remet la barricade debout, avec tous ses PV ; sans son de construction si <paramref name="playSound"/> est faux.</summary>
+        public void Rebuild(bool playSound)
         {
             m_Health.ResetHealth(m_Health.Max);
             ShowIntact(true);
-            Sfx.Play(m_BuildClip, transform.position + Vector3.up, 0.9f);
+            if (playSound)
+                Sfx.Play(m_BuildClip, transform.position + Vector3.up, 0.9f);
         }
 
         /// <summary>Répare ou reconstruit toutes les barricades (achat en boutique).</summary>

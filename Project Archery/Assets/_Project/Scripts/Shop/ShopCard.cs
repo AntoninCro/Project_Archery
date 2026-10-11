@@ -47,7 +47,7 @@ namespace Archery.Shop
         [SerializeField]
         float m_Tint = 0.3f;
 
-        [Tooltip("Couleur du prix quand on n'a pas assez d'or.")]
+        [Tooltip("Couleur du prix quand on n'a pas assez d'or (ou de matériaux).")]
         [SerializeField]
         Color m_TooExpensiveColor = new Color(1f, 0.45f, 0.4f);
 
@@ -65,7 +65,7 @@ namespace Archery.Shop
                 m_Button.onClick.AddListener(() => Clicked?.Invoke(this));
         }
 
-        /// <summary>Affiche une offre ; null cache la carte.</summary>
+        /// <summary>Affiche une offre ; null cache la carte. <paramref name="money"/> : ce qu'on a dans la monnaie de l'offre.</summary>
         public void Show(ShopOffer offer, int money)
         {
             Offer = offer;
@@ -80,7 +80,7 @@ namespace Archery.Shop
 
             if (m_PriceText != null)
             {
-                m_PriceText.text = offer.Sold ? "Acheté" : available ? offer.Price + " or" : "";
+                m_PriceText.text = offer.Sold ? "Acheté" : available ? offer.Price + " " + offer.PriceUnit : "";
                 m_PriceText.color = available && money < offer.Price ? m_TooExpensiveColor : Color.white;
             }
 
