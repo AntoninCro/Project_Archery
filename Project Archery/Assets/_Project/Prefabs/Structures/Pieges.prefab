@@ -50,7 +50,10 @@ MonoBehaviour:
   - 12
   - 18
   - 27
-  m_Interval: 0.5
+  m_IntervalPerLevel:
+  - 0.8
+  - 0.65
+  - 0.5
   m_SlowFromLevel: 3
   m_SlowMultiplier: 0.8
   m_Size: {x: 2.6, y: 2.6}

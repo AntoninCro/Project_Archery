@@ -181,10 +181,7 @@ namespace Archery.Chests
 
         void Announce()
         {
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, 0.25f, 2.5f), "Un coffre est apparu !", m_MessageColor, 1.2f, 2f);
+            HeadMessages.Show("Un coffre est apparu !", m_MessageColor, 4f);
         }
 
         bool TryFindPosition(out Vector3 position)

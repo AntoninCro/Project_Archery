@@ -24,6 +24,7 @@ MonoBehaviour:
   goldBandWidth: 1.3
   aimGuideMode: 2
   scoreMultiplier: 0.75
+  structurePower: 0.75
   healthGrowthPerWave: 1.14
   damageGrowthPerWave: 1.07
   countGrowthPerWave: 1.09

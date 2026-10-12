@@ -33,7 +33,7 @@ namespace Archery.Player
         [SerializeField]
         bool m_DisableJump = true;
 
-        [Tooltip("Ce que le joueur tient en main (arc, grenade…) ne compte pas comme sol et ne heurte pas son corps. " +
+        [Tooltip("Ce que le joueur tient en main (arc, marteau…) ne compte pas comme sol et ne heurte pas son corps. " +
                  "Sinon, en courant, l'arc passé sous la tête faisait croire à la gravité d'XRI qu'on touchait le sol : on courait dans le vide.")]
         [SerializeField]
         bool m_HeldObjectsAreNotGround = true;

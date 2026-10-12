@@ -206,10 +206,7 @@ namespace Archery.Upgrades
 
         void AnnounceBuffEnd(TemporaryBuff buff)
         {
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, -0.3f, 1.5f), "Fin : " + NameOf(buff), m_BuffEndColor, 0.6f, 1.5f);
+            HeadMessages.Show("Fin : " + NameOf(buff), m_BuffEndColor, 3f, 0.8f);
         }
 
         /// <summary>Somme des valeurs de tous les exemplaires de cet effet.</summary>

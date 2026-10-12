@@ -264,10 +264,7 @@ namespace Archery.Building
 
         void Announce(string text)
         {
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, 0.15f, 2.4f), text, m_MessageColor, 1.1f, 2f);
+            HeadMessages.Show(text, m_MessageColor, 4f);
         }
 
         Vector3 PlayerPosition()

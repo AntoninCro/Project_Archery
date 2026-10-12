@@ -121,9 +121,7 @@ namespace Archery.Player
 
         void OnDied(Health health, DamageInfo info)
         {
-            var head = m_Rig.Head;
-            if (head != null)
-                FloatingText.Spawn(head.position + head.forward * 2f, "Tu es mort !", new Color(1f, 0.3f, 0.25f), 0.6f, m_ReloadDelay);
+            HeadMessages.Show("Tu es mort !", new Color(1f, 0.3f, 0.25f), Mathf.Max(3f, m_ReloadDelay), 1.6f);
 
             if (m_ReloadSceneOnDeath)
                 Invoke(nameof(ReloadScene), m_ReloadDelay);

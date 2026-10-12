@@ -145,7 +145,7 @@ namespace Archery.Waves
         public bool HasWon { get; private set; }
 
         /// <summary>Pendant le chrono, le gong peut faire venir le boss plus tôt.</summary>
-        public bool CanCallBoss => Phase == WavePhase.Wave && Stage != WaveStage.Boss && m_Settings != null && m_Settings.bossPrefab != null;
+        public bool CanCallBoss => Phase == WavePhase.Wave && Stage != WaveStage.Boss && m_Settings != null && m_Settings.HasBosses;
 
         /// <summary>Le combat contre le boss de la vague est en cours.</summary>
         public bool IsBossWave => Phase == WavePhase.Wave && Stage == WaveStage.Boss;
@@ -427,7 +427,7 @@ namespace Archery.Waves
                 return;
 
             Stage = WaveStage.Rise;
-            Announce("Les ennemis arrivent en nombre !", k_Danger, null, 0.2f, 1.3f);
+            Announce("Les ennemis arrivent en nombre !", k_Danger, null, false);
             StageChanged?.Invoke(Stage);
         }
 
@@ -465,7 +465,7 @@ namespace Archery.Waves
             m_GongFirstHitTime = Time.time;
             m_GongConfirmUntil = Time.time + 4f;
             var bonus = Mathf.RoundToInt(100f * (WaveDuration > 0f ? TimeRemaining / WaveDuration : 0f));
-            Announce($"Frappe encore le gong\npour appeler le boss\n<size=70%>récompense +{bonus} %</size>", k_Gold, null, 0.2f, 1.3f);
+            Announce($"Frappe encore le gong\npour appeler le boss\n<size=70%>récompense +{bonus} %</size>", k_Gold, null, false);
         }
 
         void BeginBoss()
@@ -485,7 +485,8 @@ namespace Archery.Waves
             var bossName = "";
             for (var i = 0; i < count && m_Spawner != null; i++)
             {
-                var enemy = m_Spawner.Spawn(m_Settings.bossPrefab);
+                var prefab = m_Settings.BossFor(WaveNumber, i);
+                var enemy = prefab != null ? m_Spawner.Spawn(prefab) : null;
                 if (enemy == null)
                     continue;
 
@@ -501,7 +502,7 @@ namespace Archery.Waves
             if (m_Bosses.Count == 0)
             {
                 // Sans boss, la vague se termine avec le chrono.
-                if (m_Settings.bossPrefab != null)
+                if (m_Settings.HasBosses)
                     Debug.LogWarning("WaveManager : le boss n'a pas pu apparaître.", this);
                 EndWave();
                 return;
@@ -509,7 +510,7 @@ namespace Archery.Waves
 
             m_BossArrivalTime = Time.time;
             if (string.IsNullOrEmpty(bossName))
-                bossName = m_Settings.bossPrefab.name;
+                bossName = m_Settings.BossFor(WaveNumber).name;
             var text = m_Bosses.Count > 1 ? $"{m_Bosses.Count} boss arrivent !" : $"{bossName}\narrive !";
             Announce(text + "\n<size=60%>abats-le pour finir la vague</size>", new Color(1f, 0.35f, 0.25f), null);
         }
@@ -632,7 +633,7 @@ namespace Archery.Waves
                 return false;
 
             Phase = WavePhase.GameOver;
-            Announce("Partie terminée", k_Gold, m_VictoryClip, 0.8f);
+            Announce("Partie terminée", k_Gold, m_VictoryClip);
             GameOver?.Invoke();
             m_OnGameOver.Invoke();
             return true;
@@ -649,7 +650,7 @@ namespace Archery.Waves
             MakeSurvivorsFlee();
             var score = ScoreManager.Instance;
             var summary = score != null ? $"Score : {score.Score}\n" : "";
-            Announce($"Fin de partie\n{summary}Vague {WaveNumber}", k_Danger, m_GameOverClip, 0.8f);
+            Announce($"Fin de partie\n{summary}Vague {WaveNumber}", k_Danger, m_GameOverClip);
 
             GameOver?.Invoke();
             m_OnGameOver.Invoke();
@@ -668,9 +669,10 @@ namespace Archery.Waves
         }
 
         // Message affiché devant le joueur.
-        void Announce(string text, Color color, AudioClip clip, float heightOffset = 0.35f, float size = 2f)
+        // Titre (début de vague, boss, victoire) ou message plus discret, dans le bandeau qui reste devant le regard.
+        void Announce(string text, Color color, AudioClip clip, bool title = true)
         {
-            FloatingText.Spawn(AnnouncePosition() + Vector3.up * heightOffset, text, color, size, 2.8f);
+            HeadMessages.Show(text, color, title ? 5f : 4f, title ? 1.3f : 1f);
             Sfx.Play(clip, AnnouncePosition(), 1f, 1f, 0f);
         }
 

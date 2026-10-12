@@ -24,9 +24,6 @@ namespace Archery.Bows
                  "Vide : l'arc change de caractéristiques mais garde son apparence.")]
         public BowVisual visualPrefab;
 
-        [Tooltip("Arcs comme des classes (Bow Classes) : expérience totale nécessaire pour débloquer cet arc.")]
-        public int unlockXp;
-
         [Header("Tir")]
         [Tooltip("Vitesse de la flèche (m/s) à tension maximale, avant le bonus de timing.")]
         public float arrowSpeed = 35f;
@@ -34,7 +31,7 @@ namespace Archery.Bows
         public float damage = 10f;
 
         [Tooltip("Distance de tirage maximale (m), mesurée depuis la position de repos de la corde.")]
-        public float maxDrawDistance = 0.35f;
+        public float maxDrawDistance = 0.2625f;
 
         [Tooltip("Puissance selon la tension (0 = corde au repos, 1 = tension maximale).")]
         public AnimationCurve drawToPower = new AnimationCurve(new Keyframe(0f, 0.1f), new Keyframe(1f, 1f));

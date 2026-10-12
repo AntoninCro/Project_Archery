@@ -304,13 +304,6 @@ namespace Archery.Shop
             var index = current != null ? bows.IndexOf(current) : 0;
             var next = index + 1 < bows.Count ? bows[index + 1] : null;
 
-            if (BowClasses.IsActive)
-            {
-                var name = current != null ? current.displayName : "Ton arc";
-                m_BowOffer = ShopOffer.Info("Arc", $"{name} : l'arc se choisit au menu, avant la partie.", color);
-                return;
-            }
-
             var legendary = LegendaryBow.Instance;
             if (legendary != null && legendary.IsAssembled)
             {

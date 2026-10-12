@@ -99,6 +99,12 @@ namespace Archery.Difficulty
         [Min(0f)]
         public float scoreMultiplier = 1f;
 
+        [Header("Constructions")]
+        [Tooltip("Multiplie les dégâts des bâtiments, en plus de la force des ennemis qu'ils suivent déjà. " +
+                 "Il compense le nombre d'ennemis de la difficulté : une baliste garde la même utilité dans tous les modes.")]
+        [Min(0f)]
+        public float structurePower = 1f;
+
         [Header("Ciel")]
         public SkySettings sky = SkySettings.Sunset();
 
@@ -130,6 +136,7 @@ namespace Archery.Difficulty
             goldBandWidth = 1.3f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 0.75f;
+            structurePower = 0.75f;
             healthGrowthPerWave = 1.14f;
             damageGrowthPerWave = 1.07f;
             countGrowthPerWave = 1.09f;
@@ -155,6 +162,7 @@ namespace Archery.Difficulty
             goldBandWidth = 1f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 1f;
+            structurePower = 1f;
             healthGrowthPerWave = 1.19f;
             damageGrowthPerWave = 1.09f;
             countGrowthPerWave = 1.12f;
@@ -180,6 +188,7 @@ namespace Archery.Difficulty
             goldBandWidth = 0.85f;
             aimGuideMode = AimGuideMode.Line;
             scoreMultiplier = 1.5f;
+            structurePower = 1.25f;
             healthGrowthPerWave = 1.27f;
             damageGrowthPerWave = 1.14f;
             countGrowthPerWave = 1.16f;
@@ -205,6 +214,7 @@ namespace Archery.Difficulty
             goldBandWidth = 0.7f;
             aimGuideMode = AimGuideMode.None;
             scoreMultiplier = 2f;
+            structurePower = 1.6f;
             healthGrowthPerWave = 1.34f;
             damageGrowthPerWave = 1.19f;
             countGrowthPerWave = 1.21f;

@@ -53,6 +53,12 @@ namespace Archery.Chests
         [SerializeField]
         float m_SlowMotionMaxDuration = 6f;
 
+        [Tooltip("Le coffre ouvert disparaît au bout de ce temps (s), avec ses orbes s'il n'en a pas pris, " +
+                 "pour ne pas le confondre avec un coffre neuf. 0 : il reste jusqu'à la fin de la vague.")]
+        [Min(0f)]
+        [SerializeField]
+        float m_DespawnAfterOpen = 15f;
+
         [Header("Récompenses")]
         [Tooltip("Durée (s) des bonus temporaires.")]
         [SerializeField]
@@ -73,6 +79,7 @@ namespace Archery.Chests
 
         readonly List<ChestOrb> m_Orbs = new List<ChestOrb>();
         float m_SlowMotionLeft;
+        float m_DespawnLeft = -1f;
         bool m_Vanishing;
         float m_VanishTime;
         Vector3 m_BaseScale;
@@ -116,6 +123,13 @@ namespace Archery.Chests
                     SlowMotion.End(this);
             }
 
+            if (m_DespawnLeft > 0f && !m_Vanishing)
+            {
+                m_DespawnLeft -= Time.unscaledDeltaTime;
+                if (m_DespawnLeft <= 0f)
+                    Vanish();
+            }
+
             if (!m_Vanishing)
                 return;
 
@@ -142,6 +156,8 @@ namespace Archery.Chests
 
             SlowMotion.Begin(this, m_SlowMotionScale);
             m_SlowMotionLeft = m_SlowMotionMaxDuration;
+            if (m_DespawnAfterOpen > 0f)
+                m_DespawnLeft = m_DespawnAfterOpen;
         }
 
         // Les orbes sortent du coffre et s'alignent au-dessus. Vues par le joueur, qui fait face au coffre, de gauche à droite :
@@ -190,7 +206,7 @@ namespace Archery.Chests
             m_SlowMotionLeft = 0f;
         }
 
-        /// <summary>Le coffre disparaît (fin de la vague) : ses orbes aussi, et le ralenti s'arrête.</summary>
+        /// <summary>Le coffre disparaît (fin de la vague, ou 15 s après son ouverture) : ses orbes aussi, et le ralenti s'arrête.</summary>
         public void Vanish()
         {
             if (m_Vanishing)
@@ -211,10 +227,7 @@ namespace Archery.Chests
 
         static void ShowMessage(string message, Color color)
         {
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, 0.1f, 1.6f), message, color, 0.9f, 2f);
+            HeadMessages.Show(message, color, 4f);
         }
     }
 }

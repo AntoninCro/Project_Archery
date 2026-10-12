@@ -66,10 +66,6 @@ namespace Archery.UI
         [SerializeField]
         TMP_Text m_BuffText;
 
-        [Tooltip("Optionnel : état de la grenade de flèches (« Grenade prête », « Grenade · 12 s »).")]
-        [SerializeField]
-        TMP_Text m_GrenadeText;
-
         [Tooltip("Couleur du chrono pendant les 5 dernières secondes.")]
         [SerializeField]
         Color m_TimerWarningColor = new Color(1f, 0.35f, 0.25f);
@@ -85,7 +81,6 @@ namespace Archery.UI
         int m_Wave = -1;
         int m_BossHealth = -2;
         int m_BuffKey = -1;
-        int m_GrenadeSeconds = -2;
         bool m_BossWave;
         WaveStage m_Stage;
         WavePhase? m_Phase;
@@ -107,21 +102,6 @@ namespace Archery.UI
             UpdateTowerHealth();
             UpdateDifficulty();
             UpdateBuffs();
-            UpdateGrenade();
-        }
-
-        void UpdateGrenade()
-        {
-            if (m_GrenadeText == null)
-                return;
-
-            var holster = GrenadeHolster.Instance;
-            var seconds = holster != null ? Mathf.CeilToInt(holster.CooldownLeft) : -1;
-            if (seconds == m_GrenadeSeconds)
-                return;
-
-            m_GrenadeSeconds = seconds;
-            m_GrenadeText.text = seconds < 0 ? "" : seconds == 0 ? "Grenade prête" : $"Grenade · {seconds} s";
         }
 
         // « Dégâts ×2 · 23 s », une ligne par bonus. Le texte n'est reconstruit que quand une seconde change.

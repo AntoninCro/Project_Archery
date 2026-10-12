@@ -304,10 +304,7 @@ namespace Archery.Building
 
         void Announce(string text)
         {
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0f, 0.15f, 2.4f), text, m_MessageColor, 1f, 2.5f);
+            HeadMessages.Show(text, m_MessageColor, 4f);
         }
 
         // ---- Bilan de la vague : part des dégâts et éliminations des bâtiments.
@@ -348,11 +345,7 @@ namespace Archery.Building
 
             var share = Mathf.RoundToInt(100f * m_StructureDamage / m_WaveDamage);
             var kills = m_StructureKills > 1 ? m_StructureKills + " éliminations" : m_StructureKills + " élimination";
-            var rig = PlayerRig.Instance;
-            var head = rig != null ? rig.Head : null;
-            if (head != null)
-                FloatingText.Spawn(head.position + rig.HeadYaw * new Vector3(0.6f, -0.35f, 2.2f),
-                                   $"Défenses : {share} % des dégâts\n<size=70%>{kills}</size>", m_MessageColor, 0.8f, 4f);
+            HeadMessages.Show($"Défenses : {share} % des dégâts\n<size=70%>{kills}</size>", m_MessageColor, 5f, 0.85f);
 
             m_Builder.Clear();
             m_Builder.Append("Bilan des bâtiments, vague ").Append(wave).Append(" : ").Append(share).Append(" % des dégâts infligés aux ennemis, ")

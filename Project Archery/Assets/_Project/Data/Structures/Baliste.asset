@@ -20,8 +20,8 @@ MonoBehaviour:
   icon: {fileID: 0}
   levels:
   - cost: 50
-    description: "Tire seule sur l'ennemi le plus proche \xE0 20 m, volants compris, toutes les 1,5 s."
+    description: "Tire seule sur l'ennemi le plus proche \xE0 20 m, volants compris, toutes les 2,4 s."
   - cost: 60
-    description: "D\xE9g\xE2ts \xD71,5, un tir toutes les 1,2 s."
+    description: "D\xE9g\xE2ts \xD71,5, un tir toutes les 1,6 s."
   - cost: 80
     description: "D\xE9g\xE2ts \xD72, un tir chaque seconde.\nLe carreau traverse 2 ennemis."

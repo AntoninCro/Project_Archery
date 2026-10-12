@@ -17,9 +17,9 @@ namespace Archery.Building
         [SerializeField]
         float[] m_DamagePerLevel = { 12f, 18f, 27f };
 
-        [Tooltip("Temps (s) entre deux coups.")]
+        [Tooltip("Temps (s) entre deux coups, par niveau : plus lents au début, ils gardent leur cadence au niveau 3.")]
         [SerializeField]
-        float m_Interval = 0.5f;
+        float[] m_IntervalPerLevel = { 0.8f, 0.65f, 0.5f };
 
         [Tooltip("Niveau à partir duquel les ennemis sur le piège sont aussi ralentis.")]
         [SerializeField]
@@ -57,6 +57,8 @@ namespace Archery.Building
         float m_Timer;
         float m_Pop;
 
+        float Interval => ValueFor(m_IntervalPerLevel, Mathf.Max(1, Level), 0.5f);
+
         protected override void Awake()
         {
             BuildSpikes();
@@ -72,7 +74,7 @@ namespace Archery.Building
             m_Timer -= Time.deltaTime;
             if (m_Timer <= 0f)
             {
-                m_Timer = m_Interval;
+                m_Timer = Interval;
                 Strike();
             }
 
@@ -98,7 +100,7 @@ namespace Archery.Building
                     continue;
 
                 if (slow)
-                    enemy.Slow(m_SlowMultiplier, m_Interval * 1.5f);
+                    enemy.Slow(m_SlowMultiplier, Interval * 1.5f);
                 enemy.Health.TakeDamage(new DamageInfo
                 {
                     Amount = damage,

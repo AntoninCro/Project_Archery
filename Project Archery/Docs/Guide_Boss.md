@@ -1,12 +1,14 @@
 # Guide : le boss des vagues 5, 10, 15…
 
+> **Historique.** Ce guide décrit l'ancien boss, un chevalier géant monté à la main. Depuis le 12 octobre au soir, il est retiré : chaque vague a son propre boss (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), généré par Claude dans `Prefabs/Boss_*.prefab`, avec ses données dans `Data/Enemies/Boss_*.asset`. La liste se règle dans `WaveSettings`, champ *Bosses* (un par vague, dans l'ordre). Le composant `Boss`, la barre de PV et les points faibles marchent comme décrit ci-dessous.
+
 Ce guide ajoute le boss du GDD (sections 3 et 10) à la scène `Prototype_Tir`.
 
 Les vagues 5, 10, 15… sont des **vagues de boss** :
 - au début de la vague, « Un boss approche ! » s'affiche ; 4 s plus tard, le boss arrive avec un cor et des tambours ;
 - c'est un chevalier géant, lent, qui frappe fort la tour : 1 500 PV, multipliés par la difficulté et par la courbe des vagues, comme les autres ennemis (GDD, section 11). En Normal, il a environ 2 000 PV à la vague 5 et 3 000 à la vague 10 ;
 - il a **3 points faibles lumineux** (poitrine et épaules) : chaque touche y fait **×3 dégâts** et rapporte 15 points ;
-- toutes les 14 s, il **appelle 2 Rampants** en renfort ;
+- toutes les 22 s (les premiers 15 s après son arrivée, et seulement s'il y a moins de 10 ennemis), il **appelle 2 Rampants** en renfort ;
 - une barre de PV flotte au-dessus de lui.
 
 Le **chrono n'arrête que les renforts**. À 0:00, « Plus de renforts : abats le boss ! » s'affiche et la montre indique « Boss ». La vague se termine à la mort du boss, même avant la fin du chrono : « Boss vaincu ! ». Le boss de la vague 10 donne la victoire.
@@ -102,7 +104,7 @@ Ils sont vides sans boss. Tu peux par exemple ajouter un texte `Boss` au grand p
 1. Lance Play, puis appuie 9 fois sur **N** : tu arrives au début de la vague 5. La montre affiche « Vague 5 / 10 · Boss ».
 2. 4 s plus tard, le boss arrive, avec son cor et « Seigneur de guerre arrive ! ».
    - Tire dans les sphères cyan : gros chiffres de dégâts et « ding ».
-   - Toutes les 14 s, « Renforts ! » s'affiche et 2 Rampants sortent du sol à côté de lui.
+   - Toutes les 22 s, « Renforts ! » s'affiche et 2 Rampants sortent du sol à côté de lui.
 3. **N** une fois : fin des renforts, et la montre affiche « Boss ».
 4. **N** une deuxième fois : le boss meurt. « Boss vaincu ! » s'affiche, puis la boutique s'ouvre.
 

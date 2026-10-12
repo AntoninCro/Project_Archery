@@ -89,9 +89,9 @@ namespace Archery.Building
                     color = new Color(0.95f, 0.5f, 0.45f);
                     levels = new[]
                     {
-                        NewLevel(25, "Les ennemis au sol qui passent dessus sont blessés toutes les 0,5 s."),
-                        NewLevel(35, "Dégâts ×1,5."),
-                        NewLevel(50, "Dégâts ×2,25.\nIls sont aussi ralentis de 20 %."),
+                        NewLevel(25, "Les ennemis au sol qui passent dessus sont blessés toutes les 0,8 s."),
+                        NewLevel(35, "Dégâts ×1,5, un coup toutes les 0,65 s."),
+                        NewLevel(50, "Dégâts ×2,25, un coup toutes les 0,5 s.\nIls sont aussi ralentis de 20 %."),
                     };
                     break;
 
@@ -113,8 +113,8 @@ namespace Archery.Building
                     color = new Color(1f, 0.82f, 0.4f);
                     levels = new[]
                     {
-                        NewLevel(50, "Tire seule sur l'ennemi le plus proche à 20 m, volants compris, toutes les 1,5 s."),
-                        NewLevel(60, "Dégâts ×1,5, un tir toutes les 1,2 s."),
+                        NewLevel(50, "Tire seule sur l'ennemi le plus proche à 20 m, volants compris, toutes les 2,4 s."),
+                        NewLevel(60, "Dégâts ×1,5, un tir toutes les 1,6 s."),
                         NewLevel(80, "Dégâts ×2, un tir chaque seconde.\nLe carreau traverse 2 ennemis."),
                     };
                     break;

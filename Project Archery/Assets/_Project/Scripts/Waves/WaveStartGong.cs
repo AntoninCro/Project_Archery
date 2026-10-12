@@ -1,5 +1,6 @@
 using Archery.Bows;
 using Archery.Core;
+using Archery.Defense;
 using UnityEngine;
 
 namespace Archery.Waves
@@ -9,6 +10,7 @@ namespace Archery.Waves
     /// Pendant le chrono d'une vague, deux coups de suite font venir le boss plus tôt, contre une récompense plus grosse ;
     /// il disparaît pendant le combat contre le boss. Seule la flèche tirée par l'arc compte : les flèches en plus du multitir,
     /// de l'écho et du déluge le font sonner sans rien déclencher. Les flèches disparaissent en le touchant.
+    /// Quand la tour est détruite, il descend à son pied (Ground Spot), et remonte à la reconstruction.
     /// À placer sur l'objet du gong, avec un collider.
     /// </summary>
     [DisallowMultipleComponent]
@@ -28,12 +30,19 @@ namespace Archery.Waves
         [SerializeField]
         float m_SwingAngle = 18f;
 
+        [Tooltip("Optionnel : place du gong au pied de la tour quand elle est détruite. Il remonte quand elle est reconstruite.")]
+        [SerializeField]
+        Transform m_GroundSpot;
+
         Renderer[] m_Renderers;
         Collider[] m_Colliders;
         Quaternion m_SwingRest;
         float m_Swing;
         float m_SwingTime;
         bool m_Visible = true;
+        Vector3 m_TopPosition;
+        Quaternion m_TopRotation;
+        Tower m_Tower;
 
         void Awake()
         {
@@ -42,7 +51,35 @@ namespace Archery.Waves
             m_SwingRest = m_SwingPart.localRotation;
             m_Renderers = GetComponentsInChildren<Renderer>(true);
             m_Colliders = GetComponentsInChildren<Collider>(true);
+            m_TopPosition = transform.position;
+            m_TopRotation = transform.rotation;
         }
+
+        void Start()
+        {
+            m_Tower = Tower.Instance;
+            if (m_Tower == null || m_GroundSpot == null)
+                return;
+
+            m_Tower.Destroyed += MoveToGround;
+            m_Tower.Rebuilt += MoveToTop;
+            if (!m_Tower.IsStanding)
+                MoveToGround();
+        }
+
+        void OnDestroy()
+        {
+            if (m_Tower == null)
+                return;
+
+            m_Tower.Destroyed -= MoveToGround;
+            m_Tower.Rebuilt -= MoveToTop;
+        }
+
+        // La tour s'effondre : le gong descend au pied des ruines, pour qu'on puisse encore lancer les vagues.
+        void MoveToGround() => transform.SetPositionAndRotation(m_GroundSpot.position, m_GroundSpot.rotation);
+
+        void MoveToTop() => transform.SetPositionAndRotation(m_TopPosition, m_TopRotation);
 
         public bool OnArrowHit(in ArrowHit hit)
         {

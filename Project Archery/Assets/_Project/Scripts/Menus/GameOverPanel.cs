@@ -48,10 +48,6 @@ namespace Archery.Menus
         [SerializeField]
         TMP_Text m_MessageText;
 
-        [Tooltip("Optionnel, avec Bow Classes : expérience gagnée et arcs débloqués.")]
-        [SerializeField]
-        TMP_Text m_XpText;
-
         [SerializeField]
         LeaderboardView m_Leaderboard;
 
@@ -62,6 +58,18 @@ namespace Archery.Menus
         [Tooltip("Position de l'écran par rapport à la tête du joueur (X à droite, Z devant).")]
         [SerializeField]
         Vector3 m_OffsetFromHead = new Vector3(0f, -0.2f, 1.6f);
+
+        [Tooltip("L'écran suit le joueur : il le rejoint quand le joueur s'éloigne de plus de cette distance (m)...")]
+        [SerializeField]
+        float m_FollowDistance = 1.2f;
+
+        [Tooltip("... ou quand il se tourne de plus de cet angle (°).")]
+        [SerializeField]
+        float m_FollowAngle = 60f;
+
+        [Tooltip("Temps (s) pour glisser vers sa nouvelle place.")]
+        [SerializeField]
+        float m_FollowSmoothing = 0.35f;
 
         [SerializeField]
         int m_MaxNameLength = 16;
@@ -80,6 +88,9 @@ namespace Archery.Menus
         bool m_Shown;
         bool m_Saved;
         bool m_Restarting;
+        Vector3 m_Anchor;
+        Vector3 m_TargetPosition;
+        Quaternion m_TargetRotation;
 
         void Awake()
         {
@@ -118,11 +129,9 @@ namespace Archery.Menus
 
             var victory = m_Waves != null && m_Waves.HasWon;
             if (m_TitleText != null)
-                m_TitleText.text = victory ? "Victoire !" : "Fin de partie";
+                m_TitleText.text = victory ? "<size=140%>Victoire !</size>" : "<size=140%>Tu es mort</size>\n<size=60%>Fin de partie</size>";
             if (m_SummaryText != null)
                 m_SummaryText.text = Summary();
-            if (m_XpText != null)
-                m_XpText.text = XpSummary();
             if (m_NameInput != null)
             {
                 m_NameInput.characterLimit = m_MaxNameLength;
@@ -221,20 +230,6 @@ namespace Archery.Menus
                    $"Ennemis tués : {score.Kills} · Tirs à la tête : {score.Headshots} · Tirs parfaits : {score.PerfectShots}";
         }
 
-        // « +120 XP (total 760) », puis « Nouvel arc : Arc long ! » pour chaque arc débloqué.
-        static string XpSummary()
-        {
-            var classes = BowClasses.Instance;
-            if (!BowClasses.IsActive)
-                return "";
-
-            var gained = classes.AwardGameXp();
-            var text = $"+{gained} XP (total {classes.Xp})";
-            foreach (var bow in classes.NewlyUnlocked)
-                text += $"\nNouvel arc : {bow.displayName} !";
-            return text;
-        }
-
         // Sans balises de texte enrichi, sans espaces autour, pas trop long.
         string CleanName(string playerName)
         {
@@ -251,8 +246,39 @@ namespace Archery.Menus
             if (head == null)
                 return;
 
-            var yaw = rig.HeadYaw;
-            transform.SetPositionAndRotation(head.position + yaw * m_OffsetFromHead, yaw);
+            Retarget(head.position, rig.HeadYaw);
+            transform.SetPositionAndRotation(m_TargetPosition, m_TargetRotation);
+        }
+
+        void Retarget(Vector3 head, Quaternion yaw)
+        {
+            m_Anchor = head;
+            m_TargetPosition = head + yaw * m_OffsetFromHead;
+            m_TargetRotation = yaw;
+        }
+
+        // L'écran ne bouge pas tant que le joueur reste devant ; s'il s'éloigne ou se retourne, il glisse vers lui.
+        void LateUpdate()
+        {
+            if (!m_Shown || m_Restarting)
+                return;
+
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            if (head == null)
+                return;
+
+            var moved = head.position - m_Anchor;
+            moved.y = 0f;
+            var toPanel = m_TargetPosition - head.position;
+            toPanel.y = 0f;
+            var lookAway = toPanel.sqrMagnitude > 1e-4f && Vector3.Angle(rig.HeadYaw * Vector3.forward, toPanel) > m_FollowAngle;
+            if (moved.magnitude > m_FollowDistance || lookAway)
+                Retarget(head.position, rig.HeadYaw);
+
+            var t = 1f - Mathf.Exp(-Time.unscaledDeltaTime / Mathf.Max(0.01f, m_FollowSmoothing));
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, m_TargetPosition, t),
+                                             Quaternion.Slerp(transform.rotation, m_TargetRotation, t));
         }
     }
 }

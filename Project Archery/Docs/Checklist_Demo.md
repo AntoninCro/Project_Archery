@@ -16,7 +16,9 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Menu : Jouer, difficulté (le ciel change), Paramètres (volumes, rotation, confort), Classement, Quitter.
 - [ ] Gong, chrono, montre (score, chrono, vague, PV, tour, or, combo, difficulté, bonus).
 - [ ] Voile rouge autour de la vision quand les PV baissent, qui bat sous 25 % des PV.
-- [ ] Ennemis : Rampants (vague 1), Volants (vague 2), Tireurs (vague 4), boss (vague 5).
+- [ ] Ennemis : vague 1 Rampants, Gluants, Champignons ; vague 2 Tireurs, Gluants bleus, Étoiles de mer ; vague 3 Volants, Guêpes, Champignons furieux, Cactus, Fantassins ; vague 4 Orcs, Tortues, Liches, Gargouilles ; vague 5 Mimiques. Chacun s'anime (course, attaque, touché, mort) et ses zones de touche tombent juste (tête ×2).
+- [ ] Un boss différent à chaque vague (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), avec son nom, sa barre de PV, son point faible cyan et ses renforts.
+- [ ] Tour détruite : le gong descend au pied de la tour, et remonte à la reconstruction.
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
@@ -28,7 +30,11 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Vagues : accalmie (peu d'ennemis), montée, boss à la fin du chrono ; deux coups de gong font venir le boss plus tôt (bonus affiché) ; or de fin de vague avec ses bonus.
 - [ ] Bouton « Tour » sous la montre : on le touche avec l'autre main, téléportation, 25 s de recharge pendant les vagues.
 - [ ] Victoire après le boss de la vague 5 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
-- [ ] Mort : écran de fin, nom au clavier virtuel, classement avec la nouvelle ligne, *Rejouer*.
+- [ ] Tour détruite : les ruines remplacent la tour (fumée, son), le joueur est évacué ; reconstruite en boutique, elle revient.
+- [ ] Les messages (début de vague, boss, coffre, cristaux) restent devant le regard, lisibles.
+- [ ] Les deux ponts de la voie du milieu se traversent sans sauter.
+- [ ] Un coffre ouvert disparaît 15 s après.
+- [ ] Mort : « Tu es mort » en grand, écran de fin qui suit le joueur, nom au clavier virtuel, classement avec la nouvelle ligne, *Rejouer*.
 - [ ] Les paramètres et le classement sont gardés après avoir relancé le jeu.
 
 **Confort et fluidité**

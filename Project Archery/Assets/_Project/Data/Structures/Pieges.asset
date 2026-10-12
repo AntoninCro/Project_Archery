@@ -20,8 +20,8 @@ MonoBehaviour:
   icon: {fileID: 0}
   levels:
   - cost: 25
-    description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les 0,5 s."
+    description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les 0,8 s."
   - cost: 35
-    description: "D\xE9g\xE2ts \xD71,5."
+    description: "D\xE9g\xE2ts \xD71,5, un coup toutes les 0,65 s."
   - cost: 50
-    description: "D\xE9g\xE2ts \xD72,25.\nIls sont aussi ralentis de 20 %."
+    description: "D\xE9g\xE2ts \xD72,25, un coup toutes les 0,5 s.\nIls sont aussi ralentis de 20 %."

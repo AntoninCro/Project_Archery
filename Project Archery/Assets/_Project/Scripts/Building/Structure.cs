@@ -28,7 +28,7 @@ namespace Archery.Building
         GameObject[] m_LevelParts = Array.Empty<GameObject>();
 
         [Tooltip("Les dégâts du bâtiment suivent la force des ennemis (difficulté et vague) : il garde le même effet toute la partie. " +
-                 "Ses dégâts de base sont ceux de la vague 1 en Normal.")]
+                 "Ils suivent aussi la puissance des bâtiments de la difficulté (Structure Power). Ses dégâts de base sont ceux de la vague 1 en Normal.")]
         [SerializeField]
         bool m_FollowEnemyStrength = true;
 
@@ -76,8 +76,11 @@ namespace Archery.Building
         /// </summary>
         public static float EnemyStrength => DifficultyManager.Current.enemyHealth * EnemyScaling.Health;
 
-        /// <summary>Multiplie les dégâts du bâtiment : la force des ennemis, s'il la suit.</summary>
-        protected float Strength => m_FollowEnemyStrength ? EnemyStrength : 1f;
+        /// <summary>
+        /// Multiplie les dégâts du bâtiment, s'il suit la force des ennemis : cette force × la puissance des bâtiments
+        /// de la difficulté (plus d'ennemis en Impossible, donc des bâtiments plus forts pour garder la même utilité).
+        /// </summary>
+        protected float Strength => m_FollowEnemyStrength ? EnemyStrength * DifficultyManager.Current.structurePower : 1f;
 
         /// <summary>Volume du plan pendant la construction : c'est là qu'on frappe avec le marteau.</summary>
         public Bounds ConstructionBounds => m_Bounds;

@@ -82,7 +82,8 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 - Marteau de construction : *Stylized Mechanized Hammer* (AgeSoft).
 - Chevaliers : *Toon RTS Units – Demo*.
 - Coffre animé : *Animated PBR Chest Demo*.
-- Volant (Beholder) : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
+- Volant (Beholder) et mimique : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
+- Bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO PBR Polyart*, *RPG Monster Buddies PBR Polyart*, *RPG Monster Couple PBR Polyart*, *Monster Minion Survivor PBR Polyart* ; boss final à venir : *Four Evil Dragons PBR* (Dungeon Mason).
 - Décor et constructions : *Nature Kit*, *Castle Kit* et *Tower Defense Kit* de Kenney (www.kenney.nl), licence CC0 ; sons *Impact Sounds* et *RPG Audio*, icônes *Game Icons* de Kenney.
 - Sons, ambiances et musiques : provisoires, générés par script pour le prototype.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.

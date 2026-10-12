@@ -266,9 +266,9 @@ Les bâtiments construits à l'étape 2 prennent vie : la barricade arrête les 
 | Bâtiment | Ce qu'il fait | Niveau 2 | Niveau 3 |
 |---|---|---|---|
 | **Barricade** (sur la voie) | Comme celles de départ : les ennemis au sol qui arrivent devant elle, côté forêt, s'arrêtent pour la frapper. 400 PV | 700 PV ; une planche et une traverse en plus | 1 000 PV ; des pieux tournés vers la forêt. Chaque coup reçu au corps à corps blesse l'ennemi qui frappe (10 dégâts) |
-| **Pièges à piques** (sur la voie) | Toutes les 0,5 s, les ennemis au sol sur le plateau perdent 12 PV. Les piques jaillissent à chaque coup | 18 PV, piques plus hautes | 27 PV, et les ennemis sur le piège sont ralentis de 20 % |
+| **Pièges à piques** (sur la voie) | Toutes les 0,8 s, les ennemis au sol sur le plateau perdent 12 PV. Les piques jaillissent à chaque coup | 18 PV toutes les 0,65 s, piques plus hautes | 27 PV toutes les 0,5 s, et les ennemis sur le piège sont ralentis de 20 % |
 | **Tour de givre** (au bord) | Ralentit de 30 % les ennemis à 8 m, volants compris. Un disque bleuté montre sa portée au sol | 40 % à 9 m ; cristaux plus grands, lumière plus forte | 50 % à 10 m |
-| **Baliste** (au bord) | Pivote vers l'ennemi le plus proche à 20 m qu'elle voit, volants compris, et tire un carreau de 15 dégâts toutes les 1,5 s. Elle vise là où l'ennemi sera | 22 dégâts toutes les 1,2 s ; un fanion | 32 dégâts chaque seconde ; le carreau traverse 2 ennemis ; un drapeau |
+| **Baliste** (au bord) | Pivote vers l'ennemi le plus proche à 20 m qu'elle voit, volants compris, et tire un carreau de 15 dégâts toutes les 2,4 s. Elle vise là où l'ennemi sera | 22 dégâts toutes les 1,6 s ; un fanion | 32 dégâts chaque seconde ; le carreau traverse 2 ennemis ; un drapeau |
 
 Quelques règles :
 
@@ -315,12 +315,13 @@ Tous les réglages sont sur le composant à la racine de chaque prefab de `Prefa
 |---|---|---|---|
 | `Barricade` | *Health Per Level* | 400 / 700 / 1 000 | PV |
 | | *Thorns From Level*, *Thorns Damage* | 3, 10 | Pointes : niveau d'apparition, dégâts par coup reçu |
-| `Pieges` | *Damage Per Level*, *Interval* | 12 / 18 / 27, 0,5 s | Dégâts et rythme des coups |
+| `Pieges` | *Damage Per Level*, *Interval Per Level* | 12 / 18 / 27, 0,8 / 0,65 / 0,5 s | Dégâts et rythme des coups (plus lents aux premiers niveaux depuis les tests du 12 octobre) |
 | | *Slow From Level*, *Slow Multiplier* | 3, 0,8 | Ralentissement (0,8 = 20 % plus lents) |
 | | *Size*, *Spike Height Per Level* | 2,6 × 2,6 m, 0,3 / 0,38 / 0,46 m | Zone piégée, hauteur des piques |
 | `Givre` | *Radius Per Level*, *Speed Per Level* | 8 / 9 / 10 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
 | | *Range Color*, *Crystal Scale Per Level*, *Light Intensity Per Level* | bleu, 1 / 1,15 / 1,3, 1,5 / 2,2 / 3 | Apparence |
-| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 15 / 22 / 32, 1,5 / 1,2 / 1 s | Portée, dégâts, cadence |
+| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 15 / 22 / 32, 2,4 / 1,6 / 1 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
+| `Data/Difficulties` | *Structure Power* | 0,75 / 1 / 1,25 / 1,6 | Puissance des bâtiments selon la difficulté (Facile, Normal, Difficile, Impossible), en plus de la force des ennemis |
 | | *Pierce Per Level*, *Bow Bonus Share* | 0 / 0 / 2, 0,5 | Ennemis traversés, part des bonus de l'arc |
 | | *Bolt Speed*, *Turn Speed*, *Max Pitch* | 45 m/s, 220 °/s, 40° | Carreau et rotation |
 | | *Muzzle Offset* | (0 ; 0,41 ; 0,45) | Départ du carreau, dans le repère du modèle de la baliste (avant son échelle 2,4) |

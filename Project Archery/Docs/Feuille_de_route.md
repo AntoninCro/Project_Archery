@@ -10,9 +10,9 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | 4 | `Guide_CorpsACorps.md` | Coup de flèche au corps à corps | — (rien à monter) | 10 min |
 | 5 | `Guide_Effets.md` | Particules d'impact et de mort | — | 45 min |
 | 6 | `Guide_Ambiance.md` | Ambiance jour et nuit, musiques | — | 20 min |
-| 7 | `Guide_Grenade.md` | Grenade de flèches en bas du dos | — | 45 min |
+| 7 | — | Grenade de flèches en bas du dos : confiée à un coéquipier le 12 octobre, sur sa branche (GDD, section 4.6) | — | — |
 | 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 morceaux | coffres (1) | 30 min |
-| 9 | `Guide_Classes.md` | Arcs choisis au menu, expérience entre les parties | — (optionnel) | 45 min |
+| 9 | — | Arcs choisis au menu, débloqués par des succès : confiés à un coéquipier le 12 octobre, sur sa branche (GDD, section 23) | — | — |
 | 10 | `Guide_Carte.md` | Carte cubique à trois voies (blocs sur une grille, jungle en terrasses, rampes, rivière qui ralentit, montagnes, antre fermé), NavMesh, emplacements | barricades (3), coffres (1) | deux à trois journées |
 | 11 | `Guide_TowerDefense.md` | Tower defense (GDD, section 9) : cristaux et matériaux (étape 1, montée le 11 octobre), socles, panneau, plan bleu et marteau (étape 2, montée par Claude le 11 octobre), les quatre bâtiments et leurs niveaux (étape 3) et l'équilibrage (étape 4), montés par Claude le 12 octobre ; reste à tester | carte (10) | tests : 1 h |
 | 12 | `Checklist_Demo.md` | Tests complets, build, démo | tout | une demi-journée |

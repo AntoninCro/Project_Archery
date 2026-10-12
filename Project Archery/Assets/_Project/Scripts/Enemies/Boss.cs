@@ -35,11 +35,11 @@ namespace Archery.Enemies
 
         [Tooltip("Délai (s) avant les premiers renforts.")]
         [SerializeField]
-        float m_FirstSummonDelay = 8f;
+        float m_FirstSummonDelay = 15f;
 
         [Tooltip("Temps (s) entre deux appels de renforts.")]
         [SerializeField]
-        float m_SummonInterval = 14f;
+        float m_SummonInterval = 22f;
 
         [SerializeField]
         int m_SummonCount = 2;
@@ -50,7 +50,7 @@ namespace Archery.Enemies
 
         [Tooltip("Pas de renforts s'il y a déjà autant d'ennemis en vie.")]
         [SerializeField]
-        int m_MaxEnemiesAlive = 18;
+        int m_MaxEnemiesAlive = 10;
 
         [SerializeField]
         AudioClip m_SummonClip;

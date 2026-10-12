@@ -90,8 +90,7 @@ namespace Archery.Chests
 
             foreach (var hand in rig.Hands)
                 Haptics.Pulse(hand, 0.8f, 0.3f);
-            if (rig.Head != null)
-                FloatingText.Spawn(rig.Head.position + rig.HeadYaw * new Vector3(0f, 0.3f, 2f), "Arc légendaire assemblé !", m_Color, 1.2f, 3f);
+            HeadMessages.Show("Arc légendaire assemblé !", m_Color, 5f, 1.3f);
         }
 
         static Vector3 HeadPosition()

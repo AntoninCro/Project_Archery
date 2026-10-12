@@ -26,9 +26,9 @@ namespace Archery.Building
         [SerializeField]
         float[] m_DamagePerLevel = { 15f, 22f, 32f };
 
-        [Tooltip("Temps (s) entre deux tirs, par niveau.")]
+        [Tooltip("Temps (s) entre deux tirs, par niveau : lente au début, la baliste garde toute sa cadence au niveau 3.")]
         [SerializeField]
-        float[] m_IntervalPerLevel = { 1.5f, 1.2f, 1f };
+        float[] m_IntervalPerLevel = { 2.4f, 1.6f, 1f };
 
         [Tooltip("Ennemis qu'un carreau traverse avant de s'arrêter, par niveau (0 = il s'arrête au premier).")]
         [SerializeField]
@@ -186,7 +186,7 @@ namespace Archery.Building
 
         void Fire(Vector3 direction)
         {
-            m_Cooldown = ValueFor(m_IntervalPerLevel, Level, 1.5f);
+            m_Cooldown = ValueFor(m_IntervalPerLevel, Level, 2.4f);
             if (m_BoltPrefab == null)
                 return;
 

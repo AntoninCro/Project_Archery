@@ -88,13 +88,14 @@ namespace Archery.Waves
         public int endlessBossesEvery = 2;
 
         [Header("Boss de fin de vague")]
-        [Tooltip("Boss qui arrive à la fin du chrono de chaque vague. Vide : pas de boss, la vague se termine avec le chrono.")]
-        public Enemy bossPrefab;
+        [Tooltip("Le boss de chaque vague, dans l'ordre : le premier à la vague 1, le deuxième à la vague 2… " +
+                 "Au-delà de la liste (mode infini), ils reviennent tour à tour. Vide : pas de boss, la vague se termine avec le chrono.")]
+        public List<Enemy> bosses = new List<Enemy>();
 
         [Tooltip("Pendant le combat contre le boss, un renfort arrive toutes les N secondes (moins avec la difficulté et les vagues), " +
                  "une fois les ennemis prévus tous sortis.")]
         [Min(0.5f)]
-        public float bossReinforcementInterval = 3f;
+        public float bossReinforcementInterval = 6f;
 
         [Header("Récompenses de fin de vague")]
         [Tooltip("Or de fin de vague : cette base + « Reward Per Wave » × le numéro de la vague, × le multiplicateur de score de la difficulté.")]
@@ -123,11 +124,34 @@ namespace Archery.Waves
         /// <summary>Nombre de boss à la fin de la vague : un seul, puis de plus en plus en mode infini.</summary>
         public int BossCountFor(int wave)
         {
-            if (bossPrefab == null || wave <= 0)
+            if (!HasBosses || wave <= 0)
                 return 0;
             if (wave <= wavesToWin)
                 return 1;
             return 1 + (wave - wavesToWin + 1) / Mathf.Max(1, endlessBossesEvery);
+        }
+
+        public bool HasBosses => bosses.Exists(boss => boss != null);
+
+        /// <summary>
+        /// Boss numéro <paramref name="index"/> (0 pour le premier) de la vague : celui de la vague, puis les suivants
+        /// de la liste quand il en vient plusieurs (mode infini). Les cases vides de la liste sont sautées.
+        /// </summary>
+        public Enemy BossFor(int wave, int index = 0)
+        {
+            if (!HasBosses)
+                return null;
+
+            var count = bosses.Count;
+            var slot = Mathf.Max(0, wave - 1) + index;
+            for (var tries = 0; tries < count; tries++)
+            {
+                var boss = bosses[(slot + tries) % count];
+                if (boss != null)
+                    return boss;
+            }
+
+            return null;
         }
 
         /// <summary>Or de fin de vague, avant le multiplicateur de la difficulté et les bonus.</summary>

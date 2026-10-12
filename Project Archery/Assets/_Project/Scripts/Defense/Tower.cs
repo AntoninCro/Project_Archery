@@ -13,13 +13,22 @@ namespace Archery.Defense
     [RequireComponent(typeof(Health))]
     public class Tower : MonoBehaviour
     {
-        [Tooltip("Optionnel : objet affiché tant que la tour est debout.")]
+        [Tooltip("Optionnel : objet affiché tant que la tour est debout. Vide : c'est le modèle posé sur cet objet " +
+                 "(ses rendus et ses colliders) qui disparaît quand la tour tombe.")]
         [SerializeField]
         GameObject m_IntactVisual;
 
-        [Tooltip("Optionnel : ruines affichées quand la tour est détruite.")]
+        [Tooltip("Optionnel : ruines affichées quand la tour est détruite (objet à part, caché au départ).")]
         [SerializeField]
         GameObject m_RuinedVisual;
+
+        [Tooltip("Optionnel : effet de particules joué à l'effondrement (la fumée de mort des ennemis, en plus grand).")]
+        [SerializeField]
+        GameObject m_DestroyedEffect;
+
+        [Tooltip("Taille de l'effet d'effondrement.")]
+        [SerializeField]
+        float m_DestroyedEffectScale = 5f;
 
         [SerializeField]
         AudioClip m_HitClip;
@@ -33,6 +42,8 @@ namespace Archery.Defense
 
         Health m_Health;
         Collider[] m_Colliders = Array.Empty<Collider>();
+        Renderer[] m_OwnRenderers = Array.Empty<Renderer>();
+        Collider[] m_OwnColliders = Array.Empty<Collider>();
         float? m_TopHeight;
 
         public static Tower Instance { get; private set; }
@@ -77,6 +88,16 @@ namespace Archery.Defense
             m_Colliders = GetComponentsInChildren<Collider>();
             if (m_Colliders.Length == 0)
                 Debug.LogWarning("Tower : aucun collider. Les ennemis viseront le centre de la tour.", this);
+
+            // Sans objet « intact » à part, la tour est le modèle lui-même : on cachera ses rendus et ses colliders.
+            if (m_IntactVisual == null)
+            {
+                m_OwnRenderers = GetComponents<Renderer>();
+                m_OwnColliders = GetComponents<Collider>();
+            }
+
+            // Le sommet se mesure tant que les colliders de la tour debout sont actifs.
+            _ = TopHeight;
 
             if (m_RuinedVisual != null)
                 m_RuinedVisual.SetActive(false);
@@ -140,10 +161,7 @@ namespace Archery.Defense
                 return;
 
             m_Health.ResetHealth(m_Health.Max);
-            if (m_IntactVisual != null)
-                m_IntactVisual.SetActive(true);
-            if (m_RuinedVisual != null)
-                m_RuinedVisual.SetActive(false);
+            SetStanding(true);
 
             Sfx.Play(m_RepairClip, transform.position + Vector3.up * 2f);
             Rebuilt?.Invoke();
@@ -153,13 +171,48 @@ namespace Archery.Defense
 
         void OnDied(Health health, DamageInfo info)
         {
-            if (m_IntactVisual != null)
-                m_IntactVisual.SetActive(false);
-            if (m_RuinedVisual != null)
-                m_RuinedVisual.SetActive(true);
-
-            Sfx.Play(m_DestroyedClip, transform.position);
+            SetStanding(false);
+            PlayDestroyedEffect();
+            Sfx.Play(m_DestroyedClip, transform.position + Vector3.up * 2f, 1f, 1f, 0.3f);
             Destroyed?.Invoke();
+        }
+
+        // Tour debout : le modèle intact ; détruite : les ruines (et plus de collider de la tour entière).
+        void SetStanding(bool standing)
+        {
+            if (m_IntactVisual != null)
+                m_IntactVisual.SetActive(standing);
+            foreach (var renderer in m_OwnRenderers)
+            {
+                if (renderer != null)
+                    renderer.enabled = standing;
+            }
+
+            foreach (var collider in m_OwnColliders)
+            {
+                if (collider != null)
+                    collider.enabled = standing;
+            }
+
+            if (m_RuinedVisual != null)
+                m_RuinedVisual.SetActive(!standing);
+        }
+
+        void PlayDestroyedEffect()
+        {
+            if (m_DestroyedEffect == null)
+                return;
+
+            var effect = Instantiate(m_DestroyedEffect, transform.position + Vector3.up * 1.5f, Quaternion.identity);
+            effect.transform.localScale = Vector3.one * m_DestroyedEffectScale;
+            foreach (var particles in effect.GetComponentsInChildren<ParticleSystem>())
+            {
+                var main = particles.main;
+                main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                particles.Play();
+            }
+
+            Destroy(effect, 6f);
         }
     }
 }
