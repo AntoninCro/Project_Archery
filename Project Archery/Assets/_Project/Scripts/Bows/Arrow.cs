@@ -615,6 +615,12 @@ namespace Archery.Bows
                 return;
             }
 
+            if (handler is IArrowAbsorber)
+            {
+                Despawn();
+                return;
+            }
+
             StickInto(raycastHit, direction);
         }
 

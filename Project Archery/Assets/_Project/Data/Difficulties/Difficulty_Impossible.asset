@@ -24,12 +24,12 @@ MonoBehaviour:
   goldBandWidth: 0.7
   aimGuideMode: 0
   scoreMultiplier: 2
-  healthGrowthPerWave: 1.14
-  damageGrowthPerWave: 1.08
-  countGrowthPerWave: 1.09
-  speedGrowthPerWave: 1.03
+  healthGrowthPerWave: 1.34
+  damageGrowthPerWave: 1.19
+  countGrowthPerWave: 1.21
+  speedGrowthPerWave: 1.07
   earlyStrength: 0.5
-  fullStrengthWave: 6
+  fullStrengthWave: 3
   sky:
     elevation: 22
     azimuth: 0

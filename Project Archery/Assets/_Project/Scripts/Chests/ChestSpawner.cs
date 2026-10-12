@@ -6,6 +6,7 @@ using Archery.UI;
 using Archery.Waves;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using UnityEngine.InputSystem;
 #endif
@@ -13,8 +14,9 @@ using UnityEngine.InputSystem;
 namespace Archery.Chests
 {
     /// <summary>
-    /// Fait apparaître 1 ou 2 coffres par vague (GDD, section 13), loin de la tour : il faut descendre et courir
-    /// pour aller les ouvrir. Les coffres disparaissent à la fin de la vague, ouverts ou non.
+    /// Fait apparaître 2 ou 3 coffres par vague (GDD, sections 3 bis et 13), loin de la tour : il faut descendre et courir
+    /// pour aller les ouvrir. Le premier arrive pendant l'accalmie, le deuxième au début de la montée, et un troisième
+    /// parfois plus tard. Les coffres disparaissent à la fin de la vague, ouverts ou non.
     /// </summary>
     /// <remarks>
     /// Sans points d'apparition, les coffres se posent au hasard sur le sol des ennemis (NavMesh), dans un anneau
@@ -42,14 +44,21 @@ namespace Archery.Chests
         [SerializeField]
         float m_MinSpacing = 8f;
 
-        [Tooltip("Chance (0 à 1) d'un deuxième coffre dans la vague.")]
+        [Tooltip("Moments d'apparition des deux coffres de chaque vague, en part du chrono (0,1 = après 10 % du chrono) : " +
+                 "le premier pendant l'accalmie, le deuxième au début de la montée.")]
+        [SerializeField]
+        Vector2 m_SpawnMoments = new Vector2(0.1f, 0.45f);
+
+        [Tooltip("Chance (0 à 1) d'un troisième coffre dans la vague.")]
+        [Range(0f, 1f)]
+        [FormerlySerializedAs("m_SecondChestChance")]
+        [SerializeField]
+        float m_ExtraChestChance = 0.5f;
+
+        [Tooltip("Moment d'apparition du troisième coffre, en part du chrono.")]
         [Range(0f, 1f)]
         [SerializeField]
-        float m_SecondChestChance = 0.5f;
-
-        [Tooltip("Moments d'apparition du premier et du deuxième coffre, en part du chrono (0,15 = après 15 % de la vague).")]
-        [SerializeField]
-        Vector2 m_SpawnMoments = new Vector2(0.15f, 0.55f);
+        float m_ExtraChestMoment = 0.7f;
 
         [Tooltip("Optionnel : son de l'apparition d'un coffre.")]
         [SerializeField]
@@ -94,8 +103,9 @@ namespace Archery.Chests
         {
             m_Pending.Clear();
             m_Pending.Add(m_SpawnMoments.x);
-            if (Random.value < m_SecondChestChance)
-                m_Pending.Add(m_SpawnMoments.y);
+            m_Pending.Add(m_SpawnMoments.y);
+            if (Random.value < m_ExtraChestChance)
+                m_Pending.Add(m_ExtraChestMoment);
         }
 
         void OnWaveEnded(int wave) => ClearAll();

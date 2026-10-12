@@ -58,19 +58,19 @@ namespace Archery.Shop
         public int rarePrice = 60;
         public int legendaryPrice = 140;
 
-        [Tooltip("Hausse des prix à chaque vague, en se cumulant (0,1 = +10 % par vague : ×2,4 après la vague 10). " +
+        [Tooltip("Hausse des prix à chaque vague, en se cumulant (0,24 = +24 % par vague : ×2,4 après la vague 5). " +
                  "Elle touche aussi la relance.")]
         [Min(0f)]
-        public float priceGrowthPerWave = 0.1f;
+        public float priceGrowthPerWave = 0.24f;
 
         [Tooltip("Chaque amélioration achetée en boutique fait monter le prix de toutes les suivantes, en se cumulant " +
                  "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20). Celles des coffres ne comptent pas.")]
         [Min(0f)]
         public float priceIncreasePerPurchase = 0.05f;
 
-        [Tooltip("En mode infini, tous les prix de la boutique sont multipliés par cette valeur à chaque vague, en se cumulant (1,2 = +20 %).")]
+        [Tooltip("En mode infini, tous les prix de la boutique sont multipliés par cette valeur à chaque vague, en se cumulant (1,3 = +30 %).")]
         [Min(1f)]
-        public float endlessPriceGrowth = 1.2f;
+        public float endlessPriceGrowth = 1.3f;
 
         [Header("Relance des offres")]
         public int rerollCost = 10;
@@ -238,9 +238,9 @@ namespace Archery.Shop
             commonPrice = 25;
             rarePrice = 60;
             legendaryPrice = 140;
-            priceGrowthPerWave = 0.1f;
+            priceGrowthPerWave = 0.24f;
             priceIncreasePerPurchase = 0.05f;
-            endlessPriceGrowth = 1.2f;
+            endlessPriceGrowth = 1.3f;
             rerollCost = 10;
             rerollCostIncrease = 5;
             repairFraction = 0.25f;

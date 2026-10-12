@@ -25,7 +25,9 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Tower defense : gisements de cristaux pendant la vague, récolte, matériaux sur la montre ; socle visé à la poignée, panneau, plan bleu, marteau, 3 coups, l'arc revient ; amélioration d'un bâtiment.
 - [ ] Bâtiments : la baliste pivote et tire (volants compris), la tour de givre ralentit, les piques jaillissent, les ennemis s'arrêtent devant une barricade construite ; le message « Défenses : … % des dégâts » en fin de vague.
 - [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
-- [ ] Victoire après la vague 10, puis mode infini.
+- [ ] Vagues : accalmie (peu d'ennemis), montée, boss à la fin du chrono ; deux coups de gong font venir le boss plus tôt (bonus affiché) ; or de fin de vague avec ses bonus.
+- [ ] Bouton « Tour » sous la montre : on le touche avec l'autre main, téléportation, 25 s de recharge pendant les vagues.
+- [ ] Victoire après le boss de la vague 5 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
 - [ ] Mort : écran de fin, nom au clavier virtuel, classement avec la nouvelle ligne, *Rejouer*.
 - [ ] Les paramètres et le classement sont gardés après avoir relancé le jeu.
 

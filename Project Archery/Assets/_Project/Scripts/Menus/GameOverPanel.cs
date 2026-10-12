@@ -116,7 +116,7 @@ namespace Archery.Menus
             m_Shown = true;
             PlaceInFrontOfPlayer();
 
-            var victory = m_Waves != null && m_Waves.WaveNumber > m_Waves.WavesToWin;
+            var victory = m_Waves != null && m_Waves.HasWon;
             if (m_TitleText != null)
                 m_TitleText.text = victory ? "Victoire !" : "Fin de partie";
             if (m_SummaryText != null)

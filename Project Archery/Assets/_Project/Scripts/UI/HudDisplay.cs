@@ -87,6 +87,7 @@ namespace Archery.UI
         int m_BuffKey = -1;
         int m_GrenadeSeconds = -2;
         bool m_BossWave;
+        WaveStage m_Stage;
         WavePhase? m_Phase;
         DifficultyDefinition m_Difficulty;
         Color m_TimerColor;
@@ -195,13 +196,15 @@ namespace Archery.UI
             var phase = waves.Phase;
             var seconds = Mathf.CeilToInt(waves.TimeRemaining);
             var bossWave = waves.IsBossWave;
-            if (phase == m_Phase && seconds == m_Seconds && waves.WaveNumber == m_Wave && bossWave == m_BossWave)
+            var stage = waves.Stage;
+            if (phase == m_Phase && seconds == m_Seconds && waves.WaveNumber == m_Wave && bossWave == m_BossWave && stage == m_Stage)
                 return;
 
             m_Phase = phase;
             m_Seconds = seconds;
             m_Wave = waves.WaveNumber;
             m_BossWave = bossWave;
+            m_Stage = stage;
 
             if (m_TimerText != null)
             {
@@ -220,8 +223,13 @@ namespace Archery.UI
             {
                 var wave = Mathf.Max(1, phase == WavePhase.Ready ? 1 : waves.WaveNumber);
                 m_WaveText.text = wave > waves.WavesToWin ? $"Vague {wave} (infini)" : $"Vague {wave} / {waves.WavesToWin}";
-                if (bossWave)
-                    m_WaveText.text += " · Boss";
+                if (phase == WavePhase.Wave)
+                    m_WaveText.text += stage switch
+                    {
+                        WaveStage.Calm => " · Accalmie",
+                        WaveStage.Rise => " · Montée",
+                        _ => " · Boss",
+                    };
             }
         }
 

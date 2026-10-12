@@ -5,16 +5,19 @@ using UnityEngine;
 namespace Archery.Waves
 {
     /// <summary>
-    /// Gong à viser pour lancer la vague suivante (GDD, section 3). Il oscille quand on le touche
-    /// et disparaît pendant les vagues. À placer sur l'objet du gong, avec un collider.
+    /// Gong à viser pour lancer la vague suivante (GDD, sections 3 et 3 bis). Il oscille quand on le touche.
+    /// Pendant le chrono d'une vague, deux coups de suite font venir le boss plus tôt, contre une récompense plus grosse ;
+    /// il disparaît pendant le combat contre le boss. Seule la flèche tirée par l'arc compte : les flèches en plus du multitir,
+    /// de l'écho et du déluge le font sonner sans rien déclencher. Les flèches disparaissent en le touchant.
+    /// À placer sur l'objet du gong, avec un collider.
     /// </summary>
     [DisallowMultipleComponent]
-    public class WaveStartGong : MonoBehaviour, IArrowHitHandler
+    public class WaveStartGong : MonoBehaviour, IArrowHitHandler, IArrowAbsorber
     {
         [SerializeField]
         AudioClip m_GongClip;
 
-        [Tooltip("Cache le gong (visuel et collider) pendant les vagues.")]
+        [Tooltip("Cache le gong (visuel et collider) quand il ne sert à rien : pendant le combat contre le boss.")]
         [SerializeField]
         bool m_HideDuringWaves = true;
 
@@ -51,17 +54,23 @@ namespace Archery.Waves
             m_Swing = 1f;
             m_SwingTime = 0f;
 
+            // Les flèches en plus d'une même volée ne doivent pas valoir plusieurs coups de gong.
+            if (hit.Arrow != null && hit.Arrow.IsExtra)
+                return false;
+
             if (waves == null)
                 Debug.LogWarning("WaveStartGong : aucun Wave Manager dans la scène.", this);
-            else
+            else if (waves.CanStartWave)
                 waves.StartNextWave();
+            else
+                waves.OnGongHitDuringWave();
             return false;
         }
 
         void Update()
         {
             var waves = WaveManager.Instance;
-            SetVisible(!m_HideDuringWaves || waves == null || waves.CanStartWave);
+            SetVisible(!m_HideDuringWaves || waves == null || waves.CanStartWave || waves.CanCallBoss);
 
             if (m_Swing <= 0f)
                 return;

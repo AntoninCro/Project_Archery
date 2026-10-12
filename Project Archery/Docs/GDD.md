@@ -27,14 +27,78 @@ Inspirations : *Megabonk* (survivor, style low-poly) et *Longbow* dans *The Lab*
 ## 3. Déroulement d'une partie
 
 1. **Menu** : le joueur est en haut de la tour. Des cibles d'entraînement permettent de s'échauffer. Il choisit la difficulté (le ciel change en direct) et lance la partie.
-2. **Vague** : un chrono tourne et les ennemis sortent de la forêt. Quand le chrono atteint zéro, la vague est finie et les ennemis restants s'enfuient.
+2. **Vague** : un chrono tourne, en deux temps : l'accalmie, avec peu d'ennemis, puis la montée, où ils sortent de la forêt de plus en plus vite. À la fin du chrono, le boss arrive ; la vague se termine à sa mort, et les ennemis restants s'enfuient (section 3 bis).
 3. **Pause** : la boutique s'ouvre en haut de la tour et les cibles d'entraînement réapparaissent. Les PV du joueur sont restaurés, pas ceux de la tour. On tire dans un gong pour lancer la vague suivante.
-4. **Boss** aux vagues 5 et 10, puis toutes les 5 vagues. Une vague de boss ne se termine qu'à la mort du boss : le chrono arrête seulement les renforts.
-5. **Victoire** après la vague 10. Le joueur peut ensuite continuer en mode infini pour le score. (Idée gardée pour la suite : la vague 10 devient le combat contre le boss final, dans son antre, section 23.)
+4. **Boss** à la fin de chaque vague : le chevalier géant pour l'instant, de plus en plus fort. Deux coups de gong pendant le chrono le font venir plus tôt, contre une récompense plus grosse. En mode infini, ils sont plusieurs.
+5. **Victoire** à la mort du boss de la vague 5. Le joueur termine alors la partie (bouton de la boutique), ou continue en mode infini pour le score (gong). (Idée gardée pour la suite : le boss de la vague 5 devient le boss final, dans son antre, section 23.)
 6. **Défaite** quand les PV du joueur tombent à 0. La destruction de la tour ne termine pas la partie, mais pénalise fortement (voir section 9).
 7. **Fin de partie** : résumé, saisie du nom au clavier virtuel, classement, retour au menu.
 
-Durée des vagues : 30 s à la vague 1, puis 5 s de plus à chaque vague (75 s à la vague 10). Une partie de 10 vagues dure environ 9 minutes de combat et 5 minutes de pauses, soit environ 15 minutes.
+Durée des vagues : 2 min de chrono à la vague 1, puis 15 s de plus à chaque vague (3 min à la vague 5), plus le combat contre le boss. Une partie de 5 vagues dure environ 20 minutes, pauses comprises. Le détail est dans la section 3 bis.
+
+## 3 bis. Refonte des vagues (décidée et codée le 12 octobre)
+
+**Pourquoi** : aux tests, les vagues étaient trop courtes pour tout faire (récolter les cristaux, construire, ouvrir les coffres, défendre) : on se sentait submergé. Cette section décrit les règles actuelles ; les sections 3, 7, 8, 10, 11 et 13 renvoient ici. Les chiffres sont calés par simulation, à confirmer aux tests.
+
+**5 vagues, plus longues, avec un boss à la fin de chacune.**
+
+- **Chrono** : 2 min à la vague 1, puis 15 s de plus à chaque vague (3 min à la vague 5). Une partie dure environ 20 minutes, boss et pauses compris.
+- **Chaque vague en 3 temps** (affichés sur la montre) :
+  1. **Accalmie** (les premiers 40 % du chrono) : 15 % des ennemis de la vague seulement, en filet. La première série de gisements de cristaux et le premier coffre apparaissent : c'est le moment de sortir, de récolter et de construire.
+  2. **Montée** (le reste du chrono) : le reste des ennemis arrive, de plus en plus vite. La deuxième série de gisements et le deuxième coffre apparaissent au début de la montée.
+  3. **Le boss** : à la fin du chrono, il arrive (cor et tambours), et les ennemis prévus qui restaient sortent vite. Ensuite, un renfort arrive toutes les 3 s environ (plus souvent avec la difficulté et les vagues), tant qu'il est en vie. La vague se termine à sa mort ; les survivants s'enfuient.
+- **Appeler le boss plus tôt** : pendant le chrono, le gong reste visible. Un premier coup demande confirmation et affiche le bonus, un deuxième dans les 4 s (et au moins 0,5 s après le premier) fait venir le boss : une flèche perdue ne suffit pas. Seule la flèche tirée par l'arc compte. Les flèches en plus du multitir, de l'écho ou du déluge font sonner le gong sans rien déclencher, et les flèches de la volée qui vient de lancer la vague ne comptent pas (1,5 s). Les flèches disparaissent en touchant le gong au lieu de s'y planter. La récompense de la vague augmente de la part du chrono qui restait (gong à mi-chrono : +50 %).
+- **Le boss** : pour l'instant, le chevalier géant à chaque vague. Il part de 600 PV et devient plus fort de vague en vague : courbe de la difficulté, plus 35 % par vague. En Normal, il a 600 PV à la vague 1 et environ 2 900 à la vague 5.
+- **Des boss uniques viendront plus tard**. Pistes, avec les modèles déjà importés :
+  - un **mimique**, le *Chest Monster* du pack RPG Monster Partners ;
+  - un **Beholder géant**, qui vole : les barricades ne l'arrêtent pas ;
+  - un **archimage**, qui tire de loin et invoque des ennemis (le modèle du mage) ;
+  - le **boss final dans son antre** (section 23).
+- **Victoire** à la mort du boss de la vague 5. Le joueur choisit ensuite :
+  - **continuer en mode infini** en frappant le gong ;
+  - ou **terminer la partie** avec le bouton « Terminer la partie » de la boutique. L'écran de fin affiche alors « Victoire ! », avec le nom à saisir et le classement.
+
+  Le bouton reste dans la boutique à chaque pause du mode infini.
+- **Mode infini** : la courbe continue de monter, et les boss sont plusieurs : deux aux vagues 6 et 7, trois aux vagues 8 et 9, puis un de plus toutes les 2 vagues.
+
+**L'or vient surtout de la fin des vagues.**
+
+- **Éliminations** : 5 % des points deviennent de l'or (au lieu de 25 %). L'or ne baisse plus pendant les 5 vagues ; la baisse de 9 % par vague ne reste qu'en mode infini, à partir de la vague 6.
+- **Récompense de fin de vague** : 80 + 110 × le numéro de la vague, soit 190 or à la vague 1 et 630 à la vague 5. Elle est multipliée par le multiplicateur de score de la difficulté, et divisée par deux si la tour est détruite.
+- **Bonus de performance** : chacun ajoute +20 % de cette récompense.
+  - **Tour intacte** : la tour n'a perdu aucun PV pendant la vague.
+  - **Boss express** : le boss est mort moins de 30 s après son arrivée.
+  - **Combo** : un combo d'au moins 10 touches pendant la vague.
+
+  Le message de fin de vague liste les bonus obtenus, avec celui du gong.
+- **Résultat de la simulation** (un bon joueur, la moitié des bonus) : environ 4 000 or sur la partie en Normal, à peu près comme avant sur 10 vagues, dont un tiers par les éliminations. En Impossible, environ 9 000.
+- **Le score ne change pas** : les points restent ceux de la section 8. Les points de fin de vague passent à 100 × le numéro de la vague.
+
+**Les courbes « par vague » sont recalées sur 5 vagues** : la vague 5 est aussi dure que l'ancienne vague 10.
+
+| | Facile | Normal | Difficile | Impossible |
+|---|---|---|---|---|
+| PV des ennemis, à chaque vague | ×1,14 | ×1,19 | ×1,27 | ×1,34 |
+| Dégâts subis, à chaque vague | ×1,07 | ×1,09 | ×1,14 | ×1,19 |
+| Nombre d'ennemis, à chaque vague | ×1,09 | ×1,12 | ×1,16 | ×1,21 |
+| Vitesse des ennemis, à chaque vague | ×1,02 | ×1,05 | ×1,06 | ×1,07 |
+
+- **Début plus doux en Impossible** : ×0,5 à la vague 1, et ×1 dès la vague 3.
+- **Ennemis par vague** : budget de 20 à la vague 1, +10 par vague. Cela fait environ 20 ennemis à la vague 1 et 80 à la vague 5 en Normal, sans compter les renforts du boss. Les vagues sont plus longues, donc moins denses qu'avant.
+- **Prix de la boutique** : +24 % par vague au lieu de +10 % (même hausse totale sur la partie). La hausse de +5 % par achat ne change pas. En mode infini : ×1,3 par vague.
+- **Mode infini** : par vague, PV des ennemis ×1,25, dégâts ×1,14, nombre ×1,19 et vitesse ×1,07, en plus de la courbe de la difficulté.
+- **Cristaux** : deux séries de gisements par vague. Chaque série en compte 3, avec un de plus toutes les 2 vagues (6 au plus). Un gisement donne 20 matériaux, +6 par vague. En récoltant 70 % des gisements, on a environ 900 matériaux à la fin de la vague 5, comme avant à la vague 10.
+- **Coffres** : 2 par vague (à 10 % du chrono, puis à 45 %), et 50 % de chance d'un troisième à 70 %.
+
+**Montre : retour à la tour.**
+
+- Un bouton « Tour », sous la montre, téléporte le joueur en haut de la tour, avec un fondu, comme le téléporteur.
+- **On le touche, on ne le clique pas.** On approche la manette de l'autre main et on la garde 0,3 s dessus ; un remplissage montre l'appui.
+  - La montre est au poignet de la main libre, et l'autre main tient souvent l'arc, ce qui l'empêche de cliquer au rayon.
+  - Le temps d'appui évite les appuis par accident.
+- **Temps de recharge** : 25 s pendant les vagues, affiché sur le bouton (« Tour 12 s »). Rien entre les vagues, comme le bouton « Retour à la tour » de la boutique.
+- Le bouton est grisé tant que la tour est détruite (« Tour détruite »), et caché quand le joueur est déjà en haut.
+- **Pourquoi** : revenir défendre plus vite rend les sorties sur la carte (cristaux, coffres, constructions) moins risquées.
 
 ## 4. Le tir à l'arc
 
@@ -183,9 +247,9 @@ Au-delà de 100 % de chance (« surplus » : 20 % de surplus avec 120 % de chanc
 **Prix des améliorations.** Aux premiers tests, en Impossible, on gagnait jusqu'à 5 000 pièces d'or vers la vague 10 et l'on achetait des dizaines d'améliorations par pause, au point de faire ramer le jeu. Les prix montent donc de trois façons, qui se cumulent :
 
 - prix de base : commune 25, rare 60, légendaire 140 ;
-- **+10 % à chaque vague**, en se cumulant (×2,4 après la vague 10) ;
+- **+24 % à chaque vague**, en se cumulant (×2,4 après la vague 5) ;
 - **+5 % à chaque amélioration achetée** en boutique (celles des coffres ne comptent pas), en se cumulant (×1,6 après 10, ×2,7 après 20, ×7 après 40) : plus on en achète, plus la suivante coûte cher ;
-- **en mode infini, ×1,2 à chaque vague**, en se cumulant, pour tous les prix de la boutique (améliorations, arc, tour, relance).
+- **en mode infini, ×1,3 à chaque vague**, en se cumulant, pour tous les prix de la boutique (améliorations, arc, tour, relance).
 
 | Prix d'une rare (commune, légendaire) | 0 achat | 10 achats | 20 achats | 40 achats |
 |---|---|---|---|---|
@@ -203,18 +267,15 @@ Avec la courbe des ennemis (section 11) et la baisse de l'or (section 8), cela c
 - Chaque touche de la flèche tirée par l'arc : 5 points au corps, 10 à la tête. Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche : sinon, les points et l'or grimpaient avec le nombre de flèches.
 - Chaque ennemi tué, par n'importe quelle flèche ou effet : sa valeur de base (section 10), doublée s'il meurt d'un tir à la tête.
 - Ces points sont multipliés par la qualité du tir (section 4.2), la distance, le combo et la difficulté (section 11).
-- Fin de vague : 50 points × numéro de la vague.
+- Fin de vague : 100 points × numéro de la vague.
 
 | Multiplicateur | Règle |
 |---|---|
 | Distance | +1 % par mètre au-delà de 10 m, jusqu'à +50 % |
 | Combo | +10 % par touche consécutive de la flèche tirée par l'arc, jusqu'à ×2 ; retombe à zéro quand cette flèche ne touche aucun ennemi |
 
-**Argent** : 25 % des points gagnés (l'amélioration Butin augmente ce taux), divisé par deux tant que la tour est détruite. À partir de la vague 5, ce taux baisse de 9 % à chaque vague, en se cumulant :
+**Argent** : l'essentiel de l'or vient de la récompense de fin de vague, avec ses bonus de performance (section 3 bis). En plus, 5 % des points gagnés deviennent de l'or (l'amélioration Butin augmente ce taux), divisé par deux tant que la tour est détruite. En mode infini, à partir de la vague 6, ce taux baisse de 9 % à chaque vague, en se cumulant.
 
-| Vague | 1 à 4 | 5 | 10 | 15 | 20 |
-|---|---|---|---|---|---|
-| Points changés en or | 25 % | 23 % | 14 % | 9 % | 5,5 % |
 
 Le score, lui, ne baisse pas.
 
@@ -229,7 +290,7 @@ Le score, lui, ne baisse pas.
 - **Barricades** : des murs de planches sur les 3 voies, vers 30 m de la tour (400 PV chacun, debout au début de la partie). Un ennemi au sol qui arrive devant une barricade, du côté de son apparition (zone de 5 m), s'arrête pour la frapper ; il ne passe qu'une fois qu'elle est détruite. Les tireurs la cassent avec leurs projectiles ; les volants passent au-dessus. En boutique, une réparation remet toutes les barricades debout avec tous leurs PV.
 - **Brasero** : allumé en haut de la tour dès le début de la partie. On y trempe la pointe d'une flèche tenue en main : elle s'enflamme. Sa cible brûle 3 s et perd 30 % des dégâts de la flèche en plus, étalés sur ces 3 s. Les flèches en plus d'un tir enflammé (multitir, écho, déluge) brûlent aussi.
 - **Matériaux et tower defense** (décidé le 7 octobre, conçu le 11 octobre, équilibré le 12 octobre sur simulation ; à confirmer aux tests) : aux tests, rester en haut de la tour rapportait plus que d'aller chercher les coffres. Une deuxième monnaie, les **matériaux**, se gagne seulement sur la carte et sert à construire des défenses sur des emplacements fixes.
-  - **Cristaux** : pendant chaque vague, des gisements de cristaux lumineux apparaissent dans la jungle et sur les terrasses, sur des emplacements choisis (`Map > Crystal Spots`, une douzaine), jamais deux au même endroit, à plus de 15 m de la tour. 3 gisements par vague, un de plus toutes les 3 vagues (6 au plus). On récolte un gisement en le visant et en appuyant sur la gâchette de prise, à 5 m au plus, comme un coffre : il éclate et donne **20 matériaux** (+2 par vague). Ce qui n'est pas récolté disparaît à la fin de la vague. Un message et une cloche annoncent les gisements, une lueur violette les signale de loin, et la montre affiche les matériaux à côté de l'or (« Or 120 · Mat. 35 ») ; à chaque récolte, un message donne le nombre de gisements restants. Modèle : `detail-crystal-large` du Tower Defense Kit de Kenney (montage : `Docs/Guide_TowerDefense.md`).
+  - **Cristaux** : pendant chaque vague, des gisements de cristaux lumineux apparaissent dans la jungle et sur les terrasses, sur des emplacements choisis (`Map > Crystal Spots`, une douzaine), jamais deux au même endroit, à plus de 15 m de la tour. Deux séries de gisements par vague, au début de l'accalmie puis au début de la montée : 3 par série, un de plus toutes les 2 vagues (6 au plus). On récolte un gisement en le visant et en appuyant sur la gâchette de prise, à 5 m au plus, comme un coffre : il éclate et donne **20 matériaux** (+6 par vague). Ce qui n'est pas récolté disparaît à la fin de la vague. Un message et une cloche annoncent les gisements, une lueur violette les signale de loin, et la montre affiche les matériaux à côté de l'or (« Or 120 · Mat. 35 ») ; à chaque récolte, un message donne le nombre de gisements restants. Modèle : `detail-crystal-large` du Tower Defense Kit de Kenney (montage : `Docs/Guide_TowerDefense.md`).
   - **Emplacements de construction** : 12 socles fixes, 4 par voie. Deux **sur la voie**, pour une barricade ou des pièges à piques, et deux **au bord de la voie**, pour une baliste ou une tour de givre. On vise un socle et on appuie sur la gâchette de prise (5 m au plus) : un petit panneau propose les bâtiments possibles et leur prix, ou l'amélioration du bâtiment déjà construit (3 niveaux). On construit pendant les pauses comme pendant les vagues.
   - **Construire** : à l'achat, le **plan** du bâtiment apparaît en bleu transparent sur le socle. L'arc se range et un **marteau** apparaît dans la main : on l'attrape et on frappe le plan **3 fois** (un son, des étincelles, une vibration, le plan se remplit d'un tiers à chaque coup). Au troisième coup, le bâtiment est construit, le marteau disparaît et l'arc revient. Une amélioration se fait de la même façon. C'est un effet visuel : aucune difficulté. Une seule construction à la fois ; lâché, le marteau revient flotter dans la main ; si le joueur s'éloigne à plus de 15 m (téléporteur) ou si la partie se termine, la construction se termine d'elle-même. Pendant une amélioration, le bâtiment continue de fonctionner à son niveau actuel.
   - **Bâtiments** (prix en matériaux : construction / niveau 2 / niveau 3) :
@@ -250,13 +311,13 @@ Le score, lui, ne baisse pas.
 | Rampant | au sol | la tour, ou le joueur s'il est à moins de 8 m | 30 | 2,5 m/s | corps à corps | 10 | 1 |
 | Volant | dans les airs | le joueur | 20 | 5 m/s | attaque en piqué | 15 | 2 |
 | Tireur | au sol, s'arrête vers 25 m | le joueur | 40 | 2 m/s | projectile lent, qu'on peut esquiver ou abattre | 20 | 4 |
-| Boss | au sol | la tour | 1500 | 1 m/s | frappe la tour, appelle des Rampants | 250 | 5, 10, 15… |
+| Boss | au sol | la tour | 600 | 1 m/s | frappe la tour, appelle des Rampants | 250 | fin de chaque vague |
 
 - Zones de touche : la tête et le corps. Le boss a en plus des points faibles lumineux (dégâts ×3).
 - **Volant** : un Beholder, gros œil volant à tentacules ; son œil est sa tête (dégâts ×2). Il tourne en l'air autour du joueur, à 6–8 m de haut. De temps en temps, il fait du sur-place en se cabrant et en criant (0,6 s, le moment de le viser), puis pique sur la tête du joueur, en corrigeant lentement sa trajectoire : un pas de côté suffit à l'esquiver. Touché ou raté, il remonte et recommence (un piqué toutes les 5 s environ). Tué, il tombe et s'effondre au sol. Il ne passe pas par le NavMesh ; la glace, posée au sol, ne le ralentit pas.
 - **Tireur** : un mage. Il marche vers le joueur et s'arrête vers 20 m (80 % de sa portée de 25 m). Toutes les 3 s, il abat son bâton vers le joueur, et un projectile lent (9 m/s) part du bout du bâton vers sa tête. On peut l'esquiver, ou l'abattre d'une flèche (5 points). Le projectile se brise sur le décor.
 - Le volant et le tireur visent toujours le joueur, jamais la tour.
-- Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive 4 s après le début de la vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11) : le boss de la vague 10 est plus coriace que celui de la vague 5. Une vague de boss compte 40 % de Rampants ordinaires en moins.
+- Le boss est un chevalier géant (×2,2) à l'armure rouge sombre, avec 3 points faibles cyan qui pulsent : la poitrine et les deux épaules. Il arrive à la fin du chrono de chaque vague, avec un cor et des tambours. Il appelle 2 Rampants toutes les 14 s, et une barre de PV flotte au-dessus de lui. Comme les autres ennemis, il suit la courbe de difficulté (section 11), et gagne en plus 35 % de PV par vague : environ 600 PV à la vague 1 et 2 900 à la vague 5 en Normal.
 - Les ennemis arrivent par 3 voies : à gauche et à droite depuis les coins de la carte voisins de la base, au milieu depuis le centre de la carte (section 17).
 - Chaque vague dispose d'un budget qui augmente de vague en vague. Chaque ennemi a un coût, et le budget est dépensé tout au long du chrono.
 - Les PV, les dégâts, le nombre et la vitesse des ennemis suivent une courbe exponentielle (section 11). Le tableau ci-dessus donne leurs valeurs à la vague 1, en Normal. Quand ils vont plus vite, leur animation de course accélère aussi.
@@ -272,11 +333,11 @@ Le score, lui, ne baisse pas.
 | Taille de la tête (zone de touche) | ×1,3 | ×1 | ×0,85 | ×0,75 |
 | Dégâts subis | ×0,6 | ×1 | ×1,3 | ×1,8 |
 | Nombre d'ennemis | ×0,75 | ×1 | ×1,25 | ×1,6 |
-| PV des ennemis, à chaque vague | ×1,06 | ×1,08 | ×1,11 | ×1,14 |
-| Dégâts subis, à chaque vague | ×1,03 | ×1,04 | ×1,06 | ×1,08 |
-| Nombre d'ennemis, à chaque vague | ×1,04 | ×1,05 | ×1,07 | ×1,09 |
-| Vitesse des ennemis, à chaque vague | ×1,01 | ×1,02 | ×1,025 | ×1,03 |
-| Début plus doux (PV et dégâts) | non | non | non | ×0,5 à la vague 1, en remontant jusqu'à ×1 à la vague 6 |
+| PV des ennemis, à chaque vague | ×1,14 | ×1,19 | ×1,27 | ×1,34 |
+| Dégâts subis, à chaque vague | ×1,07 | ×1,09 | ×1,14 | ×1,19 |
+| Nombre d'ennemis, à chaque vague | ×1,09 | ×1,12 | ×1,16 | ×1,21 |
+| Vitesse des ennemis, à chaque vague | ×1,02 | ×1,05 | ×1,06 | ×1,07 |
+| Début plus doux (PV et dégâts) | non | non | non | ×0,5 à la vague 1, en remontant jusqu'à ×1 à la vague 3 |
 | Largeur de la bande verte (parfait) | ×1,3 | ×1 | ×0,85 | ×0,7 |
 | Aide à la visée (section 4.3) | trajectoire complète | trajectoire complète | ligne droite | aucune |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
@@ -330,7 +391,7 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 
 ## 13. Les coffres
 
-- **Apparition** : 1 coffre par vague, et 50 % de chance d'un deuxième, après 15 % puis 55 % du chrono. Ils se posent à 15–30 m de la tour, sur le sol des ennemis, ou sur des emplacements choisis (dans la forêt de la carte finale). Un message les annonce, et un rayon de lumière doré, qui pulse, les signale depuis la tour.
+- **Apparition** : 2 coffres par vague, après 10 % du chrono (accalmie) puis 45 % (début de la montée), et 50 % de chance d'un troisième à 70 %. Ils se posent à 15–30 m de la tour, sur le sol des ennemis, ou sur des emplacements choisis (dans la forêt de la carte finale). Un message les annonce, et un rayon de lumière doré, qui pulse, les signale depuis la tour.
 - **Risque** : ils sont gratuits, mais il faut quitter la tour pendant la vague et courir les chercher. Ils disparaissent à la fin de la vague, ouverts ou non.
 - **Ouverture** : on vise le coffre et on appuie sur la gâchette de prise, à 5 m au plus (ou on l'attrape de près) : il s'ouvre d'un coup. Le temps ralentit (×0,3), et 3 orbes montent du coffre, chacune avec le nom de sa récompense dans sa couleur. Simplifié après les tests du 11 octobre : soulever le couvercle à la main était trop laborieux.
 - **Modèle** : le coffre animé du pack *Animated PBR Chest Demo*. Il tombe du ciel et rebondit en apparaissant, puis sautille sur place en attendant. À l'ouverture, son animation ouvre le couvercle d'un coup, avec un rebond, et une lueur dorée sort du coffre.
@@ -345,7 +406,7 @@ On choisit la difficulté avant la première vague, en tirant dans l'un des 4 pa
 
 - **Menu principal**, dans le décor en haut de la tour, avant la première vague : Jouer (avec le choix de la difficulté), Paramètres, Classement, Quitter. Le gong et les panneaux de difficulté marchent aussi. On clique au rayon de la main libre, avec la gâchette.
 - **Paramètres** : volumes général, musique et effets (Audio Mixer) ; rotation au joystick par crans ; vignette de confort pendant le slide, de « Aucune » à 100 %.
-- **Montre au poignet** : score, chrono, numéro de vague, PV du joueur, PV de la tour, argent, combo, difficulté, bonus des coffres en cours.
+- **Montre au poignet** : score, chrono, numéro de vague, PV du joueur, PV de la tour, argent, combo, difficulté, bonus des coffres en cours. Sous la montre, un bouton « Tour » ramène en haut de la tour : on le touche avec l'autre main un court instant (25 s de recharge pendant les vagues, section 3 bis).
 - **Voile rouge des PV** : aux tests, il était difficile de surveiller ses PV sur la montre en plein combat. Un voile rouge borde donc la vision, comme la vignette du slide : il apparaît après 10 % de PV perdus, puis rougit et se resserre vers le centre à mesure que les PV baissent. Il suit les PV lentement (environ 1 s), bat comme un cœur sous 25 % des PV, et s'efface quand les PV remontent ou à la mort. Ajouté tout seul par le composant `Player Health` (case *Hurt Vignette*).
 - **Retours dans le monde** : chiffres de dégâts, « Headshot ! », « Parfait ! » ; particules à l'impact (giclée au corps, étincelles dorées à la tête, poussière dans le décor) et fumée à la mort d'un ennemi.
 - **Fin de partie** : un écran apparaît devant le joueur après sa mort, et les ennemis s'enfuient. Il affiche le résumé (score, vague atteinte, difficulté, ennemis tués, headshots, tirs parfaits) et fait saisir le nom au clavier virtuel de XRI (exemple *Spatial Keyboard*). Le classement s'affiche ensuite avec la nouvelle ligne en doré ; *Rejouer* ramène au menu avec un fondu.
@@ -506,6 +567,12 @@ Objectif : toutes les consignes du cours sont couvertes.
 - [ ] Les idées de la section 23 (codées, à monter et tester) : grenade de flèches (`Docs/Guide_Grenade.md`), arc légendaire en 3 morceaux (`Docs/Guide_ArcLegendaire.md`), arcs comme classes et progression entre les parties (`Docs/Guide_Classes.md`).
 - [ ] README (rédigé, crédits et équipe à compléter), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
 
+### Après les tests du 12 octobre
+
+- [x] Refonte des vagues (codée le 12 octobre, à tester) : 5 vagues plus longues (accalmie, montée, boss à la fin de chaque vague), gong pour appeler le boss plus tôt, or surtout en fin de vague avec des bonus de performance, courbes recalées (section 3 bis).
+- [x] Bouton « Tour » sur la montre (codé le 12 octobre, à tester), avec 25 s de recharge pendant les vagues (section 3 bis).
+- [ ] Un boss unique par vague : mimique, chevalier géant, Beholder géant, archimage, puis le boss final dans son antre.
+
 ### Finitions
 
 - [ ] Embellissement de la base (fait le 9 octobre, à tester au casque, images par seconde comprises) : ombres jusqu'à 80 m, occlusion ambiante, couleurs (post-traitement), falaises habillées, décors en touffes, bosquets, rebords et camp d'archers derrière la tour (`Docs/Guide_Carte.md`, section 10).
@@ -549,3 +616,19 @@ Notées pendant les tests, à faire une fois le reste en place et seulement si l
 - **Un tutoriel** (en fin de projet) : le jeu s'est beaucoup enrichi. Un mode d'apprentissage, choisi comme une difficulté, présente les gestes un par un : l'arc et l'anneau, la course aux bras et le slide, le téléporteur, la boutique, les coffres, les constructions.
 - **Des cinématiques** (tout à la fin, si le temps le permet) : une courte introduction du jeu, et une scène quand on bat le boss final.
 - **Du vent** (gardé pour la fin, 11 octobre) : un vent léger, avec des rafales, fait bouger les arbres et les herbes. Piste : un shader qui balance les sommets des feuillages selon leur hauteur, réglé par une direction et une force de vent communes à toute la carte.
+- **Easter egg : le portail des étoiles** (12 octobre, le premier d'une série possible) : un secret sur la carte, qui mène à une autre dimension et débloque un arc légendaire pour toujours.
+  - **Le portail** : sur le côté droit de la carte (la forêt rocheuse), un totem en forme de portail, entouré de 5 piliers. Chaque pilier porte un bouton un peu caché (une rune, par exemple). Activer les 5 pendant **une même vague** ouvre le portail ; ils s'éteignent à la fin de la vague. Chaque bouton activé s'allume avec un son, pour que le joueur sache qu'il avance. À préciser : on active un bouton d'une flèche, à la main, ou les deux.
+  - **Une seule tentative par partie.** On entre en traversant le portail, avec un fondu. Pendant ce temps, la carte de base est figée : la vague, son chrono et les ennemis s'arrêtent, comme le reste de la partie. Le temps du jeu, lui, ne s'arrête pas, sinon la dimension serait figée aussi.
+  - **L'autre dimension** : un thème cosmique, avec un ciel plein d'étoiles et de galaxies. Le sol est plat et reflète légèrement le ciel, comme un miroir. De grands piliers rouges, peut-être en forme de torii, sont répartis partout. Dans le joueur, les améliorations ne comptent plus : il n'a que son arc de départ (sa classe), sans bonus. Il les retrouve en revenant.
+  - **Le déroulement** : pendant 10 s, le joueur découvre le décor, pendant que la musique monte. Puis un chrono apparaît : **survivre 30 s**.
+  - **Le fantôme**, seul ennemi, un peu translucide. Il se déplace par dashs extrêmement rapides, d'un pilier à l'autre : à chaque fois, il réapparaît derrière un pilier, du côté opposé au joueur, et un peu plus près de lui. Il ne marque une pause que caché derrière un pilier : c'est voulu, l'épreuve doit être difficile. Pour le toucher, il faut anticiper sa sortie, ou contourner le pilier pour le voir. On le tue d'une flèche ou d'un coup de flèche au corps à corps ; un autre fantôme apparaît alors plus loin.
+  - **L'échec** : si le fantôme touche le joueur, celui-ci est expulsé. Il revient sur la carte, devant le portail, avec tous ses PV, et le portail se referme jusqu'à la fin de la partie.
+  - **La victoire** : s'il tient 30 s, le joueur revient avec un **arc légendaire propre à cet easter egg**, avec son apparence et un effet unique (nom et effet à définir ; piste : un arc cosmique aux flèches qui laissent une traînée d'étoiles). Il le garde pour le reste de la partie, et l'arc est débloqué pour toujours dans les classes, au début des parties suivantes (`progress.json`).
+  - **Avant de commencer** : les arcs choisis comme des classes au début de la partie (`Docs/Guide_Classes.md`) doivent être en place.
+  - **Conseils techniques** :
+    - la dimension se trouve dans la même scène, très loin de la carte (par exemple 1 km sous elle) ; on y change le ciel et la lumière le temps du passage ;
+    - un vrai reflet en temps réel coûte cher en VR : on fait le miroir avec un sol sombre un peu transparent, au-dessus d'une copie à l'envers des piliers et du ciel ;
+    - un murmure en son 3D, venant du pilier où le fantôme se cache, aide à le localiser. C'est aussi une belle démonstration des sons spatialisés ;
+    - un raccourci clavier de test ouvre le portail, pour le montrer pendant une démo.
+  - **Pistes** : un bonus de score et une mention au classement pour ceux qui réussissent ; un fantôme plus rapide selon la difficulté ; d'autres easter eggs du même genre, plus tard. Cette idée recoupe celle de l'arc légendaire gardé par un boss : à décider s'il faut garder les deux.
+  - **Temps estimé** : environ 2 jours. Portail, boutons et zone : ½ jour ; fantôme, chrono, victoire et échec : 1 jour ; sol miroir, ciel et réglages : ½ jour.

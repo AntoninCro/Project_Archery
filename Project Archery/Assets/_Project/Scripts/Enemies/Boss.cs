@@ -66,8 +66,10 @@ namespace Archery.Enemies
         Enemy m_Enemy;
         float m_SummonTimer;
 
-        /// <summary>Le boss en vie, s'il y en a un.</summary>
-        public static Boss Current { get; private set; }
+        static readonly System.Collections.Generic.List<Boss> s_Alive = new System.Collections.Generic.List<Boss>();
+
+        /// <summary>Le boss en vie arrivé en dernier, s'il y en a un (en mode infini, ils peuvent être plusieurs).</summary>
+        public static Boss Current => s_Alive.Count > 0 ? s_Alive[s_Alive.Count - 1] : null;
 
         public static event Action<Boss> Appeared;
         public static event Action<Boss> Defeated;
@@ -90,7 +92,7 @@ namespace Archery.Enemies
 
             m_SummonTimer = m_FirstSummonDelay;
             Health.Died += OnDied;
-            Current = this;
+            s_Alive.Add(this);
             Sfx.Play(m_ArrivalClip, transform.position + Vector3.up * 3f, 1f, 1f, 0.3f);
             Appeared?.Invoke(this);
         }
@@ -99,8 +101,7 @@ namespace Archery.Enemies
         {
             if (m_Enemy != null && m_Enemy.Health != null)
                 m_Enemy.Health.Died -= OnDied;
-            if (Current == this)
-                Current = null;
+            s_Alive.Remove(this);
         }
 
         void Update()
@@ -147,15 +148,14 @@ namespace Archery.Enemies
 
         void OnDied(Health health, DamageInfo info)
         {
-            if (Current == this)
-                Current = null;
+            s_Alive.Remove(this);
             Defeated?.Invoke(this);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            Current = null;
+            s_Alive.Clear();
             Appeared = null;
             Defeated = null;
         }

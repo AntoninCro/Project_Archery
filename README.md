@@ -78,11 +78,12 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 
 ## Crédits
 
-- Arcs et flèches : pack *Easy Weapons*.
+- Arcs et flèches : pack *Easy Weapons* et *Low Poly Style Bows & Quivers* (Dimasjk Studio).
+- Marteau de construction : *Stylized Mechanized Hammer* (AgeSoft).
 - Chevaliers : *Toon RTS Units – Demo*.
 - Coffre animé : *Animated PBR Chest Demo*.
 - Volant (Beholder) : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
-- Décor : *Nature Kit* (2.1) de Kenney (www.kenney.nl), licence CC0.
+- Décor et constructions : *Nature Kit*, *Castle Kit* et *Tower Defense Kit* de Kenney (www.kenney.nl), licence CC0 ; sons *Impact Sounds* et *RPG Audio*, icônes *Game Icons* de Kenney.
 - Sons, ambiances et musiques : provisoires, générés par script pour le prototype.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
 

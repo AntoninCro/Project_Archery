@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_Boss
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Seigneur de guerre
-  maxHealth: 1500
+  maxHealth: 600
   moveSpeed: 1
   attackDamage: 60
   attackRange: 2.8

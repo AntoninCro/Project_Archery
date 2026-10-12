@@ -958,7 +958,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Boss
   m_DisplayName: Seigneur de guerre
-  m_HealthGrowthPerBoss: 0
+  m_HealthGrowthPerBoss: 0.35
   m_SummonPrefab: {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
   m_FirstSummonDelay: 8
   m_SummonInterval: 14

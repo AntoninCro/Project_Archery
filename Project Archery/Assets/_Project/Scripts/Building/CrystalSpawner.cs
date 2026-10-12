@@ -12,9 +12,9 @@ using UnityEngine.InputSystem;
 namespace Archery.Building
 {
     /// <summary>
-    /// Fait apparaître les gisements de cristaux de chaque vague (GDD, section 9) sur des emplacements choisis,
-    /// loin de la tour : 3 par vague, un de plus toutes les 3 vagues. Ce qui n'est pas récolté disparaît à la fin
-    /// de la vague.
+    /// Fait apparaître les gisements de cristaux de chaque vague (GDD, sections 3 bis et 9) sur des emplacements choisis,
+    /// loin de la tour, en deux séries : au début de l'accalmie, puis au début de la montée. 3 gisements par série,
+    /// un de plus toutes les 2 vagues. Ce qui n'est pas récolté disparaît à la fin de la vague.
     /// </summary>
     [DisallowMultipleComponent]
     public class CrystalSpawner : MonoBehaviour
@@ -27,23 +27,28 @@ namespace Archery.Building
         List<Transform> m_Spots = new List<Transform>();
 
         [Header("Nombre")]
-        [Tooltip("Gisements par vague, au départ.")]
+        [Tooltip("Gisements par série, à la vague 1.")]
         [SerializeField]
         int m_BaseCount = 3;
 
-        [Tooltip("Un gisement de plus toutes les N vagues.")]
+        [Tooltip("Un gisement de plus par série toutes les N vagues.")]
         [Min(1)]
         [SerializeField]
-        int m_WavesPerExtra = 3;
+        int m_WavesPerExtra = 2;
 
+        [Tooltip("Gisements par série, au plus.")]
         [SerializeField]
         int m_MaxCount = 6;
+
+        [Tooltip("Une deuxième série de gisements au début de la montée (ou à l'arrivée du boss s'il est appelé plus tôt).")]
+        [SerializeField]
+        bool m_SecondBatch = true;
 
         [Tooltip("Distance minimale (m) entre la tour et un gisement.")]
         [SerializeField]
         float m_MinTowerDistance = 15f;
 
-        [Tooltip("Délai (s) après le début de la vague avant l'apparition des gisements.")]
+        [Tooltip("Délai (s) après le début de la vague avant l'apparition de la première série.")]
         [SerializeField]
         float m_SpawnDelay = 3f;
 
@@ -54,7 +59,7 @@ namespace Archery.Building
 
         [Tooltip("Matériaux en plus par vague.")]
         [SerializeField]
-        int m_AmountPerWave = 2;
+        int m_AmountPerWave = 6;
 
         [Header("Retours")]
         [Tooltip("Optionnel : son de l'apparition des gisements.")]
@@ -68,6 +73,7 @@ namespace Archery.Building
         readonly List<Transform> m_FreeSpots = new List<Transform>();
         WaveManager m_Waves;
         float m_SpawnTimer = -1f;
+        bool m_SecondBatchPending;
 
         public static CrystalSpawner Instance { get; private set; }
 
@@ -108,6 +114,7 @@ namespace Archery.Building
 
             m_Waves.WaveStarted += OnWaveStarted;
             m_Waves.WaveEnded += OnWaveEnded;
+            m_Waves.StageChanged += OnStageChanged;
             m_Waves.GameOver += ClearAll;
             CrystalDeposit.Harvested += OnHarvested;
         }
@@ -122,16 +129,32 @@ namespace Archery.Building
 
             m_Waves.WaveStarted -= OnWaveStarted;
             m_Waves.WaveEnded -= OnWaveEnded;
+            m_Waves.StageChanged -= OnStageChanged;
             m_Waves.GameOver -= ClearAll;
         }
 
-        void OnWaveStarted(int wave) => m_SpawnTimer = m_SpawnDelay;
+        void OnWaveStarted(int wave)
+        {
+            m_SpawnTimer = m_SpawnDelay;
+            m_SecondBatchPending = m_SecondBatch;
+        }
+
+        // Deuxième série : au début de la montée, ou à l'arrivée du boss s'il a été appelé pendant l'accalmie.
+        void OnStageChanged(WaveStage stage)
+        {
+            if (!m_SecondBatchPending || stage == WaveStage.Calm)
+                return;
+
+            m_SecondBatchPending = false;
+            SpawnWave(m_Waves.WaveNumber);
+        }
 
         void OnWaveEnded(int wave) => ClearAll();
 
         void ClearAll()
         {
             m_SpawnTimer = -1f;
+            m_SecondBatchPending = false;
             foreach (var deposit in m_Deposits)
             {
                 if (deposit != null && !deposit.IsHarvested)
@@ -167,7 +190,7 @@ namespace Archery.Building
             {
                 var flat = spot != null ? spot.position - tower : Vector3.zero;
                 flat.y = 0f;
-                if (spot != null && flat.magnitude >= m_MinTowerDistance)
+                if (spot != null && flat.magnitude >= m_MinTowerDistance && !IsOccupied(spot.position))
                     m_FreeSpots.Add(spot);
             }
 
@@ -190,6 +213,18 @@ namespace Archery.Building
             if (m_AppearClip != null)
                 Sfx.Play(m_AppearClip, PlayerPosition() + Vector3.up, 0.8f, 1f, 0f);
             Announce(spawned == 1 ? "Un gisement de cristaux est apparu !" : $"{spawned} gisements de cristaux sont apparus !");
+        }
+
+        // Un gisement de la série précédente, pas encore récolté, occupe déjà cet emplacement.
+        bool IsOccupied(Vector3 position)
+        {
+            foreach (var deposit in m_Deposits)
+            {
+                if (deposit != null && !deposit.IsHarvested && (deposit.transform.position - position).sqrMagnitude < 1f)
+                    return true;
+            }
+
+            return false;
         }
 
         int AmountFor(int wave) => m_BaseAmount + m_AmountPerWave * Mathf.Max(0, wave - 1);

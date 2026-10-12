@@ -1,18 +1,20 @@
 # Guide : la première vague, le chrono et le score
 
-Ce guide monte la boucle de jeu dans la scène `Prototype_Tir` :
+Ce guide monte la boucle de jeu dans la scène `Prototype_Tir`.
+
+> **Refonte du 12 octobre** (GDD, section 3 bis), déjà réglée dans `WaveSettings` et la scène : 5 vagues de 2 à 3 min, en trois temps (accalmie, montée, puis un boss à la fin du chrono), or surtout en fin de vague avec des bonus de performance, gong pour appeler le boss plus tôt, bouton « Tour » sur la montre. Les valeurs de la partie 1 ci-dessous sont celles d'origine ; les valeurs actuelles sont dans le GDD.
 
 1. tu tires dans un **gong** ;
-2. une **vague** démarre, avec un chrono de 30 s pour la première vague, puis 5 s de plus à chaque vague ;
-3. des chevaliers apparaissent au fil du chrono ;
-4. à la fin du chrono, les survivants s'enfuient, tes PV reviennent et tu gagnes un bonus ;
-5. tu retires dans le gong pour la vague suivante. Après la vague 10, c'est la victoire, puis le mode infini.
+2. une **vague** démarre : un chrono de 2 min pour la première vague, puis 15 s de plus à chaque vague, d'abord une accalmie, puis la montée ;
+3. des ennemis apparaissent au fil du chrono, de plus en plus vite ;
+4. à la fin du chrono, le boss arrive ; à sa mort, les survivants s'enfuient, tes PV reviennent et tu gagnes des points et de l'or ;
+5. tu retires dans le gong pour la vague suivante. Après le boss de la vague 5, c'est la victoire : tu termines la partie depuis la boutique, ou tu continues en mode infini avec le gong.
 
 Le score suit le GDD (section 8) :
 - chaque touche rapporte 5 points au corps et 10 à la tête ;
 - chaque élimination rapporte la valeur de l'ennemi, ×2 s'il meurt d'un headshot ;
 - tout est multiplié par la qualité du tir, la distance (au-delà de 10 m) et le combo ;
-- 25 % des points deviennent de l'argent.
+- 5 % des points deviennent de l'or ; l'essentiel de l'or vient de la récompense de fin de vague (GDD, section 3 bis).
 
 Tout s'affiche sur une **montre au poignet** et sur un **grand panneau** dans le décor.
 

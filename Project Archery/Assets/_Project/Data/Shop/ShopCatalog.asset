@@ -186,9 +186,9 @@ MonoBehaviour:
   commonPrice: 10
   rarePrice: 25
   legendaryPrice: 45
-  priceGrowthPerWave: 0.1
+  priceGrowthPerWave: 0.24
   priceIncreasePerPurchase: 0
-  endlessPriceGrowth: 1.2
+  endlessPriceGrowth: 1.3
   rerollCost: 10
   rerollCostIncrease: 5
   bows:

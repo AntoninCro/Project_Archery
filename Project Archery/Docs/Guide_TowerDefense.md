@@ -22,8 +22,8 @@ Sons (Kenney Impact Sounds) : une cloche (`impactBell_heavy_000`) à l'apparitio
 
 ### En jeu
 
-1. Trois secondes après le début d'une vague, 3 gisements apparaissent (un de plus toutes les 3 vagues, 6 au plus). Une cloche et le message « 3 gisements de cristaux sont apparus ! » les annoncent. Ils sortent du sol et leur lueur pulse.
-2. Vise un gisement avec la main libre, à 5 m au plus, et appuie sur la gâchette de prise : il éclate en éclats violets et donne ses matériaux (20 à la vague 1, +2 par vague, depuis l'étape 4). Le message indique combien il en reste.
+1. Trois secondes après le début d'une vague, 3 gisements apparaissent (un de plus toutes les 2 vagues, 6 au plus), puis une deuxième série au début de la montée (refonte des vagues du 12 octobre, GDD section 3 bis). Une cloche et le message « 3 gisements de cristaux sont apparus ! » les annoncent. Ils sortent du sol et leur lueur pulse.
+2. Vise un gisement avec la main libre, à 5 m au plus, et appuie sur la gâchette de prise : il éclate en éclats violets et donne ses matériaux (20 à la vague 1, +6 par vague depuis la refonte des vagues). Le message indique combien il en reste.
 3. À la fin de la vague, les gisements non récoltés rétrécissent et disparaissent.
 4. Les matériaux s'affichent après l'or sur la montre. Ils ne servent pas encore : la construction arrive à l'étape 2.
 
@@ -38,10 +38,10 @@ Sur le composant `Crystal Spawner` de `Game` :
 
 | Champ | Par défaut | Effet |
 |---|---|---|
-| *Base Count* / *Waves Per Extra* / *Max Count* | 3 / 3 / 6 | Nombre de gisements par vague |
+| *Base Count* / *Waves Per Extra* / *Max Count* | 3 / 2 / 6 | Nombre de gisements par série (deux séries par vague, *Second Batch*) |
 | *Min Tower Distance* | 15 | Distance minimale à la tour |
 | *Spawn Delay* | 3 | Délai après le début de la vague (s) |
-| *Base Amount* / *Amount Per Wave* | 20 / 2 | Matériaux d'un gisement |
+| *Base Amount* / *Amount Per Wave* | 20 / 6 | Matériaux d'un gisement |
 
 Sur le prefab `Crystal Deposit` : *Max Harvest Distance* (5 m), la taille du modèle (Scale de `detail-crystal-large`, 2,4) et la couleur de la lumière (`Glow`).
 
@@ -152,15 +152,15 @@ Les modèles du Tower Defense Kit mesurent 1 m et n'ont pas de collider. Si une 
    - un **Rigidbody** : décoche *Use Gravity* et coche *Is Kinematic* ;
    - un **XR Grab Interactable** : *Movement Type* sur *Instantaneous*, et décoche *Throw On Detach* et *Use Dynamic Attach* ;
    - un **Build Hammer** ;
-   - un **Capsule Collider** : *Center* (0 ; 0,3 ; 0), *Radius* 0,04, *Height* 0,62, *Direction* *Y-Axis*.
-3. Glisse en enfant `Kendall H/Easy Weapons/Prefabs/Regular_Enchanted/warHammer.RegColor.WithEnch.0.4` (ou une autre couleur, de `.0.4` à `.4.4`). Renomme-le `Model`, et règle *Rotation* (−90 ; 0 ; 0) et *Scale* 0,6. Le marteau mesure alors 62 cm, manche vers le haut.
-4. Sur `Model`, comme pour les arcs, supprime le composant **Weapon Controller AA**. Désactive ensuite son enfant `EmptyMesh 1(Clone)` : c'est une copie du marteau, 1 % plus grande, inutile ici.
-5. Ajoute un enfant vide `Grip` : *Position* (0 ; 0,12 ; 0), *Rotation* (−40 ; 0 ; 0). C'est là que la main tient le manche. Glisse-le dans *Attach Transform* du XR Grab Interactable.
-6. Ajoute un enfant vide `Head` : *Position* (0 ; 0,576 ; 0), au centre de la tête. Glisse-le dans *Head* du Build Hammer. La sphère jaune du gizmo doit entourer la tête du marteau.
+   - un **Capsule Collider** : *Center* (0 ; 0,37 ; 0), *Radius* 0,05, *Height* 0,75, *Direction* *Y-Axis*.
+3. Glisse en enfant le modèle `AgeSoft/Stylized Mechanized Hammer/Mesh/Stylized Hammer` et donne-lui le matériau `MechanizedHammer` (le marteau stylisé que tu as ajouté le 12 octobre, à la place du warHammer d'*Easy Weapons*). Renomme-le `Model`, et règle *Rotation* (0 ; −90 ; 0) et *Scale* 0,4. Le marteau mesure alors 75 cm, manche vers le haut ; la rotation tourne vers l'avant la bonne face de la tête (90° faisait frapper avec l'autre face, corrigé après les tests du 12 octobre).
+4. Le matériau du pack était sur le shader 2D d'URP (*Mesh2D-Lit-Default*) : il est passé en *Universal Render Pipeline/Lit*, avec ses textures (couleur, normales, métal et lissé, émission cyan). La texture *MetallicSmoothness* est importée en linéaire (*sRGB* décoché).
+5. Ajoute un enfant vide `Grip` : *Position* (0 ; 0,2 ; 0), *Rotation* (−40 ; 0 ; 0). C'est là que la main tient le manche. Glisse-le dans *Attach Transform* du XR Grab Interactable.
+6. Ajoute un enfant vide `Head` : *Position* (0 ; 0,59 ; 0), au centre de la tête. Glisse-le dans *Head* du Build Hammer, avec *Head Radius* à 0,17. La sphère jaune du gizmo doit entourer la tête du marteau.
 7. Garde le calque **Default** sur tous les objets : la main n'attrape que les objets de ce calque.
 8. Glisse `Build Hammer` dans `Assets/_Project/Prefabs` pour en faire un prefab, puis supprime-le de la scène.
 
-Dans le casque, le manche doit pointer vers le haut et un peu vers l'avant, et la tête doit frapper vers l'avant. Si le marteau penche trop, change *Rotation X* de `Grip` (−40). Pour frapper avec l'autre face de la tête, mets *Rotation Y* de `Model` à 180.
+Dans le casque, le manche doit pointer vers le haut et un peu vers l'avant, et la tête doit frapper vers l'avant. Si le marteau penche trop, change *Rotation X* de `Grip` (−40). Pour frapper avec l'autre face de la tête, mets *Rotation Y* de `Model` à 90.
 
 #### 4. Le socle
 
@@ -235,7 +235,7 @@ Au lancement, la console signale les socles posés sur un sol qui n'est pas plat
 |---|---|---|---|
 | `Build Manager` | *Strikes To Build* | 3 | Coups de marteau par construction |
 | | *Auto Finish Distance* | 15 | Distance (m) au-delà de laquelle la construction se termine toute seule |
-| `Build Hammer` (prefab) | *Head Radius* | 0,12 | Taille (m) de la tête du marteau pour toucher le plan |
+| `Build Hammer` (prefab) | *Head Radius* | 0,17 | Taille (m) de la tête du marteau pour toucher le plan |
 | | *Min Strike Speed* | 1,2 | Vitesse (m/s) minimale d'un coup |
 | | *Min Strike Interval* | 0,25 | Temps (s) minimal entre deux coups |
 | `Build Socket` | *Max Reach* | 5 | Distance (m) maximale entre la main et le socle |
@@ -341,7 +341,7 @@ Les prix et les descriptions restent dans les définitions (`Data/Structures`). 
 
 ### Le choix de départ
 
-Le tower defense doit être **très présent** à la fin d'une partie de 10 vagues : presque tous les socles construits, et plusieurs bâtiments au niveau 3.
+Le tower defense doit être **très présent** à la fin d'une partie (10 vagues à l'époque, 5 depuis la refonte du 12 octobre : les matériaux ont été recalés pour arriver au même total à la vague 5) : presque tous les socles construits, et plusieurs bâtiments au niveau 3.
 
 ### Ce qui a changé
 

@@ -37,6 +37,14 @@ namespace Archery.Bows
     }
 
     /// <summary>
+    /// Optionnel, avec <see cref="IArrowHitHandler"/> : la flèche disparaît à l'impact au lieu de se planter
+    /// (le gong, qui se cache pendant le combat contre le boss : une flèche plantée y flotterait dans le vide).
+    /// </summary>
+    public interface IArrowAbsorber
+    {
+    }
+
+    /// <summary>
     /// Implémenté par ce qui réagit aux flèches : zones de touche des ennemis, cibles d'entraînement…
     /// </summary>
     public interface IArrowHitHandler

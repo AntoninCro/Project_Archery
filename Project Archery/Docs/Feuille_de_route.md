@@ -25,4 +25,4 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 
 **Si le temps manque** : la carte (10) et les tests (12) passent avant les idées de fin de projet (7, 8, 9), qui sont des bonus.
 
-**Gardé pour la fin, si le temps le permet** (GDD, sections 12, 17 bis, 21 et 23), dans l'ordre conseillé : le boss final dans son antre, la lumière et l'éclairage, les finitions (menus, icônes, arcs), le tutoriel, le saut aux bras, les totems, l'arc légendaire gardé par un boss, puis les cinématiques.
+**Gardé pour la fin, si le temps le permet** (GDD, sections 12, 17 bis, 21 et 23), dans l'ordre conseillé : le boss final dans son antre, la lumière et l'éclairage, les finitions (menus, icônes, arcs), le tutoriel, le saut aux bras, les totems, l'arc légendaire gardé par un boss, l'easter egg du portail des étoiles (après les classes d'arcs au début de la partie), puis les cinématiques.

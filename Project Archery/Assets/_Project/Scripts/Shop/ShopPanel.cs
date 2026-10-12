@@ -8,6 +8,7 @@ using Archery.Economy;
 using Archery.Enemies;
 using Archery.Player;
 using Archery.Upgrades;
+using Archery.Waves;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,6 +60,10 @@ namespace Archery.Shop
         [Tooltip("Téléporteur du pied de la tour : le bouton envoie le joueur à son point d'arrivée.")]
         [SerializeField]
         TowerTeleporter m_TowerTeleporter;
+
+        [Tooltip("Optionnel : bouton « Terminer la partie », affiché entre les vagues une fois la partie gagnée (GDD, section 3 bis).")]
+        [SerializeField]
+        Button m_FinishButton;
 
         [SerializeField]
         TMP_Text m_MoneyText;
@@ -154,6 +159,8 @@ namespace Archery.Shop
                 m_RerollButton.onClick.AddListener(OnRerollClicked);
             if (m_TowerButton != null)
                 m_TowerButton.onClick.AddListener(OnTowerClicked);
+            if (m_FinishButton != null)
+                m_FinishButton.onClick.AddListener(OnFinishClicked);
             if (m_Content != null)
                 m_Content.SetActive(false);
         }
@@ -190,6 +197,7 @@ namespace Archery.Shop
         void Update()
         {
             UpdateTowerButton();
+            UpdateFinishButton();
             if (m_MessageTimer <= 0f)
                 return;
 
@@ -397,6 +405,25 @@ namespace Archery.Shop
                 m_TowerButton.gameObject.SetActive(show);
             if (show)
                 m_TowerButton.interactable = m_TowerTeleporter.IsUsable;
+        }
+
+        // Après la victoire, entre deux vagues : on peut terminer la partie au lieu de continuer en mode infini.
+        void UpdateFinishButton()
+        {
+            if (m_FinishButton == null)
+                return;
+
+            var waves = WaveManager.Instance;
+            var show = m_WasOpen && waves != null && waves.HasWon && waves.Phase == WavePhase.Intermission;
+            if (m_FinishButton.gameObject.activeSelf != show)
+                m_FinishButton.gameObject.SetActive(show);
+        }
+
+        void OnFinishClicked()
+        {
+            var waves = WaveManager.Instance;
+            if (waves == null || !waves.FinishGame())
+                Sfx.Play(m_ErrorClip, transform.position, 0.9f);
         }
 
         void OnTowerClicked()

@@ -67,22 +67,22 @@ namespace Archery.Difficulty
         public AimGuideMode aimGuideMode = AimGuideMode.Trajectory;
 
         [Header("Progression d'une vague à l'autre (exponentielle)")]
-        [Tooltip("Multiplie les PV des ennemis à chaque nouvelle vague, en se cumulant (1,08 : ×2 à la vague 10).")]
+        [Tooltip("Multiplie les PV des ennemis à chaque nouvelle vague, en se cumulant (1,19 : ×2 à la vague 5).")]
         [Min(1f)]
-        public float healthGrowthPerWave = 1.08f;
+        public float healthGrowthPerWave = 1.19f;
 
         [Tooltip("Multiplie les dégâts des ennemis à chaque nouvelle vague, en se cumulant.")]
         [Min(1f)]
-        public float damageGrowthPerWave = 1.04f;
+        public float damageGrowthPerWave = 1.09f;
 
         [Tooltip("Multiplie le nombre d'ennemis à chaque nouvelle vague, en se cumulant.")]
         [Min(1f)]
-        public float countGrowthPerWave = 1.05f;
+        public float countGrowthPerWave = 1.12f;
 
         [Tooltip("Multiplie la vitesse des ennemis à chaque nouvelle vague, en se cumulant. " +
                  "Plafonnée par « Max Speed Scale » des Wave Settings.")]
         [Min(1f)]
-        public float speedGrowthPerWave = 1.02f;
+        public float speedGrowthPerWave = 1.05f;
 
         [Header("Début de partie plus doux")]
         [Tooltip("PV et dégâts des ennemis à la vague 1, par rapport à la courbe normale (0,5 = moitié). " +
@@ -92,7 +92,7 @@ namespace Archery.Difficulty
 
         [Tooltip("Vague où les ennemis retrouvent toute leur force (la courbe normale).")]
         [Min(2)]
-        public int fullStrengthWave = 6;
+        public int fullStrengthWave = 3;
 
         [Header("Score")]
         [Tooltip("Multiplie tous les points gagnés.")]
@@ -130,12 +130,12 @@ namespace Archery.Difficulty
             goldBandWidth = 1.3f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 0.75f;
-            healthGrowthPerWave = 1.06f;
-            damageGrowthPerWave = 1.03f;
-            countGrowthPerWave = 1.04f;
-            speedGrowthPerWave = 1.01f;
+            healthGrowthPerWave = 1.14f;
+            damageGrowthPerWave = 1.07f;
+            countGrowthPerWave = 1.09f;
+            speedGrowthPerWave = 1.02f;
             earlyStrength = 1f;
-            fullStrengthWave = 6;
+            fullStrengthWave = 3;
             sky = SkySettings.Noon();
             EndFill();
         }
@@ -155,12 +155,12 @@ namespace Archery.Difficulty
             goldBandWidth = 1f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 1f;
-            healthGrowthPerWave = 1.08f;
-            damageGrowthPerWave = 1.04f;
-            countGrowthPerWave = 1.05f;
-            speedGrowthPerWave = 1.02f;
+            healthGrowthPerWave = 1.19f;
+            damageGrowthPerWave = 1.09f;
+            countGrowthPerWave = 1.12f;
+            speedGrowthPerWave = 1.05f;
             earlyStrength = 1f;
-            fullStrengthWave = 6;
+            fullStrengthWave = 3;
             sky = SkySettings.Sunset();
             EndFill();
         }
@@ -180,12 +180,12 @@ namespace Archery.Difficulty
             goldBandWidth = 0.85f;
             aimGuideMode = AimGuideMode.Line;
             scoreMultiplier = 1.5f;
-            healthGrowthPerWave = 1.11f;
-            damageGrowthPerWave = 1.06f;
-            countGrowthPerWave = 1.07f;
-            speedGrowthPerWave = 1.025f;
+            healthGrowthPerWave = 1.27f;
+            damageGrowthPerWave = 1.14f;
+            countGrowthPerWave = 1.16f;
+            speedGrowthPerWave = 1.06f;
             earlyStrength = 1f;
-            fullStrengthWave = 6;
+            fullStrengthWave = 3;
             sky = SkySettings.Night();
             EndFill();
         }
@@ -205,12 +205,12 @@ namespace Archery.Difficulty
             goldBandWidth = 0.7f;
             aimGuideMode = AimGuideMode.None;
             scoreMultiplier = 2f;
-            healthGrowthPerWave = 1.14f;
-            damageGrowthPerWave = 1.08f;
-            countGrowthPerWave = 1.09f;
-            speedGrowthPerWave = 1.03f;
+            healthGrowthPerWave = 1.34f;
+            damageGrowthPerWave = 1.19f;
+            countGrowthPerWave = 1.21f;
+            speedGrowthPerWave = 1.07f;
             earlyStrength = 0.5f;
-            fullStrengthWave = 6;
+            fullStrengthWave = 3;
             sky = SkySettings.BloodMoon();
             EndFill();
         }
