@@ -18,6 +18,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Voile rouge autour de la vision quand les PV baissent, qui bat sous 25 % des PV.
 - [ ] Ennemis : vague 1 Rampants, Gluants, Champignons ; vague 2 Tireurs, Gluants bleus, Étoiles de mer ; vague 3 Volants, Guêpes, Champignons furieux, Cactus, Fantassins ; vague 4 Orcs, Tortues, Liches, Gargouilles ; vague 5 Mimiques. Chacun s'anime (course, attaque, touché, mort) et ses zones de touche tombent juste (tête ×2).
 - [ ] Un boss différent à chaque vague (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), avec son nom, sa barre de PV, son point faible cyan et ses renforts.
+- [ ] Vague 6 : le boss final, le dragon rouge, dans son antre (GDD, section 23).
 - [ ] Tour détruite : le gong descend au pied de la tour, et remonte à la reconstruction.
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
@@ -29,7 +30,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
 - [ ] Vagues : accalmie (peu d'ennemis), montée, boss à la fin du chrono ; deux coups de gong font venir le boss plus tôt (bonus affiché) ; or de fin de vague avec ses bonus.
 - [ ] Bouton « Tour » sous la montre : on le touche avec l'autre main, téléportation, 25 s de recharge pendant les vagues.
-- [ ] Victoire après le boss de la vague 5 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
+- [ ] Victoire après le boss final de la vague 6 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
 - [ ] Tour détruite : les ruines remplacent la tour (fumée, son), le joueur est évacué ; reconstruite en boutique, elle revient.
 - [ ] Les messages (début de vague, boss, coffre, cristaux) restent devant le regard, lisibles.
 - [ ] Les deux ponts de la voie du milieu se traversent sans sauter.
@@ -67,7 +68,7 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 2. Les cibles d'entraînement : le tir, l'anneau, un tir parfait.
 3. Le gong : vague 1, une flèche enflammée au brasero, puis la boutique (une amélioration).
 4. Une vague avec un coffre : descendre, courir, glisser, ouvrir le coffre.
-5. Montrer le boss (dans l'éditeur, **N** jusqu'à la vague 5).
+5. Montrer un boss, puis le boss final (dans l'éditeur, **N** appelle le boss ou le tue, jusqu'à la vague 6).
 6. Mourir, saisir son nom, montrer le classement.
 
 **Solution de secours** : si le build pose problème, jouer depuis l'éditeur, où les raccourcis (**N**, **M**, **C**) permettent de montrer chaque partie rapidement.

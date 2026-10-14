@@ -2,7 +2,7 @@
 
 Ce guide ajoute les deux défenses de la tour du GDD (sections 6.2, 7 et 9) à la scène `Prototype_Tir`.
 
-> **Où en est ce guide** (6 octobre) : tout est monté par Claude. Il te reste à **tester** (section 5). Les sections 1 à 4 décrivent ce qui est en place, pour le vérifier ou le retoucher.
+> **Où en est ce guide** (6 octobre) : tout est monté par Claude. C'est testé dans le casque (13 octobre). Le brasero a été retiré de la scène le 12 octobre ; les barricades restent. Les sections 1 à 4 décrivent ce qui est en place, pour le vérifier ou le retoucher.
 
 **Les barricades** sont des murs de planches aux entrées de la clairière, au bout des chemins :
 - un ennemi au sol qui arrive devant une barricade, côté forêt, **s'arrête pour la frapper** ;

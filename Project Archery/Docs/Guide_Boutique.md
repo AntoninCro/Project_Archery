@@ -20,7 +20,7 @@ Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section
 - **+5 % à chaque amélioration achetée** (celles des coffres ne comptent pas) : plus tu en achètes, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
 - **en mode infini, ×1,2 à chaque vague**, pour tout (relance, arc et tour compris).
 
-L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
+L'or gagné baisse aussi en mode infini, à partir de la vague 7 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
 
 ### Les 21 améliorations
 
@@ -242,7 +242,7 @@ Sans effet, l'explosion fait une gerbe d'éclairs orange et un « boum ». Pour 
 - achète quelques *Chance* : elles augmentent leurs chances ;
 - l'or de **M** paie les relances.
 
-**Pour tester les prix** : achète une carte, les prix des autres cartes montent de 5 %. Enchaîne **N** : à chaque pause, les prix sont 10 % plus élevés.
+**Pour tester les prix** : achète une carte, les prix des autres cartes montent de 10 %. Enchaîne **N** : à chaque pause, les prix sont 24 % plus élevés.
 
 Les effets à vérifier :
 - *Multitir* : un tir sur deux, une deuxième flèche part 20 cm à côté de la première, parallèle à elle. Avec 2 exemplaires, à chaque tir ; à partir de 4 exemplaires (3 flèches), l'éventail s'ouvre de chaque côté ;

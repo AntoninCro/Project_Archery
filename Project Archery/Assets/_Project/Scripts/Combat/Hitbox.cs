@@ -59,6 +59,15 @@ namespace Archery.Combat
                 m_Owner = GetComponentInParent<Health>();
         }
 
+        /// <summary>Règle une zone créée en jeu (zones du dragon du boss final, accrochées à ses os au lancement).</summary>
+        public void Configure(HitZone zone, float damageMultiplier, Health owner)
+        {
+            m_Zone = zone;
+            m_DamageMultiplier = damageMultiplier;
+            if (owner != null)
+                m_Owner = owner;
+        }
+
         /// <summary>
         /// Agrandit ou réduit la zone par rapport à sa taille d'origine (difficulté : taille de la tête).
         /// Fonctionne avec un Sphere, Capsule ou Box Collider.

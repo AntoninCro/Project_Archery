@@ -42,6 +42,12 @@ namespace Archery.Waves
 
         /// <summary>Le chrono est fini : le boss est là, les renforts accélèrent jusqu'à sa mort.</summary>
         Boss,
+
+        /// <summary>
+        /// Vague du boss final (GDD, section 23) : pas de chrono ni d'ennemis sur la carte ; la porte de l'antre est ouverte
+        /// et le combat a lieu dans l'arène (<see cref="FinalBoss.FinalBossDirector"/>).
+        /// </summary>
+        FinalBoss,
     }
 
     /// <summary>
@@ -145,7 +151,11 @@ namespace Archery.Waves
         public bool HasWon { get; private set; }
 
         /// <summary>Pendant le chrono, le gong peut faire venir le boss plus tôt.</summary>
-        public bool CanCallBoss => Phase == WavePhase.Wave && Stage != WaveStage.Boss && m_Settings != null && m_Settings.HasBosses;
+        public bool CanCallBoss => Phase == WavePhase.Wave && Stage != WaveStage.Boss && Stage != WaveStage.FinalBoss &&
+                                   m_Settings != null && m_Settings.HasBosses;
+
+        /// <summary>La vague du boss final est en cours : porte de l'antre ouverte, puis combat dans l'arène.</summary>
+        public bool IsFinalBossWave => Phase == WavePhase.Wave && Stage == WaveStage.FinalBoss;
 
         /// <summary>Le combat contre le boss de la vague est en cours.</summary>
         public bool IsBossWave => Phase == WavePhase.Wave && Stage == WaveStage.Boss;
@@ -235,8 +245,6 @@ namespace Archery.Waves
                                            m_Settings.Growth(WaveNumber, difficulty.speedGrowthPerWave, m_Settings.endlessSpeedGrowth));
             m_CountScale = m_Settings.Growth(WaveNumber, difficulty.countGrowthPerWave, m_Settings.endlessCountGrowth);
 
-            BuildSpawnQueues();
-            m_SpawnTimer = 1f;
             m_Bosses.Clear();
             m_BossArrivalTime = -1f;
             m_BossKillTime = -1f;
@@ -248,11 +256,28 @@ namespace Archery.Waves
             m_TowerHealthAtStart = tower != null ? tower.Health.Current : 0f;
             m_TowerHitThisWave = false;
 
-            var title = IsEndless ? $"Vague {WaveNumber}\nmode infini" : $"Vague {WaveNumber} / {WavesToWin}";
-            if (WaveNumber == 1)
-                title += "\n" + DifficultyManager.Current.displayName;
-            title += "\n<size=60%>Accalmie : récolte, construis, ouvre les coffres</size>";
-            Announce(title, k_Gold, m_WaveStartClip);
+            // Boss final : ni chrono ni ennemis sur la carte, la porte de l'antre s'ouvre (Final Boss Director).
+            if (m_Settings.IsFinalBossWave(WaveNumber))
+            {
+                Stage = WaveStage.FinalBoss;
+                WaveDuration = 0f;
+                TimeRemaining = 0f;
+                m_CalmQueue.Clear();
+                m_RiseQueue.Clear();
+                Announce($"Vague {WaveNumber} / {WavesToWin}\nBoss final\n<size=60%>La porte de l'antre s'ouvre,\nau bout de la voie du milieu</size>",
+                         new Color(1f, 0.35f, 0.25f), m_WaveStartClip);
+            }
+            else
+            {
+                BuildSpawnQueues();
+                m_SpawnTimer = 1f;
+
+                var title = IsEndless ? $"Vague {WaveNumber}\nmode infini" : $"Vague {WaveNumber} / {WavesToWin}";
+                if (WaveNumber == 1)
+                    title += "\n" + DifficultyManager.Current.displayName;
+                title += "\n<size=60%>Accalmie : récolte, construis, ouvre les coffres</size>";
+                Announce(title, k_Gold, m_WaveStartClip);
+            }
 
             WaveStarted?.Invoke(WaveNumber);
             m_OnWaveStarted.Invoke();
@@ -267,6 +292,10 @@ namespace Archery.Waves
 
             var deltaTime = Time.deltaTime;
             TrackPerformance();
+
+            // Boss final : c'est l'arène qui décide de la fin de la vague (CompleteFinalBoss).
+            if (Stage == WaveStage.FinalBoss)
+                return;
 
             if (Stage != WaveStage.Boss)
             {
@@ -552,10 +581,26 @@ namespace Archery.Waves
 
         // ---------------------------------------------------------------- fin de vague, fin de partie
 
-        void EndWave()
+        /// <summary>
+        /// Le boss final est vaincu (GDD, section 23). Le joueur a choisi de continuer en mode infini
+        /// (<paramref name="finishGame"/> faux : fin de vague normale, boutique, puis le gong lance la vague suivante)
+        /// ou de terminer la partie (écran « Victoire ! », nom, classement). Renvoie faux hors de la vague du boss final.
+        /// </summary>
+        public bool CompleteFinalBoss(bool finishGame)
+        {
+            if (!IsFinalBossWave)
+                return false;
+
+            EndWave(finishGame);
+            return true;
+        }
+
+        void EndWave() => EndWave(false);
+
+        void EndWave(bool finishGame)
         {
             TrackPerformance();
-            Phase = WavePhase.Intermission;
+            Phase = finishGame ? WavePhase.GameOver : WavePhase.Intermission;
             m_CalmQueue.Clear();
             m_RiseQueue.Clear();
             MakeSurvivorsFlee();
@@ -575,6 +620,15 @@ namespace Archery.Waves
             var lines = $"+{points} points · +{gold} or";
             if (!string.IsNullOrEmpty(bonusLine))
                 lines += $"\n<size=60%>{bonusLine}</size>";
+
+            if (finishGame)
+            {
+                HasWon = true;
+                Announce($"Victoire !\n{lines}", k_Gold, m_VictoryClip);
+                GameOver?.Invoke();
+                m_OnGameOver.Invoke();
+                return;
+            }
 
             if (won)
                 Announce($"Victoire !\n{lines}\n<size=60%>Frappe le gong pour le mode infini,\nou termine la partie depuis la boutique</size>",
@@ -696,6 +750,10 @@ namespace Archery.Waves
             {
                 if (Phase != WavePhase.Wave)
                     StartNextWave();
+                else if (Stage == WaveStage.FinalBoss)
+                {
+                    // Boss final : N est géré par le Final Boss Director (entrer dans l'arène, passer l'intro, tuer le dragon).
+                }
                 else if (Stage != WaveStage.Boss)
                     BeginBoss();
                 else

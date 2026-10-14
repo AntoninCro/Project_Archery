@@ -57,7 +57,7 @@ Pour déplacer un emplacement, bouge simplement son objet dans `Map > Crystal Sp
 
 Cette étape construit tout le chemin d'un achat, du socle jusqu'au bâtiment terminé. Les bâtiments ne font encore rien : ce sont des modèles provisoires, qui prendront vie à l'étape 3.
 
-> **Où en est cette étape** : montée par Claude le 11 octobre au soir, directement dans les fichiers, en suivant la partie « Montage » ci-dessous. Rien n'a encore été testé dans Unity ni dans le casque. Ce qui a été fait :
+> **Où en est cette étape** : montée par Claude le 11 octobre au soir, directement dans les fichiers, en suivant la partie « Montage » ci-dessous. Testée depuis dans le casque (13 octobre). Ce qui a été fait :
 >
 > - les 4 définitions remplies avec les valeurs du GDD et reliées à leur prefab ;
 > - les prefabs `Build Socket`, `Build Hammer` et `Structures/Baliste`, `Givre`, `Barricade` et `Pieges` ;
@@ -259,7 +259,7 @@ Au lancement, la console signale les socles posés sur un sol qui n'est pas plat
 
 Les bâtiments construits à l'étape 2 prennent vie : la barricade arrête les ennemis, les piques les blessent, la tour de givre les ralentit et la baliste leur tire dessus. Chaque niveau les renforce et se voit.
 
-> **Où en est cette étape** : montée par Claude le 12 octobre, directement dans les fichiers. Rien n'a encore été testé dans Unity ni dans le casque. Les 4 prefabs de `Prefabs/Structures` ont été refaits avec leur composant et leurs pièces de niveau. Ils gardent les mêmes identifiants, donc les définitions et les socles n'ont pas bougé. Il n'y a rien à monter dans la scène.
+> **Où en est cette étape** : montée par Claude le 12 octobre, directement dans les fichiers. Testée depuis dans le casque (13 octobre). Les 4 prefabs de `Prefabs/Structures` ont été refaits avec leur composant et leurs pièces de niveau. Ils gardent les mêmes identifiants, donc les définitions et les socles n'ont pas bougé. Il n'y a rien à monter dans la scène.
 
 ### En jeu
 
@@ -338,7 +338,7 @@ Les prix et les descriptions restent dans les définitions (`Data/Structures`). 
 
 ## Étape 4 : l'équilibrage
 
-> **Où en est cette étape** : faite par Claude le 12 octobre, sur simulation. Rien n'a encore été testé en jeu. Il n'y a rien à monter : les valeurs sont déjà dans les prefabs, les définitions et la scène.
+> **Où en est cette étape** : faite par Claude le 12 octobre, sur simulation. Testée depuis en jeu (13 octobre), puis réglée à la main : les valeurs de la scène et des assets font foi. Il n'y a rien à monter : les valeurs sont déjà dans les prefabs, les définitions et la scène.
 
 ### Le choix de départ
 

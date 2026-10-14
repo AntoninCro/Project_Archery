@@ -127,6 +127,7 @@ namespace Archery.Player
                 Invoke(nameof(ReloadScene), m_ReloadDelay);
         }
 
-        void ReloadScene() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // La scène du joueur (la partie), pas la scène active : dans l'arène du boss final, c'est l'arène.
+        void ReloadScene() => SceneManager.LoadScene(gameObject.scene.buildIndex);
     }
 }

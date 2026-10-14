@@ -88310,6 +88310,8 @@ Transform:
   - {fileID: 171719781}
   - {fileID: 284160013}
   - {fileID: 569055594}
+  - {fileID: 900000002}
+  - {fileID: 900000012}
   m_Father: {fileID: 197400152}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1113180833 stripped
@@ -130068,7 +130070,7 @@ MonoBehaviour:
   m_MaxComboMultiplier: 2
   m_MoneyRate: 0.05
   m_MoneyDecayPerWave: 0.91
-  m_MoneyDecayFromWave: 6
+  m_MoneyDecayFromWave: 7
   m_TowerDestroyedMoneyFactor: 0.5
   m_KillPopupColor: {r: 1, g: 0.85, b: 0.25, a: 1}
   m_KillClip: {fileID: 8300000, guid: 956294f8c4a3ba842b5921242c96d52e, type: 3}
@@ -181834,6 +181836,121 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 132.4, z: 0}
+--- !u!1 &900000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900000002}
+  - component: {fileID: 900000003}
+  m_Layer: 0
+  m_Name: Lair Gate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &900000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.38268343, z: 0, w: 0.9238795}
+  m_LocalPosition: {x: 64.672, y: 0, z: 64.672}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1113168069}
+  m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
+--- !u!114 &900000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee85ee6377513064fa07859e2930d7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.LairGate
+  m_OpeningWidth: 5.2
+  m_OpeningHeight: 8
+  m_Depth: 4
+  m_PillarWidth: 1.6
+  m_LintelHeight: 3
+  m_StoneMaterial: {fileID: 2100000, guid: 2fb9cddd5bb89144491b9bdb0832f3c0, type: 2}
+  m_WoodMaterial: {fileID: 2100000, guid: 7e8efd45d49342de811a36665926c074, type: 2}
+  m_IronMaterial: {fileID: 2100000, guid: be1d342376e149fab4a8cd5a3a902c57, type: 2}
+  m_DarknessMaterial: {fileID: 2100000, guid: ed01003ed5b8d45155addc6c921c0b02, type: 2}
+  m_FireMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
+  m_EngravedText: VR ARCHERY CHALLENGE
+  m_EngravedColor: {r: 0.35, g: 0.3, b: 0.28, a: 1}
+  m_EngravedGlowColor: {r: 1, g: 0.3, b: 0.15, a: 1}
+  m_OpenAngle: 105
+  m_OpenDuration: 5
+  m_CloseDuration: 1.1
+  m_ThresholdDepth: 1.6
+  m_PreviewOpen: 0
+  m_OpenClip: {fileID: 8300000, guid: 0106044e2f457a740a60d9562f40732e, type: 3}
+  m_OpenedClip: {fileID: 8300000, guid: fdc5d86fdbd799141b36182bf1ec20bb, type: 3}
+  m_CloseClip: {fileID: 8300000, guid: c6e21e18f9ae8fe4f9f845851720f268, type: 3}
+  m_SlamClip: {fileID: 8300000, guid: c7c2420c8c8407542a98347043f594e9, type: 3}
+--- !u!1 &900000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900000012}
+  - component: {fileID: 900000013}
+  m_Layer: 0
+  m_Name: Final Boss
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &900000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1113168069}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &900000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc2566e03d8b03949a7bac82897fa95b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.FinalBossDirector
+  m_Gate: {fileID: 900000003}
+  m_ArenaScene: Arena_Dragon
+  m_ReturnPoint: {fileID: 1827304263}
+  m_EnterFadeTime: 1.1
+  m_ReturnFadeTime: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -50,7 +50,7 @@ Les sources sont créées en jeu, sous `Ambience` : il n'y a pas d'*Audio Source
 2. Dans le menu, passe la difficulté à *Difficile* (ou touche **3**) : le ciel passe à la nuit, et les grillons remplacent les oiseaux.
 3. Tire dans le gong : la musique de vague arrive en fondu.
 4. **N** pour finir la vague : retour à la musique calme pendant la pause.
-5. Enchaîne **N** jusqu'à la vague 5 : à l'arrivée du boss, la musique devient plus lourde ; elle revient à la musique de vague à sa mort.
+5. Appuie sur **N** pendant une vague pour faire venir le boss : à son arrivée, la musique devient plus lourde ; elle revient à la musique de vague à sa mort.
 6. Menu > *Paramètres* : le curseur *Musique* change le volume de la musique ; *Effets*, celui de l'ambiance.
 7. **K** pour mourir : la musique s'éteint.
 

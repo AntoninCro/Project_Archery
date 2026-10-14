@@ -24,7 +24,7 @@ Inspirations : *Megabonk*, et *Longbow* dans *The Lab*.
 | Clavier virtuel, sauvegarde, classement | Nom saisi au clavier virtuel d'XRI ; classement et paramètres en JSON. |
 | Sons 3D | Sons spatialisés (arc, impacts, ennemis), ambiance jour et nuit, musiques. |
 
-Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense le tir parfait, une aide à la visée qui montre la trajectoire selon la difficulté, des ennemis volants et tireurs, un boss toutes les 5 vagues, des coffres dans la forêt, la course en balançant les bras et le slide, un mode infini.
+Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense le tir parfait, une aide à la visée qui montre la trajectoire selon la difficulté, des ennemis volants et tireurs, un boss différent à chaque vague et un boss final à la vague 6, des coffres dans la forêt, la course en balançant les bras et le slide, un mode infini.
 
 ## Commandes
 
@@ -39,11 +39,16 @@ Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense
 | Tourner | Joystick droit (par crans, désactivable) |
 | Menus et boutique | Viser avec la main libre, gâchette |
 | Lancer une vague | Tirer dans le gong |
-| Ouvrir un coffre | Attraper le couvercle et le soulever, puis attraper une orbe |
+| Ouvrir un coffre | Viser le coffre et appuyer sur la poignée (ou l'attraper de près), puis prendre une orbe |
+| Récolter des cristaux | Viser le gisement et appuyer sur la poignée |
+| Construire | Viser un socle et appuyer sur la poignée, choisir le bâtiment, puis frapper le plan 3 fois au marteau |
+| Revenir en haut de la tour | Rester 1 s sur la bande lumineuse au pied de la tour, ou toucher le bouton « Tour » sous la montre avec l'autre main |
+| Affronter le boss final | Vague 6 : marcher jusqu'à la grande porte au bout de la voie du milieu et passer le seuil |
+| Après la victoire | Tirer dans la cible « Continuer » (mode infini) ou « Terminer » |
 | Flèche enflammée | Tremper la pointe dans le brasero, en haut de la tour |
 | Coup au corps à corps | Frapper un ennemi avec la flèche tenue en main |
 
-**Raccourcis de test** (dans l'éditeur) : **N** lance ou termine une vague, **K** fait mourir le joueur, **M** donne 500 pièces d'or, **C** pose un coffre devant soi, **1 à 4** choisissent la difficulté avant la première vague.
+**Raccourcis de test** (dans l'éditeur et les builds *Development*) : **N** lance la vague, appelle le boss ou le tue, **K** fait mourir le joueur, **M** donne 500 pièces d'or, **C** pose un coffre devant soi, **V** pose un gisement de cristaux, **B** donne 50 matériaux, **H** termine la construction en cours, **1 à 4** choisissent la difficulté avant la première vague. Pendant la vague 6, **N** fait entrer dans l'arène, passe l'intro, puis tue le dragon ; après la victoire, **I** continue en mode infini et **T** termine la partie. Les touches suivent la position physique du clavier QWERTY : sur un clavier AZERTY, **M** se trouve sur la touche **,**.
 
 ## Installation
 
@@ -58,7 +63,9 @@ Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense
 
 **Construire le jeu** : *File > Build Profiles* > *Windows*, vérifier que la scène est dans la liste, puis *Build*.
 
-Sans casque, le *XR Interaction Simulator* (exemple d'XRI) permet de tester au clavier et à la souris.
+Sans casque, `Desktop Controls` prend le relais : ZQSD ou les flèches pour avancer, clic droit maintenu et souris pour regarder, Maj pour courir, Espace pour sauter.
+
+**Récupérer le projet** (par exemple sur un nouveau PC) : `git clone git@github.com:AntoninCro/Project_Archery.git`, puis ouvrir le sous-dossier `Project Archery` avec Unity Hub. La première ouverture est longue : Unity recrée le dossier `Library/`.
 
 ## Organisation du projet
 
@@ -83,9 +90,10 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 - Chevaliers : *Toon RTS Units – Demo*.
 - Coffre animé : *Animated PBR Chest Demo*.
 - Volant (Beholder) et mimique : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
-- Bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO PBR Polyart*, *RPG Monster Buddies PBR Polyart*, *RPG Monster Couple PBR Polyart*, *Monster Minion Survivor PBR Polyart* ; boss final à venir : *Four Evil Dragons PBR* (Dungeon Mason).
+- Bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO PBR Polyart*, *RPG Monster Buddies PBR Polyart*, *RPG Monster Couple PBR Polyart*, *Monster Minion Survivor PBR Polyart* ; boss final, le dragon rouge : *Four Evil Dragons PBR* (Dungeon Mason).
 - Décor et constructions : *Nature Kit*, *Castle Kit* et *Tower Defense Kit* de Kenney (www.kenney.nl), licence CC0 ; sons *Impact Sounds* et *RPG Audio*, icônes *Game Icons* de Kenney.
-- Sons, ambiances et musiques : provisoires, générés par script pour le prototype.
+- Musique du boss final : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
+- Autres sons, ambiances et musiques : provisoires, générés par script pour le prototype ; portes de l'antre : *RPG Audio* de Kenney.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
 
 ## Équipe

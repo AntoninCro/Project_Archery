@@ -191,11 +191,12 @@ namespace Archery.UI
                 m_TimerText.text = phase switch
                 {
                     WavePhase.Wave when waves.IsWaitingForBoss => "Boss",
+                    WavePhase.Wave when waves.IsFinalBossWave => "Antre",
                     WavePhase.Wave => $"{seconds / 60}:{seconds % 60:00}",
                     WavePhase.GameOver => "Fin",
                     _ => "Pause",
                 };
-                var warning = phase == WavePhase.Wave && ((seconds <= 5 && !bossWave) || waves.IsWaitingForBoss);
+                var warning = phase == WavePhase.Wave && ((seconds <= 5 && !bossWave) || waves.IsWaitingForBoss || waves.IsFinalBossWave);
                 m_TimerText.color = warning ? m_TimerWarningColor : m_TimerColor;
             }
 
@@ -208,6 +209,7 @@ namespace Archery.UI
                     {
                         WaveStage.Calm => " · Accalmie",
                         WaveStage.Rise => " · Montée",
+                        WaveStage.FinalBoss => " · Boss final",
                         _ => " · Boss",
                     };
             }

@@ -213,7 +213,8 @@ namespace Archery.Menus
             var fader = ScreenFader.Instance;
             if (fader != null)
                 yield return fader.Fade(1f, 0.5f);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // La scène de cet écran (la partie), pas la scène active : dans l'arène du boss final, c'est l'arène.
+            SceneManager.LoadScene(gameObject.scene.buildIndex);
         }
 
         string Summary()

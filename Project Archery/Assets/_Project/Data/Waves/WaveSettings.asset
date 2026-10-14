@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c80d8441badc4254891d9589d3a98680, type: 3}
   m_Name: WaveSettings
   m_EditorClassIdentifier: Archery.Runtime::Archery.Waves.WaveSettings
-  wavesToWin: 5
+  wavesToWin: 6
+  finalBossOnLastWave: 1
   firstWaveDuration: 120
   durationIncrease: 15
   calmFraction: 0.4

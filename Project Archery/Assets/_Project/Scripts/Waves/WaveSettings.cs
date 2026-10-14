@@ -30,7 +30,11 @@ namespace Archery.Waves
     {
         [Header("Partie")]
         [Tooltip("Nombre de vagues à survivre pour gagner ; la partie peut ensuite continuer en mode infini.")]
-        public int wavesToWin = 5;
+        public int wavesToWin = 6;
+
+        [Tooltip("La dernière vague est celle du boss final (GDD, section 23) : pas d'ennemis sur la carte, la porte de l'antre " +
+                 "s'ouvre et le combat a lieu dans l'arène. Décoché : la dernière vague est une vague comme les autres.")]
+        public bool finalBossOnLastWave = true;
 
         [Header("Durée des vagues")]
         [Tooltip("Durée (s) du chrono de la vague 1, avant l'arrivée du boss.")]
@@ -83,7 +87,7 @@ namespace Archery.Waves
         [Min(1f)]
         public float endlessSpeedGrowth = 1.07f;
 
-        [Tooltip("En mode infini, un boss de plus toutes les N vagues (2 : deux boss aux vagues 6 et 7, trois aux vagues 8 et 9…).")]
+        [Tooltip("En mode infini, un boss de plus toutes les N vagues (2 : deux boss aux vagues 7 et 8, trois aux vagues 9 et 10…).")]
         [Min(1)]
         public int endlessBossesEvery = 2;
 
@@ -116,6 +120,9 @@ namespace Archery.Waves
         [Header("Score")]
         [Tooltip("Points de fin de vague : cette valeur × le numéro de la vague.")]
         public int clearBonusPerWave = 100;
+
+        /// <summary>Vrai pour la vague du boss final (la dernière, si <see cref="finalBossOnLastWave"/> est coché).</summary>
+        public bool IsFinalBossWave(int wave) => finalBossOnLastWave && wave == wavesToWin;
 
         public float DurationFor(int wave) => firstWaveDuration + durationIncrease * Mathf.Max(0, wave - 1);
 

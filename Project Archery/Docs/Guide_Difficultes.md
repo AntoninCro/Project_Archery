@@ -31,7 +31,7 @@ La difficulté est verrouillée dès que la vague 1 commence. Elle reste la mêm
 | Aide à la visée | trajectoire complète | trajectoire complète | ligne droite | aucune |
 | Score | ×0,75 | ×1 | ×1,5 | ×2 |
 
-Les lignes « à chaque vague » font une **courbe exponentielle** : elles se multiplient d'une vague à l'autre. En Normal, un Rampant a 30 PV à la vague 1, 60 à la vague 10 et 402 à la vague 20 ; il court à 2,5 m/s, puis 3 m/s, puis 4,9 m/s. La vitesse ne fait au plus que doubler (*Max Speed Scale* de `WaveSettings`). En mode infini, la courbe s'accélère encore (partie *Mode infini* de `Data/Waves/WaveSettings`). Le GDD (section 11) donne le tableau complet.
+Les lignes « à chaque vague » font une **courbe exponentielle** : elles se multiplient d'une vague à l'autre. En Normal, un Rampant a 30 PV à la vague 1 et 72 à la vague 6 ; il court à 2,5 m/s, puis 3,2 m/s. La vitesse ne fait au plus que doubler (*Max Speed Scale* de `WaveSettings`). En mode infini, la courbe s'accélère encore (partie *Mode infini* de `Data/Waves/WaveSettings`). Le GDD (section 11) donne le tableau complet.
 
 En Impossible, le **début de partie est plus doux** : à la vague 1, les ennemis n'ont que la moitié de leurs PV et de leurs dégâts, puis ils regagnent 10 % par vague jusqu'à retrouver toute leur force à la vague 6 (*Early Strength* et *Full Strength Wave*, partie *Début de partie plus doux*). Leur nombre ne change pas.
 
@@ -171,7 +171,7 @@ Dans *Edit > Project Settings > Quality* :
    - La lanterne s'allume.
    - La montre affiche « Difficile » en bleu.
    - En tendant l'arc, la ligne de visée n'apparaît plus.
-3. Tire dans le gong. « Vague 1 / 10 » s'affiche avec « Difficile » en dessous, et les panneaux disparaissent.
+3. Tire dans le gong. « Vague 1 / 6 » s'affiche avec « Difficile » en dessous, et les panneaux disparaissent.
    - Les chevaliers ont les yeux qui brillent.
    - Ils sont plus rapides et ont 42 PV au lieu de 30.
 4. Laisse-toi battre : la scène recommence avec la même difficulté.

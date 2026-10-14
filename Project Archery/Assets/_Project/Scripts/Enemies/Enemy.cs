@@ -232,13 +232,15 @@ namespace Archery.Enemies
         // Paramètre Speed de l'Animator. En course, l'animation accélère avec les vagues, pour que les pieds ne glissent pas.
         void UpdateAnimation()
         {
-            if (m_Animator == null)
+            if (m_Animator == null || BehaviourControlsAnimator)
                 return;
 
             if (m_HasSpeed)
                 m_Animator.SetFloat(k_SpeedId, CurrentVelocity.magnitude);
             m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed : 1f;
         }
+
+        bool BehaviourControlsAnimator => m_Behaviour != null && m_Behaviour.ControlsAnimator;
 
         Vector3 CurrentVelocity
         {
@@ -470,7 +472,7 @@ namespace Archery.Enemies
         void OnDamaged(Health health, DamageInfo info)
         {
             Damaged?.Invoke(this, info);
-            if (m_HasHit && health.IsAlive)
+            if (m_HasHit && health.IsAlive && !BehaviourControlsAnimator)
                 m_Animator.SetTrigger(k_HitId);
         }
 
@@ -502,18 +504,21 @@ namespace Archery.Enemies
 
             m_DeathTime = 0f;
             m_DeathRotation = transform.rotation;
-            if (m_HasSpeed)
-                m_Animator.SetFloat(k_SpeedId, 0f);
+            if (!BehaviourControlsAnimator)
+            {
+                if (m_HasSpeed)
+                    m_Animator.SetFloat(k_SpeedId, 0f);
 
-            // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
-            if (m_HasDie)
-            {
-                m_Animator.speed = 1f;
-                m_Animator.SetTrigger(k_DieId);
-            }
-            else if (m_Animator != null)
-            {
-                m_Animator.speed = 0f;
+                // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
+                if (m_HasDie)
+                {
+                    m_Animator.speed = 1f;
+                    m_Animator.SetTrigger(k_DieId);
+                }
+                else if (m_Animator != null)
+                {
+                    m_Animator.speed = 0f;
+                }
             }
 
             Sfx.Play(m_DeathClip, transform.position + Vector3.up, 0.9f);
@@ -526,7 +531,7 @@ namespace Archery.Enemies
             var handled = m_Behaviour != null && m_Behaviour.TickCorpse(deltaTime);
 
             // Sans animation de mort (ni chute gérée par le comportement), l'ennemi bascule en arrière.
-            if (!m_HasDie && !handled)
+            if (!m_HasDie && !handled && !BehaviourControlsAnimator)
             {
                 var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(m_DeathTime / 0.5f));
                 transform.rotation = m_DeathRotation * Quaternion.Euler(-80f * t, 0f, 0f);

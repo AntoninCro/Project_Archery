@@ -135,6 +135,10 @@ namespace Archery.Building
 
         void OnWaveStarted(int wave)
         {
+            // Pas de gisement pendant la vague du boss final : la carte est vide.
+            if (m_Waves.IsFinalBossWave)
+                return;
+
             m_SpawnTimer = m_SpawnDelay;
             m_SecondBatchPending = m_SecondBatch;
         }

@@ -65,6 +65,26 @@ namespace Archery.Player
             return true;
         }
 
+        /// <summary>
+        /// Déplace le joueur sans fondu, quand l'image est déjà noire (entrée et sortie de l'arène du boss final) :
+        /// c'est l'appelant qui gère le noir. À attendre dans une coroutine.
+        /// </summary>
+        public IEnumerator TeleportWhileHidden(Vector3 feetPosition, float? yaw = null)
+        {
+            while (IsTeleporting)
+                yield return null;
+
+            IsTeleporting = true;
+            Move(feetPosition, yaw);
+
+            // XRI applique le déplacement à l'image suivante.
+            yield return null;
+            yield return null;
+
+            Teleported?.Invoke();
+            IsTeleporting = false;
+        }
+
         IEnumerator Teleport(Vector3 destination, float? yaw)
         {
             IsTeleporting = true;
