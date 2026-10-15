@@ -15,13 +15,13 @@ namespace Archery.FinalBoss
         /// <summary>Il dort pendant l'intro de l'arène.</summary>
         Asleep,
 
-        /// <summary>Phase 1, au sol : il frappe si on est trop près et crache du feu.</summary>
+        /// <summary>Phase 1, au sol : boules de feu, souffle, coup de patte, morsure.</summary>
         Ground,
 
-        /// <summary>Phase 2, en vol : boules de feu et passes en piqué enflammé.</summary>
+        /// <summary>Phase 2, en vol : boules de feu, triple ruée enflammée, souffle depuis un perchoir.</summary>
         Air,
 
-        /// <summary>Phase 3, de retour au sol, enragé : plus rapide, plus fort, rochers du plafond, lave qui déborde.</summary>
+        /// <summary>Phase 3, enragé : il passe vite du sol au vol, attaque plus vite, et fait son salto.</summary>
         Enraged,
 
         Dead,
@@ -34,31 +34,54 @@ namespace Archery.FinalBoss
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item>Il joue lui-même les animations du modèle, par leur nom (Animator « DragonBoss », sans transitions).</item>
-    /// <item>Ses zones de touche sont créées au lancement sur les os du modèle : tête (×2), cou, corps, pattes, et un
-    /// point faible cyan sous la poitrine (×3). <see cref="m_HitboxScale"/> les agrandit ou les réduit toutes.</item>
-    /// <item>Au sol, il contourne les piliers ; son souffle s'arrête sur eux : on peut s'y abriter.</item>
+    /// <item>Presque tout s'esquive en bougeant bien : la boule de feu (se déplacer), le coup de patte (sauter), le
+    /// souffle (passer sur son flanc ou derrière un pilier), les ruées (sortir de la bande rouge), le salto (quitter
+    /// l'endroit où l'on était). Seule la morsure, tout contre sa gueule, est presque inévitable.</item>
+    /// <item>Il joue lui-même les animations du modèle, par leur nom (Animator « DragonBoss », sans transitions). La tête
+    /// levée de la charge du souffle, le coup de patte et le salto « raté » sont des poses ajoutées par le code.</item>
+    /// <item>Les ralentissements (flèches de glace…) ne lui retirent jamais plus de 25 % de sa vitesse (Max Slow) ; ils
+    /// ralentissent tout : déplacements, animations et attaques. Enragé, tout va plus vite (Rage Tempo).</item>
+    /// <item>Zones de touche créées au lancement sur les os du modèle : tête (×2), cou, corps, pattes, et un point faible
+    /// cyan sous la poitrine (×3). <see cref="m_HitboxScale"/> les agrandit ou les réduit toutes.</item>
     /// <item>Les dégâts de toutes ses attaques partent de l'« Attack Damage » de sa définition, multiplié par la difficulté
     /// et la vague, comme les autres ennemis.</item>
     /// </list>
     /// </remarks>
     [DefaultExecutionOrder(-50)]   // zones de touche créées avant l'Awake d'Enemy, qui les recense
-    public class DragonBoss : EnemyBehaviour
+    public partial class DragonBoss : EnemyBehaviour
     {
         enum State
         {
             Sleeping,
+            IntroDash,
+            IntroWait,
+            IntroBreath,
             Waking,
+            Roar,
             Moving,
-            Melee,
+            Sweep,
+            Bite,
+            Slam,
+            Spit,
+            BreathCharge,
             Breath,
             TakeOff,
             Flying,
-            Dive,
+            Dash,
+            PerchFlight,
+            Perched,
+            Leap,
+            Salto,
+            Recover,
             Landing,
-            Roar,
             Idle,
             Dead,
+        }
+
+        enum PerchPurpose
+        {
+            Breath,
+            Salto,
         }
 
         [Header("Modèle")]
@@ -85,6 +108,10 @@ namespace Archery.FinalBoss
         [SerializeField]
         string m_SpineBone = "Spine01";
 
+        [Tooltip("Os de la mâchoire, qui s'ouvre pendant les charges.")]
+        [SerializeField]
+        string m_JawBone = "Jaw01";
+
         [Tooltip("Rayon (m) du corps au sol : distance gardée avec les piliers et le bord de l'arène.")]
         [SerializeField]
         float m_BodyRadius = 2.5f;
@@ -96,23 +123,37 @@ namespace Archery.FinalBoss
         [SerializeField]
         Material m_WeakPointMaterial;
 
+        [Tooltip("Matériau des flammes (particules).")]
         [SerializeField]
         Material m_FireMaterial;
 
-        [Tooltip("Matériau du cœur des boules de feu.")]
+        [Tooltip("Matériau des boules de feu et de la lueur dans la gueule (Dragon_Fireball).")]
         [SerializeField]
         Material m_FireballMaterial;
 
-        [Tooltip("Matériau des cercles d'alerte au sol (rochers, piqués).")]
+        [Tooltip("Matériau des alertes au sol (bandes des ruées, cercle du salto).")]
         [SerializeField]
         Material m_WarningMaterial;
 
-        [Tooltip("Matériau des rochers qui tombent.")]
         [SerializeField]
-        Material m_RockMaterial;
+        ArenaShape m_Arena;
 
+        [Header("Yeux")]
+        [Tooltip("Matériau des yeux, rouge brillant (Dragon_Eyes). Vide : pas d'yeux brillants.")]
         [SerializeField]
-        DragonArenaBuilder m_Arena;
+        Material m_EyeMaterial;
+
+        [Tooltip("Rayon (m) d'un œil.")]
+        [SerializeField]
+        float m_EyeRadius = 0.09f;
+
+        [Tooltip("Décalage (m) des yeux depuis leur os : X vers l'extérieur de la tête, Y vers le haut, Z vers l'avant.")]
+        [SerializeField]
+        Vector3 m_EyeOffset = new Vector3(0.05f, 0.02f, 0.03f);
+
+        [Tooltip("Intensité de la petite lumière rouge que les yeux jettent sur le museau.")]
+        [SerializeField]
+        float m_EyeLightIntensity = 1.5f;
 
         [Header("Phases (part des PV)")]
         [Range(0f, 1f)]
@@ -127,114 +168,306 @@ namespace Archery.FinalBoss
         [SerializeField]
         float m_WakeRoarTime = 2.6f;
 
+        [Header("Rythme")]
+        [Tooltip("Part de sa vitesse que les ralentissements peuvent lui retirer, toutes flèches confondues (0,25 = 25 % au plus).")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_MaxSlow = 0.25f;
+
+        [Tooltip("Répit (s) après une attaque au sol, avant la suivante.")]
+        [SerializeField]
+        float m_Recovery = 0.7f;
+
         [Header("Au sol")]
         [Tooltip("Vitesse de rotation (°/s).")]
         [SerializeField]
-        float m_TurnSpeed = 100f;
+        float m_TurnSpeed = 90f;
 
-        [Tooltip("Portée du coup (m) en plus de la distance du pivot à la tête.")]
+        [Tooltip("Portée de la tête (m) en plus de la distance du pivot à la tête : en deçà, le joueur est « proche ».")]
         [SerializeField]
         float m_MeleeExtraReach = 1.8f;
 
-        [Tooltip("Temps (s) entre deux coups au corps à corps.")]
+        [Tooltip("Distance (m) qu'il garde avec le joueur pour lui cracher ses boules de feu.")]
         [SerializeField]
-        float m_MeleeCooldown = 1.6f;
+        float m_PreferredDistance = 10f;
 
-        [Tooltip("Dégâts du coup de griffe et de la morsure, en part de l'« Attack Damage ».")]
+        [Tooltip("Après une attaque, chance qu'il fonce au contact pendant quelques secondes.")]
+        [Range(0f, 1f)]
         [SerializeField]
-        Vector2 m_MeleeDamage = new Vector2(1f, 1.25f);
+        float m_CloseInChance = 0.35f;
+
+        [Tooltip("Vitesse (m/s) à laquelle l'animation de marche avance quand elle est jouée normalement : l'animation est " +
+                 "ralentie ou accélérée pour que les pattes suivent le sol. 0 : mesurée sur l'animation au lancement.")]
+        [SerializeField]
+        float m_WalkStrideSpeed;
+
+        [Tooltip("Pareil pour la course. 0 : mesurée au lancement.")]
+        [SerializeField]
+        float m_RunStrideSpeed;
+
+        [Tooltip("Au-delà de cette vitesse (m/s), il court au lieu de marcher.")]
+        [SerializeField]
+        float m_RunFrom = 3.6f;
+
+        [Header("Boule de feu (son attaque la plus courante)")]
+        [Tooltip("Diamètre (m) d'une boule de feu.")]
+        [SerializeField]
+        float m_FireballSize = 1.8f;
+
+        [Tooltip("Vitesse (m/s) au sol : elle part vers l'endroit où est le joueur au tir, on l'esquive en se déplaçant.")]
+        [SerializeField]
+        float m_FireballSpeed = 11f;
+
+        [Tooltip("Vitesse (m/s) depuis les airs.")]
+        [SerializeField]
+        float m_AirFireballSpeed = 14f;
+
+        [Tooltip("Dégâts d'un coup direct, en part de l'« Attack Damage ». À côté de l'explosion, 25 à 50 % de ces dégâts.")]
+        [SerializeField]
+        float m_FireballDamage = 0.55f;
+
+        [Tooltip("Rayon (m) de l'explosion quand elle s'écrase à côté du joueur.")]
+        [SerializeField]
+        float m_FireballSplash = 2f;
+
+        [Tooltip("Temps (s) pendant lequel elle se forme dans sa gueule avant de partir.")]
+        [SerializeField]
+        float m_SpitCharge = 0.7f;
+
+        [Tooltip("Temps (s) entre deux boules de feu au sol.")]
+        [SerializeField]
+        float m_SpitCooldown = 2.6f;
+
+        [Tooltip("Temps (s) entre deux boules de feu en vol.")]
+        [SerializeField]
+        float m_AirFireballInterval = 2.2f;
+
+        [Header("Coup de patte (proche : sauter pour l'esquiver)")]
+        [Tooltip("Rayon (m) balayé au ras du sol devant lui.")]
+        [SerializeField]
+        float m_SweepReach = 6.5f;
+
+        [Tooltip("Temps (s) pendant lequel il lève la patte.")]
+        [SerializeField]
+        float m_SweepWindup = 0.9f;
+
+        [Tooltip("Durée (s) du balayage, d'un côté à l'autre.")]
+        [SerializeField]
+        float m_SweepTime = 0.4f;
+
+        [Tooltip("Dégâts, en part de l'« Attack Damage ».")]
+        [SerializeField]
+        float m_SweepDamage = 0.7f;
 
         [SerializeField]
-        float m_BreathRange = 15f;
+        float m_SweepCooldown = 5f;
+
+        [Tooltip("Hauteur (m) des pieds au-dessus du sol pour passer par-dessus la patte.")]
+        [SerializeField]
+        float m_JumpClearance = 0.3f;
+
+        [Tooltip("Il avance de quelques mètres (m) pendant le balayage.")]
+        [SerializeField]
+        float m_SweepLunge = 1.5f;
+
+        [Header("Morsure (tout près de sa gueule)")]
+        [Tooltip("Distance (m) entre sa gueule et le joueur pour qu'il croque.")]
+        [SerializeField]
+        float m_BiteRange = 2.8f;
+
+        [Tooltip("Temps (s) avant que les mâchoires se referment : très court, on l'évite difficilement.")]
+        [SerializeField]
+        float m_BiteWindup = 0.4f;
+
+        [SerializeField]
+        float m_BiteDamage = 0.9f;
+
+        [SerializeField]
+        float m_BiteCooldown = 3f;
+
+        [Header("Dressé, puis il frappe le sol : anneau de feu (sauter pour l'esquiver)")]
+        [SerializeField]
+        float m_SlamCooldown = 13f;
+
+        [Tooltip("Temps (s) pendant lequel il se dresse sur ses pattes arrière.")]
+        [SerializeField]
+        float m_SlamRearTime = 1.1f;
+
+        [Tooltip("Angle (°) dont il se dresse.")]
+        [SerializeField]
+        float m_SlamRearAngle = 40f;
+
+        [Tooltip("Durée (s) de sa chute sur ses pattes avant.")]
+        [SerializeField]
+        float m_SlamFallTime = 0.22f;
+
+        [Tooltip("Vitesse (m/s) à laquelle l'anneau de feu s'élargit.")]
+        [SerializeField]
+        float m_SlamRingSpeed = 10f;
+
+        [Tooltip("Hauteur (m) du mur de feu.")]
+        [SerializeField]
+        float m_SlamRingHeight = 0.6f;
+
+        [Tooltip("Hauteur (m) des pieds au-dessus du sol pour passer par-dessus l'anneau.")]
+        [SerializeField]
+        float m_SlamClearance = 0.4f;
+
+        [Tooltip("Dégâts, en part de l'« Attack Damage ».")]
+        [SerializeField]
+        float m_SlamDamage = 0.6f;
+
+        [Header("Souffle")]
+        [SerializeField]
+        float m_BreathRange = 16f;
+
+        [Tooltip("Portée (m) du souffle depuis un pilier ou le plateau.")]
+        [SerializeField]
+        float m_PerchBreathRange = 28f;
 
         [Tooltip("Demi-angle (°) du cône de feu.")]
         [SerializeField]
-        float m_BreathAngle = 20f;
+        float m_BreathAngle = 16f;
+
+        [Tooltip("Durée (s) de la charge : la tête levée vers la voûte, une lumière de plus en plus vive dans la gueule.")]
+        [SerializeField]
+        float m_BreathCharge = 3.2f;
+
+        [Tooltip("Angle (°) dont il lève la tête pendant la charge.")]
+        [SerializeField]
+        float m_ChargePitch = 65f;
 
         [SerializeField]
         float m_BreathDuration = 2.2f;
 
         [SerializeField]
-        float m_BreathCooldown = 7f;
+        float m_BreathCooldown = 10f;
 
         [Tooltip("Dégâts du souffle par seconde, en part de l'« Attack Damage ».")]
         [SerializeField]
-        float m_BreathDamage = 0.45f;
+        float m_BreathDamage = 0.4f;
 
-        [Tooltip("Vitesse (°/s) à laquelle le souffle suit le joueur : assez lente pour qu'on puisse courir derrière un pilier.")]
+        [Tooltip("Vitesse (°/s) à laquelle le souffle suit le joueur : on le distance en tournant autour du dragon, de près.")]
         [SerializeField]
-        float m_BreathTracking = 30f;
+        float m_BreathTracking = 18f;
 
         [Header("En vol")]
         [SerializeField]
-        float m_FlyAltitude = 10f;
+        float m_FlyAltitude = 13.5f;
 
         [SerializeField]
-        float m_OrbitRadius = 15f;
+        float m_OrbitRadius = 20f;
 
         [SerializeField]
         float m_FlySpeed = 8f;
 
+        [Tooltip("Durée (s) de l'envol.")]
         [SerializeField]
-        float m_FireballInterval = 2.4f;
+        float m_LiftTime = 2.4f;
+
+        [Header("Ruées enflammées (en vol)")]
+        [Tooltip("Nombre de ruées enchaînées.")]
+        [SerializeField]
+        int m_DashCount = 3;
 
         [SerializeField]
-        float m_FireballSpeed = 18f;
+        float m_DashCooldown = 14f;
 
-        [Tooltip("Dégâts d'une boule de feu, en part de l'« Attack Damage ».")]
+        [Tooltip("Temps (s) entre l'apparition de la bande rouge au sol et la ruée (un peu moins pour les suivantes).")]
         [SerializeField]
-        float m_FireballDamage = 0.5f;
-
-        [SerializeField]
-        float m_FireballRadius = 2.6f;
+        float m_DashWarning = 1.1f;
 
         [SerializeField]
-        float m_FireballSize = 0.7f;
+        float m_DashSpeed = 24f;
 
-        [Tooltip("Temps (s) entre deux passes en piqué.")]
+        [Tooltip("Hauteur (m) de la ruée (plus haut s'il doit passer au-dessus d'un pilier).")]
         [SerializeField]
-        float m_DiveInterval = 13f;
+        float m_DashAltitude = 7.5f;
 
+        [Tooltip("Longueur (m) d'une ruée.")]
         [SerializeField]
-        float m_DiveAltitude = 3.8f;
+        float m_DashLength = 32f;
 
+        [Tooltip("Largeur (m) de la bande de feu.")]
         [SerializeField]
-        float m_DiveSpeed = 15f;
+        float m_DashWidth = 3.5f;
 
-        [Tooltip("Dégâts par seconde de la traînée de feu, en part de l'« Attack Damage ».")]
+        [Tooltip("Dégâts quand le feu passe sur le joueur, en part de l'« Attack Damage ».")]
         [SerializeField]
-        float m_TrailDamage = 0.35f;
+        float m_DashDamage = 0.6f;
+
+        [Tooltip("Dégâts par seconde du feu qui reste au sol, en part de l'« Attack Damage ».")]
+        [SerializeField]
+        float m_DashFireDamage = 0.25f;
+
+        [Tooltip("Durée (s) du feu au sol après une ruée.")]
+        [SerializeField]
+        float m_DashFireTime = 1.5f;
+
+        [Header("Perchoir (phase 2)")]
+        [Tooltip("Temps (s) entre deux souffles depuis un pilier ou le bord du plateau.")]
+        [SerializeField]
+        float m_PerchCooldown = 17f;
+
+        [Tooltip("Temps (s) posé avant de charger son souffle.")]
+        [SerializeField]
+        float m_PerchHold = 0.4f;
 
         [Header("Enragé (phase 3)")]
+        [Tooltip("Tout va plus vite : déplacements, animations et attaques (1,3 = 30 %).")]
         [SerializeField]
-        float m_RageSpeed = 1.45f;
-
-        [Tooltip("Ses attaques reviennent plus vite (1,5 = 50 % plus souvent).")]
-        [SerializeField]
-        float m_RageAttackRate = 1.5f;
+        float m_RageTempo = 1.3f;
 
         [SerializeField]
-        float m_RageDamage = 1.3f;
+        float m_RageDamage = 1.1f;
 
-        [Tooltip("Temps (s) entre deux rugissements qui font tomber des rochers.")]
+        [Tooltip("Temps (s) au sol avant de s'envoler.")]
         [SerializeField]
-        float m_RageRoarInterval = 12f;
+        float m_RageGroundTime = 11f;
+
+        [Tooltip("Temps (s) en vol avant de revenir au sol (par son salto).")]
+        [SerializeField]
+        float m_RageAirTime = 9f;
+
+        [Header("Salto (phase 3)")]
+        [Tooltip("Temps (s) entre deux saltos lancés depuis le sol (il en fait aussi un à chaque retour au sol).")]
+        [SerializeField]
+        float m_SaltoCooldown = 22f;
 
         [SerializeField]
-        int m_RockCount = 5;
+        int m_SaltoFlips = 3;
 
-        [Tooltip("Dégâts d'un rocher, en part de l'« Attack Damage ».")]
+        [Tooltip("Durée (s) du triple salto, raide comme un piquet.")]
         [SerializeField]
-        float m_RockDamage = 0.6f;
+        float m_SaltoFlipTime = 1.8f;
+
+        [Tooltip("Hauteur (m) gagnée au-dessus du perchoir (moins si la voûte est basse).")]
+        [SerializeField]
+        float m_SaltoRise = 7f;
+
+        [Tooltip("Arrêt (s) entre le salto et le piqué.")]
+        [SerializeField]
+        float m_SaltoPause = 0.6f;
 
         [SerializeField]
-        float m_RockRadius = 2.2f;
+        float m_SaltoDiveSpeed = 30f;
 
-        [Tooltip("Temps (s) entre le cercle d'alerte et l'impact.")]
+        [Tooltip("Rayon (m) de l'impact, autour de l'endroit où était le joueur au début de l'attaque.")]
         [SerializeField]
-        float m_RockWarning = 1.5f;
+        float m_SaltoRadius = 4f;
+
+        [SerializeField]
+        float m_SaltoDamage = 1.3f;
+
+        [Tooltip("Temps (s) pendant lequel il se relève après l'impact.")]
+        [SerializeField]
+        float m_SaltoRecover = 1.4f;
 
         [Header("Sons")]
+        [Tooltip("Rugissement sonore au réveil, à la fin de l'intro. Décoché : il se réveille en silence (les rugissements du combat restent).")]
+        [SerializeField]
+        bool m_WakeRoarSound;
+
         [SerializeField]
         AudioClip m_RoarClip;
 
@@ -264,9 +497,6 @@ namespace Archery.FinalBoss
         AudioClip m_ExplosionClip;
 
         [SerializeField]
-        AudioClip m_RockClip;
-
-        [SerializeField]
         AudioClip m_DeathClip;
 
         readonly List<Collider> m_Hitboxes = new List<Collider>();
@@ -279,37 +509,42 @@ namespace Archery.FinalBoss
         AudioSource m_FireSource;
         Light m_BreathLight;
         State m_State = State.Sleeping;
+        DragonPhase m_Phase = DragonPhase.Asleep;
         string m_Playing;
         float m_StateTime;
+        int m_Step;
+        float m_Tempo = 1f;
+        float m_StrideRate = 1f;
         float m_Reach = 6f;
-        float m_MeleeTimer;
-        float m_BreathTimer = 3f;
-        float m_FireballTimer;
-        float m_DiveTimer;
-        float m_RageRoarTimer;
-        float m_BreathTick;
         bool m_HitDone;
         bool m_Firing;
-        int m_MeleeKind;
-        Vector3 m_BreathAim;
+        Action m_AfterRoar;
         Vector3 m_Velocity;
         Vector3 m_LastPosition;
-        float m_OrbitAngle;
         Vector3 m_FromPosition;
         Vector3 m_ToPosition;
-        Vector3 m_DiveStart;
-        Vector3 m_DiveEnd;
-        float m_NextTrail;
-        Transform m_WarningLine;
-        Vector3 m_PlayerVelocity;
-        Vector3 m_LastPlayerFeet;
-        DragonPhase m_Phase = DragonPhase.Asleep;
+        float m_CorpseY;
+        float m_FallTime;
+
+        // Comptes à rebours, en temps du dragon (ralenti par la glace, accéléré par la rage).
+        float m_AttackDelay;
+        float m_SpitTimer;
+        float m_BreathTimer;
+        float m_SweepTimer;
+        float m_BiteTimer;
+        float m_SlamTimer = 8f;
+        float m_SaltoTimer;
+        float m_DashTimer;
+        float m_PerchTimer;
+        float m_AirFireballTimer;
+        float m_CloseInTimer;
+        float m_FormTimer;
 
         public static DragonBoss Instance { get; private set; }
 
         public DragonPhase Phase => m_Phase;
 
-        /// <summary>Le dragon change de phase (réveil, envol, retour enragé, mort).</summary>
+        /// <summary>Le dragon change de phase (réveil, envol, rage, mort).</summary>
         public event Action<DragonPhase> PhaseChanged;
 
         public override Vector3 Velocity => m_Velocity;
@@ -317,8 +552,16 @@ namespace Archery.FinalBoss
         public override bool NeedsNavMesh => false;
 
         float BaseDamage => Enemy.Definition.attackDamage * Enemy.DamageMultiplier * (m_Phase == DragonPhase.Enraged ? m_RageDamage : 1f);
-        float AttackRate => m_Phase == DragonPhase.Enraged ? m_RageAttackRate : 1f;
-        bool IsAirborne => m_State == State.TakeOff || m_State == State.Flying || m_State == State.Dive || m_State == State.Landing;
+
+        // Vitesse du temps du dragon : ralenti par la glace (25 % au plus), accéléré par la rage.
+        float Tempo => Mathf.Max(1f - m_MaxSlow, Enemy.SlowMultiplier) * (m_Phase == DragonPhase.Enraged ? m_RageTempo : 1f);
+
+        // Vitesse de marche, sans le ralentissement (il passe par le temps du dragon).
+        float WalkSpeed => Enemy.CurrentSpeed / Mathf.Max(0.05f, Enemy.SlowMultiplier);
+
+        bool IsAirborne => m_State == State.TakeOff || m_State == State.Flying || m_State == State.Dash || m_State == State.PerchFlight ||
+                           m_State == State.Landing || m_State == State.Leap || m_State == State.Salto;
+
         Vector3 Center => m_Arena != null ? m_Arena.Center : Vector3.zero;
         float FloorY => m_Arena != null ? m_Arena.FloorY : transform.position.y;
 
@@ -326,8 +569,9 @@ namespace Archery.FinalBoss
         {
             base.Awake();
             Instance = this;
+            Enemy.MaxSlow = m_MaxSlow;
             if (m_Arena == null)
-                m_Arena = FindAnyObjectByType<DragonArenaBuilder>();
+                m_Arena = FindAnyObjectByType<ArenaShape>();
             if (m_Animator == null)
                 m_Animator = GetComponentInChildren<Animator>();
             if (m_Animator != null)
@@ -343,8 +587,12 @@ namespace Archery.FinalBoss
             m_NeckBase = FindBone(m_NeckBaseBone);
             m_Chest = FindBone(m_ChestBone);
             m_Spine = FindBone(m_SpineBone);
+            CaptureRestPose();
             BuildHitboxes();
             BuildBreath();
+            BuildEyes();
+            BuildMouthGlow();
+            MeasureStrides();
             SetHitboxesEnabled(false);
         }
 
@@ -352,74 +600,129 @@ namespace Archery.FinalBoss
         {
             if (Instance == this)
                 Instance = null;
+            DropHeld();
+            HideStrip();
+            HideCircle();
         }
 
-        void Start()
-        {
-            Play("Sleep", 0f);
-            m_LastPosition = transform.position;
-            m_LastPlayerFeet = ArenaPlayer.Feet;
-        }
+        /// <summary>Le dragon est caché : aucun de ses rendus n'est dessiné, ni son ombre (intro, avant les cristaux).</summary>
+        public bool IsHidden { get; private set; }
 
-        // ---------------------------------------------------------------- réveil (appelé par l'arène)
+        readonly List<Renderer> m_HiddenRenderers = new List<Renderer>();
 
-        /// <summary>Fin de l'intro : le dragon se réveille et rugit, puis le combat commence.</summary>
-        public void WakeUp()
+        /// <summary>Cache ou montre tout le dragon (modèle, yeux, point faible…), ombre comprise.</summary>
+        public void SetVisible(bool visible)
         {
-            if (m_State != State.Sleeping)
+            if (visible != IsHidden)
                 return;
 
-            // Ce qu'il aurait reçu pendant l'intro ne compte pas.
-            Enemy.Health.ResetHealth(Enemy.Health.Max);
-            SetHitboxesEnabled(true);
-            SetPhase(DragonPhase.Ground);
-            Roar(State.Waking);
+            IsHidden = !visible;
+            if (m_EyeLight != null)
+                m_EyeLight.enabled = visible;
+            if (!visible)
+            {
+                foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!renderer.enabled)
+                        continue;
+                    renderer.enabled = false;
+                    m_HiddenRenderers.Add(renderer);
+                }
+
+                return;
+            }
+
+            foreach (var renderer in m_HiddenRenderers)
+            {
+                if (renderer != null)
+                    renderer.enabled = true;
+            }
+
+            m_HiddenRenderers.Clear();
         }
 
         // ---------------------------------------------------------------- une image
 
         public override void Tick(float deltaTime)
         {
-            TrackPlayer(deltaTime);
-            m_StateTime += deltaTime;
-            m_MeleeTimer -= deltaTime * AttackRate;
-            m_BreathTimer -= deltaTime * AttackRate;
+            m_Tempo = Tempo;
+            var dt = deltaTime * m_Tempo;
+            m_StateTime += dt;
+            CountDown(dt);
+            m_StrideRate = 1f;
 
-            if (m_State != State.Sleeping && m_State != State.Dead && !ArenaPlayer.IsAlive)
-            {
-                StopBreath();
-                if (!IsAirborne)
-                    EnterState(State.Idle, "Idle01");
-            }
+            // Les poses ajoutées (tête levée, patte, salto) sont redemandées à chaque image par l'état en cours.
+            ClearPose();
+
+            if (!InIntro && m_State != State.Dead && !ArenaPlayer.IsAlive)
+                CalmDown();
 
             switch (m_State)
             {
                 case State.Sleeping:
                     break;
+                case State.IntroDash:
+                    UpdateIntroDash(dt);
+                    break;
+                case State.IntroWait:
+                    UpdateIntroWait(dt);
+                    break;
+                case State.IntroBreath:
+                    UpdateIntroBreath(dt);
+                    break;
                 case State.Waking:
+                    UpdateWaking();
+                    break;
                 case State.Roar:
                     UpdateRoar();
                     break;
                 case State.Moving:
-                    UpdateMoving(deltaTime);
+                    UpdateMoving(dt);
                     break;
-                case State.Melee:
-                    UpdateMelee(deltaTime);
+                case State.Sweep:
+                    UpdateSweep(dt);
+                    break;
+                case State.Bite:
+                    UpdateBite(dt);
+                    break;
+                case State.Slam:
+                    UpdateSlam(dt);
+                    break;
+                case State.Spit:
+                    UpdateSpit(dt);
+                    break;
+                case State.BreathCharge:
+                    UpdateBreathCharge(dt);
                     break;
                 case State.Breath:
-                    UpdateBreath(deltaTime);
+                    UpdateBreath(dt);
                     break;
                 case State.TakeOff:
-                    UpdateTakeOff();
+                    UpdateTakeOff(dt);
                     break;
                 case State.Flying:
-                    UpdateFlying(deltaTime);
+                    UpdateFlying(dt);
                     break;
-                case State.Dive:
-                    UpdateDive(deltaTime);
+                case State.Dash:
+                    UpdateDash(dt);
+                    break;
+                case State.PerchFlight:
+                    UpdatePerchFlight(dt);
+                    break;
+                case State.Perched:
+                    UpdatePerched(dt);
+                    break;
+                case State.Leap:
+                    UpdateLeap(dt);
+                    break;
+                case State.Salto:
+                    UpdateSalto(dt);
+                    break;
+                case State.Recover:
+                    UpdateRecover(dt);
                     break;
                 case State.Landing:
-                    UpdateLanding();
+                    UpdateLanding(dt);
                     break;
                 case State.Idle:
                     if (ArenaPlayer.IsAlive)
@@ -427,197 +730,41 @@ namespace Archery.FinalBoss
                     break;
             }
 
+            UpdateWarnings(deltaTime);
+            if (m_Animator != null && m_State != State.Sleeping)
+                m_Animator.speed = m_Tempo * m_StrideRate;
+
             m_Velocity = deltaTime > 0f ? (transform.position - m_LastPosition) / deltaTime : Vector3.zero;
             m_LastPosition = transform.position;
         }
 
-        void LateUpdate()
+        void CountDown(float dt)
         {
-            // Le souffle part de la gueule, après l'animation de l'image.
-            if (m_Breath != null && m_Firing)
-            {
-                m_Breath.transform.SetPositionAndRotation(MouthPosition, Quaternion.LookRotation(m_BreathAim));
-                if (m_BreathLight != null)
-                    m_BreathLight.transform.position = MouthPosition + m_BreathAim * 3f;
-            }
+            m_AttackDelay -= dt;
+            m_SpitTimer -= dt;
+            m_BreathTimer -= dt;
+            m_SweepTimer -= dt;
+            m_BiteTimer -= dt;
+            m_SlamTimer -= dt;
+            m_SaltoTimer -= dt;
+            m_DashTimer -= dt;
+            m_PerchTimer -= dt;
+            m_AirFireballTimer -= dt;
+            m_CloseInTimer -= dt;
+            m_FormTimer -= dt;
         }
 
-        void TrackPlayer(float deltaTime)
+        // Le joueur est mort : plus d'attaque. Au sol il s'arrête ; en vol, il tourne au-dessus de l'arène.
+        void CalmDown()
         {
-            var feet = ArenaPlayer.Feet;
-            if (deltaTime > 0f)
-                m_PlayerVelocity = Vector3.Lerp(m_PlayerVelocity, (feet - m_LastPlayerFeet) / deltaTime, 1f - Mathf.Exp(-deltaTime * 4f));
-            m_LastPlayerFeet = feet;
-        }
-
-        // ---------------------------------------------------------------- au sol
-
-        // Point de décision : changement de phase, rugissement, attaque ou déplacement.
-        void UpdateMoving(float deltaTime)
-        {
-            if (CheckPhaseChange())
+            if (m_State == State.Idle || m_State == State.Flying || m_State == State.Perched)
                 return;
 
-            if (m_Phase == DragonPhase.Enraged)
-            {
-                m_RageRoarTimer -= deltaTime;
-                if (m_RageRoarTimer <= 0f)
-                {
-                    m_RageRoarTimer = m_RageRoarInterval;
-                    Roar(State.Roar);
-                    DropRocks();
-                    return;
-                }
-            }
-
-            var target = ArenaPlayer.Feet;
-            var distance = HorizontalDistance(transform.position, target);
-            var facing = FacingAngle(target);
-
-            if (distance <= m_Reach && m_MeleeTimer <= 0f && facing < 50f)
-            {
-                StartMelee();
-                return;
-            }
-
-            if (distance > m_Reach * 0.9f && distance <= m_BreathRange && m_BreathTimer <= 0f && facing < 30f && HasLineOfSight(MouthPosition, ArenaPlayer.Chest))
-            {
-                StartBreath();
-                return;
-            }
-
-            // Avance vers le joueur en contournant les piliers ; s'arrête à portée de coup.
-            var speed = Enemy.CurrentSpeed * (m_Phase == DragonPhase.Enraged ? m_RageSpeed : 1f);
-            var direction = Steer(transform.position, target);
-            TurnTowards(direction, m_TurnSpeed * (m_Phase == DragonPhase.Enraged ? 1.4f : 1f), deltaTime);
-            if (distance > m_Reach * 0.8f && Vector3.Angle(transform.forward, direction) < 70f)
-            {
-                transform.position += transform.forward * (speed * deltaTime);
-                Play(speed > 3.2f ? "Run" : "Walk");
-            }
+            StopAttacks();
+            if (IsAirborne)
+                ResumeOrbit();
             else
-            {
-                Play("Idle01");
-            }
-
-            KeepInsideArena();
-        }
-
-        void StartMelee()
-        {
-            m_MeleeKind = UnityEngine.Random.value < 0.5f ? 0 : 1;
-            m_HitDone = false;
-            EnterState(State.Melee, m_MeleeKind == 0 ? "Claw Attack" : "Basic Attack", 0.1f, restart: true);
-        }
-
-        void UpdateMelee(float deltaTime)
-        {
-            TurnTowards(ArenaPlayer.Feet - transform.position, m_TurnSpeed * 0.5f, deltaTime);
-            var windup = (m_MeleeKind == 0 ? 0.55f : 0.45f) / AttackRate;
-            if (!m_HitDone && m_StateTime >= windup)
-            {
-                m_HitDone = true;
-                var target = ArenaPlayer.Feet;
-                if (HorizontalDistance(transform.position, target) <= m_Reach + 0.5f && FacingAngle(target) < 75f)
-                {
-                    var multiplier = m_MeleeKind == 0 ? m_MeleeDamage.x : m_MeleeDamage.y;
-                    ArenaPlayer.Damage(BaseDamage * multiplier, ArenaPlayer.Chest, Enemy);
-                    ArenaPlayer.Rumble(0.7f, 0.2f);
-                }
-
-                Sfx.Play(m_MeleeKind == 0 ? m_ClawClip : m_BiteClip, MouthPosition, 1f, UnityEngine.Random.Range(0.6f, 0.75f));
-            }
-
-            if (m_StateTime >= windup + 0.9f / AttackRate)
-            {
-                m_MeleeTimer = m_MeleeCooldown;
-                EnterState(State.Moving);
-            }
-        }
-
-        void StartBreath()
-        {
-            m_BreathAim = (ArenaPlayer.Chest - MouthPosition).normalized;
-            EnterState(State.Breath, "Flame Attack", 0.15f, restart: true);
-        }
-
-        void UpdateBreath(float deltaTime)
-        {
-            const float windup = 0.7f;
-            if (!m_Firing && m_StateTime >= windup && m_StateTime < windup + m_BreathDuration)
-                StartFiring();
-
-            if (m_Firing)
-            {
-                // La flamme suit le joueur lentement : on a le temps de se mettre à l'abri.
-                var wanted = ClampToFacing((ArenaPlayer.Chest - MouthPosition).normalized, 40f);
-                m_BreathAim = Vector3.RotateTowards(m_BreathAim, wanted, m_BreathTracking * Mathf.Deg2Rad * deltaTime, 0f);
-                TurnTowards(ArenaPlayer.Feet - transform.position, m_BreathTracking * 0.6f, deltaTime);
-                DamageInCone(deltaTime, MouthPosition, m_BreathAim, m_BreathRange, m_BreathAngle, m_BreathDamage);
-            }
-
-            if (m_StateTime >= windup + m_BreathDuration)
-                StopBreath();
-
-            if (m_StateTime >= windup + m_BreathDuration + 0.7f)
-            {
-                m_BreathTimer = m_BreathCooldown;
-                EnterState(State.Moving);
-            }
-        }
-
-        void StartFiring()
-        {
-            m_Firing = true;
-            m_BreathTick = 0f;
-            if (m_Breath != null)
-            {
-                m_Breath.transform.SetPositionAndRotation(MouthPosition, Quaternion.LookRotation(m_BreathAim));
-                m_Breath.Play();
-            }
-
-            if (m_FireSource != null && m_FireLoopClip != null)
-            {
-                m_FireSource.clip = m_FireLoopClip;
-                m_FireSource.Play();
-            }
-
-            if (m_BreathLight != null)
-                m_BreathLight.enabled = true;
-        }
-
-        void StopBreath()
-        {
-            if (!m_Firing)
-                return;
-
-            m_Firing = false;
-            if (m_Breath != null)
-                m_Breath.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-            if (m_FireSource != null)
-                m_FireSource.Stop();
-            if (m_BreathLight != null)
-                m_BreathLight.enabled = false;
-        }
-
-        // Dégâts dans le cône de feu, toutes les 0,2 s, si rien (un pilier) ne protège le joueur.
-        void DamageInCone(float deltaTime, Vector3 origin, Vector3 direction, float range, float halfAngle, float damagePerSecond)
-        {
-            m_BreathTick -= deltaTime;
-            if (m_BreathTick > 0f || !ArenaPlayer.IsAlive)
-                return;
-
-            const float tick = 0.2f;
-            m_BreathTick = tick;
-            var chest = ArenaPlayer.Chest;
-            var toPlayer = chest - origin;
-            if (toPlayer.magnitude > range || Vector3.Angle(direction, toPlayer) > halfAngle + 6f)
-                return;
-            if (!HasLineOfSight(origin, chest))
-                return;
-
-            ArenaPlayer.Damage(BaseDamage * damagePerSecond * tick, chest, Enemy);
-            ArenaPlayer.Rumble(0.35f, 0.1f);
+                EnterState(State.Idle, "Idle01");
         }
 
         // ---------------------------------------------------------------- phases
@@ -627,289 +774,67 @@ namespace Archery.FinalBoss
             var health = Enemy.Health.Normalized;
             if (m_Phase == DragonPhase.Ground && health <= m_AirPhaseAt)
             {
+                // Il rugit, puis s'envole.
                 SetPhase(DragonPhase.Air);
-                Roar(State.TakeOff);
+                StopAttacks();
+                Roar(BeginLift);
                 return true;
             }
 
             if (m_Phase == DragonPhase.Air && health <= m_EnragedPhaseAt)
             {
-                BeginLanding();
+                // Il se pose sur un perchoir, rugit, et revient au sol par son salto (sans perchoir : il se pose et rugit).
+                SetPhase(DragonPhase.Enraged);
+                StopAttacks();
+                m_RoarOnPerch = true;
+                if (!TryFlyToPerch(PerchPurpose.Salto))
+                    BeginLanding();
                 return true;
             }
 
             return false;
         }
 
-        // Rugissement : le dragon s'arrête, rugit, et la suite dépend de l'état demandé (réveil, envol, rage).
-        void Roar(State next)
+        // Rugissement : le dragon s'arrête et rugit, puis enchaîne.
+        void Roar(Action then)
         {
-            StopBreath();
-            EnterState(next, "Scream", 0.2f, restart: true);
+            StopAttacks();
+            m_AfterRoar = then;
+            EnterState(State.Roar, "Scream", 0.2f, restart: true);
+            PlayRoarSound();
+        }
+
+        void PlayRoarSound()
+        {
             var mouth = MouthPosition;
             Sfx.Play(m_RoarClip, mouth, 1f, 0.45f, 0.6f);
             Sfx.Play(m_RoarLayerClip, mouth, 0.9f, 0.85f, 0.4f);
             ArenaPlayer.Rumble(0.6f, 0.6f);
-            if (next == State.TakeOff)
-                m_FromPosition = transform.position;
         }
 
         void UpdateRoar()
         {
-            var duration = m_State == State.Waking ? m_WakeRoarTime : 1.6f;
-            if (m_StateTime < duration)
+            if (m_StateTime < 1.8f)
                 return;
 
-            if (m_State == State.Waking)
-            {
-                // La portée de ses coups dépend de la taille du modèle : mesurée une fois debout.
-                if (m_Head != null)
-                    m_Reach = Mathf.Max(3f, HorizontalDistance(transform.position, m_Head.position) + m_MeleeExtraReach);
-                m_BreathTimer = 2f;
-            }
-
-            EnterState(State.Moving);
+            var next = m_AfterRoar;
+            m_AfterRoar = null;
+            if (next != null)
+                next();
+            else
+                EnterState(State.Moving);
         }
 
-        // Envol : rugissement, puis il décolle et rejoint son cercle de vol.
-        void UpdateTakeOff()
+        // Arrête tout ce qui est en cours : souffle, boule de feu dans la gueule, alertes au sol ; dressé, il se remet à plat.
+        void StopAttacks()
         {
-            const float roarTime = 1.8f;
-            const float liftTime = 2.4f;
-            if (m_StateTime < roarTime)
-                return;
-
-            if (m_Playing != "Take Off")
-            {
-                Play("Take Off", 0.2f);
-                Sfx.Play(m_WingClip, transform.position, 1f, 0.5f);
-                var offset = transform.position - Center;
-                offset.y = 0f;
-                m_OrbitAngle = Mathf.Atan2(offset.x, offset.z);
-                m_ToPosition = OrbitPoint(m_OrbitAngle);
-            }
-
-            var t = Mathf.Clamp01((m_StateTime - roarTime) / liftTime);
-            var eased = t * t * (3f - 2f * t);
-            transform.position = Vector3.Lerp(m_FromPosition, m_ToPosition, eased);
-            TurnTowards(Tangent(m_OrbitAngle), m_TurnSpeed, Time.deltaTime);
-            if (t >= 1f)
-            {
-                m_FireballTimer = m_FireballInterval;
-                m_DiveTimer = m_DiveInterval * 0.6f;
-                EnterState(State.Flying, "Fly Forward");
-            }
-        }
-
-        void UpdateFlying(float deltaTime)
-        {
-            if (CheckPhaseChange())
-                return;
-
-            // Tourne autour de l'arène, au-dessus des piliers.
-            m_OrbitAngle += m_FlySpeed / Mathf.Max(1f, m_OrbitRadius) * deltaTime;
-            var wanted = OrbitPoint(m_OrbitAngle);
-            transform.position = Vector3.MoveTowards(transform.position, wanted, m_FlySpeed * 1.5f * deltaTime);
-            TurnTowards(Tangent(m_OrbitAngle), m_TurnSpeed, deltaTime);
-
-            m_FireballTimer -= deltaTime;
-            if (m_FireballTimer <= 0f && ArenaPlayer.IsAlive)
-            {
-                m_FireballTimer = m_FireballInterval;
-                ShootFireball();
-            }
-
-            m_DiveTimer -= deltaTime;
-            if (m_DiveTimer <= 0f && ArenaPlayer.IsAlive && TryPlanDive())
-                return;
-
-            if (m_StateTime > 0.9f && m_Playing == "Fly Flame Attack")
-                Play("Fly Forward", 0.3f);
-        }
-
-        void ShootFireball()
-        {
-            Play("Fly Flame Attack", 0.15f, restart: true);
-            m_StateTime = 0f;
-
-            var mouth = MouthPosition;
-            var chest = ArenaPlayer.Chest;
-            var flight = Vector3.Distance(mouth, chest) / Mathf.Max(1f, m_FireballSpeed);
-            var aim = chest + m_PlayerVelocity * flight;
-            var velocity = (aim - mouth).normalized * m_FireballSpeed;
-            DragonFireball.Launch(mouth, velocity, BaseDamage * m_FireballDamage, m_FireballRadius, m_FireballSize,
-                                  m_FireballMaterial, m_FireMaterial, m_ExplosionClip, this);
-            Sfx.Play(m_FireballClip, mouth, 1f, 0.7f);
-        }
-
-        // Une passe en piqué : une ligne qui passe par le joueur et ne croise aucun pilier.
-        bool TryPlanDive()
-        {
-            var player = ArenaPlayer.Feet;
-            player.y = FloorY;
-            for (var attempt = 0; attempt < 10; attempt++)
-            {
-                var angle = UnityEngine.Random.value * Mathf.PI * 2f;
-                var direction = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle));
-                var start = player - direction * m_OrbitRadius;
-                var end = player + direction * m_OrbitRadius;
-                if (!LineClearOfPillars(player - direction * 6f, player + direction * 6f, m_BodyRadius * 0.7f))
-                    continue;
-
-                m_DiveStart = new Vector3(start.x, FloorY + m_FlyAltitude, start.z);
-                m_DiveEnd = new Vector3(end.x, FloorY + m_FlyAltitude, end.z);
-                m_FromPosition = transform.position;
-                m_DiveTimer = m_DiveInterval;
-                m_NextTrail = 0.3f;
-                ShowWarningLine(player - direction * 7f, player + direction * 7f);
-                Sfx.Play(m_RoarClip, transform.position, 1f, 0.55f, 0.6f);
-                EnterState(State.Dive, "Fly Glide", 0.3f);
-                return true;
-            }
-
-            m_DiveTimer = 3f;
-            return false;
-        }
-
-        void UpdateDive(float deltaTime)
-        {
-            const float approachTime = 1.6f;
-            if (m_StateTime < approachTime)
-            {
-                // Se place au début de la ligne, en prenant de l'élan.
-                var t = Mathf.SmoothStep(0f, 1f, m_StateTime / approachTime);
-                transform.position = Vector3.Lerp(m_FromPosition, m_DiveStart, t);
-                TurnTowards(m_DiveEnd - m_DiveStart, m_TurnSpeed * 2f, deltaTime);
-                return;
-            }
-
-            var length = Vector3.Distance(m_DiveStart, m_DiveEnd);
-            var progress = Mathf.Clamp01((m_StateTime - approachTime) * m_DiveSpeed / Mathf.Max(1f, length));
-            var position = Vector3.Lerp(m_DiveStart, m_DiveEnd, progress);
-            var dip = Mathf.Sin(progress * Mathf.PI);
-            position.y = FloorY + Mathf.Lerp(m_FlyAltitude, m_DiveAltitude, dip);
-            transform.position = position;
-            TurnTowards(m_DiveEnd - m_DiveStart, m_TurnSpeed * 2f, deltaTime);
-
-            // Au plus bas, il crache une ligne de feu au sol.
-            var burning = progress > 0.22f && progress < 0.78f;
-            if (burning && !m_Firing)
-            {
-                Play("Fly Flame Attack", 0.15f);
-                m_BreathAim = (transform.forward + Vector3.down * 0.9f).normalized;
-                StartFiring();
-            }
-            else if (!burning && m_Firing)
-            {
-                StopBreath();
-                Play("Fly Forward", 0.3f);
-                HideWarningLine();
-            }
-
-            if (m_Firing)
-            {
-                m_BreathAim = (transform.forward + Vector3.down * 0.9f).normalized;
-                DamageInCone(deltaTime, MouthPosition, m_BreathAim, m_DiveAltitude + 4f, m_BreathAngle, m_BreathDamage);
-                m_NextTrail -= deltaTime;
-                if (m_NextTrail <= 0f)
-                {
-                    m_NextTrail = 1.4f / Mathf.Max(1f, m_DiveSpeed);
-                    var ground = MouthPosition + m_BreathAim * 3f;
-                    ground.y = FloorY;
-                    FireTrail.Spawn(ground, 1.6f, 3.5f, BaseDamage * m_TrailDamage, m_FireMaterial, Enemy);
-                }
-            }
-
-            if (progress >= 1f)
-            {
-                StopBreath();
-                HideWarningLine();
-                var offset = transform.position - Center;
-                offset.y = 0f;
-                m_OrbitAngle = Mathf.Atan2(offset.x, offset.z);
-                m_FireballTimer = m_FireballInterval;
-                EnterState(State.Flying, "Fly Forward");
-            }
-        }
-
-        // Retour au sol, enragé : il se pose loin du joueur, puis rugit.
-        void BeginLanding()
-        {
+            if (m_State == State.Slam)
+                SetRearPose(0f);
             StopBreath();
-            HideWarningLine();
-            var away = Center - ArenaPlayer.Feet;
-            away.y = 0f;
-            var landing = Center + (away.sqrMagnitude > 0.01f ? away.normalized : Vector3.forward) * 6f;
-            landing.y = FloorY;
-            m_FromPosition = transform.position;
-            m_ToPosition = landing;
-            EnterState(State.Landing, "Fly Glide", 0.3f);
-        }
-
-        void UpdateLanding()
-        {
-            const float glideTime = 2f;
-            const float landTime = 1.5f;
-            var above = m_ToPosition + Vector3.up * 4f;
-            if (m_StateTime < glideTime)
-            {
-                transform.position = Vector3.Lerp(m_FromPosition, above, Mathf.SmoothStep(0f, 1f, m_StateTime / glideTime));
-                TurnTowards(above - m_FromPosition, m_TurnSpeed, Time.deltaTime);
-                return;
-            }
-
-            if (m_Playing != "Land")
-                Play("Land", 0.2f);
-
-            var t = Mathf.Clamp01((m_StateTime - glideTime) / landTime);
-            transform.position = Vector3.Lerp(above, m_ToPosition, t * t);
-            TurnTowards(ArenaPlayer.Feet - transform.position, m_TurnSpeed, Time.deltaTime);
-            if (t < 1f)
-                return;
-
-            Sfx.Play(m_StepClip, transform.position, 1f, 0.5f);
-            ArenaPlayer.Rumble(0.5f, 0.3f);
-            SetPhase(DragonPhase.Enraged);
-            m_RageRoarTimer = m_RageRoarInterval * 0.5f;
-            Roar(State.Roar);
-            DropRocks();
-        }
-
-        void DropRocks()
-        {
-            if (m_Arena == null)
-                return;
-
-            var player = ArenaPlayer.Feet;
-            player.y = FloorY;
-            for (var i = 0; i < m_RockCount; i++)
-            {
-                var point = player;
-                if (i > 0)
-                {
-                    // Les autres tombent autour du joueur, puis n'importe où.
-                    var spread = i < 3 ? 6f : m_Arena.LavaRingStart - 2f;
-                    var found = false;
-                    for (var attempt = 0; attempt < 8 && !found; attempt++)
-                    {
-                        var offset = UnityEngine.Random.insideUnitCircle * spread;
-                        var candidate = (i < 3 ? player : Center) + new Vector3(offset.x, 0f, offset.y);
-                        candidate.y = FloorY;
-                        if (m_Arena.IsFreeGround(candidate, m_RockRadius * 0.5f))
-                        {
-                            point = candidate;
-                            found = true;
-                        }
-                    }
-
-                    if (!found)
-                        continue;
-                }
-
-                var ceiling = m_Arena.CeilingPoint(point, out _);
-                FallingRock.Spawn(point, ceiling, m_RockWarning + i * 0.15f, BaseDamage * m_RockDamage, m_RockRadius,
-                                  m_RockMaterial, m_WarningMaterial, m_FireMaterial, m_RockClip, Enemy);
-            }
+            StopInhale();
+            DropHeld();
+            HideStrip();
+            HideCircle();
         }
 
         // ---------------------------------------------------------------- fin de vague et mort
@@ -917,8 +842,8 @@ namespace Archery.FinalBoss
         public override void BeginFlee(Vector3 exitPoint)
         {
             // Le joueur est mort : le dragon reste là, en vol ou au sol, et rugit une dernière fois.
-            StopBreath();
-            HideWarningLine();
+            StopAttacks();
+            ClearPose();
             if (IsAirborne)
                 Play("Fly Float", 0.3f);
             else
@@ -931,28 +856,42 @@ namespace Archery.FinalBoss
 
         public override void OnDied()
         {
-            StopBreath();
-            HideWarningLine();
-            var wasAirborne = IsAirborne;
+            StopAttacks();
+            ClearPose();
+            m_TPose = 0f;
+            m_Paw = 0f;
+            m_NeckPitch = 0f;
+            m_Jaw = 0f;
+            m_Glow = 0f;
+            m_Rear = 0f;
+
+            // Mort en plein salto ou en piqué : il se remet droit avant de tomber.
+            var forward = transform.forward;
+            forward.y = 0f;
+            transform.rotation = Quaternion.LookRotation(forward.sqrMagnitude > 0.01f ? forward.normalized : m_SaltoYaw * Vector3.forward);
+            m_CorpseY = GroundBelow(transform.position);
+            m_FallTime = 0f;
+
             m_State = State.Dead;
             SetPhase(DragonPhase.Dead);
             Play("Die", 0.15f, restart: true);
             Sfx.Play(m_DeathClip, MouthPosition, 1f, 0.4f, 0.6f);
             Sfx.Play(m_RoarClip, MouthPosition, 1f, 0.35f, 0.6f);
             ArenaPlayer.Rumble(0.8f, 0.8f);
-            m_FromPosition = transform.position;
-            m_StateTime = wasAirborne ? 0f : 10f;
         }
 
         public override bool TickCorpse(float deltaTime)
         {
-            // Mort en vol : il tombe jusqu'au sol.
-            if (transform.position.y > FloorY + 0.01f)
+            if (m_Animator != null)
+                m_Animator.speed = 1f;
+
+            // Mort en vol ou sur un perchoir : il tombe jusqu'à ce qui est sous lui.
+            if (transform.position.y > m_CorpseY + 0.01f)
             {
-                m_StateTime += deltaTime;
-                var y = Mathf.MoveTowards(transform.position.y, FloorY, (2f + m_StateTime * 9.81f) * deltaTime);
+                m_FallTime += deltaTime;
+                var y = Mathf.MoveTowards(transform.position.y, m_CorpseY, (2f + m_FallTime * 9.81f) * deltaTime);
                 transform.position = new Vector3(transform.position.x, y, transform.position.z);
-                if (Mathf.Approximately(y, FloorY))
+                if (Mathf.Approximately(y, m_CorpseY))
                     Sfx.Play(m_StepClip, transform.position, 1f, 0.4f);
             }
 
@@ -970,21 +909,32 @@ namespace Archery.FinalBoss
             PhaseChanged?.Invoke(phase);
         }
 
-        void EnterState(State state, string animation = null, float fade = 0.25f, bool restart = false)
+        void EnterState(State state, string animation = null, float fade = 0.25f, bool restart = false, float offset = 0f)
         {
             m_State = state;
             m_StateTime = 0f;
+            m_Step = 0;
+            ClearPose();
             if (!string.IsNullOrEmpty(animation))
-                Play(animation, fade, restart);
+                Play(animation, fade, restart, offset);
         }
 
-        void Play(string state, float fade = 0.25f, bool restart = false)
+        void Play(string state, float fade = 0.25f, bool restart = false, float offset = 0f)
         {
             if (m_Animator == null || (!restart && m_Playing == state))
                 return;
 
             m_Playing = state;
-            m_Animator.CrossFadeInFixedTime(state, fade, 0, 0f);
+            m_Animator.CrossFadeInFixedTime(state, fade, 0, offset);
+        }
+
+        // Fin d'une attaque au sol : un répit, et parfois il fonce au contact.
+        void EndGroundAttack(float recovery = -1f)
+        {
+            m_AttackDelay = recovery >= 0f ? recovery : m_Recovery;
+            if (UnityEngine.Random.value < m_CloseInChance)
+                m_CloseInTimer = 6f;
+            EnterState(State.Moving);
         }
 
         Vector3 MouthPosition
@@ -999,13 +949,37 @@ namespace Archery.FinalBoss
             }
         }
 
-        // Le souffle part vers l'avant du dragon, jamais dans son dos.
-        Vector3 ClampToFacing(Vector3 direction, float maxAngle)
+        // Direction du museau (de la nuque vers le bout de la gueule).
+        Vector3 SnoutDirection
         {
-            var forward = transform.forward;
-            return Vector3.Angle(forward, direction) <= maxAngle
-                ? direction
-                : Vector3.RotateTowards(forward, direction, maxAngle * Mathf.Deg2Rad, 0f);
+            get
+            {
+                if (m_Head == null || m_Neck == null)
+                    return transform.forward;
+                var snout = m_Head.position - m_Neck.position;
+                return snout.sqrMagnitude > 1e-4f ? snout.normalized : transform.forward;
+            }
+        }
+
+        // Le feu part vers l'avant du dragon (à maxYaw degrés près sur les côtés), jamais dans son dos. En hauteur, il suit
+        // le joueur : depuis un perchoir, il crache vers le bas.
+        Vector3 ClampToFacing(Vector3 direction, float maxYaw)
+        {
+            var flat = new Vector3(direction.x, 0f, direction.z);
+            if (flat.sqrMagnitude < 1e-4f)
+                return direction;
+
+            var forward = Flat(transform.forward);
+            var yaw = Mathf.Clamp(Vector3.SignedAngle(forward, flat, Vector3.up), -maxYaw, maxYaw);
+            var pitch = Mathf.Clamp(Mathf.Atan2(direction.y, flat.magnitude) * Mathf.Rad2Deg, -75f, 30f) * Mathf.Deg2Rad;
+            var horizontal = Quaternion.AngleAxis(yaw, Vector3.up) * forward;
+            return (horizontal * Mathf.Cos(pitch) + Vector3.up * Mathf.Sin(pitch)).normalized;
+        }
+
+        static Vector3 Flat(Vector3 direction)
+        {
+            direction.y = 0f;
+            return direction.sqrMagnitude > 1e-4f ? direction.normalized : Vector3.forward;
         }
 
         void TurnTowards(Vector3 direction, float degreesPerSecond, float deltaTime)
@@ -1021,6 +995,44 @@ namespace Archery.FinalBoss
             var direction = target - transform.position;
             direction.y = 0f;
             return direction.sqrMagnitude < 1e-4f ? 0f : Vector3.Angle(transform.forward, direction);
+        }
+
+        // Hauteur du sol (monde) sous ce point de l'arène.
+        float GroundHeight(Vector3 point) => m_Arena != null ? m_Arena.GroundHeightAt(point) : FloorY;
+
+        // Hauteur des pieds du joueur au-dessus du sol : il saute.
+        float PlayerLift
+        {
+            get
+            {
+                var feet = ArenaPlayer.Feet;
+                return feet.y - GroundHeight(feet);
+            }
+        }
+
+        // Le point du sol sous le joueur.
+        Vector3 PlayerGround()
+        {
+            var feet = ArenaPlayer.Feet;
+            feet.y = GroundHeight(feet);
+            return feet;
+        }
+
+        // Ce qu'il y a sous ce point (sol, pilier, plateau), sans compter le dragon lui-même.
+        float GroundBelow(Vector3 point)
+        {
+            var hits = Physics.RaycastAll(point + Vector3.up, Vector3.down, 80f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            var best = float.NegativeInfinity;
+            foreach (var hit in hits)
+            {
+                if (hit.collider == null || hit.collider.transform.IsChildOf(transform) || ArrowIgnore.IsIgnored(hit.collider))
+                    continue;
+                if (hit.collider.GetComponentInParent<PlayerRig>() != null)
+                    continue;
+                best = Mathf.Max(best, hit.point.y);
+            }
+
+            return float.IsNegativeInfinity(best) ? GroundHeight(point) : Mathf.Min(best, point.y);
         }
 
         // Direction vers la cible, déviée autour des piliers qui sont sur le chemin.
@@ -1060,12 +1072,7 @@ namespace Archery.FinalBoss
             if (m_Arena == null)
                 return;
 
-            var position = transform.position;
-            var offset = position - Center;
-            offset.y = 0f;
-            var limit = m_Arena.LavaRingStart - m_BodyRadius * 0.5f;
-            if (offset.magnitude > limit)
-                position = Center + offset.normalized * limit;
+            var position = m_Arena.Confine(transform.position, m_BodyRadius * 0.5f);
 
             foreach (var pillar in m_Arena.Pillars)
             {
@@ -1076,7 +1083,7 @@ namespace Archery.FinalBoss
                     position = pillar.Position + away.normalized * minimum;
             }
 
-            position.y = FloorY;
+            position.y = m_Arena.GroundHeightAt(position);
             transform.position = position;
         }
 
@@ -1123,11 +1130,6 @@ namespace Archery.FinalBoss
             return true;
         }
 
-        Vector3 OrbitPoint(float angle) =>
-            Center + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * m_OrbitRadius + Vector3.up * (m_FlyAltitude + Mathf.Sin(Time.time * 0.8f) * 0.6f);
-
-        static Vector3 Tangent(float angle) => new Vector3(Mathf.Cos(angle), 0f, -Mathf.Sin(angle));
-
         static float HorizontalDistance(Vector3 a, Vector3 b)
         {
             a.y = 0f;
@@ -1135,203 +1137,10 @@ namespace Archery.FinalBoss
             return Vector3.Distance(a, b);
         }
 
-        void ShowWarningLine(Vector3 from, Vector3 to)
+        static float Smooth(float t)
         {
-            HideWarningLine();
-            if (m_WarningMaterial == null)
-                return;
-
-            var builder = new MeshBuilder();
-            var direction = to - from;
-            direction.y = 0f;
-            var side = Vector3.Cross(Vector3.up, direction.normalized) * 1.4f;
-            var lift = Vector3.up * 0.07f;
-            var red = new Color(1f, 0.2f, 0.05f, 0.45f);
-            builder.Quad(from - side + lift, to - side + lift, to + side + lift, from + side + lift, red);
-
-            var go = new GameObject("Alerte de piqué");
-            go.AddComponent<MeshFilter>().sharedMesh = builder.ToMesh("Alerte de piqué");
-            var renderer = go.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = m_WarningMaterial;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            m_WarningLine = go.transform;
-        }
-
-        void HideWarningLine()
-        {
-            if (m_WarningLine == null)
-                return;
-
-            var filter = m_WarningLine.GetComponent<MeshFilter>();
-            if (filter != null && filter.sharedMesh != null)
-                Destroy(filter.sharedMesh);
-            Destroy(m_WarningLine.gameObject);
-            m_WarningLine = null;
-        }
-
-        // ---------------------------------------------------------------- construction
-
-        Transform FindBone(string boneName)
-        {
-            if (string.IsNullOrEmpty(boneName))
-                return null;
-
-            var bone = FindDeep(transform, boneName);
-            if (bone == null)
-                Debug.LogWarning($"DragonBoss : os « {boneName} » introuvable dans le modèle.", this);
-            return bone;
-        }
-
-        static Transform FindDeep(Transform parent, string name)
-        {
-            foreach (Transform child in parent)
-            {
-                if (child.name == name)
-                    return child;
-                var found = FindDeep(child, name);
-                if (found != null)
-                    return found;
-            }
-
-            return null;
-        }
-
-        void SetHitboxesEnabled(bool enabled)
-        {
-            foreach (var hitbox in m_Hitboxes)
-            {
-                if (hitbox != null)
-                    hitbox.enabled = enabled;
-            }
-        }
-
-        // Zones de touche accrochées aux os : leur taille suit l'écart entre les os, donc la taille du modèle.
-        void BuildHitboxes()
-        {
-            var health = GetComponent<Health>();
-            var scale = Mathf.Max(0.1f, m_HitboxScale);
-
-            if (m_Head != null && m_Neck != null)
-            {
-                var length = Vector3.Distance(m_Head.position, m_Neck.position);
-                var snout = (m_Head.position - m_Neck.position).normalized;
-                AddSphere("Zone tête", m_Head, m_Head.position + snout * length * 0.5f, length * 0.75f * scale, HitZone.Head, 2f, health);
-            }
-
-            AddChain(new[] { "Neck01", "Neck02", "Neck03", m_HeadBone }, 0.35f, HitZone.Body, health, scale);
-            if (m_Spine != null && m_Chest != null)
-            {
-                var length = Vector3.Distance(m_Spine.position, m_Chest.position);
-                AddCapsule("Zone corps", m_Spine, m_Spine.position, m_Chest.position, length * 0.65f * scale, HitZone.Body, 1f, health);
-                AddSphere("Zone poitrine", m_Chest, m_Chest.position, length * 0.7f * scale, HitZone.Body, 1f, health);
-            }
-
-            AddChain(new[] { "UpperArm_L", "LowerArm_L", "Hand_L" }, 0.3f, HitZone.Body, health, scale);
-            AddChain(new[] { "UpperArm_R", "RowerArm_R", "Hand_R" }, 0.3f, HitZone.Body, health, scale);
-            AddChain(new[] { "UpperLeg_L", "LowerLeg_L", "Feet_L" }, 0.3f, HitZone.Body, health, scale);
-            AddChain(new[] { "UpperReg_R", "RowerReg_R", "Feet_R" }, 0.3f, HitZone.Body, health, scale);
-            BuildWeakPoint(health, scale);
-        }
-
-        // Point faible : une boule cyan qui pulse sous la poitrine (dégâts ×3), comme les autres boss.
-        void BuildWeakPoint(Health health, float scale)
-        {
-            if (m_Chest == null || m_Spine == null)
-                return;
-
-            var bodyLength = Vector3.Distance(m_Spine.position, m_Chest.position);
-            var forward = m_NeckBase != null ? (m_NeckBase.position - m_Chest.position).normalized : transform.forward;
-            var position = m_Chest.position + forward * bodyLength * 0.3f - transform.up * bodyLength * 0.45f;
-            var radius = bodyLength * 0.28f * scale;
-
-            var orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            orb.name = "Point faible";
-            orb.transform.SetParent(m_Chest, true);
-            orb.transform.position = position;
-            orb.transform.localScale = Vector3.one;
-            orb.transform.localScale = Vector3.one * (radius * 2f) / Mathf.Max(1e-4f, orb.transform.lossyScale.x);
-            var renderer = orb.GetComponent<MeshRenderer>();
-            renderer.sharedMaterial = m_WeakPointMaterial;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            orb.AddComponent<Pulse>();
-
-            var collider = orb.GetComponent<SphereCollider>();
-            collider.radius = 0.6f;   // un peu plus grand que la boule visible (rayon 0,5)
-            var hitbox = orb.AddComponent<Hitbox>();
-            hitbox.Configure(HitZone.WeakPoint, 3f, health);
-            m_Hitboxes.Add(collider);
-        }
-
-        void AddChain(string[] bones, float radiusFactor, HitZone zone, Health health, float scale)
-        {
-            for (var i = 0; i < bones.Length - 1; i++)
-            {
-                var from = FindDeep(transform, bones[i]);
-                var to = FindDeep(transform, bones[i + 1]);
-                if (from == null || to == null)
-                    continue;
-
-                var length = Vector3.Distance(from.position, to.position);
-                if (length < 1e-3f)
-                    continue;
-                AddCapsule($"Zone {bones[i]}", from, from.position, to.position, length * radiusFactor * scale, zone, 1f, health);
-            }
-        }
-
-        void AddSphere(string name, Transform bone, Vector3 center, float radius, HitZone zone, float multiplier, Health health)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(bone, false);
-            go.transform.position = center;
-            var collider = go.AddComponent<SphereCollider>();
-            collider.radius = radius / Mathf.Max(1e-4f, go.transform.lossyScale.x);
-            var hitbox = go.AddComponent<Hitbox>();
-            hitbox.Configure(zone, multiplier, health);
-            m_Hitboxes.Add(collider);
-        }
-
-        void AddCapsule(string name, Transform bone, Vector3 from, Vector3 to, float radius, HitZone zone, float multiplier, Health health)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(bone, false);
-            go.transform.position = (from + to) * 0.5f;
-            go.transform.rotation = Quaternion.FromToRotation(Vector3.up, (to - from).normalized);
-            var lossy = Mathf.Max(1e-4f, go.transform.lossyScale.x);
-            var collider = go.AddComponent<CapsuleCollider>();
-            collider.direction = 1;
-            collider.radius = radius / lossy;
-            collider.height = (Vector3.Distance(from, to) + radius * 2f) / lossy;
-            var hitbox = go.AddComponent<Hitbox>();
-            hitbox.Configure(zone, multiplier, health);
-            m_Hitboxes.Add(collider);
-        }
-
-        void BuildBreath()
-        {
-            if (m_FireMaterial == null)
-                return;
-
-            m_Breath = FireEffects.CreateBreath(transform, m_FireMaterial, m_BreathRange, m_BreathAngle);
-
-            var lightObject = new GameObject("Lueur du souffle");
-            lightObject.transform.SetParent(transform, false);
-            m_BreathLight = lightObject.AddComponent<Light>();
-            m_BreathLight.type = LightType.Point;
-            m_BreathLight.color = new Color(1f, 0.5f, 0.15f);
-            m_BreathLight.range = 14f;
-            m_BreathLight.intensity = 4f;
-            m_BreathLight.shadows = LightShadows.None;
-            m_BreathLight.enabled = false;
-
-            m_FireSource = gameObject.AddComponent<AudioSource>();
-            m_FireSource.loop = true;
-            m_FireSource.playOnAwake = false;
-            m_FireSource.spatialBlend = 1f;
-            m_FireSource.minDistance = 4f;
-            m_FireSource.maxDistance = 40f;
-            m_FireSource.volume = 1f;
-            m_FireSource.pitch = 0.75f;
-            m_FireSource.outputAudioMixerGroup = Sfx.Output;
+            t = Mathf.Clamp01(t);
+            return t * t * (3f - 2f * t);
         }
     }
 }

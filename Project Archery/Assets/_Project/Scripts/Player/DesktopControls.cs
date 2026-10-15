@@ -9,13 +9,15 @@ using TrackedPoseDriver = UnityEngine.InputSystem.XR.TrackedPoseDriver;
 namespace Archery.Player
 {
     /// <summary>
-    /// Se promener sur la carte sans casque : ZQSD (WASD en QWERTY) pour avancer, la souris (clic droit maintenu)
-    /// pour regarder, Maj pour courir, Espace pour sauter.
+    /// Jouer sans casque : ZQSD (WASD en QWERTY) pour avancer, la souris pour regarder, Maj pour courir, Espace pour
+    /// sauter. Clic gauche maintenu pour tendre l'arc (<see cref="DesktopArcher"/>), E pour interagir
+    /// (<see cref="DesktopHand"/>).
     /// </summary>
     /// <remarks>
     /// Actif seulement quand aucun casque n'affiche l'image (ou si « Toujours actif » est coché). La caméra est alors
     /// tenue à hauteur d'yeux, et les déplacements d'XRI (course aux bras, gravité, téléportation…) sont mis en pause :
     /// le corps (Character Controller du XR Origin) est déplacé directement, sans traverser les murs.
+    /// Le curseur est caché et bloqué au centre de l'écran : Échap le libère, un clic gauche dans le jeu le rebloque.
     /// Dès qu'un casque se branche, tout revient comme avant.
     /// </remarks>
     [AddComponentMenu("Archery/Desktop Controls")]
@@ -46,9 +48,10 @@ namespace Archery.Player
         [SerializeField]
         float m_MouseSensitivity = 0.15f;
 
-        [Tooltip("Ne tourner la tête qu'en gardant le clic droit enfoncé (sinon, la souris tourne tout le temps).")]
+        [Tooltip("Cache le curseur et le bloque au centre de l'écran : la souris tourne la tête. Échap le libère, " +
+                 "un clic gauche dans le jeu le rebloque. Décoché : la souris tourne la tête sans bloquer le curseur.")]
         [SerializeField]
-        bool m_LookWithRightButton = true;
+        bool m_LockCursor = true;
 
         const float k_CheckInterval = 1f;
         const float k_Gravity = -18f;
@@ -59,12 +62,39 @@ namespace Archery.Player
         XROrigin m_Origin;
         CharacterController m_Body;
         Transform m_Camera;
+        DesktopArcher m_Archer;
+        DesktopHand m_Hand;
         float m_Pitch;
         float m_VerticalSpeed;
         float m_NextCheck;
+        int m_RefocusFrame = -1;
 
-        /// <summary>Vrai quand on se déplace au clavier et à la souris.</summary>
+        public static DesktopControls Instance { get; private set; }
+
+        /// <summary>Vrai quand on joue au clavier et à la souris.</summary>
         public bool IsActive { get; private set; }
+
+        /// <summary>Le jeu reçoit la souris (curseur bloqué au centre) : on peut regarder, tirer et interagir.</summary>
+        public bool HasFocus => IsActive && (!m_LockCursor || Cursor.lockState == CursorLockMode.Locked);
+
+        /// <summary>Le clic gauche de cette image a repris la souris : il ne tire pas.</summary>
+        public bool RefocusedThisFrame => m_RefocusFrame == Time.frameCount;
+
+        /// <summary>La caméra du joueur, tenue à hauteur d'yeux.</summary>
+        public Transform CameraTransform => m_Camera;
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this)
+                Debug.LogWarning("Il y a plusieurs Desktop Controls dans la scène.", this);
+            Instance = this;
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
 
         void Update()
         {
@@ -121,7 +151,9 @@ namespace Archery.Player
                 m_VerticalSpeed = 0f;
                 PlaceCamera();
                 IsActive = true;
-                Debug.Log("DesktopControls : pas de casque, déplacement au clavier (ZQSD, clic droit pour regarder, Maj, Espace).", this);
+                SetHelpersActive(true);
+                SetCursorLocked(true);
+                Debug.Log("DesktopControls : pas de casque, jeu au clavier (ZQSD, souris, Maj, Espace, clic gauche pour tirer, E pour interagir).", this);
             }
             else
             {
@@ -133,6 +165,54 @@ namespace Archery.Player
 
                 m_Paused.Clear();
                 IsActive = false;
+                SetHelpersActive(false);
+                SetCursorLocked(false);
+            }
+        }
+
+        // L'arc à la souris et la main de la touche E (avec le viseur) n'existent que sans casque.
+        void SetHelpersActive(bool active)
+        {
+            if (active)
+            {
+                if (m_Archer == null && !TryGetComponent(out m_Archer))
+                    m_Archer = gameObject.AddComponent<DesktopArcher>();
+                if (m_Hand == null && m_Camera != null)
+                {
+                    var handObject = new GameObject("Desktop Hand");
+                    handObject.transform.SetParent(m_Camera, false);
+                    m_Hand = handObject.AddComponent<DesktopHand>();
+                }
+            }
+
+            if (m_Archer != null)
+                m_Archer.enabled = active;
+            if (m_Hand != null)
+                m_Hand.gameObject.SetActive(active);
+        }
+
+        void SetCursorLocked(bool locked)
+        {
+            if (!m_LockCursor && locked)
+                return;
+
+            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !locked;
+        }
+
+        // Échap libère la souris (pour l'éditeur, une autre fenêtre) ; un clic gauche dans le jeu la reprend.
+        void UpdateCursor(Keyboard keyboard, Mouse mouse)
+        {
+            if (!m_LockCursor)
+                return;
+
+            var locked = Cursor.lockState == CursorLockMode.Locked;
+            if (locked && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+                SetCursorLocked(false);
+            else if (!locked && Application.isFocused && mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                SetCursorLocked(true);
+                m_RefocusFrame = Time.frameCount;
             }
         }
 
@@ -164,9 +244,10 @@ namespace Archery.Player
             var dt = Time.deltaTime;
             var keyboard = Keyboard.current;
             var mouse = Mouse.current;
+            UpdateCursor(keyboard, mouse);
 
             // Regarder : la souris tourne le XR Origin (gauche-droite) et incline la caméra (haut-bas).
-            if (mouse != null && (!m_LookWithRightButton || mouse.rightButton.isPressed))
+            if (mouse != null && HasFocus)
             {
                 var delta = mouse.delta.ReadValue() * m_MouseSensitivity;
                 m_Origin.RotateAroundCameraUsingOriginUp(delta.x);
@@ -174,6 +255,10 @@ namespace Archery.Player
             }
 
             PlaceCamera();
+
+            // Pendant qu'on écrit son nom (classement), les touches écrivent au lieu de faire marcher.
+            if (DesktopHand.IsTypingText)
+                keyboard = null;
 
             // Avancer : touches à l'emplacement de W, A, S, D (Z, Q, S, D sur un clavier AZERTY), ou les flèches.
             var input = Vector2.zero;

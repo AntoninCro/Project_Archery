@@ -187,7 +187,7 @@ MonoBehaviour:
   rarePrice: 25
   legendaryPrice: 45
   priceGrowthPerWave: 0.24
-  priceIncreasePerPurchase: 0.1
+  priceIncreasePerPurchase: 0.05
   endlessPriceGrowth: 1.3
   rerollCost: 10
   rerollCostIncrease: 5

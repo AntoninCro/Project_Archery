@@ -23,7 +23,7 @@ namespace Archery.FinalBoss
         static readonly int k_TintId = Shader.PropertyToID("_Tint");
 
         [SerializeField]
-        DragonArenaBuilder m_Arena;
+        ArenaShape m_Arena;
 
         [SerializeField]
         Material m_CrystalMaterial;
@@ -159,7 +159,7 @@ namespace Archery.FinalBoss
             if (m_Generated == null)
                 return;
 
-            var arena = m_Arena != null ? m_Arena : GetComponentInParent<DragonArenaBuilder>();
+            var arena = m_Arena != null ? m_Arena : GetComponentInParent<ArenaShape>();
             var root = m_Generated.Begin();
             if (arena == null || m_CrystalMaterial == null)
                 return;
@@ -169,7 +169,7 @@ namespace Archery.FinalBoss
             for (var i = 0; i < GroupCount; i++)
                 builders[i] = new MeshBuilder();
 
-            var maxRadius = arena.FloorRadius * m_Coverage;
+            var maxRadius = arena.CeilingRadius * m_Coverage;
             for (var c = 0; c < m_Clusters; c++)
             {
                 // Plus de grappes vers le bord (même densité au mètre carré), mais au-dessus du sol de combat.

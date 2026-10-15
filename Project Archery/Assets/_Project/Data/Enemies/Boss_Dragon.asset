@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Boss_Dragon
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Dragon rouge
-  maxHealth: 3000
+  maxHealth: 4500
   moveSpeed: 2.6
-  attackDamage: 40
+  attackDamage: 25
   attackRange: 6
   attackInterval: 1.6
   attackWindup: 0.5

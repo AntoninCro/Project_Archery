@@ -63,7 +63,7 @@ Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense
 
 **Construire le jeu** : *File > Build Profiles* > *Windows*, vérifier que la scène est dans la liste, puis *Build*.
 
-Sans casque, `Desktop Controls` prend le relais : ZQSD ou les flèches pour avancer, clic droit maintenu et souris pour regarder, Maj pour courir, Espace pour sauter.
+Sans casque, `Desktop Controls` prend le relais et le jeu se joue au clavier et à la souris : ZQSD ou les flèches pour avancer, la souris pour regarder (Échap libère le curseur, un clic gauche le reprend), Maj pour courir, Espace pour sauter, **clic gauche maintenu pour tendre l'arc** (relâcher tire) et **E pour interagir** avec ce que vise le centre de l'écran (récolter, ouvrir un coffre, prendre une orbe, construire, frapper au marteau, cliquer les boutons de la boutique et des menus).
 
 **Récupérer le projet** (par exemple sur un nouveau PC) : `git clone git@github.com:AntoninCro/Project_Archery.git`, puis ouvrir le sous-dossier `Project Archery` avec Unity Hub. La première ouverture est longue : Unity recrée le dossier `Library/`.
 

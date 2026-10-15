@@ -118,6 +118,15 @@ namespace Archery.Enemies
         /// <summary>Vitesse effective (m/s) : difficulté, vague, multiplicateur durable et ralentissement en cours.</summary>
         public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
 
+        /// <summary>Ralentissement en cours (1 = aucun, 0,75 = 25 % plus lent).</summary>
+        public float SlowMultiplier => m_SlowMultiplier;
+
+        /// <summary>
+        /// Part de sa vitesse qu'un ralentissement peut lui retirer, tous ralentissements confondus (1 = sans limite ;
+        /// 0,25 = jamais plus de 25 % plus lent, comme le dragon du boss final).
+        /// </summary>
+        public float MaxSlow { get; set; } = 1f;
+
         /// <summary>Multiplicateur des dégâts infligés : celui de la difficulté au départ.</summary>
         public float DamageMultiplier { get; set; } = 1f;
 
@@ -451,14 +460,16 @@ namespace Archery.Enemies
 
         /// <summary>
         /// Ralentit l'ennemi pendant un moment (flèche de foudre). 0,6 = 40 % plus lent.
-        /// Si plusieurs ralentissements se cumulent, le plus fort et le plus long l'emportent.
+        /// Si plusieurs ralentissements se cumulent, le plus fort et le plus long l'emportent, dans la limite de
+        /// <see cref="MaxSlow"/>.
         /// </summary>
         public void Slow(float multiplier, float duration)
         {
             if (m_State == State.Dead || duration <= 0f)
                 return;
 
-            m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, Mathf.Clamp01(multiplier));
+            multiplier = Mathf.Max(Mathf.Clamp01(multiplier), 1f - Mathf.Clamp01(MaxSlow));
+            m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, multiplier);
             m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
         }
 

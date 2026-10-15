@@ -43,7 +43,7 @@ namespace Archery.FinalBoss
         CeilingCrystals m_Crystals;
 
         [SerializeField]
-        DragonArenaBuilder m_Arena;
+        ArenaShape m_Arena;
 
         [SerializeField]
         ArenaLava m_Lava;
@@ -72,6 +72,21 @@ namespace Archery.FinalBoss
         [SerializeField]
         AudioMixerGroup m_MusicGroup;
 
+        [Tooltip("Gain (dB) ajouté au groupe Music du mixer pendant le combat, au-dessus du réglage des paramètres. La musique " +
+                 "de la carte est coupée dans l'arène : seule celle du boss en profite. Remis comme avant en quittant l'arène.")]
+        [Range(0f, 12f)]
+        [SerializeField]
+        float m_MusicBoostDb = 6f;
+
+        [Tooltip("Paramètre exposé du mixer pour le volume de la musique (celui des paramètres).")]
+        [SerializeField]
+        string m_MusicVolumeParameter = "MusicVolume";
+
+        float m_MusicBaseDb;
+        bool m_MusicBoosted;
+        bool m_DragonDashed;
+        bool m_DragonBreathing;
+
         [Header("Intro (en temps de l'intro, le premier temps est le 0)")]
         [Tooltip("Nombre de temps de la musique dans un temps de l'intro : 4 = l'intro suit le quart du tempo (un temps de l'intro par mesure).")]
         [Min(1)]
@@ -91,6 +106,11 @@ namespace Archery.FinalBoss
         [Tooltip("Temps entre deux quarts de cristaux (1 : un quart sur chaque temps).")]
         [SerializeField]
         int m_BeatsPerCrystalQuarter = 1;
+
+        [Tooltip("Temps où le dragon s'envole du haut de la coulée de lave (7 : avec le dernier quart de cristaux) ; il pique sur " +
+                 "le centre de l'arène et s'y pose juste avant la barre. Pendant que la barre se remplit, il crache son feu vers la voûte.")]
+        [SerializeField]
+        float m_DragonDashBeat = 7f;
 
         [Tooltip("Temps où la barre de PV apparaît (et où les coulées de lave commencent à descendre les parois).")]
         [SerializeField]
@@ -189,7 +209,23 @@ namespace Archery.FinalBoss
 
         public static ArenaDirector Instance { get; private set; }
 
-        public Transform PlayerSpawn => m_PlayerSpawn;
+        /// <summary>
+        /// Là où arrive le joueur. Dans l'arène en cubes, le repère suit la case d'arrivée du plan (S) : il reste juste si
+        /// le plan ou la taille des cubes change.
+        /// </summary>
+        public Transform PlayerSpawn
+        {
+            get
+            {
+                if (m_PlayerSpawn != null && m_Arena is ArenaGridBuilder grid && grid.isActiveAndEnabled)
+                {
+                    var spawn = grid.SpawnPoint;
+                    m_PlayerSpawn.SetPositionAndRotation(spawn.position, spawn.rotation);
+                }
+
+                return m_PlayerSpawn;
+            }
+        }
 
         double SecondsPerBeat => 60.0 / Mathf.Max(1f, m_Bpm);
 
@@ -197,7 +233,7 @@ namespace Archery.FinalBoss
         {
             Instance = this;
             if (m_Arena == null)
-                m_Arena = FindAnyObjectByType<DragonArenaBuilder>();
+                m_Arena = FindAnyObjectByType<ArenaShape>();
             if (m_Dragon == null)
                 m_Dragon = FindAnyObjectByType<DragonBoss>();
             if (m_Crystals == null)
@@ -231,10 +267,15 @@ namespace Archery.FinalBoss
             if (FinalBossDirector.Instance == null)
             {
                 Debug.LogWarning("ArenaDirector : l'arène se lance depuis la partie (scène Prototype_Tir, vague du boss final). " +
-                                 "Ouverte seule, elle reste éclairée et le dragon dort.", this);
+                                 "Ouverte seule, elle reste éclairée et le dragon attend en haut de la coulée de lave.", this);
                 m_Crystals?.SetAllLevels(1f);
                 SetLight(1f);
                 SetFallProgress(1f);
+            }
+            else if (m_Dragon != null)
+            {
+                // Dans le noir de l'intro, le dragon n'existe pas encore : il apparaît avec les premiers cristaux.
+                m_Dragon.SetVisible(false);
             }
         }
 
@@ -242,6 +283,7 @@ namespace Archery.FinalBoss
         {
             if (Instance == this)
                 Instance = null;
+            RestoreMusicVolume();
             if (m_Dragon != null)
             {
                 m_Dragon.PhaseChanged -= OnDragonPhaseChanged;
@@ -273,7 +315,8 @@ namespace Archery.FinalBoss
 
         void CreateLavaLights()
         {
-            if (m_Arena == null)
+            // Une arène qui éclaire déjà sa lave (la fourche) n'en a pas besoin.
+            if (m_Arena == null || m_Arena.HasOwnLavaLights)
                 return;
 
             const int count = 4;
@@ -281,7 +324,7 @@ namespace Archery.FinalBoss
             for (var i = 0; i < count; i++)
             {
                 var angle = (i + 0.5f) * Mathf.PI * 2f / count;
-                var radius = m_Arena.LavaRingStart + 1.5f;
+                var radius = m_Arena.RoamRadius + 1.5f;
                 var go = new GameObject($"Lueur de la lave {i + 1}");
                 go.transform.SetParent(transform, false);
                 go.transform.position = m_Arena.transform.TransformPoint(new Vector3(Mathf.Sin(angle) * radius, 1.2f, Mathf.Cos(angle) * radius));
@@ -354,6 +397,8 @@ namespace Archery.FinalBoss
                 {
                     m_LitTime[i] = Time.time;
                     ArenaPlayer.Rumble(0.15f, 0.05f);
+                    if (m_Dragon != null)
+                        m_Dragon.SetVisible(true);
                 }
             }
 
@@ -366,6 +411,21 @@ namespace Archery.FinalBoss
 
             m_Light = Mathf.MoveTowards(m_Light, lit / (float)CeilingCrystals.GroupCount, Time.deltaTime * 3f);
             SetLight(m_Light);
+
+            // Le dragon, debout en haut de la coulée pendant l'allumage, s'envole et pique sur le centre avant la barre ;
+            // pendant qu'elle se remplit, il crache son feu vers la voûte.
+            if (m_Dragon != null && !m_DragonDashed && beat >= m_DragonDashBeat)
+            {
+                m_DragonDashed = true;
+                var seconds = (m_BarFromBeat - m_DragonDashBeat) * SecondsPerBeat * m_MusicBeatsPerIntroBeat;
+                m_Dragon.IntroDash((float)seconds * 0.95f);
+            }
+
+            if (m_Dragon != null && !m_DragonBreathing && beat >= m_BarFromBeat)
+            {
+                m_DragonBreathing = true;
+                m_Dragon.IntroBreath();
+            }
 
             // La barre apparaît et se remplit ; en même temps, la lave commence à descendre le long des parois.
             if (beat >= m_BarFromBeat)
@@ -386,6 +446,8 @@ namespace Archery.FinalBoss
 
         void SkipIntro()
         {
+            if (m_Dragon != null)
+                m_Dragon.SetVisible(true);
             for (var i = 0; i < m_LitTime.Length; i++)
             {
                 if (m_LitTime[i] < 0f)
@@ -405,6 +467,8 @@ namespace Archery.FinalBoss
 
         void StartFight()
         {
+            if (m_Dragon != null)
+                m_Dragon.SetVisible(true);
             m_Stage = Stage.Fight;
             m_StageTime = 0f;
             m_Light = 1f;
@@ -439,7 +503,7 @@ namespace Archery.FinalBoss
             }
             else if (phase == DragonPhase.Air)
             {
-                HeadMessages.Show("Il s'envole !\n<size=60%>abrite-toi derrière les piliers</size>", new Color(1f, 0.6f, 0.3f), 3.5f, 1.1f);
+                HeadMessages.Show("Il s'envole !\n<size=60%>bouge pour esquiver, sors des bandes rouges</size>", new Color(1f, 0.6f, 0.3f), 3.5f, 1.1f);
             }
         }
 
@@ -571,6 +635,8 @@ namespace Archery.FinalBoss
         {
             m_Light = level;
             Shader.SetGlobalFloat(k_ArenaLavaGlowId, level * m_LavaGlow);
+            if (m_Arena != null)
+                m_Arena.SetLightLevel(level);
             foreach (var light in m_LavaLights)
             {
                 if (light == null)
@@ -614,6 +680,7 @@ namespace Archery.FinalBoss
             }
 
             m_MusicStarted = true;
+            BoostMusicVolume();
             m_MusicLevel = m_DarkMusicVolume;
             ApplyMusicVolume();
             var start = AudioSettings.dspTime + 0.2;
@@ -628,6 +695,29 @@ namespace Archery.FinalBoss
                 m_SourceA.timeSamples = 0;
                 m_SourceA.PlayScheduled(start);
             }
+        }
+
+        // La musique du boss plus forte que celle de la carte : le groupe Music du mixer monte pendant le combat.
+        void BoostMusicVolume()
+        {
+            var mixer = m_MusicGroup != null ? m_MusicGroup.audioMixer : null;
+            if (m_MusicBoosted || m_MusicBoostDb <= 0f || mixer == null || !mixer.GetFloat(m_MusicVolumeParameter, out var decibels))
+                return;
+
+            m_MusicBaseDb = decibels;
+            m_MusicBoosted = true;
+            mixer.SetFloat(m_MusicVolumeParameter, Mathf.Min(20f, decibels + m_MusicBoostDb));
+        }
+
+        void RestoreMusicVolume()
+        {
+            if (!m_MusicBoosted)
+                return;
+
+            m_MusicBoosted = false;
+            var mixer = m_MusicGroup != null ? m_MusicGroup.audioMixer : null;
+            if (mixer != null)
+                mixer.SetFloat(m_MusicVolumeParameter, m_MusicBaseDb);
         }
 
         void ApplyMusicVolume() => m_SourceA.volume = m_SourceB.volume = m_MusicVolume * m_MusicLevel * m_MusicFade;

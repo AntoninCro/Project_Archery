@@ -14,7 +14,7 @@ namespace Archery.FinalBoss
     public class ArenaLava : MonoBehaviour
     {
         [SerializeField]
-        DragonArenaBuilder m_Arena;
+        ArenaShape m_Arena;
 
         [Tooltip("Matériau des flaques. Vide : celui de la lave de l'arène.")]
         [SerializeField]
@@ -80,7 +80,7 @@ namespace Archery.FinalBoss
         void Awake()
         {
             if (m_Arena == null)
-                m_Arena = GetComponentInParent<DragonArenaBuilder>();
+                m_Arena = GetComponentInParent<ArenaShape>();
             m_DiscMesh = BuildDisc();
         }
 
@@ -127,9 +127,7 @@ namespace Archery.FinalBoss
             if (!ArenaPlayer.IsAlive)
                 return false;
 
-            var feet = ArenaPlayer.Feet;
-            var local = m_Arena.transform.InverseTransformPoint(feet);
-            if (Mathf.Abs(local.y) < 1.5f && new Vector2(local.x, local.z).magnitude > m_Arena.LavaRingStart + 0.3f)
+            if (m_Arena.IsLavaAt(ArenaPlayer.Feet))
                 return true;
 
             foreach (var pool in m_Pools)
@@ -174,7 +172,7 @@ namespace Archery.FinalBoss
             for (var attempt = 0; attempt < 12; attempt++)
             {
                 var angle = Random.value * Mathf.PI * 2f;
-                var radius = Mathf.Lerp(5f, m_Arena.LavaRingStart - 2f, Random.value);
+                var radius = Mathf.Lerp(5f, m_Arena.RoamRadius - 2f, Random.value);
                 var point = m_Arena.transform.TransformPoint(new Vector3(Mathf.Sin(angle) * radius, 0.08f, Mathf.Cos(angle) * radius));
                 var flat = point - player;
                 flat.y = 0f;

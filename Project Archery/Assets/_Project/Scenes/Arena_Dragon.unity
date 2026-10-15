@@ -164,35 +164,82 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e272b27d95bd44443759aa2bf988226d, type: 3}
+  m_Script: {fileID: 11500000, guid: d72bc37f36dd404cbe09ba22a50d7489, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.DragonArenaBuilder
-  m_FloorRadius: 25.5
-  m_CeilingHeight: 17
-  m_LavaRingStart: 22
-  m_WallRoughness: 0.7
-  m_Segments: 56
-  m_PillarCount: 6
-  m_PillarRing: 12.5
-  m_PillarAngleOffset: 30
-  m_PillarRadius: 1.9
-  m_PillarHeight: {x: 7, y: 9}
-  m_LavaFalls: 6
-  m_Boulders: 12
-  m_Stalactites: 60
-  m_Seed: 7
-  m_FloorMaterial: {fileID: 2100000, guid: 2c42e05189abf65ca490d9d993bbc92c, type: 2}
+  m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.ArenaGridBuilder
+  m_Layout: {fileID: 4900000, guid: 3a898a4254bb43809cdd5377136abb30, type: 3}
+  m_CellSize: 2.5
+  m_PlateauLevels: 2
+  m_WallLevels: 6
+  m_PillarLevels: 4
+  m_DaisHeight: 1
+  m_LavaDepth: 0.4
+  m_Ceiling: 1
+  m_CeilingLowLevels: 9
+  m_CeilingHighLevels: 13
+  m_CeilingRise: 2
+  m_FloorMaterial: {fileID: 2100000, guid: c41652cc647649b184c7daeecd598bbf, type: 2}
   m_RockMaterial: {fileID: 2100000, guid: fda516aeb331c38cf0b15821f258b532, type: 2}
   m_PillarMaterial: {fileID: 2100000, guid: 31f691ac4e86b378f60f8b5fb8f1654d, type: 2}
   m_LavaMaterial: {fileID: 2100000, guid: 2e68b3788cd1782cabcab66fe8e3fae6, type: 2}
   m_LavaFallMaterial: {fileID: 2100000, guid: 70f6d0344782c7fda708e1cd3fc682fd, type: 2}
-  m_GenerateFloor: 1
-  m_GenerateWalls: 1
-  m_GenerateLavaRing: 1
-  m_GenerateLavaFalls: 1
-  m_GeneratePillars: 1
-  m_GenerateBoulders: 1
-  m_GenerateStalactites: 1
+  m_Generate: 1
+  m_Decorate: 1
+  m_DecorSeed: 11
+  m_DecorDensity: 1
+  m_DarkTiles: 0.3
+  m_FloorDarkMaterial: {fileID: 2100000, guid: 9b8b1d3cba6c45b19af1609b33298742, type: 2}
+  m_ScorchedMaterial: {fileID: 2100000, guid: 20f5c154528744ee9805e7c93912a151, type: 2}
+  m_BigRocks:
+  - {fileID: 919132149155446097, guid: 79efe3f99ea40eb419cfdb5c71ab2609, type: 3}
+  - {fileID: 919132149155446097, guid: 381076ad431359242baf66432a7a6531, type: 3}
+  - {fileID: 919132149155446097, guid: e7cc6a11f67559247b4ec9c2964ae598, type: 3}
+  - {fileID: 919132149155446097, guid: bab4a1e897cb0a24a86c4ccd1615ea72, type: 3}
+  - {fileID: 919132149155446097, guid: 0241f7c25a6af9841a692e93b57e26c9, type: 3}
+  - {fileID: 919132149155446097, guid: e2834054402d12e43a85d2cd8acb4b9d, type: 3}
+  m_SmallRocks:
+  - {fileID: 919132149155446097, guid: 18807b443d6547f4d9a068e1ab73b3d1, type: 3}
+  - {fileID: 919132149155446097, guid: 2c561e8da2e2cba408ba1c4aced7d8c5, type: 3}
+  - {fileID: 919132149155446097, guid: af312691c8d02ca468f1a37240008810, type: 3}
+  - {fileID: 919132149155446097, guid: 67a6315d106009f4bb6c0c560033da99, type: 3}
+  - {fileID: 919132149155446097, guid: 0f5c688b758acf94b9f1dbb6461b3d01, type: 3}
+  m_Stalagmites:
+  - {fileID: 919132149155446097, guid: e399af38b092fa941b49d26f98dadf7f, type: 3}
+  - {fileID: 919132149155446097, guid: 4b008b46723fb5e4caca6607600c1b04, type: 3}
+  - {fileID: 919132149155446097, guid: 5a09847472223e24785413d38b0edab4, type: 3}
+  - {fileID: 919132149155446097, guid: b241cbb2555f8fd43859bd31c11c960d, type: 3}
+  - {fileID: 919132149155446097, guid: 1b27e8153d98cd0458dfb3f7a685ea2f, type: 3}
+  - {fileID: 919132149155446097, guid: 43b5c0b353f740648b49931010ea0abf, type: 3}
+  - {fileID: 919132149155446097, guid: 57e99c76bb5547947914a4a0acc13b9a, type: 3}
+  m_DecorRockMaterial: {fileID: 2100000, guid: 31f691ac4e86b378f60f8b5fb8f1654d, type: 2}
+  m_Ruins:
+  - {fileID: 919132149155446097, guid: 9e00b034bbe613d479284190b6b42a65, type: 3}
+  - {fileID: 919132149155446097, guid: 9e00b034bbe613d479284190b6b42a65, type: 3}
+  - {fileID: 919132149155446097, guid: c5a50f34de596944192bfaf9a04be6aa, type: 3}
+  m_FallenStatue: {fileID: 919132149155446097, guid: 910a9c8be6b814043b344c8cfe1aca19, type: 3}
+  m_Remains:
+  - {fileID: 7448341242989472257, guid: a531f6e46a360194a8d0055532923c36, type: 3}
+  - {fileID: 5326291948833923051, guid: 7a22a0aa756a92540880e34859eee0a3, type: 3}
+  - {fileID: 7343984453073544682, guid: db9e5a92e378fff44926656e5980df57, type: 3}
+  - {fileID: 4540322640544496234, guid: 929dd8ed17268c44a800f59c4eb91acb, type: 3}
+  - {fileID: 2772242920045774730, guid: ddba5e09b98479542abdc218fe402fc8, type: 3}
+  m_RemainsMaterial: {fileID: 2100000, guid: 43c03beb04204abc89a895529e46281a, type: 2}
+  m_DoorColumn: {fileID: 919132149155446097, guid: c5a50f34de596944192bfaf9a04be6aa, type: 3}
+  m_DoorMaterial: {fileID: 2100000, guid: ed01003ed5b8d45155addc6c921c0b02, type: 2}
+  m_Brazier: {fileID: 919132149155446097, guid: dea4f374bbd080a45ae6da6160a14f01, type: 3}
+  m_FireMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
+  m_TurretPlinth: {fileID: 919132149155446097, guid: 8ce3a082c43ce0047bd6229a3453e182, type: 3}
+  m_LavaLightColor: {r: 1, g: 0.42, b: 0.12, a: 1}
+  m_LavaLightSpacing: 7
+  m_MaxLavaLights: 14
+  m_Embers: 1
+  m_RockSkin: 1
+  m_SkinDepth: 0.45
+  m_SkinFacet: 0.5
+  m_SkinStrata: 0.12
+  m_FloorTextureSize: 8
+  m_CrackPulse: 0.25
+  m_CrackPulsePeriod: 4
 --- !u!114 &1003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.CeilingCrystals
   m_Arena: {fileID: 1002}
   m_CrystalMaterial: {fileID: 2100000, guid: f1793b0a47cbda1ef932c1f451e32da8, type: 2}
-  m_Clusters: 420
+  m_Clusters: 650
   m_PerCluster: 6
   m_Size: {x: 0.07, y: 0.24}
   m_Coverage: 0.86
@@ -274,8 +321,8 @@ MonoBehaviour:
   - {r: 0.65, g: 0.3, b: 1, a: 1}
   - {r: 1, g: 0.75, b: 0.8, a: 1}
   m_LitIntensity: 2.2
-  m_LightIntensity: 3
-  m_LightRange: 34
+  m_LightIntensity: 4.7
+  m_LightRange: 43
   m_LightColor: {r: 1, g: 0.42, b: 0.35, a: 1}
 --- !u!1 &1020
 GameObject:
@@ -302,7 +349,7 @@ Transform:
   m_GameObject: {fileID: 1020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -17}
+  m_LocalPosition: {x: -1.25, y: 0, z: -26.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -336,14 +383,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1030}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 9}
+  m_LocalRotation: {x: 0, y: 0.99159, z: 0, w: 0.12941}
+  m_LocalPosition: {x: -13.75, y: 1, z: 20.84}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1041}
   m_Father: {fileID: 1001}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 165.13, z: 0}
 --- !u!114 &1032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -356,7 +403,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24d5eb0a551f71d4bb93c5fa165ce3c9, type: 3}
   m_Name:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Health
-  m_MaxHealth: 3000
+  m_MaxHealth: 4500
   m_Invulnerable: 0
   m_RegenPerSecond: 0
   m_RegenDelay: 2
@@ -425,47 +472,88 @@ MonoBehaviour:
   m_NeckBaseBone: Neck01
   m_ChestBone: Chest
   m_SpineBone: Spine01
+  m_JawBone: Jaw01
   m_BodyRadius: 2.5
   m_HitboxScale: 1
   m_WeakPointMaterial: {fileID: 2100000, guid: 3315af0e83bf9854991385fe41a4aef0, type: 2}
   m_FireMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
-  m_FireballMaterial: {fileID: 2100000, guid: 4575737cc6c12b543a24c8f1e6d9db26, type: 2}
+  m_FireballMaterial: {fileID: 2100000, guid: 9f4c1d8e3a5b4c6d0b7e2f3a4b5c6d7e, type: 2}
   m_WarningMaterial: {fileID: 2100000, guid: cfc60ced9df00434d97d6ddff9797e6e, type: 2}
-  m_RockMaterial: {fileID: 2100000, guid: fda516aeb331c38cf0b15821f258b532, type: 2}
   m_Arena: {fileID: 1002}
+  m_EyeMaterial: {fileID: 2100000, guid: a05d2e9f4b6c4d7e1c8f3a4b5c6d7e8f, type: 2}
+  m_EyeRadius: 0.09
+  m_EyeOffset: {x: 0.05, y: 0.02, z: 0.03}
+  m_EyeLightIntensity: 1.5
   m_AirPhaseAt: 0.66
   m_EnragedPhaseAt: 0.33
   m_WakeRoarTime: 2.6
-  m_TurnSpeed: 100
+  m_MaxSlow: 0.25
+  m_Recovery: 0.7
+  m_TurnSpeed: 90
   m_MeleeExtraReach: 1.8
-  m_MeleeCooldown: 1.6
-  m_MeleeDamage: {x: 1, y: 1.25}
-  m_BreathRange: 15
-  m_BreathAngle: 20
+  m_PreferredDistance: 10
+  m_CloseInChance: 0.35
+  m_WalkStrideSpeed: 0
+  m_RunStrideSpeed: 0
+  m_RunFrom: 3.6
+  m_FireballSize: 1.8
+  m_FireballSpeed: 11
+  m_AirFireballSpeed: 14
+  m_FireballDamage: 0.55
+  m_FireballSplash: 2
+  m_SpitCharge: 0.7
+  m_SpitCooldown: 2.6
+  m_AirFireballInterval: 2.2
+  m_SweepReach: 6.5
+  m_SweepWindup: 0.9
+  m_SweepTime: 0.4
+  m_SweepDamage: 0.7
+  m_SweepCooldown: 5
+  m_JumpClearance: 0.3
+  m_SweepLunge: 1.5
+  m_BiteRange: 2.8
+  m_BiteWindup: 0.4
+  m_BiteDamage: 0.9
+  m_BiteCooldown: 3
+  m_BreathRange: 16
+  m_PerchBreathRange: 28
+  m_BreathAngle: 16
+  m_BreathCharge: 3.2
+  m_ChargePitch: 65
   m_BreathDuration: 2.2
-  m_BreathCooldown: 7
-  m_BreathDamage: 0.45
-  m_BreathTracking: 30
-  m_FlyAltitude: 10
-  m_OrbitRadius: 15
+  m_BreathCooldown: 10
+  m_BreathDamage: 0.4
+  m_BreathTracking: 18
+  m_FlyAltitude: 13.5
+  m_OrbitRadius: 20
   m_FlySpeed: 8
-  m_FireballInterval: 2.4
-  m_FireballSpeed: 18
-  m_FireballDamage: 0.5
-  m_FireballRadius: 2.6
-  m_FireballSize: 0.7
-  m_DiveInterval: 13
-  m_DiveAltitude: 3.8
-  m_DiveSpeed: 15
-  m_TrailDamage: 0.35
-  m_RageSpeed: 1.45
-  m_RageAttackRate: 1.5
-  m_RageDamage: 1.3
-  m_RageRoarInterval: 12
-  m_RockCount: 5
-  m_RockDamage: 0.6
-  m_RockRadius: 2.2
-  m_RockWarning: 1.5
+  m_LiftTime: 2.4
+  m_DashCount: 3
+  m_DashCooldown: 14
+  m_DashWarning: 1.1
+  m_DashSpeed: 24
+  m_DashAltitude: 7.5
+  m_DashLength: 32
+  m_DashWidth: 3.5
+  m_DashDamage: 0.6
+  m_DashFireDamage: 0.25
+  m_DashFireTime: 1.5
+  m_PerchCooldown: 17
+  m_PerchHold: 0.4
+  m_RageTempo: 1.3
+  m_RageDamage: 1.1
+  m_RageGroundTime: 11
+  m_RageAirTime: 9
+  m_SaltoCooldown: 22
+  m_SaltoFlips: 3
+  m_SaltoFlipTime: 1.8
+  m_SaltoRise: 7
+  m_SaltoPause: 0.6
+  m_SaltoDiveSpeed: 30
+  m_SaltoRadius: 4
+  m_SaltoDamage: 1.3
+  m_SaltoRecover: 1.4
+  m_WakeRoarSound: 0
   m_RoarClip: {fileID: 8300000, guid: 6411ef5dada8d334397e1c4eebe212b7, type: 3}
   m_RoarLayerClip: {fileID: 8300000, guid: 59605b2e81f76164fa6b67586fb63ddc, type: 3}
   m_FireLoopClip: {fileID: 8300000, guid: c7e21126c367a0f4ab2929b969d7d255, type: 3}
@@ -475,7 +563,6 @@ MonoBehaviour:
   m_WingClip: {fileID: 8300000, guid: 5c6535c24579dbf43a706f2ff728b3e8, type: 3}
   m_FireballClip: {fileID: 8300000, guid: 32853708fff2feb4980277859ddedc86, type: 3}
   m_ExplosionClip: {fileID: 8300000, guid: 0e2d062aa9919594283b33224ebe51d6, type: 3}
-  m_RockClip: {fileID: 8300000, guid: 52a64334d21c47a4ebc751cb043c5fb4, type: 3}
   m_DeathClip: {fileID: 8300000, guid: 52a64334d21c47a4ebc751cb043c5fb4, type: 3}
 --- !u!1001 &1040
 PrefabInstance:
@@ -584,7 +671,9 @@ MonoBehaviour:
   m_Bpm: 140.26
   m_FirstBeat: 0.04
   m_LoopFromBeat: 16
-  m_MusicVolume: 0.9
+  m_MusicVolume: 1
+  m_MusicBoostDb: 6
+  m_MusicVolumeParameter: MusicVolume
   m_MusicGroup: {fileID: -3530445712461842658, guid: d6e0c2f1242d7604db851b37a499f437, type: 2}
   m_MusicBeatsPerIntroBeat: 4
   m_DarkMusicVolume: 0.6

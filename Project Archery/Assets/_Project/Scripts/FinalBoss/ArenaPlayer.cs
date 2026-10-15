@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Player;
+using Archery.UI;
 using UnityEngine;
 
 namespace Archery.FinalBoss
@@ -51,6 +52,23 @@ namespace Archery.FinalBoss
                 return false;
             offset.y = 0f;
             return offset.sqrMagnitude <= radius * radius;
+        }
+
+        /// <summary>Hauteur des pieds au-dessus du sol de l'arène : le joueur saute.</summary>
+        public static float HeightAboveGround(ArenaShape arena)
+        {
+            var feet = Feet;
+            return arena != null ? feet.y - arena.GroundHeightAt(feet) : 0f;
+        }
+
+        /// <summary>Le joueur a esquivé une attaque en sautant : un petit mot devant ses yeux.</summary>
+        public static void ShowDodged()
+        {
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            var forward = head != null ? Vector3.ProjectOnPlane(head.forward, Vector3.up) : Vector3.forward;
+            var position = head != null ? head.position + (forward.sqrMagnitude > 1e-4f ? forward.normalized : Vector3.forward) * 1.2f + Vector3.down * 0.2f : Chest;
+            FloatingText.Spawn(position, "Esquivé !", new Color(0.55f, 1f, 0.5f), 0.8f, 1f);
         }
 
         /// <summary>Vibration des deux manettes (rugissement, explosion proche).</summary>

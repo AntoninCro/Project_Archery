@@ -57,6 +57,9 @@ namespace Archery.Building
 
         public bool IsHeld => m_Grab != null && m_Grab.isSelected;
 
+        /// <summary>Le bâtiment en plan que ce marteau construit.</summary>
+        public Structure Target => m_Target;
+
         Vector3 HeadPosition => m_Head != null ? m_Head.position : transform.position;
 
         void Awake()
@@ -171,6 +174,21 @@ namespace Archery.Building
             m_LastStrikeTime = Time.unscaledTime;
             if (m_Manager != null)
                 m_Manager.OnHammerStrike(this, closest, speed, m_Grab.firstInteractorSelecting);
+        }
+
+        /// <summary>
+        /// Sans casque (touche E) : un coup sur le plan, au point visé. Faux si rien n'est en construction ou si le coup
+        /// précédent est trop récent.
+        /// </summary>
+        public bool DesktopStrike(Vector3 point)
+        {
+            if (m_Target == null || !m_Target.IsUnderConstruction || Time.unscaledTime - m_LastStrikeTime < m_MinStrikeInterval)
+                return false;
+
+            m_LastStrikeTime = Time.unscaledTime;
+            if (m_Manager != null)
+                m_Manager.OnHammerStrike(this, point, m_MinStrikeSpeed * 2f, m_Hand);
+            return true;
         }
 
         void Float()

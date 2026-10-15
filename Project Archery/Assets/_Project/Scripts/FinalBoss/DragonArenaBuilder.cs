@@ -15,16 +15,8 @@ namespace Archery.FinalBoss
     [ExecuteAlways]
     [DisallowMultipleComponent]
     [SelectionBase]
-    public class DragonArenaBuilder : MonoBehaviour
+    public class DragonArenaBuilder : ArenaShape
     {
-        /// <summary>Un pilier : centre au sol (monde) et rayon à la base.</summary>
-        public struct Pillar
-        {
-            public Vector3 Position;
-            public float Radius;
-            public float Height;
-        }
-
         [Header("Grotte (m)")]
         [Tooltip("Rayon du sol, jusqu'au pied des parois.")]
         [SerializeField]
@@ -138,32 +130,46 @@ namespace Archery.FinalBoss
         public static DragonArenaBuilder Instance { get; private set; }
 
         /// <summary>Les piliers de l'arène (positions dans le monde) : ceux qui sont générés, et ceux posés à la main (<see cref="ArenaPillar"/>).</summary>
-        public IReadOnlyList<Pillar> Pillars
+        public override IReadOnlyList<Pillar> Pillars
         {
             get
             {
                 m_AllPillars.Clear();
                 m_AllPillars.AddRange(m_Pillars);
-                foreach (var pillar in ArenaPillar.All)
-                {
-                    if (pillar != null)
-                        m_AllPillars.Add(new Pillar { Position = pillar.transform.position, Radius = pillar.Radius, Height = pillar.Height });
-                }
-
+                m_AllPillars.AddRange(HandPlacedPillars());
                 return m_AllPillars;
             }
         }
 
         public float FloorRadius => m_FloorRadius;
         public float LavaRingStart => m_LavaRingStart;
-        public float FloorY => transform.position.y;
-        public Vector3 Center => transform.position;
+
+        /// <summary>On se bat jusqu'à l'anneau de lave.</summary>
+        public override float RoamRadius => m_LavaRingStart;
+
+        public override float CeilingRadius => m_FloorRadius;
 
         /// <summary>Matériau de la lave (anneau, flaques).</summary>
-        public Material LavaMaterial => m_LavaMaterial;
+        public override Material LavaMaterial => m_LavaMaterial;
 
         /// <summary>Hauteur (monde) du haut des coulées de lave.</summary>
-        public float LavaFallTopY => transform.position.y + m_LavaFallTopHeight;
+        public override float LavaFallTopY => transform.position.y + m_LavaFallTopHeight;
+
+        /// <summary>Dans l'anneau de lave, au pied des parois.</summary>
+        public override bool IsLavaAt(Vector3 worldPosition)
+        {
+            var local = transform.InverseTransformPoint(worldPosition);
+            return Mathf.Abs(local.y) < 1.5f && new Vector2(local.x, local.z).magnitude > m_LavaRingStart + 0.3f;
+        }
+
+        /// <summary>Gardé à l'intérieur de l'anneau de lave.</summary>
+        public override Vector3 Confine(Vector3 point, float margin)
+        {
+            var offset = point - Center;
+            offset.y = 0f;
+            var limit = m_LavaRingStart - margin;
+            return offset.magnitude > limit ? Center + offset.normalized * limit + Vector3.up * (point.y - Center.y) : point;
+        }
 
         void OnEnable()
         {
@@ -214,7 +220,7 @@ namespace Archery.FinalBoss
         }
 
         /// <summary>Point de la voûte (monde) au-dessus de ce point du sol, et la normale qui regarde vers l'intérieur.</summary>
-        public Vector3 CeilingPoint(Vector3 floorPoint, out Vector3 inward)
+        public override Vector3 CeilingPoint(Vector3 floorPoint, out Vector3 inward)
         {
             var local = transform.InverseTransformPoint(floorPoint);
             var radius = new Vector2(local.x, local.z).magnitude;
@@ -225,7 +231,7 @@ namespace Archery.FinalBoss
         }
 
         /// <summary>Vrai si ce point (monde) est sur le sol de l'arène, hors de l'anneau de lave et hors des piliers.</summary>
-        public bool IsFreeGround(Vector3 point, float margin)
+        public override bool IsFreeGround(Vector3 point, float margin)
         {
             var local = transform.InverseTransformPoint(point);
             if (new Vector2(local.x, local.z).magnitude > m_LavaRingStart - margin)

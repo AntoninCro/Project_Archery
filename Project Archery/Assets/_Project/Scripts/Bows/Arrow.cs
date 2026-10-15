@@ -347,11 +347,28 @@ namespace Archery.Bows
             m_State = State.Nocked;
         }
 
+        /// <summary>Sans casque (<see cref="Bow.DesktopNock"/>) : la flèche sort du carquois directement sur la corde, sans main.</summary>
+        internal void NockWithoutHand(Bow bow)
+        {
+            ResetState();
+            m_HasPreviousTip = false;
+            OnNocked(bow);
+        }
+
         internal void OnUnnocked()
         {
             m_Bow = null;
-            if (m_State == State.Nocked)
-                m_State = State.Held;
+            if (m_State != State.Nocked)
+                return;
+
+            m_State = State.Held;
+
+            // Encochée sans main (tir au clavier) : rien ne la tient, elle retourne dans le carquois.
+            if (m_Hand == null)
+            {
+                m_State = State.Pooled;
+                Despawn();
+            }
         }
 
         internal void SetNockedPose(Vector3 nockPosition, Quaternion rotation) =>

@@ -99,6 +99,12 @@ namespace Archery.Building
         /// <summary>Une construction est en cours (le marteau est sorti).</summary>
         public bool IsBuilding => m_Current != null;
 
+        /// <summary>Le marteau de la construction en cours, ou null.</summary>
+        public BuildHammer Hammer => m_Hammer;
+
+        /// <summary>Nombre de coups déjà donnés sur le plan en cours.</summary>
+        public int Strikes => m_Strikes;
+
         public int StrikesToBuild => m_StrikesToBuild;
 
         void Awake()
