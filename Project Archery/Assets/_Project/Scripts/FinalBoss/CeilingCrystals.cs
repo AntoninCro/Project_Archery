@@ -217,8 +217,11 @@ namespace Archery.FinalBoss
             }
         }
 
-        // Quart du secteur : 0 face au joueur (côté dragon, autour de +Z), puis dans le sens des aiguilles d'une montre.
-        static int GroupOf(float angle)
+        /// <summary>
+        /// Quart de la grotte où se trouve cet angle (radians, autour de l'axe Y de l'arène, 0 vers +Z) : 0 face au joueur
+        /// (côté dragon, autour de +Z), puis dans le sens des aiguilles d'une montre.
+        /// </summary>
+        public static int GroupOf(float angle)
         {
             var degrees = Mathf.Repeat(angle * Mathf.Rad2Deg + 45f, 360f);
             return Mathf.Clamp((int)(degrees / 90f), 0, GroupCount - 1);

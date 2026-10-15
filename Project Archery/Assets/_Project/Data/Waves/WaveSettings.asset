@@ -94,7 +94,7 @@ MonoBehaviour:
   endlessSpeedGrowth: 1.07
   endlessBossesEvery: 2
   bosses:
-  - {fileID: 6166983361453300783, guid: 1745f7196da84d4294921ad32e24c072, type: 3}
+  - {fileID: 6166983361453300783, guid: bfa2d7780abaf2cd4d952edc55b4e76f, type: 3}
   - {fileID: 3230386798650704038, guid: 2458fbb2beba424fb20cc4251ec2e013, type: 3}
   - {fileID: 6601253806700801804, guid: 3835919a5af44612988a963f437d8c51, type: 3}
   - {fileID: 6833927624573668485, guid: c6cb381b6f17401d9840ce2ca65874c3, type: 3}

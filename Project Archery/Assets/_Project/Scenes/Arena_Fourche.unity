@@ -176,7 +176,7 @@ MonoBehaviour:
   m_CeilingRise: 2
   m_FloorMaterial: {fileID: 2100000, guid: c41652cc647649b184c7daeecd598bbf, type: 2}
   m_RockMaterial: {fileID: 2100000, guid: fda516aeb331c38cf0b15821f258b532, type: 2}
-  m_PillarMaterial: {fileID: 2100000, guid: 31f691ac4e86b378f60f8b5fb8f1654d, type: 2}
+  m_PillarMaterial: {fileID: 2100000, guid: c839f9e5439476cbaf8b97e7d3240e2a, type: 2}
   m_LavaMaterial: {fileID: 2100000, guid: 2e68b3788cd1782cabcab66fe8e3fae6, type: 2}
   m_LavaFallMaterial: {fileID: 2100000, guid: 70f6d0344782c7fda708e1cd3fc682fd, type: 2}
   m_Generate: 1

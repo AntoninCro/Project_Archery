@@ -48,6 +48,8 @@ namespace Archery.FinalBoss
         [SerializeField]
         ArenaLava m_Lava;
 
+        ArenaTurrets m_Turrets;
+
         [Header("Musique")]
         [SerializeField]
         AudioClip m_Music;
@@ -229,6 +231,28 @@ namespace Archery.FinalBoss
 
         double SecondsPerBeat => 60.0 / Mathf.Max(1f, m_Bpm);
 
+        // Pour les lumières de l'arène (ArenaLights).
+
+        /// <summary>Temps de la musique en cours (0 au premier temps, avec sa fraction) ; -1 avant la musique.</summary>
+        public double Beat => CurrentBeat;
+
+        /// <summary>Tempo de la musique (temps par minute).</summary>
+        public float Bpm => m_Bpm;
+
+        /// <summary>Allumage de l'arène : 0 dans le noir du début de l'intro, 1 une fois les cristaux allumés.</summary>
+        public float LightLevel => m_Light;
+
+        /// <summary>Le combat est en cours (après l'intro, avant la mort du dragon).</summary>
+        public bool IsFighting => m_Stage == Stage.Fight;
+
+        /// <summary>Le dragon est mort (en attendant le choix du joueur, et après).</summary>
+        public bool IsVictory => m_Stage == Stage.Victory || m_Stage == Stage.Chosen;
+
+        /// <summary>Surcroît d'éclat de la lave (0 : normal ; 1 : deux fois plus vive ; -1 : éteinte).</summary>
+        public float LavaBoost { get; set; }
+
+        void ApplyLavaGlow() => Shader.SetGlobalFloat(k_ArenaLavaGlowId, m_Light * m_LavaGlow * Mathf.Max(0f, 1f + LavaBoost));
+
         void Awake()
         {
             Instance = this;
@@ -240,6 +264,7 @@ namespace Archery.FinalBoss
                 m_Crystals = FindAnyObjectByType<CeilingCrystals>();
             if (m_Lava == null)
                 m_Lava = FindAnyObjectByType<ArenaLava>();
+            m_Turrets = GetComponent<ArenaTurrets>();
 
             m_SourceA = CreateMusicSource("Musique A");
             m_SourceB = CreateMusicSource("Musique B");
@@ -250,6 +275,7 @@ namespace Archery.FinalBoss
         {
             CreateLavaLights();
             SetLight(0f);
+            ArenaLights.Create(this, m_Arena, m_Dragon, m_Crystals, m_Turrets);
 
             if (m_Dragon != null)
             {
@@ -362,6 +388,10 @@ namespace Archery.FinalBoss
 
             var bossName = m_Dragon != null && m_Dragon.TryGetComponent<Boss>(out var boss) ? boss.DisplayName : "Le dragon";
             m_Bar = BossHealthBar.Create(bossName, new[] { 0.66f, 0.33f });
+
+            // Les tourelles du joueur viendront, une (ou deux) par quart de cristaux.
+            if (m_Turrets != null)
+                m_Turrets.Prepare(m_Arena);
         }
 
         void Update()
@@ -384,6 +414,7 @@ namespace Archery.FinalBoss
             }
 
             UpdateCrystals();
+            ApplyLavaGlow();
         }
 
         void UpdateIntro()
@@ -399,6 +430,8 @@ namespace Archery.FinalBoss
                     ArenaPlayer.Rumble(0.15f, 0.05f);
                     if (m_Dragon != null)
                         m_Dragon.SetVisible(true);
+                    if (m_Turrets != null)
+                        m_Turrets.Arrive(i);
                 }
             }
 
@@ -462,6 +495,8 @@ namespace Archery.FinalBoss
                 m_Bar.SetValue(1f, instant: true);
             }
 
+            if (m_Turrets != null)
+                m_Turrets.ArriveAll();
             StartFight();
         }
 
@@ -476,6 +511,8 @@ namespace Archery.FinalBoss
             SetFallProgress(1f);
             if (m_Dragon != null)
                 m_Dragon.WakeUp();
+            if (m_Turrets != null)
+                m_Turrets.StartFighting();
         }
 
         // ---------------------------------------------------------------- combat
@@ -634,7 +671,7 @@ namespace Archery.FinalBoss
         void SetLight(float level)
         {
             m_Light = level;
-            Shader.SetGlobalFloat(k_ArenaLavaGlowId, level * m_LavaGlow);
+            ApplyLavaGlow();
             if (m_Arena != null)
                 m_Arena.SetLightLevel(level);
             foreach (var light in m_LavaLights)

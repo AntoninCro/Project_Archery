@@ -26,7 +26,7 @@ namespace Archery.FinalBoss
         [Header("Brûlure")]
         [Tooltip("Dégâts par seconde dans la lave (avant la difficulté et la vague).")]
         [SerializeField]
-        float m_DamagePerSecond = 14f;
+        float m_DamagePerSecond = 4.67f;
 
         [SerializeField]
         float m_TickInterval = 0.5f;

@@ -75,6 +75,9 @@ namespace Archery.World
 
         readonly List<Transform> m_Falls = new List<Transform>();
 
+        /// <summary>Les cascades de la rivière (pièces « cliff_waterfall… »), trouvées au lancement.</summary>
+        public IReadOnlyList<Transform> Falls => m_Falls;
+
         void Start()
         {
             if (m_RiverRoot == null)

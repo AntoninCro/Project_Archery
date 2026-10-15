@@ -134,7 +134,8 @@ namespace Archery.Building
         {
             var muzzle = Muzzle;
             Enemy best = null;
-            var bestDistance = m_Range * m_Range;
+            var range = m_Range * RangeScale;
+            var bestDistance = range * range;
             foreach (var enemy in Enemy.Alive)
             {
                 if (enemy == null || !enemy.IsAlive)
@@ -211,7 +212,7 @@ namespace Archery.Building
         void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.8f, 0.4f, 0.6f);
-            Gizmos.DrawWireSphere(Muzzle, m_Range);
+            Gizmos.DrawWireSphere(Muzzle, m_Range * RangeScale);
         }
     }
 }

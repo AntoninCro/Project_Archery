@@ -172,6 +172,61 @@ namespace Archery.FinalBoss
             return flames;
         }
 
+        /// <summary>Gerbe d'étincelles d'une couleur donnée (arrivée d'une tourelle téléportée), détruite toute seule.</summary>
+        public static void SparkBurst(Vector3 position, Material material, float radius, int count, Color color)
+        {
+            var burst = Create("Étincelles", null, position, Quaternion.Euler(-90f, 0f, 0f), material);
+            var main = burst.main;
+            main.loop = false;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(radius * 1.5f, radius * 3.5f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.25f);
+            main.gravityModifier = 0.4f;
+            main.maxParticles = count;
+            main.stopAction = ParticleSystemStopAction.Destroy;
+            var emission = burst.emission;
+            emission.rateOverTime = 0f;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
+            var shape = burst.shape;
+            shape.shapeType = ParticleSystemShapeType.Hemisphere;
+            shape.radius = radius * 0.3f;
+            Tint(burst, color);
+            burst.Play();
+        }
+
+        /// <summary>Traînée d'étincelles d'une couleur donnée derrière un objet qui bouge (en espace monde).</summary>
+        public static ParticleSystem CreateSparkTrail(Transform parent, Material material, float radius, Color color)
+        {
+            var trail = Create("Traînée d'étincelles", parent, Vector3.zero, Quaternion.identity, material);
+            var main = trail.main;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0f, 0.8f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.1f, 0.35f);
+            main.gravityModifier = 0f;
+            main.maxParticles = 300;
+            var emission = trail.emission;
+            emission.rateOverTime = 160f;
+            var shape = trail.shape;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = radius;
+            Tint(trail, color);
+            trail.Play();
+            return trail;
+        }
+
+        // Remplace les couleurs du feu : blanc à la naissance, puis la couleur donnée, qui s'efface.
+        static void Tint(ParticleSystem system, Color color)
+        {
+            var main = system.main;
+            main.startColor = new ParticleSystem.MinMaxGradient(Color.white, color);
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(color, 0.4f), new GradientColorKey(color, 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.08f), new GradientAlphaKey(0.8f, 0.5f), new GradientAlphaKey(0f, 1f) });
+            var colorOverLifetime = system.colorOverLifetime;
+            colorOverLifetime.color = new ParticleSystem.MinMaxGradient(gradient);
+        }
+
         /// <summary>
         /// Flammes d'un anneau de feu qui s'élargit, à plat sur le sol autour de <paramref name="parent"/> : elles naissent
         /// sur le bord du cercle et partent vers l'extérieur. <see cref="SetRingRadius"/> le fait grandir.

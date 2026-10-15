@@ -157,9 +157,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyRangedAttack
   m_ProjectilePrefab: {fileID: 3616676730080806414, guid: 9091c424b8dbfa3428f0d59665b3521e, type: 3}
   m_Muzzle: {fileID: 1066412111740375881}
-  m_ProjectileSpeed: 11
+  m_ProjectileSpeed: 7.5
   m_Spread: 2
   m_FireClip: {fileID: 8300000, guid: 32853708fff2feb4980277859ddedc86, type: 3}
+  m_ChargeTime: 1.4
+  m_ChargedSize: 2.2
+  m_ChargeClip: {fileID: 0}
 --- !u!1 &1807714995793153109
 GameObject:
   m_ObjectHideFlags: 0

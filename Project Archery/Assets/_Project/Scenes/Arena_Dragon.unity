@@ -165,31 +165,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d72bc37f36dd404cbe09ba22a50d7489, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.ArenaGridBuilder
-  m_Layout: {fileID: 4900000, guid: 3a898a4254bb43809cdd5377136abb30, type: 3}
-  m_CellSize: 2.5
-  m_PlateauLevels: 2
-  m_WallLevels: 6
-  m_PillarLevels: 4
-  m_DaisHeight: 1
-  m_LavaDepth: 0.4
-  m_Ceiling: 1
-  m_CeilingLowLevels: 9
-  m_CeilingHighLevels: 13
-  m_CeilingRise: 2
-  m_FloorMaterial: {fileID: 2100000, guid: c41652cc647649b184c7daeecd598bbf, type: 2}
-  m_RockMaterial: {fileID: 2100000, guid: fda516aeb331c38cf0b15821f258b532, type: 2}
-  m_PillarMaterial: {fileID: 2100000, guid: 31f691ac4e86b378f60f8b5fb8f1654d, type: 2}
-  m_LavaMaterial: {fileID: 2100000, guid: 2e68b3788cd1782cabcab66fe8e3fae6, type: 2}
-  m_LavaFallMaterial: {fileID: 2100000, guid: 70f6d0344782c7fda708e1cd3fc682fd, type: 2}
-  m_Generate: 1
   m_Decorate: 1
   m_DecorSeed: 11
   m_DecorDensity: 1
   m_DarkTiles: 0.3
   m_FloorDarkMaterial: {fileID: 2100000, guid: 9b8b1d3cba6c45b19af1609b33298742, type: 2}
   m_ScorchedMaterial: {fileID: 2100000, guid: 20f5c154528744ee9805e7c93912a151, type: 2}
+  m_FloorTextureSize: 8
+  m_CrackPulse: 0.25
+  m_CrackPulsePeriod: 4
   m_BigRocks:
   - {fileID: 919132149155446097, guid: 79efe3f99ea40eb419cfdb5c71ab2609, type: 3}
   - {fileID: 919132149155446097, guid: 381076ad431359242baf66432a7a6531, type: 3}
@@ -237,9 +223,23 @@ MonoBehaviour:
   m_SkinDepth: 0.45
   m_SkinFacet: 0.5
   m_SkinStrata: 0.12
-  m_FloorTextureSize: 8
-  m_CrackPulse: 0.25
-  m_CrackPulsePeriod: 4
+  m_Layout: {fileID: 4900000, guid: 3a898a4254bb43809cdd5377136abb30, type: 3}
+  m_CellSize: 2.5
+  m_PlateauLevels: 2
+  m_WallLevels: 6
+  m_PillarLevels: 4
+  m_DaisHeight: 1
+  m_LavaDepth: 0.4
+  m_Ceiling: 1
+  m_CeilingLowLevels: 9
+  m_CeilingHighLevels: 13
+  m_CeilingRise: 2
+  m_FloorMaterial: {fileID: 2100000, guid: c41652cc647649b184c7daeecd598bbf, type: 2}
+  m_RockMaterial: {fileID: 2100000, guid: fda516aeb331c38cf0b15821f258b532, type: 2}
+  m_PillarMaterial: {fileID: 2100000, guid: c839f9e5439476cbaf8b97e7d3240e2a, type: 2}
+  m_LavaMaterial: {fileID: 2100000, guid: 2e68b3788cd1782cabcab66fe8e3fae6, type: 2}
+  m_LavaFallMaterial: {fileID: 2100000, guid: 70f6d0344782c7fda708e1cd3fc682fd, type: 2}
+  m_Generate: 1
 --- !u!114 &1003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -250,12 +250,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a181015f83a0d5ce8d561488b1b01777, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.ArenaLava
   m_Arena: {fileID: 1002}
   m_PoolMaterial: {fileID: 0}
   m_FireMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
-  m_DamagePerSecond: 14
+  m_DamagePerSecond: 4.67
   m_TickInterval: 0.5
   m_PoolInterval: 7
   m_MaxPools: 6
@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 92ac3b22260a38796b1b731efe2c798e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.CeilingCrystals
   m_Arena: {fileID: 1002}
   m_CrystalMaterial: {fileID: 2100000, guid: f1793b0a47cbda1ef932c1f451e32da8, type: 2}
@@ -320,7 +320,7 @@ MonoBehaviour:
   - {r: 0.95, g: 0.25, b: 0.65, a: 1}
   - {r: 0.65, g: 0.3, b: 1, a: 1}
   - {r: 1, g: 0.75, b: 0.8, a: 1}
-  m_LitIntensity: 2.2
+  m_LitIntensity: 9.97
   m_LightIntensity: 4.7
   m_LightRange: 43
   m_LightColor: {r: 1, g: 0.42, b: 0.35, a: 1}
@@ -401,7 +401,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24d5eb0a551f71d4bb93c5fa165ce3c9, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Health
   m_MaxHealth: 4500
   m_Invulnerable: 0
@@ -421,7 +421,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 35f12640c148dce499f473d6eb64bc4e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Enemy
   m_Definition: {fileID: 11400000, guid: 80165333db3a4c168c0efca0973ff8fe, type: 2}
   m_Animator: {fileID: 0}
@@ -440,9 +440,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed39e5d9dfc8d8b428442e4db4dceac5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Boss
-  m_DisplayName: Ignarok, le Dragon Usurpateur
+  m_DisplayName: MK
   m_HealthGrowthPerBoss: 0
   m_SummonPrefab: {fileID: 0}
   m_FirstSummonDelay: 15
@@ -463,7 +463,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cad0e9b17558594d85c0b8b2f44e42a2, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.DragonBoss
   m_Animator: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 13db3c86322b16aeb10b76ad58ffc268, type: 2}
@@ -484,6 +484,8 @@ MonoBehaviour:
   m_EyeRadius: 0.09
   m_EyeOffset: {x: 0.05, y: 0.02, z: 0.03}
   m_EyeLightIntensity: 1.5
+  m_FrostOverlayMaterial: {fileID: 2100000, guid: f57b6d3e8a0c4b1d2e5f6a7b8c9d0e1f, type: 2}
+  m_FrostTint: 0.276
   m_AirPhaseAt: 0.66
   m_EnragedPhaseAt: 0.33
   m_WakeRoarTime: 2.6
@@ -515,6 +517,14 @@ MonoBehaviour:
   m_BiteWindup: 0.4
   m_BiteDamage: 0.9
   m_BiteCooldown: 3
+  m_SlamCooldown: 13
+  m_SlamRearTime: 1.1
+  m_SlamRearAngle: 40
+  m_SlamFallTime: 0.22
+  m_SlamRingSpeed: 10
+  m_SlamRingHeight: 0.6
+  m_SlamClearance: 0.4
+  m_SlamDamage: 0.6
   m_BreathRange: 16
   m_PerchBreathRange: 28
   m_BreathAngle: 16
@@ -572,6 +582,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1031}
     m_Modifications:
+    - target: {fileID: 139696, guid: eb58e8f2831a51f45a44a261e6710cdd, type: 3}
+      propertyPath: m_Name
+      value: Model (Red Dragon)
+      objectReference: {fileID: 0}
     - target: {fileID: 485588, guid: eb58e8f2831a51f45a44a261e6710cdd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -604,10 +618,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 139696, guid: eb58e8f2831a51f45a44a261e6710cdd, type: 3}
-      propertyPath: m_Name
-      value: Model (Red Dragon)
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -628,6 +638,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1051}
   - component: {fileID: 1052}
+  - component: {fileID: 1053}
   m_Layer: 0
   m_Name: Arena Director
   m_TagString: Untagged
@@ -660,7 +671,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ea6bb9c350e130f5308e0e5fc2ac7a86, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.ArenaDirector
   m_PlayerSpawn: {fileID: 1021}
   m_Dragon: {fileID: 1035}
@@ -672,13 +683,14 @@ MonoBehaviour:
   m_FirstBeat: 0.04
   m_LoopFromBeat: 16
   m_MusicVolume: 1
+  m_MusicGroup: {fileID: -3530445712461842658, guid: d6e0c2f1242d7604db851b37a499f437, type: 2}
   m_MusicBoostDb: 6
   m_MusicVolumeParameter: MusicVolume
-  m_MusicGroup: {fileID: -3530445712461842658, guid: d6e0c2f1242d7604db851b37a499f437, type: 2}
   m_MusicBeatsPerIntroBeat: 4
   m_DarkMusicVolume: 0.6
   m_CrystalsFromBeat: 4
   m_BeatsPerCrystalQuarter: 1
+  m_DragonDashBeat: 7
   m_BarFromBeat: 8
   m_BarFillBeats: 2
   m_LavaFallBeats: 2
@@ -694,6 +706,31 @@ MonoBehaviour:
   m_ChoiceDelay: 4.5
   m_ChoiceMaterial: {fileID: 2100000, guid: cfc60ced9df00434d97d6ddff9797e6e, type: 2}
   m_ChoiceClip: {fileID: 8300000, guid: 7eb83f326ea036d4eb23c6e0f00b10ab, type: 3}
+--- !u!114 &1053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b13d2f9a4c6e4d7f8a1b2c3d4e5f6a7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.FinalBoss.ArenaTurrets
+  m_BeamMaterial: {fileID: 2100000, guid: da154ed903e01b840b930a340aee295a, type: 2}
+  m_SparkMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
+  m_Color: {r: 0.55, g: 0.85, b: 1, a: 1}
+  m_DropHeight: 18
+  m_DropTime: 0.6
+  m_RangeScale: 2
+  m_ArriveClip: {fileID: 8300000, guid: c2a9ecf94201d824fb2d4e3f7b10c2e9, type: 3}
+  m_IceBallMaterial: {fileID: 2100000, guid: c24e3a0b5d7f4e8a9b2c3d4e5f6a7b8c, type: 2}
+  m_IceColor: {r: 0.6, g: 0.9, b: 1, a: 1}
+  m_IceBallSpeed: 28
+  m_IceBallSize: 0.6
+  m_IceShotClip: {fileID: 8300000, guid: 32853708fff2feb4980277859ddedc86, type: 3}
+  m_IceHitClip: {fileID: 8300000, guid: 740af188f127e3d4abe0478b0eb00c23, type: 3}
 --- !u!1 &1060
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,8 +773,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_IsGlobal: 1
   priority: 10
   blendDistance: 0

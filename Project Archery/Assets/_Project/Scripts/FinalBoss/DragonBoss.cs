@@ -155,6 +155,16 @@ namespace Archery.FinalBoss
         [SerializeField]
         float m_EyeLightIntensity = 1.5f;
 
+        [Header("Givre")]
+        [Tooltip("Voile bleuté posé sur le dragon quand une boule de glace le touche (Frost_Overlay). Vide : pas de teinte.")]
+        [SerializeField]
+        Material m_FrostOverlayMaterial;
+
+        [Tooltip("Force de la teinte au coup (0 à 1) ; elle s'efface au même rythme que le ralentissement.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_FrostTint = 0.6f;
+
         [Header("Phases (part des PV)")]
         [Range(0f, 1f)]
         [SerializeField]
@@ -547,6 +557,33 @@ namespace Archery.FinalBoss
         /// <summary>Le dragon change de phase (réveil, envol, rage, mort).</summary>
         public event Action<DragonPhase> PhaseChanged;
 
+        /// <summary>Ses pattes avant viennent de frapper le sol (slam), à ce point (monde).</summary>
+        public event Action<Vector3> Slammed;
+
+        // Pour les lumières de l'arène (ArenaLights) : le sol chauffe avant le souffle, les craquelures flashent avant le slam.
+
+        /// <summary>Charge du souffle (0 à 1) pendant qu'il inspire, -1 sinon.</summary>
+        public float BreathChargeProgress => m_State == State.BreathCharge ? Mathf.Clamp01(m_StateTime / Mathf.Max(0.1f, m_BreathCharge)) : -1f;
+
+        /// <summary>Il crache son feu en ce moment.</summary>
+        public bool IsBreathing => m_Firing;
+
+        /// <summary>Direction du souffle en cours.</summary>
+        public Vector3 BreathDirection => m_BreathAim;
+
+        /// <summary>Le bout de sa gueule (monde).</summary>
+        public Vector3 Mouth => MouthPosition;
+
+        /// <summary>Portée (m) et demi-angle (°) du souffle.</summary>
+        public float BreathReach => BreathRange;
+
+        public float BreathHalfAngle => m_BreathAngle;
+
+        /// <summary>Le slam se prépare : 0 quand il commence à se dresser, 1 quand ses pattes touchent le sol ; -1 sinon.</summary>
+        public float SlamProgress => m_State == State.Slam && m_Step == 0
+            ? Mathf.Clamp01(m_StateTime / Mathf.Max(0.1f, m_SlamRearTime + m_SlamFallTime))
+            : -1f;
+
         public override Vector3 Velocity => m_Velocity;
         public override bool ControlsAnimator => true;
         public override bool NeedsNavMesh => false;
@@ -592,6 +629,7 @@ namespace Archery.FinalBoss
             BuildBreath();
             BuildEyes();
             BuildMouthGlow();
+            BuildFrostTint();
             MeasureStrides();
             SetHitboxesEnabled(false);
         }

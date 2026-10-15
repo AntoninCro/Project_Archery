@@ -90,6 +90,9 @@ namespace Archery.Enemies
         float m_RunAnimationSpeed = 1f;
         float m_SlowMultiplier = 1f;
         float m_SlowTimer;
+        float m_FadingSlow;
+        float m_FadingDuration;
+        float m_FadingAge;
         bool m_HasSpeed;
         bool m_HasAttack;
         bool m_HasHit;
@@ -116,10 +119,31 @@ namespace Archery.Enemies
         public float SpeedMultiplier { get; set; } = 1f;
 
         /// <summary>Vitesse effective (m/s) : difficulté, vague, multiplicateur durable et ralentissement en cours.</summary>
-        public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
+        public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * SlowMultiplier;
 
-        /// <summary>Ralentissement en cours (1 = aucun, 0,75 = 25 % plus lent).</summary>
-        public float SlowMultiplier => m_SlowMultiplier;
+        /// <summary>
+        /// Ralentissement en cours (1 = aucun, 0,75 = 25 % plus lent) : le plus fort entre <see cref="Slow"/> et
+        /// <see cref="SlowFading"/>, dans la limite de <see cref="MaxSlow"/>.
+        /// </summary>
+        public float SlowMultiplier => Mathf.Max(1f - Mathf.Clamp01(MaxSlow), Mathf.Min(m_SlowMultiplier, 1f - FadingStrength));
+
+        /// <summary>
+        /// Où en est le ralentissement qui s'estompe (<see cref="SlowFading"/>) : 1 au coup, puis de moins en moins, au même
+        /// rythme que lui, jusqu'à 0 (la teinte bleutée du dragon le suit).
+        /// </summary>
+        public float FadingSlowLevel => m_FadingSlow > 0f ? FadingStrength / m_FadingSlow : 0f;
+
+        // Part de vitesse retirée en ce moment par un ralentissement qui s'estompe : forte au coup, elle décroît au carré.
+        float FadingStrength
+        {
+            get
+            {
+                if (m_FadingAge >= m_FadingDuration)
+                    return 0f;
+                var left = 1f - m_FadingAge / m_FadingDuration;
+                return m_FadingSlow * left * left;
+            }
+        }
 
         /// <summary>
         /// Part de sa vitesse qu'un ralentissement peut lui retirer, tous ralentissements confondus (1 = sans limite ;
@@ -207,6 +231,9 @@ namespace Archery.Enemies
                 if (m_SlowTimer <= 0f)
                     m_SlowMultiplier = 1f;
             }
+
+            if (m_FadingAge < m_FadingDuration)
+                m_FadingAge += deltaTime;
 
             if (m_State == State.Fleeing)
             {
@@ -341,10 +368,12 @@ namespace Archery.Enemies
             if (m_AttackCooldown > 0f || m_HitDelay >= 0f)
                 return;
 
-            // L'attaque démarre ; le coup porte après le délai de préparation.
+            // L'attaque démarre ; le coup porte après le délai de préparation. Une boule chargée (liche) commence tout
+            // de suite à se former, et c'est elle qui lance l'animation, au moment du lancer.
             m_AttackCooldown = Def.attackInterval;
-            m_HitDelay = Def.attackWindup;
-            if (m_HasAttack)
+            var charged = m_RangedAttack != null && m_RangedAttack.Charges;
+            m_HitDelay = charged ? 0f : Def.attackWindup;
+            if (m_HasAttack && !charged)
                 m_Animator.SetTrigger(k_AttackId);
         }
 
@@ -471,6 +500,25 @@ namespace Archery.Enemies
             multiplier = Mathf.Max(Mathf.Clamp01(multiplier), 1f - Mathf.Clamp01(MaxSlow));
             m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, multiplier);
             m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
+        }
+
+        /// <summary>
+        /// Ralentissement qui s'estompe vite (boule de glace d'une tour de givre, arène du boss final) : <paramref name="multiplier"/>
+        /// au coup (0,7 = 30 % plus lent, dans la limite de <see cref="MaxSlow"/>), puis de moins en moins, au carré,
+        /// jusqu'à plus rien après <paramref name="duration"/> s. Un nouveau coup repart du plus fort des deux.
+        /// </summary>
+        public void SlowFading(float multiplier, float duration)
+        {
+            if (m_State == State.Dead || duration <= 0f)
+                return;
+
+            var strength = 1f - Mathf.Clamp01(multiplier);
+            if (strength < FadingStrength)
+                return;
+
+            m_FadingSlow = strength;
+            m_FadingDuration = duration;
+            m_FadingAge = 0f;
         }
 
         void UpdateFlee(float deltaTime)

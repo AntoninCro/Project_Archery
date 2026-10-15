@@ -168,10 +168,10 @@ Dans le casque, le manche doit pointer vers le haut et un peu vers l'avant, et l
 2. Ajoute-lui ces composants :
    - un **Box Collider** : *Size* (3 ; 0,05 ; 3), *Center* (0 ; 0,025 ; 0). C'est la plaque que vise le rayon de la main. Les flèches la traversent ;
    - un **Build Socket**. Laisse sa liste *Colliders* vide : il trouve le Box Collider tout seul.
-3. Glisse en enfant le modèle `selection-a` du Tower Defense Kit (les quatre coins). Renomme-le `Marker`, et règle *Position* (0 ; 0,03 ; 0) et *Scale* (3 ; 2 ; 3). Glisse-le dans *Marker* du Build Socket. Les coins respirent doucement et grossissent quand le rayon les vise. Ils se cachent une fois le bâtiment posé.
+3. ~~Glisse en enfant le modèle `selection-a` du Tower Defense Kit (les quatre coins), nommé `Marker`.~~ Retiré du prefab le 15 octobre : les emplacements libres sont maintenant signalés par un cercle de runes lumineuses au sol, créé au lancement par les lumières de la carte (GDD, section 17 bis). Les runes tournent doucement, grossissent et brillent plus quand le rayon les vise, et disparaissent une fois le bâtiment posé. Le champ *Marker* du Build Socket reste vide (il sert encore si tu veux remettre un repère).
 4. Fais-en le prefab `Prefabs/Build Socket`, puis supprime-le de la scène.
 
-Garde **Scale 1** sur la racine du socle : le bâtiment s'y pose en enfant et prendrait son échelle. Pour un socle plus petit, change plutôt *Size* et l'échelle de `Marker`.
+Garde **Scale 1** sur la racine du socle : le bâtiment s'y pose en enfant et prendrait son échelle. Pour un socle plus petit, change plutôt *Size* et la taille du Box Collider (les runes suivent sa taille).
 
 #### 5. Le panneau
 

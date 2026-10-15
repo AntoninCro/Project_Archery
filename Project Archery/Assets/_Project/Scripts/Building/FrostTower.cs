@@ -1,3 +1,5 @@
+using Archery.Bows;
+using Archery.Enemies;
 using Archery.Upgrades;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -7,7 +9,8 @@ namespace Archery.Building
     /// <summary>
     /// Tour de givre sur un socle au bord de la voie (GDD, section 9) : elle ralentit les ennemis autour d'elle,
     /// volants compris (30 / 40 / 50 % dans un rayon de 8 / 9 / 10 m). Un disque bleuté montre sa portée au sol,
-    /// ses cristaux grandissent avec le niveau.
+    /// ses cristaux grandissent avec le niveau. Dans l'arène du boss final, elle tire plutôt des boules de glace dont le
+    /// ralentissement s'estompe vite (<see cref="FiresIceBalls"/>).
     /// </summary>
     public class FrostTower : Structure
     {
@@ -48,13 +51,89 @@ namespace Archery.Building
         [SerializeField]
         float[] m_LightIntensityPerLevel = { 1.5f, 2.2f, 3f };
 
+        [Header("Boules de glace (arène du boss final)")]
+        [Tooltip("Portée (m) des boules de glace, avant la portée doublée de l'arène.")]
+        [SerializeField]
+        float m_IceBallRange = 20f;
+
+        [Tooltip("Temps (s) entre deux boules de glace d'une même tour, par niveau. À plusieurs, les tours se relaient.")]
+        [SerializeField]
+        float[] m_IceBallIntervalPerLevel = { 3f, 2.5f, 2f };
+
+        [Tooltip("Durée (s) du ralentissement d'une boule de glace, par niveau : fort au coup, il s'estompe vite.")]
+        [SerializeField]
+        float[] m_IceBallSlowTimePerLevel = { 2f, 2.5f, 3f };
+
+        static readonly RaycastHit[] s_Hits = new RaycastHit[16];
+
         MeshRenderer m_RangeDisc;
         MaterialPropertyBlock m_Block;
         Vector3 m_CrystalBaseScale = Vector3.one;
         float m_TickTimer;
         float m_Age;
 
-        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 8f);
+        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 8f) * RangeScale;
+
+        /// <summary>
+        /// Dans l'arène du boss final : au lieu de ralentir tout ce qui l'entoure, la tour tire des boules de glace (c'est
+        /// l'arène qui décide quand, pour que plusieurs tours se relaient).
+        /// </summary>
+        public bool FiresIceBalls { get; set; }
+
+        /// <summary>Temps (s) entre deux boules de glace de cette tour, à son niveau.</summary>
+        public float IceBallInterval => ValueFor(m_IceBallIntervalPerLevel, Level, 3f);
+
+        /// <summary>Vitesse de l'ennemi au coup (0,7 = 30 % plus lent), à son niveau.</summary>
+        public float IceBallSlow => ValueFor(m_SpeedPerLevel, Level, 0.7f);
+
+        /// <summary>Durée (s) du ralentissement d'une boule de glace, à son niveau.</summary>
+        public float IceBallSlowTime => ValueFor(m_IceBallSlowTimePerLevel, Level, 2f);
+
+        /// <summary>D'où partent les boules de glace : au-dessus des cristaux.</summary>
+        public Vector3 IceBallMuzzle => (m_Crystals != null ? m_Crystals.position : transform.position + Vector3.up * 2.5f) + Vector3.up * 0.6f;
+
+        /// <summary>L'ennemi vivant le plus proche à portée des boules de glace, et visible depuis le haut de la tour.</summary>
+        public bool TryFindIceBallTarget(out Enemy target)
+        {
+            target = null;
+            var muzzle = IceBallMuzzle;
+            var range = m_IceBallRange * RangeScale;
+            var best = range * range;
+            foreach (var enemy in AliveEnemies())
+            {
+                if (enemy == null || !enemy.IsAlive)
+                    continue;
+
+                var distance = (enemy.Center - muzzle).sqrMagnitude;
+                if (distance < best && IsVisible(muzzle, enemy.Center))
+                {
+                    target = enemy;
+                    best = distance;
+                }
+            }
+
+            return target != null;
+        }
+
+        // Rien entre le haut de la tour et l'ennemi (une falaise, le bord du plateau), sauf l'ennemi lui-même.
+        bool IsVisible(Vector3 from, Vector3 to)
+        {
+            var direction = to - from;
+            var distance = direction.magnitude;
+            if (distance < 0.01f)
+                return true;
+
+            var count = Physics.RaycastNonAlloc(from, direction / distance, s_Hits, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                var collider = s_Hits[i].collider;
+                if (ArrowIgnore.IsIgnored(collider) || collider.transform.IsChildOf(transform) || collider.GetComponentInParent<Enemy>() != null)
+                    continue;
+                return false;
+            }
+
+            return true;
+        }
 
         protected override void Awake()
         {
@@ -80,6 +159,10 @@ namespace Archery.Building
                 m_RangeDisc.SetPropertyBlock(m_Block);
             }
 
+            // Dans l'arène du boss final, elle tire des boules de glace à la place.
+            if (FiresIceBalls)
+                return;
+
             m_TickTimer -= Time.deltaTime;
             if (m_TickTimer > 0f)
                 return;
@@ -95,7 +178,7 @@ namespace Archery.Building
                     continue;
 
                 var offset = enemy.transform.position - center;
-                if (offset.y < -2f || offset.y > m_MaxHeight)
+                if (offset.y < -2f - Elevation || offset.y > m_MaxHeight)
                     continue;
 
                 offset.y = 0f;
@@ -115,6 +198,16 @@ namespace Archery.Building
                 m_Crystals.localScale = m_CrystalBaseScale * ValueFor(m_CrystalScalePerLevel, level, 1f);
             if (m_Light != null)
                 m_Light.intensity = ValueFor(m_LightIntensityPerLevel, level, 1.5f);
+        }
+
+        // En hauteur (plateau de l'arène du boss), le disque flotterait au-dessus du sol des ennemis : on le cache.
+        protected override void OnRangeChanged()
+        {
+            base.OnRangeChanged();
+            if (m_RangeDisc == null)
+                return;
+            m_RangeDisc.transform.localScale = new Vector3(Radius, 1f, Radius);
+            m_RangeDisc.enabled = Elevation <= 0.01f;
         }
 
         // Le disque de portée n'est pas une partie du bâtiment : il reste tel quel pendant une amélioration.

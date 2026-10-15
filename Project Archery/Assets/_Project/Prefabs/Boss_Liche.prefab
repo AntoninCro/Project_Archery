@@ -159,9 +159,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyRangedAttack
   m_ProjectilePrefab: {fileID: 3616676730080806414, guid: 9091c424b8dbfa3428f0d59665b3521e, type: 3}
   m_Muzzle: {fileID: 1235745145274741874}
-  m_ProjectileSpeed: 10
+  m_ProjectileSpeed: 7
   m_Spread: 2
   m_FireClip: {fileID: 8300000, guid: 32853708fff2feb4980277859ddedc86, type: 3}
+  m_ChargeTime: 1.6
+  m_ChargedSize: 3
+  m_ChargeClip: {fileID: 0}
 --- !u!1 &4687120341557648105
 GameObject:
   m_ObjectHideFlags: 0
@@ -205,7 +208,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed39e5d9dfc8d8b428442e4db4dceac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Boss
-  m_DisplayName: "Liche supr\xEAme"
+  m_DisplayName: Nolan
   m_HealthGrowthPerBoss: 0
   m_SummonPrefab: {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
   m_FirstSummonDelay: 12
@@ -536,7 +539,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Liche supr\xEAme"
+  m_text: Nolan
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

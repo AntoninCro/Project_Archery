@@ -128,6 +128,9 @@ namespace Archery.FinalBoss
         /// <summary>Côté d'une case (m).</summary>
         public float CellSize => m_CellSize;
 
+        /// <summary>Matériau des piliers (obsidienne).</summary>
+        public Material PillarMaterial => m_PillarMaterial;
+
         /// <summary>Arrivée du joueur (case S), regard vers le fond.</summary>
         public Pose SpawnPoint => ToWorld(m_Spawn);
 
@@ -306,6 +309,47 @@ namespace Archery.FinalBoss
         {
             var cell = CellAt(transform.InverseTransformPoint(point), out _);
             return transform.position.y + (cell == Cell.Dais ? m_DaisHeight : cell == Cell.Lava ? -m_LavaDepth : 0f);
+        }
+
+        /// <summary>Le dessus de chaque case de lave (monde), au fond de l'arène comme sur le plateau.</summary>
+        public void GetLavaSurface(List<Vector3> points)
+        {
+            points.Clear();
+            for (var y = 0; y < m_Height; y++)
+            {
+                for (var x = 0; x < m_Width; x++)
+                {
+                    if (IsLava(m_Cells[x, y]))
+                        points.Add(transform.TransformPoint(CellCenter(x, y) + Vector3.up * Top(m_Cells[x, y])));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Le pied des coulées qui tombent du plateau (monde) : au bord de la lave du bas, tourné vers l'arène, une pose
+        /// par case de coulée.
+        /// </summary>
+        public void GetLavaFallFeet(List<Pose> feet)
+        {
+            feet.Clear();
+            for (var y = 0; y < m_Height; y++)
+            {
+                for (var x = 0; x < m_Width; x++)
+                {
+                    if (m_Cells[x, y] != Cell.PlateauLava)
+                        continue;
+
+                    foreach (var side in k_Sides)
+                    {
+                        if (Get(x + side.x, y + side.y) != Cell.Lava)
+                            continue;
+
+                        var facing = new Vector3(side.x, 0f, -side.y);
+                        var foot = CellCenter(x, y) + facing * (m_CellSize * 0.5f) + Vector3.up * Top(Cell.Lava);
+                        feet.Add(ToWorld(new Pose(foot, Quaternion.LookRotation(facing))));
+                    }
+                }
+            }
         }
 
         /// <summary>Pendant l'intro : les lumières du décor, les feux, les braises et les craquelures suivent l'allumage.</summary>

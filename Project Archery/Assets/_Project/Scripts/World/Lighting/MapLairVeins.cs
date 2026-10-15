@@ -1,0 +1,273 @@
+using System.Collections.Generic;
+using Archery.FinalBoss;
+using Archery.Waves;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+namespace Archery.World
+{
+    /// <summary>
+    /// Des veines de lave dans la face de la montagne, autour de la porte de l'antre (<see cref="LairGate"/>) : une
+    /// seule, faible, au début de la partie ; à chaque vague, d'autres s'allument, plus loin de la porte, et toutes
+    /// battent comme un cœur, de plus en plus vite. À la vague du boss final, elles sont toutes au plus fort.
+    /// </summary>
+    public class MapLairVeins : MonoBehaviour
+    {
+        static readonly int k_ColorId = Shader.PropertyToID("_Color");
+        static readonly int k_IntensityId = Shader.PropertyToID("_Intensity");
+
+        const float k_MapTop = 150f;
+
+        readonly List<MeshRenderer> m_Veins = new List<MeshRenderer>();
+        readonly List<Object> m_Owned = new List<Object>();
+        readonly HashSet<Collider> m_GateColliders = new HashSet<Collider>();
+        MapLightingSettings m_Settings;
+        MaterialPropertyBlock m_Block;
+        Transform m_Gate;
+        Light m_Light;
+        float m_Shown;
+
+        public void Init(MapLightingSettings settings)
+        {
+            m_Settings = settings;
+            m_Block = new MaterialPropertyBlock();
+
+            LairGate gate = null;
+            foreach (var candidate in FindObjectsByType<LairGate>())
+            {
+                if (candidate.transform.position.y < k_MapTop)
+                    gate = candidate;
+            }
+
+            if (gate == null || settings.glowMaterial == null || settings.veins <= 0)
+                return;
+
+            m_Gate = gate.transform;
+            foreach (var collider in gate.GetComponentsInChildren<Collider>(true))
+                m_GateColliders.Add(collider);
+
+            BuildVeins();
+
+            m_Light = new GameObject("Lueur de l'antre").AddComponent<Light>();
+            m_Light.transform.SetParent(transform, false);
+            m_Light.transform.position = m_Gate.TransformPoint(0f, 3f, -4f);
+            m_Light.type = LightType.Point;
+            m_Light.shadows = LightShadows.None;
+            m_Light.color = settings.veinColor;
+            m_Light.range = 12f;
+        }
+
+        void OnDestroy()
+        {
+            foreach (var owned in m_Owned)
+            {
+                if (owned != null)
+                    Destroy(owned);
+            }
+        }
+
+        void Update()
+        {
+            if (m_Veins.Count == 0)
+                return;
+
+            // Avancement de la partie : 0 avant la première vague, 1 à la dernière (et pendant le boss final).
+            var waves = WaveManager.Instance;
+            var progress = 0f;
+            var finalBoss = false;
+            if (waves != null)
+            {
+                finalBoss = waves.IsFinalBossWave;
+                progress = finalBoss ? 1f : Mathf.Clamp01(waves.WaveNumber / (float)Mathf.Max(1, waves.WavesToWin));
+            }
+
+            var target = Mathf.Max(1f, progress * m_Veins.Count);
+            m_Shown = Mathf.MoveTowards(m_Shown, target, Time.deltaTime * 0.6f);
+
+            // Un battement de cœur (deux coups rapprochés), plus rapide quand la partie avance.
+            var period = Mathf.Lerp(1.7f, finalBoss ? 0.6f : 0.85f, progress);
+            var t = Mathf.Repeat(Time.time, period) / period;
+            var beat = Gauss(t, 0.05f, 0.05f) + 0.6f * Gauss(t, 0.24f, 0.05f);
+            var lamps = SkyController.Lamps;
+            var intensity = (0.5f + 1.5f * progress) * Mathf.Lerp(0.6f, 1.4f, lamps) * (0.65f + 0.6f * beat);
+
+            for (var i = 0; i < m_Veins.Count; i++)
+            {
+                var fade = Mathf.Clamp01(m_Shown - i);
+                var vein = m_Veins[i];
+                vein.enabled = fade > 0.01f;
+                if (!vein.enabled)
+                    continue;
+
+                m_Block.Clear();
+                m_Block.SetColor(k_ColorId, m_Settings.veinColor);
+                m_Block.SetFloat(k_IntensityId, intensity * fade);
+                vein.SetPropertyBlock(m_Block);
+            }
+
+            if (m_Light != null)
+            {
+                m_Light.intensity = (0.2f + 1.4f * progress) * Mathf.Lerp(0.3f, 1f, lamps) * (0.6f + 0.5f * beat);
+                m_Light.enabled = m_Light.intensity > 0.02f;
+            }
+        }
+
+        static float Gauss(float x, float center, float width)
+        {
+            var d = (x - center) / width;
+            return Mathf.Exp(-d * d);
+        }
+
+        // ---------------------------------------------------------------- fabrication
+
+        // Les veines partent de points pris autour du porche (sur les côtés et au-dessus), posés sur la roche, et
+        // serpentent en s'éloignant de la porte. Elles sont rangées de la plus proche à la plus lointaine : c'est l'ordre
+        // dans lequel elles s'allument.
+        void BuildVeins()
+        {
+            // Taille du porche, dans le repère de la porte.
+            var halfWidth = 4f;
+            var top = 8f;
+            foreach (var renderer in m_Gate.GetComponentsInChildren<Renderer>(true))
+            {
+                var bounds = renderer.bounds;
+                for (var c = 0; c < 8; c++)
+                {
+                    var corner = new Vector3((c & 1) == 0 ? bounds.min.x : bounds.max.x, (c & 2) == 0 ? bounds.min.y : bounds.max.y,
+                                             (c & 4) == 0 ? bounds.min.z : bounds.max.z);
+                    var local = m_Gate.InverseTransformPoint(corner);
+                    halfWidth = Mathf.Max(halfWidth, Mathf.Abs(local.x));
+                    top = Mathf.Max(top, local.y);
+                }
+            }
+
+            var random = new System.Random(83);
+            var veins = new List<(float Distance, Mesh Mesh)>();
+            for (var attempt = 0; attempt < m_Settings.veins * 4 && veins.Count < m_Settings.veins; attempt++)
+            {
+                var side = attempt % 2 == 0 ? -1f : 1f;
+                Vector3 start;
+                Vector2 heading;
+                if (attempt % 5 == 4)
+                {
+                    start = new Vector3(Range(random, -halfWidth, halfWidth), top + Range(random, 0.3f, 3f), -3f);
+                    heading = new Vector2(Range(random, -0.6f, 0.6f), 1f);
+                }
+                else
+                {
+                    start = new Vector3(side * (halfWidth + Range(random, 0.2f, 3.5f)), Range(random, 0.4f, top), -3f);
+                    heading = new Vector2(side, Range(random, -0.3f, 0.9f));
+                }
+
+                if (!TryFace(m_Gate.TransformPoint(start), m_Gate.forward, 18f, out var point, out var normal))
+                    continue;
+
+                var builder = new MeshBuilder();
+                var length = Grow(builder, point, normal, heading.normalized, 7 + random.Next(5), 0.13f, random);
+                if (length < 1.5f)
+                    continue;
+
+                // Une branche, une fois sur deux.
+                if (random.NextDouble() < 0.5)
+                {
+                    var branchHeading = new Vector2(heading.x + Range(random, -0.8f, 0.8f), heading.y + Range(random, 0.2f, 0.9f)).normalized;
+                    Grow(builder, point + Vector3.up * 0.05f, normal, branchHeading, 3 + random.Next(3), 0.08f, random);
+                }
+
+                var mesh = builder.ToMesh("Veine de l'antre");
+                m_Owned.Add(mesh);
+                var local = m_Gate.InverseTransformPoint(point);
+                var distance = new Vector2(local.x, local.y - top * 0.5f).magnitude;
+                veins.Add((distance, mesh));
+            }
+
+            veins.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            foreach (var vein in veins)
+            {
+                var go = new GameObject("Veine de l'antre");
+                go.transform.SetParent(transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = vein.Mesh;
+                var renderer = go.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = m_Settings.glowMaterial;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                renderer.enabled = false;
+                m_Veins.Add(renderer);
+            }
+        }
+
+        // Une veine qui serpente sur la roche, en suivant sa surface pas à pas ; plus fine au bout. Rend sa longueur.
+        float Grow(MeshBuilder builder, Vector3 point, Vector3 normal, Vector2 heading, int steps, float width, System.Random random)
+        {
+            var points = new List<Vector3> { point };
+            var normals = new List<Vector3> { normal };
+            var length = 0f;
+            for (var s = 0; s < steps; s++)
+            {
+                var angle = Range(random, -35f, 35f) * Mathf.Deg2Rad;
+                heading = new Vector2(heading.x * Mathf.Cos(angle) - heading.y * Mathf.Sin(angle), heading.x * Mathf.Sin(angle) + heading.y * Mathf.Cos(angle));
+                var along = m_Gate.right * heading.x + Vector3.up * heading.y;
+                along -= normal * Vector3.Dot(along, normal);
+                if (along.sqrMagnitude < 1e-4f)
+                    break;
+
+                var step = Range(random, 0.45f, 0.85f);
+                var candidate = point + along.normalized * step;
+                if (!TryFace(candidate + normal * 1.2f, -normal, 2.6f, out var next, out var nextNormal))
+                    break;
+
+                length += Vector3.Distance(point, next);
+                point = next;
+                normal = nextNormal;
+                points.Add(point);
+                normals.Add(normal);
+            }
+
+            if (points.Count < 2)
+                return 0f;
+
+            // Une bande le long de la ligne : chaque point a son propre écart sur les côtés, les morceaux se raccordent.
+            var sides = new Vector3[points.Count];
+            for (var i = 0; i < points.Count; i++)
+            {
+                var direction = points[Mathf.Min(i + 1, points.Count - 1)] - points[Mathf.Max(i - 1, 0)];
+                var taper = Mathf.Lerp(1f, 0.25f, i / (float)(points.Count - 1));
+                sides[i] = Vector3.Cross(direction, normals[i]).normalized * (width * taper);
+            }
+
+            for (var i = 0; i < points.Count - 1; i++)
+            {
+                var a = points[i] + normals[i] * 0.04f;
+                var b = points[i + 1] + normals[i + 1] * 0.04f;
+                var color = new Color(1f, 1f, 1f, Mathf.Lerp(1f, 0.45f, i / (float)(points.Count - 1)));
+                builder.Quad(a - sides[i], a + sides[i], b + sides[i + 1], b - sides[i + 1], color,
+                             new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 1f));
+            }
+
+            return length;
+        }
+
+        // La roche devant ce rayon : le premier collider qui n'est ni la porte ni une plante. Faux s'il n'y en a pas, ou
+        // s'il ne fait pas face au rayon (sol, dessus d'un rocher…).
+        bool TryFace(Vector3 origin, Vector3 direction, float distance, out Vector3 point, out Vector3 normal)
+        {
+            point = origin;
+            normal = -direction;
+            var hits = Physics.RaycastAll(origin, direction, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            var best = float.MaxValue;
+            foreach (var hit in hits)
+            {
+                if (hit.distance >= best || m_GateColliders.Contains(hit.collider) || MapScan.IsPlant(hit.collider.transform))
+                    continue;
+
+                best = hit.distance;
+                point = hit.point;
+                normal = hit.normal;
+            }
+
+            return best < float.MaxValue && Mathf.Abs(normal.y) <= 0.75f && Vector3.Dot(normal, direction) <= -0.3f;
+        }
+
+        static float Range(System.Random random, float min, float max) => min + (float)random.NextDouble() * (max - min);
+    }
+}

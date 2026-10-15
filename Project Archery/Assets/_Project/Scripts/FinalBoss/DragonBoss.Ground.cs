@@ -315,6 +315,7 @@ namespace Archery.FinalBoss
             Sfx.Play(m_ExplosionClip, paws, 1f, 0.5f);
             Sfx.Play(m_StepClip, paws, 1f, 0.4f);
             ArenaPlayer.Rumble(0.9f, 0.4f);
+            Slammed?.Invoke(paws);
 
             var reach = m_Arena != null ? HorizontalDistance(paws, Center) + m_Arena.RoamRadius + 4f : 40f;
             FireRing.Spawn(new Vector3(paws.x, FloorY, paws.z), m_SlamRingSpeed * m_Tempo, reach, m_SlamRingHeight,

@@ -88,6 +88,7 @@ namespace Archery.FinalBoss
                 ApplyPaw(m_Paw);
 
             UpdateMouthGlow();
+            UpdateFrostTint();
             if (m_Held != null)
                 m_Held.Hold(HeldPosition(m_HeldCharge), m_HeldCharge);
 
@@ -202,6 +203,68 @@ namespace Archery.FinalBoss
             m_MouthLight.transform.position = MouthPosition + SnoutDirection * 0.4f;
             m_MouthLight.intensity = 10f * m_Glow;
             m_MouthLight.range = 4f + 8f * m_Glow;
+        }
+
+        // ---------------------------------------------------------------- givre
+
+        static readonly int k_FrostAmountId = Shader.PropertyToID("_Amount");
+
+        SkinnedMeshRenderer[] m_BodyRenderers;
+        Material[][] m_BodyMaterials;
+        Material[][] m_FrostMaterials;
+        MaterialPropertyBlock m_FrostBlock;
+        bool m_FrostShown;
+
+        // Le voile de givre : un matériau de plus sur le corps, ajouté seulement pendant qu'il se voit.
+        void BuildFrostTint()
+        {
+            if (m_FrostOverlayMaterial == null)
+                return;
+
+            m_BodyRenderers = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            m_BodyMaterials = new Material[m_BodyRenderers.Length][];
+            m_FrostMaterials = new Material[m_BodyRenderers.Length][];
+            for (var i = 0; i < m_BodyRenderers.Length; i++)
+            {
+                var materials = m_BodyRenderers[i].sharedMaterials;
+                var withFrost = new Material[materials.Length + 1];
+                materials.CopyTo(withFrost, 0);
+                withFrost[materials.Length] = m_FrostOverlayMaterial;
+                m_BodyMaterials[i] = materials;
+                m_FrostMaterials[i] = withFrost;
+            }
+
+            m_FrostBlock = new MaterialPropertyBlock();
+        }
+
+        // Touché par une boule de glace, le dragon bleuit légèrement, puis reprend sa couleur à mesure que le
+        // ralentissement s'estompe.
+        void UpdateFrostTint()
+        {
+            if (m_BodyRenderers == null)
+                return;
+
+            var amount = Enemy.IsAlive ? Enemy.FadingSlowLevel * m_FrostTint : 0f;
+            var show = amount > 0.005f;
+            if (show != m_FrostShown)
+            {
+                m_FrostShown = show;
+                for (var i = 0; i < m_BodyRenderers.Length; i++)
+                {
+                    if (m_BodyRenderers[i] != null)
+                        m_BodyRenderers[i].sharedMaterials = show ? m_FrostMaterials[i] : m_BodyMaterials[i];
+                }
+            }
+
+            if (!show)
+                return;
+
+            m_FrostBlock.SetFloat(k_FrostAmountId, amount);
+            for (var i = 0; i < m_BodyRenderers.Length; i++)
+            {
+                if (m_BodyRenderers[i] != null)
+                    m_BodyRenderers[i].SetPropertyBlock(m_FrostBlock, m_FrostMaterials[i].Length - 1);
+            }
         }
 
         // ---------------------------------------------------------------- pose de repos et foulée

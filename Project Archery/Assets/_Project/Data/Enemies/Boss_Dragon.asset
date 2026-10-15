@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 087d9161621415942ae4e439855329e7, type: 3}
   m_Name: Boss_Dragon
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
-  displayName: Dragon rouge
+  displayName: MK
   maxHealth: 4500
   moveSpeed: 2.6
-  attackDamage: 25
+  attackDamage: 8.33
   attackRange: 6
   attackInterval: 1.6
   attackWindup: 0.5

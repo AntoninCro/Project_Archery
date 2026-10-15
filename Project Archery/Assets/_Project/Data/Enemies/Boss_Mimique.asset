@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 087d9161621415942ae4e439855329e7, type: 3}
   m_Name: Boss_Mimique
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
-  displayName: Mimique vorace
+  displayName: Jean
   maxHealth: 420
   moveSpeed: 2.3
   attackDamage: 50

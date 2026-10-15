@@ -203,6 +203,9 @@ namespace Archery.FinalBoss
             return true;
         }
 
+        /// <summary>Une boule a explosé (pas abattue en vol) : point et rayon de l'explosion (le sol y reste brûlant un moment).</summary>
+        public static event System.Action<Vector3, float> Exploded;
+
         void Explode(Vector3 point, bool direct, bool harmless = false)
         {
             m_Done = true;
@@ -210,6 +213,8 @@ namespace Archery.FinalBoss
                 m_Collider.enabled = false;
 
             FireEffects.Burst(point, m_FireMaterial, Mathf.Max(m_SplashRadius, m_Radius * 2f), 70);
+            if (!harmless)
+                Exploded?.Invoke(point, Mathf.Max(m_SplashRadius, m_Radius * 2f));
             Sfx.Play(m_ExplosionClip, point, 1f, Random.Range(0.7f, 0.85f));
 
             if (!harmless && ArenaPlayer.IsAlive)

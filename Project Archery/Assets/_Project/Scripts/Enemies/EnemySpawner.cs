@@ -36,6 +36,12 @@ namespace Archery.Enemies
 
         public bool IsSpawning { get; set; }
 
+        /// <summary>Les points d'apparition (un par voie sur la carte).</summary>
+        public IReadOnlyList<Transform> SpawnPoints => m_SpawnPoints;
+
+        /// <summary>Un ennemi vient d'apparaître, à ce point (les torches de sa voie l'annoncent).</summary>
+        public static event System.Action<Enemy, Transform> Spawned;
+
         void Start()
         {
             IsSpawning = m_SpawnOnStart;
@@ -98,6 +104,7 @@ namespace Archery.Enemies
 
             var enemy = Instantiate(prefab, position, rotation);
             m_Spawned.Add(enemy);
+            Spawned?.Invoke(enemy, point);
             return enemy;
         }
 

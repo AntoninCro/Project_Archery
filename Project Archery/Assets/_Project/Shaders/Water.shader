@@ -2,6 +2,8 @@
 // Facettes plates qui ondulent, couleur selon la profondeur (texture de profondeur d'URP), écume le long des berges,
 // reflets et traînées d'écume qui défilent dans le sens du courant (UV1 : sens et vitesse, écrits par RiverWater).
 // Cascade (_Fall à 1) : pas de vagues, l'eau défile vers le bas (UV0.y), bandes blanches, écume en haut et en bas.
+// La nuit (_ArcheryNight, réglé par le ciel), la rivière luit : des points qui dérivent avec le courant, une lueur le
+// long des berges, et des remous lumineux là où passent les ennemis (_ArcheryRipples, écrits par MapGameplayLights).
 Shader "Archery/Water"
 {
     Properties
@@ -18,6 +20,8 @@ Shader "Archery/Water"
         _WaveLength ("Longueur des vagues (m)", Float) = 1.6
         _Specular ("Reflets du soleil", Range(0, 2)) = 0.7
         _Fall ("Cascade (0 ou 1)", Float) = 0
+        [HDR] _BioColor ("Bioluminescence (la nuit)", Color) = (0.2, 1, 0.85, 1)
+        _Biolum ("Force de la bioluminescence", Range(0, 3)) = 1
     }
 
     SubShader
@@ -61,7 +65,15 @@ Shader "Archery/Water"
                 float _WaveLength;
                 float _Specular;
                 float _Fall;
+                half4 _BioColor;
+                float _Biolum;
             CBUFFER_END
+
+            // Réglés par le jeu pour toutes les eaux : la nuit (0 à 1), les remous (x, z, départ, force) et leur couleur.
+            float _ArcheryNight;
+            float4 _ArcheryRipples[8];
+            float _ArcheryTime;
+            half4 _ArcheryRippleColor;
 
             struct Attributes
             {
@@ -141,6 +153,48 @@ Shader "Archery/Water"
                 return ((n0 - 0.5) * w0 + (n1 - 0.5) * w1) * rsqrt(w0 * w0 + w1 * w1) + 0.5;
             }
 
+            // Petits points lumineux, un sur deux cases environ, qui scintillent chacun à son rythme.
+            float Specks(float2 p)
+            {
+                float2 cell = floor(p);
+                float2 f = frac(p);
+                float h = Hash(cell);
+                float2 center = float2(Hash(cell + 3.1), Hash(cell + 7.7)) * 0.6 + 0.2;
+                float twinkle = 0.55 + 0.45 * sin(_Time.y * (1.3 + h * 2.2) + h * 40.0);
+                return step(0.5, h) * smoothstep(0.13, 0.0, length(f - center)) * twinkle;
+            }
+
+            // Comme les traînées : deux couches qui dérivent avec le courant, fondues l'une dans l'autre.
+            float DriftingSpecks(float2 p, float2 flow, float time)
+            {
+                float phase0 = frac(time);
+                float phase1 = frac(time + 0.5);
+                float w0 = 1.0 - abs(phase0 * 2.0 - 1.0);
+                return Specks(p - flow * phase0 * 2.0) * w0 + Specks(p - flow * phase1 * 2.0 + 11.7) * (1.0 - w0);
+            }
+
+            // Anneaux qui s'élargissent autour des ennemis dans l'eau (deux anneaux par remous, 2,2 s de vie).
+            float Ripples(float2 xz)
+            {
+                float total = 0.0;
+                [unroll]
+                for (int i = 0; i < 8; i++)
+                {
+                    float4 ripple = _ArcheryRipples[i];
+                    float age = _ArcheryTime - ripple.z;
+                    if (ripple.w <= 0.0 || age < 0.0 || age > 2.2)
+                        continue;
+
+                    float fade = (1.0 - age / 2.2) * ripple.w;
+                    float dist = length(xz - ripple.xy);
+                    float ringA = (dist - age * 1.4) / 0.12;
+                    float ringB = (dist - age * 0.85) / 0.1;
+                    total += (exp(-ringA * ringA) + 0.6 * exp(-ringB * ringB)) * fade;
+                }
+
+                return total;
+            }
+
             half4 frag(Varyings input, bool isFrontFace : SV_IsFrontFace) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
@@ -183,13 +237,33 @@ Shader "Archery/Water"
                 Light mainLight = GetMainLight();
                 float diffuse = saturate(dot(normalWS, mainLight.direction));
                 float3 halfDir = normalize(mainLight.direction + viewDir);
-                float specular = pow(saturate(dot(normalWS, halfDir)), 64.0) * _Specular;
+                // La nuit, le reflet de la lune est plus marqué.
+                float night = saturate(_ArcheryNight);
+                float specular = pow(saturate(dot(normalWS, halfDir)), 64.0) * _Specular * (1.0 + night);
                 float3 ambient = SampleSH(normalWS);
 
                 float3 rgb = color.rgb * (ambient * 0.6 + mainLight.color * (0.45 + 0.55 * diffuse));
                 rgb += mainLight.color * specular;
                 rgb = lerp(rgb, _FoamColor.rgb * (ambient * 0.5 + mainLight.color * 0.7), foam);
                 float alpha = saturate(lerp(color.a, _FoamColor.a, foam * 0.85) + specular * 0.3);
+
+                if (_Fall < 0.5)
+                {
+                    // Bioluminescence : des points qui dérivent, une lueur le long des berges, un fond très léger.
+                    float glow = 0.0;
+                    if (night > 0.001)
+                    {
+                        float specks = DriftingSpecks(input.positionWS.xz * 2.2, input.flow * 1.5, time * 0.35);
+                        float shore = 1.0 - saturate(waterDepth / max(0.01, _ShoreFoam * 4.0));
+                        glow = (specks * 1.5 + shore * 0.35 + 0.06) * night * _Biolum;
+                        rgb += _BioColor.rgb * glow;
+                    }
+
+                    // Remous : un peu d'écume le jour, des anneaux lumineux la nuit.
+                    float ripples = Ripples(input.positionWS.xz);
+                    rgb += _ArcheryRippleColor.rgb * ripples * (0.25 + 1.25 * night);
+                    alpha = saturate(alpha + ripples * 0.3 + glow * 0.1);
+                }
 
                 rgb = MixFog(rgb, input.fogFactor);
                 return half4(rgb, alpha);

@@ -224,6 +224,21 @@ namespace Archery.FinalBoss
             return m_FloorMaterial;
         }
 
+        float m_DecorBoost;
+
+        /// <summary>Surcroît de lueur des craquelures (0 : normal ; 3 : quatre fois plus vives), réglé par les lumières de l'arène.</summary>
+        public float CrackBoost { get; set; }
+
+        /// <summary>Les feux du décor (braseros, braises de la lave).</summary>
+        public IReadOnlyList<ParticleSystem> DecorFires => m_DecorFires;
+
+        /// <summary>Surcroît d'éclat des lumières du décor (0 : normal), pour un embrasement passager.</summary>
+        public void SetDecorBoost(float boost)
+        {
+            m_DecorBoost = Mathf.Max(0f, boost);
+            ApplyDecorLight();
+        }
+
         // En jeu, les craquelures du sol respirent : leur lueur monte et descend lentement, comme un sol brûlant.
         void PulseCracks()
         {
@@ -232,7 +247,7 @@ namespace Archery.FinalBoss
 
             // Elles suivent aussi l'allumage de l'arène : éteintes dans le noir de l'intro.
             m_CrackBlock ??= new MaterialPropertyBlock();
-            var factor = (1f + m_CrackPulse * Mathf.Sin(Time.time * Mathf.PI * 2f / m_CrackPulsePeriod)) * m_LightLevel;
+            var factor = (1f + m_CrackPulse * Mathf.Sin(Time.time * Mathf.PI * 2f / m_CrackPulsePeriod)) * m_LightLevel * (1f + Mathf.Max(0f, CrackBoost));
             foreach (var floor in m_CrackedFloors)
             {
                 if (floor == null || floor.sharedMaterial == null || !floor.sharedMaterial.HasProperty(k_EmissionColorId))
@@ -1071,7 +1086,7 @@ namespace Archery.FinalBoss
                 var light = m_DecorLights[i];
                 if (light == null)
                     continue;
-                light.intensity = m_DecorLightIntensities[i] * m_LightLevel;
+                light.intensity = m_DecorLightIntensities[i] * m_LightLevel * (1f + m_DecorBoost);
                 light.enabled = m_LightLevel > 0.001f;
             }
 
