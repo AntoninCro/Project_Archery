@@ -53,6 +53,10 @@ namespace Archery.Chests
         UiTheme m_Theme;
         Image m_Seal;
         Color m_SealColor;
+
+        // L'icône de la récompense (celle de la boutique), à la place de la boule.
+        Image m_Icon;
+        Color m_IconColor;
         float m_Hover;
         Vector3 m_From;
         Vector3 m_To;
@@ -97,6 +101,21 @@ namespace Archery.Chests
             }
 
             ApplyTheme(reward.Color);
+            ShowIcon(reward);
+        }
+
+        // L'icône de la boutique remplace la boule : au même endroit, dans le sceau, tournée vers le joueur avec
+        // l'étiquette. Sans icône (morceau d'arc légendaire), la boule reste.
+        void ShowIcon(ChestReward reward)
+        {
+            if (reward.Icon == null || m_Label == null)
+                return;
+
+            var orb = m_Label.transform.InverseTransformPoint(transform.position);
+            m_IconColor = Color.Lerp(reward.Color, Color.white, 0.2f);
+            m_Icon = UiThemer.WorldImage(m_Label.transform, "Icône", reward.Icon, 0.2f, new Vector3(orb.x, orb.y, 0.04f), m_IconColor);
+            if (m_Renderer != null)
+                m_Renderer.enabled = false;
         }
 
         // L'étiquette en Cinzel sur une plaque ornée de la couleur de la récompense ; derrière l'orbe, un sceau orné.
@@ -147,10 +166,16 @@ namespace Archery.Chests
             var targetScale = m_BaseScale * (isHovered ? m_HoverScale : 1f);
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 1f - Mathf.Exp(-deltaTime * 12f));
 
-            // Le sceau tourne doucement, plus vite et plus clair quand la main vise l'orbe.
+            // Le sceau tourne doucement, plus vite et plus clair quand la main vise l'orbe ; l'icône s'éclaire et respire.
+            m_Hover = Mathf.MoveTowards(m_Hover, isHovered ? 1f : 0f, deltaTime * 5f);
+            if (m_Icon != null)
+            {
+                m_Icon.color = Color.Lerp(m_IconColor, Color.white, 0.45f * m_Hover);
+                m_Icon.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin((m_Age + m_Phase) * 3f));
+            }
+
             if (m_Seal != null)
             {
-                m_Hover = Mathf.MoveTowards(m_Hover, isHovered ? 1f : 0f, deltaTime * 5f);
                 m_Seal.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f + (m_Age + m_Phase) * Mathf.Lerp(18f, 60f, m_Hover));
                 var color = Color.Lerp(m_SealColor, Color.white, 0.5f * m_Hover);
                 color.a = Mathf.Lerp(0.75f, 1f, m_Hover) * (0.85f + 0.15f * Mathf.Sin(m_Age * 3f));

@@ -426,6 +426,19 @@ namespace Archery.UI
             return image;
         }
 
+        /// <summary>
+        /// Une image dans le monde (une icône), de ce côté (m) et qui garde ses proportions, enfant de
+        /// <paramref name="parent"/> ; elle passe devant les plaques et les sceaux.
+        /// </summary>
+        public static Image WorldImage(Transform parent, string name, Sprite sprite, float size, Vector3 localPosition, Color color)
+        {
+            var frame = WorldCanvas(parent, name, localPosition, new Vector2(size, size));
+            frame.GetComponent<Canvas>().sortingOrder = 1;
+            var image = Decoration(frame, "Image", sprite, color, 1f, Image.Type.Simple);
+            image.preserveAspect = true;
+            return image;
+        }
+
         /// <summary>Un texte 3D (TextMeshPro) passe devant les plaques du thème.</summary>
         public static void InFrontOfPlaques(TMP_Text text)
         {

@@ -8,7 +8,7 @@ Le déroulé et les chiffres sont dans le GDD, section 10 bis. Ce guide dit où 
 
 **Dans la scène `Prototype_Tir`** (sous `Map > Lair`) :
 
-- `Lair Gate` : la grande porte, à 4 m devant la face du fond de la voie du milieu, tournée vers la tour. Le script `Lair Gate` fabrique tout lui-même : le porche de pierre, les deux battants, l'intérieur noir, les braseros, l'inscription. Ces objets générés apparaissent sous la porte dans la hiérarchie (« Porte (générée) »), mais ils ne sont pas enregistrés : on ne les modifie pas à la main, on règle le composant.
+- `Lair Gate` : la grande porte, à 4 m devant la face du fond de la voie du milieu, tournée vers la tour. Le script `Lair Gate` fabrique tout lui-même : le porche de pierre en arche, la double porte arrondie (depuis le 16 octobre : le battant du pack *Modular Dungeon* de Quaternius, `Resources/Lair/Arch_Door`, coupé en deux au milieu par le script `MeshCut`), l'intérieur noir, les braseros, et le nom du jeu gravé en lettres de lave sur la face de la montagne, avec ses fissures de feu, ses lumières et ses braises (`LairGate.Title.cs`). Ces objets générés apparaissent sous la porte dans la hiérarchie (« Porte (générée) »), mais ils ne sont pas enregistrés : on ne les modifie pas à la main, on règle le composant.
 - `Final Boss` : le script `Final Boss Director`. Il ouvre la porte au début de la vague 6, charge l'arène quand le joueur passe le seuil, puis ramène le joueur à la tour ou termine la partie.
 
 **Une nouvelle scène, `Scenes/Arena_Dragon`**, chargée par-dessus la carte (à 300 m au-dessus d'elle : sous 100 m de profondeur, les flèches disparaissent) :
@@ -48,7 +48,7 @@ Ouvre `Prototype_Tir` et lance *Play*. Raccourcis clavier :
 
 À vérifier, dans l'ordre :
 
-1. **La porte**, sans lancer le jeu : au bout de la voie du milieu, fermée, avec l'inscription au-dessus. Coche *Preview Open* sur `Lair Gate` pour la voir ouverte, puis décoche-le.
+1. **La porte**, sans lancer le jeu : au bout de la voie du milieu, fermée, arrondie, en deux battants qui se touchent au milieu, sous une arche à claveaux ; au-dessus, dans un cartouche de pierre encastré dans la roche, « THUNK VR » creusé, avec de la lave au fond des lettres. Coche *Preview Open* sur `Lair Gate` pour la voir ouverte (les battants ne doivent rentrer ni dans l'arche ni dans les piliers), puis décoche-le. Recule au bout de la voie : le titre doit se lire par-dessus le porche. À l'ouverture de la scène, la console dit que les veines de l'antre ont été refaites : enregistre la scène.
 2. **Vague 6** : le message « Boss final », pas d'ennemis ni de coffres. La montre affiche « Antre » et « Vague 6 / 6 · Boss final ». La porte s'ouvre en grinçant et les braseros s'allument.
 3. **La marche vers l'antre** : la musique et l'ambiance baissent à mesure que tu t'éloignes de la tour, jusqu'au silence devant la porte.
 4. **Le seuil** : en marchant dans le porche, la porte claque derrière toi et l'image devient noire.
@@ -101,6 +101,10 @@ Ouvrir `Arena_Dragon` seule permet de voir la grotte, éclairée, avec le dragon
 | une lumière ajoutée (veine, pied de coulée, rayon de soleil de la victoire, lumière ou cristaux d'un pilier) est mal placée, ou on veut tout cacher | scène `Arena_Dragon`, objet **« Effet »** (fabriqué par l'éditeur à l'ouverture de la scène : enregistre-la ensuite) | Déplace ou modifie l'objet (sa couleur et sa force servent de départ en jeu), supprime-le, ou décoche « Effet » (ou un groupe) pour tout éteindre. Menu *Archery > Effets > Refaire les effets des scènes ouvertes* pour repartir de zéro (les retouches sont perdues) |
 | les veines, les braises, le sol brûlant ou l'annonce du souffle sont trop forts, trop faibles, de la mauvaise couleur | `Assets/_Project/Resources/MapLighting`, partie *Arène du boss final* | *Arena Wall Veins* (18), *Arena Ceiling Veins* (10), *Arena Vein Color*, *Ember Color*, *Scorch Color*, *Warning Color*, *Sun Color*, *Arena Player Light Intensity* (0,5) ; le reste (force, durée) est dans `Scripts/FinalBoss/ArenaLights.cs` |
 | la porte dépasse dans la falaise | `Lair Gate` | *Opening Width*, *Pillar Width* |
+| la porte est trop petite, trop grande, l'arche ou le porche trop hauts | `Lair Gate` | *Opening Width* (la porte en prend presque toute la largeur, et sa hauteur suit les proportions du modèle), *Door Stretch* (l'étire en hauteur), *Stone Above Arch* (pierre au-dessus de l'arche). L'arche n'a plus de réglage : elle épouse la porte, en laissant juste la place aux battants pour s'ouvrir |
+| la porte est restée en planches | console : « coche Read/Write » | sélectionne `Resources/Lair/Arch_Door`, onglet *Model*, coche *Read/Write*, *Apply* |
+| le titre se lit mal, il est caché par le porche, trop petit ou trop grand | `Lair Gate`, section *Titre gravé dans la roche* | *Engrave Title* (graver ou non), *Title Override* (un autre texte ; vide : le nom du jeu, `GameInfo.Name`), *Title Height* (13,2 m : le milieu des lettres ; le cartouche ne descend jamais sur le porche, et au-dessus de 15 m la falaise avance), *Title Cap Height* (2,1 m), *Title Max Width* (17,5 m, mais le cartouche doit tenir sur la face de 21 m : au-delà de 15 m environ, les lettres rapetissent), *Title Spacing* |
+| le titre brille trop ou pas assez | `Lair Gate`, section *Titre gravé dans la roche* | *Title Lava* (couleur HDR de la lave au fond des lettres), *Title Light Intensity* ; *Title Seed* (autre dessin des pierres du cadre) |
 
 ## 4. Retravailler la grotte à la main (ancienne grotte ronde)
 

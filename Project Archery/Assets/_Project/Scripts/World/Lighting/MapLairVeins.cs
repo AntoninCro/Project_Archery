@@ -20,20 +20,36 @@ namespace Archery.World
         const float k_MapTop = 150f;
         const string k_LightName = "Lueur de l'antre";
 
+        /// <summary>
+        /// Version de la fabrication : l'éditeur refait les veines enregistrées avec une version plus ancienne
+        /// (1 : porche en arche, plus bas, et titre gravé au-dessus, que les veines évitent ; 2 : le titre est dans un
+        /// cartouche de pierre, plus large ; 3 : la porte remplit l'arche, le porche est plus bas).
+        /// </summary>
+        public const int CurrentVersion = 3;
+
+        [SerializeField]
+        [HideInInspector]
+        int m_Version;
+
         readonly List<MeshRenderer> m_Veins = new List<MeshRenderer>();
         readonly HashSet<Collider> m_GateColliders = new HashSet<Collider>();
         MapLightingSettings m_Settings;
         MaterialPropertyBlock m_Block;
         Transform m_Gate;
+        Rect m_TitleArea;
         Light m_Light;
         float m_LightIntensity = 1f;
         float m_Shown;
         bool m_Bound;
 
+        /// <summary>Faux si ces veines ont été fabriquées pour l'ancienne porte (à refaire dans l'éditeur).</summary>
+        public bool IsCurrent => m_Version >= CurrentVersion;
+
         /// <summary>Fabrique les veines (sous cet objet) sur la roche autour de la porte de l'antre, et leur lumière.</summary>
         public void Build(MapLightingSettings settings)
         {
             m_Settings = settings;
+            m_Version = CurrentVersion;
             LairGate gate = null;
             foreach (var candidate in FindObjectsByType<LairGate>())
             {
@@ -48,7 +64,11 @@ namespace Archery.World
             foreach (var collider in gate.GetComponentsInChildren<Collider>(true))
                 m_GateColliders.Add(collider);
 
-            BuildVeins();
+            // Le titre gravé au-dessus du porche, et ses fissures : les veines n'y passent pas.
+            var title = gate.TitleArea;
+            m_TitleArea = title.width > 0f ? Rect.MinMaxRect(title.xMin - 0.4f, title.yMin - 0.4f, title.xMax + 0.4f, title.yMax + 0.4f) : Rect.zero;
+
+            BuildVeins(gate.PorchHalfWidth, gate.PorchTop);
 
             var light = new GameObject(k_LightName).AddComponent<Light>();
             light.transform.SetParent(transform, false);
@@ -137,26 +157,10 @@ namespace Archery.World
         // ---------------------------------------------------------------- fabrication
 
         // Les veines partent de points pris autour du porche (sur les côtés et au-dessus), posés sur la roche, et
-        // serpentent en s'éloignant de la porte. Elles sont rangées de la plus proche à la plus lointaine : c'est l'ordre
-        // dans lequel elles s'allument.
-        void BuildVeins()
+        // serpentent en s'éloignant de la porte, sans entrer dans le titre. Elles sont rangées de la plus proche à la plus
+        // lointaine : c'est l'ordre dans lequel elles s'allument.
+        void BuildVeins(float halfWidth, float top)
         {
-            // Taille du porche, dans le repère de la porte.
-            var halfWidth = 4f;
-            var top = 8f;
-            foreach (var renderer in m_Gate.GetComponentsInChildren<Renderer>(true))
-            {
-                var bounds = renderer.bounds;
-                for (var c = 0; c < 8; c++)
-                {
-                    var corner = new Vector3((c & 1) == 0 ? bounds.min.x : bounds.max.x, (c & 2) == 0 ? bounds.min.y : bounds.max.y,
-                                             (c & 4) == 0 ? bounds.min.z : bounds.max.z);
-                    var local = m_Gate.InverseTransformPoint(corner);
-                    halfWidth = Mathf.Max(halfWidth, Mathf.Abs(local.x));
-                    top = Mathf.Max(top, local.y);
-                }
-            }
-
             var random = new System.Random(83);
             var veins = new List<(float Distance, Mesh Mesh)>();
             for (var attempt = 0; attempt < m_Settings.veins * 4 && veins.Count < m_Settings.veins; attempt++)
@@ -166,8 +170,10 @@ namespace Archery.World
                 Vector2 heading;
                 if (attempt % 5 == 4)
                 {
-                    start = new Vector3(Range(random, -halfWidth, halfWidth), top + Range(random, 0.3f, 3f), -3f);
-                    heading = new Vector2(Range(random, -0.6f, 0.6f), 1f);
+                    // Au-dessus du porche, sous le titre : elles partent sur les côtés.
+                    var ceiling = m_TitleArea.width > 0f ? m_TitleArea.yMin : top + 3f;
+                    start = new Vector3(Range(random, -halfWidth, halfWidth), top + Range(random, 0.3f, Mathf.Max(0.4f, ceiling - top)), -3f);
+                    heading = new Vector2(start.x < 0f ? -1f : 1f, Range(random, -0.2f, 0.5f));
                 }
                 else
                 {
@@ -175,7 +181,7 @@ namespace Archery.World
                     heading = new Vector2(side, Range(random, -0.3f, 0.9f));
                 }
 
-                if (!TryFace(m_Gate.TransformPoint(start), m_Gate.forward, 18f, out var point, out var normal))
+                if (!TryFace(m_Gate.TransformPoint(start), m_Gate.forward, 18f, out var point, out var normal) || InTitle(point))
                     continue;
 
                 var builder = new MeshBuilder();
@@ -227,7 +233,7 @@ namespace Archery.World
 
                 var step = Range(random, 0.45f, 0.85f);
                 var candidate = point + along.normalized * step;
-                if (!TryFace(candidate + normal * 1.2f, -normal, 2.6f, out var next, out var nextNormal))
+                if (!TryFace(candidate + normal * 1.2f, -normal, 2.6f, out var next, out var nextNormal) || InTitle(next))
                     break;
 
                 length += Vector3.Distance(point, next);
@@ -259,6 +265,14 @@ namespace Archery.World
             }
 
             return length;
+        }
+
+        bool InTitle(Vector3 point)
+        {
+            if (m_TitleArea.width <= 0f)
+                return false;
+            var local = m_Gate.InverseTransformPoint(point);
+            return m_TitleArea.Contains(new Vector2(local.x, local.y));
         }
 
         // La roche devant ce rayon : le premier collider qui n'est ni la porte ni une plante. Faux s'il n'y en a pas, ou

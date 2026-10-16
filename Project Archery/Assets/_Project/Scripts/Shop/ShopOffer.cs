@@ -41,13 +41,14 @@ namespace Archery.Shop
 
         public bool CanBuy => !Sold && Kind != ShopOfferKind.Unavailable;
 
-        public static ShopOffer Info(string title, string description, Color color) => new ShopOffer
+        public static ShopOffer Info(string title, string description, Color color, Sprite icon = null) => new ShopOffer
         {
             Kind = ShopOfferKind.Unavailable,
             Title = title,
             Subtitle = "",
             Description = description,
             Color = color,
+            Icon = icon,
         };
     }
 

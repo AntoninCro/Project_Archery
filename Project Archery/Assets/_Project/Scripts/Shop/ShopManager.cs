@@ -307,19 +307,19 @@ namespace Archery.Shop
             var legendary = LegendaryBow.Instance;
             if (legendary != null && legendary.IsAssembled)
             {
-                m_BowOffer = ShopOffer.Info("Arc légendaire", "Tu as assemblé l'arc légendaire : aucun arc ne le vaut.", legendary.Color);
+                m_BowOffer = ShopOffer.Info("Arc légendaire", "Aucun arc ne le vaut", legendary.Color, m_Catalog.bowIcon);
                 return;
             }
 
             if (m_Bow == null || next == null)
             {
-                m_BowOffer = ShopOffer.Info("Arcs", "Tu as déjà le meilleur arc.", color);
+                m_BowOffer = ShopOffer.Info("Arcs", "Tu as le meilleur arc", color, m_Catalog.bowIcon);
                 return;
             }
 
             if (next.availableFromWave > m_Wave + 1)
             {
-                m_BowOffer = ShopOffer.Info(next.displayName, $"En vente avant la vague {next.availableFromWave}.", color);
+                m_BowOffer = ShopOffer.Info(next.displayName, $"En vente avant la vague {next.availableFromWave}", color, m_Catalog.bowIcon);
                 return;
             }
 
@@ -329,8 +329,9 @@ namespace Archery.Shop
                 Bow = next,
                 Title = next.displayName,
                 Subtitle = "Arc",
-                Description = $"{next.description}\n{next.arrowSpeed:0} m/s · {next.damage:0} dégâts",
+                Description = $"{next.description.TrimEnd('.')}\n{next.damage:0} dégâts · {next.arrowSpeed:0} m/s",
                 Color = color,
+                Icon = m_Catalog.bowIcon,
                 Price = ShopCatalog.RoundPrice(next.price * EndlessFactor),
             };
         }
@@ -342,7 +343,7 @@ namespace Archery.Shop
             var tower = Tower.Instance;
             if (tower == null)
             {
-                m_TowerOffer = ShopOffer.Info("Tour", "Il n'y a pas de tour dans la scène.", color);
+                m_TowerOffer = ShopOffer.Info("Tour", "Pas de tour dans la scène", color, m_Catalog.towerIcon);
                 return;
             }
 
@@ -354,8 +355,9 @@ namespace Archery.Shop
                     Kind = ShopOfferKind.Rebuild,
                     Title = "Reconstruire la tour",
                     Subtitle = "Tour",
-                    Description = "La tour revient avec tous ses PV, et l'or n'est plus divisé par deux.",
+                    Description = "Tous ses PV, et l'or n'est plus divisé par deux",
                     Color = color,
+                    Icon = m_Catalog.towerIcon,
                     Price = ShopCatalog.RoundPrice(m_Catalog.rebuildPrice * EndlessFactor),
                 };
             }
@@ -366,15 +368,16 @@ namespace Archery.Shop
                     Kind = ShopOfferKind.Repair,
                     Title = "Réparer la tour",
                     Subtitle = "Tour",
-                    Description = $"+{Mathf.RoundToInt(m_Catalog.repairFraction * 100f)} % des PV max.\n" +
-                                  $"PV : {Mathf.CeilToInt(health.Current)} / {Mathf.CeilToInt(health.Max)}",
+                    Description = $"+{Mathf.RoundToInt(m_Catalog.repairFraction * 100f)} % de PV\n" +
+                                  $"{Mathf.CeilToInt(health.Current)} / {Mathf.CeilToInt(health.Max)} PV",
                     Color = color,
+                    Icon = m_Catalog.repairIcon,
                     Price = ShopCatalog.RoundPrice(m_Catalog.repairPrice * EndlessFactor),
                 };
             }
             else
             {
-                m_TowerOffer = ShopOffer.Info("Tour", "La tour est intacte.", color);
+                m_TowerOffer = ShopOffer.Info("Tour", "La tour est intacte", color, m_Catalog.towerIcon);
             }
         }
 
@@ -384,7 +387,7 @@ namespace Archery.Shop
             var color = m_Catalog.defenseColor;
             if (Barricade.All.Count == 0)
             {
-                m_BarricadeOffer = ShopOffer.Info("Barricades", "Il n'y a pas de barricades sur la carte.", color);
+                m_BarricadeOffer = ShopOffer.Info("Barricades", "Pas de barricades sur la carte", color, m_Catalog.barricadeIcon);
             }
             else
             {
@@ -395,11 +398,12 @@ namespace Archery.Shop
                         Kind = ShopOfferKind.Barricades,
                         Title = "Réparer les barricades",
                         Subtitle = "Défense",
-                        Description = $"Toutes les barricades reviennent avec tous leurs PV.\nPV : {Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}",
+                        Description = $"Remises à neuf\n{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)} PV",
                         Color = color,
+                        Icon = m_Catalog.barricadeIcon,
                         Price = ShopCatalog.RoundPrice(m_Catalog.barricadePrice * EndlessFactor),
                     }
-                    : ShopOffer.Info("Barricades", "Les barricades sont intactes.", color);
+                    : ShopOffer.Info("Barricades", "Les barricades sont intactes", color, m_Catalog.barricadeIcon);
             }
         }
 

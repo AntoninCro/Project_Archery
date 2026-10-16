@@ -124,7 +124,29 @@ namespace Archery.World
             EffectBuild.Group(transform, "Torches").gameObject.AddComponent<MapTorches>().Build(settings, scan);
             EffectBuild.Group(transform, "Nature").gameObject.AddComponent<MapNatureLights>().Build(settings, scan);
             EffectBuild.Group(transform, "Jeu").gameObject.AddComponent<MapGameplayLights>().Build(settings);
-            EffectBuild.Group(transform, "Antre").gameObject.AddComponent<MapLairVeins>().Build(settings);
+            EffectBuild.Group(transform, LairGroupName).gameObject.AddComponent<MapLairVeins>().Build(settings);
+        }
+
+        /// <summary>Nom du groupe des veines de l'antre (<see cref="MapLairVeins"/>).</summary>
+        public const string LairGroupName = "Antre";
+
+        /// <summary>
+        /// Éditeur : refait seulement le groupe « Antre » (l'ancien a déjà été supprimé), à cette place parmi les groupes.
+        /// Null sans réglages.
+        /// </summary>
+        public MapLairVeins BuildLairVeins(int siblingIndex)
+        {
+            var settings = LoadSettings();
+            if (settings == null)
+                return null;
+
+            Physics.SyncTransforms();
+            var group = new GameObject(LairGroupName).transform;
+            group.SetParent(transform, false);
+            group.SetSiblingIndex(Mathf.Clamp(siblingIndex, 0, transform.childCount - 1));
+            var veins = group.gameObject.AddComponent<MapLairVeins>();
+            veins.Build(settings);
+            return veins;
         }
 
         /// <summary>Le tonnerre, un peu après un éclair (<paramref name="strength"/> : force de l'éclair, 0 à 1).</summary>

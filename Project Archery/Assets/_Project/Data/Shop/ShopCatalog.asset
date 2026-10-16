@@ -14,168 +14,152 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Shop.ShopCatalog
   upgrades:
   - displayName: "D\xE9g\xE2ts"
-    description: "+10 % de d\xE9g\xE2ts."
+    description: "+10 % de d\xE9g\xE2ts"
     rarity: 0
     effect: 0
     value: 0.1
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "Fl\xE8ches rapides"
-    description: "+8 % de vitesse : les fl\xE8ches vont plus loin et tombent moins."
+    description: "+8 % de vitesse des fl\xE8ches"
     rarity: 0
     effect: 1
     value: 0.08
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
   - displayName: Charge rapide
-    description: "L'anneau va 15 % plus vite, et toutes ses bandes s'\xE9largissent
-      un peu."
+    description: "Anneau 15 % plus rapide"
     rarity: 0
     effect: 2
     value: 0.15
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
   - displayName: "Pr\xE9cision"
-    description: Bande verte (tir parfait) 15 % plus large.
+    description: "Bande verte 15 % plus large"
     rarity: 0
     effect: 3
     value: 0.15
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
   - displayName: "Vitalit\xE9"
-    description: +15 PV max.
+    description: "+15 PV max"
     rarity: 0
     effect: 4
     value: 15
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
   - displayName: Butin
-    description: '+20 % d''or : 30 % des points deviennent de l''or au lieu de 25
-      %.'
+    description: "+20 % d'or"
     rarity: 0
     effect: 5
     value: 0.05
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 15910d99da8d4b4faa1d9b05956a7665, type: 3}
   - displayName: "Chasseur de t\xEAtes"
-    description: "+25 % de d\xE9g\xE2ts \xE0 la t\xEAte."
+    description: "+25 % de d\xE9g\xE2ts \xE0 la t\xEAte"
     rarity: 0
     effect: 6
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: b47fa108c8ba4dd894f1a881f0ae0bde, type: 3}
   - displayName: Chance
-    description: "Les cartes rares et l\xE9gendaires sortent plus souvent (+25 %
-      de poids). Il reste toujours des cartes communes."
+    description: "Plus de cartes rares et l\xE9gendaires"
     rarity: 0
     effect: 14
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2136d06e116f4fbc83a3d35eaa55b573, type: 3}
   - displayName: Puissance
-    description: "+25 % de d\xE9g\xE2ts."
+    description: "+25 % de d\xE9g\xE2ts"
     rarity: 1
     effect: 0
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: Multitir
-    description: "+50 % de chance de tirer une fl\xE8che en plus. Avec 2 exemplaires,
-      une fl\xE8che en plus \xE0 chaque tir ; avec 3, 50 % de chance d'une deuxi\xE8me,
-      etc. La fl\xE8che de l'arc part toujours tout droit."
+    description: "+50 % de chance de tirer une fl\xE8che suppl\xE9mentaire"
     rarity: 1
     effect: 7
     value: 0.5
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
   - displayName: "Fl\xE8che de foudre"
-    description: "Chaque fl\xE8che a 20 % de chance d'appeler un \xE9clair qui blesse
-      la cible et la ralentit. Au-del\xE0 de 100 % : \xE9clairs plus forts."
+    description: "20 % de chance d'appeler la foudre"
     rarity: 1
     effect: 8
     value: 0.2
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 80004f1f07f44a90b07481b2be179056, type: 3}
   - displayName: "Per\xE7age"
-    description: "Chaque fl\xE8che a 25 % de chance de traverser un ennemi. Au-del\xE0
-      de 100 % : plusieurs ennemis travers\xE9s."
+    description: "25 % de chance de traverser un ennemi"
     rarity: 1
     effect: 9
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 597e992213ca4445a54400a0ce167384, type: 3}
   - displayName: Vampirisme
-    description: "Chaque tir \xE0 la t\xEAte rend 2 PV."
+    description: "+2 PV par tir \xE0 la t\xEAte"
     rarity: 1
     effect: 10
     value: 2
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: b316b8f1a1c248e7923d15874c4c211c, type: 3}
   - displayName: "Tir \xE9cho"
-    description: "25 % de chance que la vol\xE9e se r\xE9p\xE8te un instant apr\xE8s,
-      \xE0 la m\xEAme puissance. Au-del\xE0 de 100 % : plusieurs \xE9chos."
+    description: "25 % de chance de r\xE9p\xE9ter le tir"
     rarity: 1
     effect: 15
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
   - displayName: "Fl\xE8che de glace"
-    description: "Chaque fl\xE8che a 25 % de chance de laisser au sol une zone de
-      glace qui ralentit les ennemis. Au-del\xE0 de 100 % : glace plus forte et plus
-      grande."
+    description: "25 % de chance de geler le sol"
     rarity: 1
     effect: 16
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
   - displayName: "Force du g\xE9ant"
-    description: "+60 % de d\xE9g\xE2ts."
+    description: "+60 % de d\xE9g\xE2ts"
     rarity: 2
     effect: 0
     value: 0.6
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "D\xE9luge"
-    description: "En vol, chaque fl\xE8che a 50 % de chance de se diviser en deux.
-      Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisi\xE8me fl\xE8che,
-      etc. Elle continue tout droit."
+    description: "50 % de chance que la fl\xE8che se divise"
     rarity: 2
     effect: 11
     value: 0.5
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
   - displayName: "Cha\xEEne d'\xE9clairs"
-    description: "La foudre rebondit sur 3 ennemis proches de plus. Sans Fl\xE8che
-      de foudre, 20 % des fl\xE8ches l'appellent."
+    description: "La foudre rebondit sur 3 ennemis"
     rarity: 2
     effect: 12
     value: 3
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
   - displayName: "Fl\xE8che explosive"
-    description: "Chaque fl\xE8che a 25 % de chance d'exploser et de toucher les
-      ennemis autour. Au-del\xE0 de 100 % : explosions plus fortes et plus larges."
+    description: "25 % de chance d'exploser"
     rarity: 2
     effect: 13
     value: 0.25
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
   - displayName: "Auto-vis\xE9e"
-    description: "Les fl\xE8ches d\xE9vient vers l'ennemi le plus proche, s'il est
-      \xE0 moins de 12 m devant elles. Encore : elles tournent plus vite."
+    description: "Les fl\xE8ches visent l'ennemi proche"
     rarity: 2
     effect: 17
     value: 30
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: e867723acec6472c96c3ac662429b174, type: 3}
   - displayName: Tir ricochet
-    description: "Apr\xE8s avoir touch\xE9 un ennemi, la fl\xE8che rebondit vers
-      un autre ennemi proche. Encore : un rebond de plus."
+    description: "La fl\xE8che rebondit sur un autre ennemi"
     rarity: 2
     effect: 18
     value: 1
     maxStacks: 0
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   rarityOdds:
   - fromWave: 1
     common: 70
@@ -206,3 +190,7 @@ MonoBehaviour:
   bowColor: {r: 0.6, g: 0.9, b: 0.5, a: 1}
   towerColor: {r: 0.9, g: 0.68, b: 0.45, a: 1}
   defenseColor: {r: 1, g: 0.55, b: 0.25, a: 1}
+  bowIcon: {fileID: 21300000, guid: f5451cef9ad247c4960997e915323f22, type: 3}
+  repairIcon: {fileID: 21300000, guid: 3763e4295dfd486cafa11f69f5bfeda7, type: 3}
+  towerIcon: {fileID: 21300000, guid: e163abfd85a34499a53d7748b1003645, type: 3}
+  barricadeIcon: {fileID: 21300000, guid: 618fed3b5d6b446a8d1573870490eac8, type: 3}

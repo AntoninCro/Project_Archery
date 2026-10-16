@@ -327,7 +327,7 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 ### L'antre du boss (porte fermée pour l'instant)
 
 - L'entrée est maintenant la grande face du fond de la voie du milieu (section 6). La grotte du prototype (`cliff_blockCave_stone`, à `(73.5, 0, 79.5)`) est cachée derrière : tu peux la supprimer.
-- La porte : au pied de la face, au milieu de la voie, en `(67.5, 0, 67.5)`, tournée vers la tour (vers le sud-ouest). Elle peut être très grande : la partie lisse fait 12 m de large et 15 m de haut. Le nom du jeu se gravera au-dessus.
+- La porte : au pied de la face, au milieu de la voie, en `(67.5, 0, 67.5)`, tournée vers la tour (vers le sud-ouest). Elle peut être très grande : la partie lisse fait 12 m de large et 15 m de haut. Le nom du jeu est gravé au-dessus (script `Lair Gate`, GDD section 10 bis).
 - Derrière, garde un replat d'environ 30 m pour l'arène : le combat final viendra plus tard (GDD, section 23).
 
 ## 9. Les ennemis, les barricades et les coffres

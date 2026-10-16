@@ -1,4 +1,4 @@
-# VR Archery Challenge
+# THUNK VR
 
 Jeu de tir à l'arc en réalité virtuelle pour Meta Quest 3, réalisé avec Unity pour le cours ST2OOS (UnityXR).
 
@@ -94,6 +94,7 @@ Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USE
 - Décor et constructions : *Nature Kit*, *Castle Kit* et *Tower Defense Kit* de Kenney (www.kenney.nl), licence CC0 ; sons *Impact Sounds* et *RPG Audio*, icônes *Game Icons* de Kenney.
 - Musique du boss final : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
 - Autres sons, ambiances et musiques : provisoires, générés par script pour le prototype ; portes de l'antre : *RPG Audio* de Kenney.
+- Porte de l'antre (coupée en double porte par le jeu) : *Modular Dungeon* de Quaternius, licence CC0.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
 
 ## Équipe

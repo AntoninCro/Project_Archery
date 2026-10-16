@@ -17,7 +17,7 @@ MonoBehaviour:
   slot: 0
   prefab: {fileID: 262056547198621753, guid: 5f009da492606353d0474b8c8e4a91a6, type: 3}
   color: {r: 0.9, g: 0.65, b: 0.35, a: 1}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 618fed3b5d6b446a8d1573870490eac8, type: 3}
   levels:
   - cost: 20
     description: "Les ennemis au sol s'arr\xEAtent pour la frapper.\n400 PV."

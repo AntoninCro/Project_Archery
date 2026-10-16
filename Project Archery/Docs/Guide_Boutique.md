@@ -67,7 +67,9 @@ Quelques règles :
 | `Player Upgrades` | Garde les améliorations achetées et applique leurs bonus | Objet `Game` |
 | `Special Arrows` | Flèches spéciales : division, écho, perçage, foudre, explosion, glace, auto-visée, ricochet | Objet `Game` |
 | `Shop Panel` | Affiche la boutique et transmet les clics | Canvas de la boutique |
-| `Shop Card` | Une carte : nom, rareté, description, prix | Chaque carte |
+| `Shop Card` | Une carte : icône, nom, rareté, description courte, prix | Chaque carte |
+
+**Textes et icônes des cartes** (16 octobre) : chaque carte a une petite icône, de la couleur de l'offre, au-dessus de son nom, et un texte d'une ligne ou deux (« +50 % de chance de tirer une flèche supplémentaire »). Les règles complètes restent dans le tableau ci-dessus. Les icônes sont dans `UI/Icones` (silhouettes blanches dessinées pour le jeu, libres de droits). Elles se changent dans le catalogue : champ *Icon* de chaque amélioration, et *Bow Icon*, *Repair Icon*, *Tower Icon*, *Barricade Icon* pour les autres cartes. Celles des constructions sont dans leurs assets (`Data/Structures`, champ *Icon*).
 
 Les sons sont dans `Audio/Placeholder` : `shop_buy`, `shop_error`, `shop_reroll`, `tower_repair`, `lightning`, `explosion`, `ice_zone` et `ricochet`. Le tir écho réutilise `bow_release`.
 

@@ -18,6 +18,8 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Voile rouge autour de la vision quand les PV baissent, qui bat sous 25 % des PV.
 - [ ] Ennemis : vague 1 Rampants, Gluants, Champignons ; vague 2 Tireurs, Gluants bleus, Étoiles de mer ; vague 3 Volants, Guêpes, Champignons furieux, Cactus, Fantassins ; vague 4 Orcs, Tortues, Liches, Gargouilles ; vague 5 Mimiques. Chacun s'anime (course, attaque, touché, mort) et ses zones de touche tombent juste (tête ×2).
 - [ ] Un boss différent à chaque vague (Thomas le champignon, Jean la mimique, Gontrand la tortue, Clitorine le chef orc, Nolan la liche), avec son nom, sa barre de PV, son point faible cyan et ses renforts.
+- [ ] Les boss courent à grandes enjambées (animation lente) et leur point faible se vise sans peine.
+- [ ] La porte de l'antre : double porte arrondie, qui s'ouvre sans rentrer dans l'arche ; « THUNK VR » se lit au-dessus, creusé dans son cartouche de pierre, depuis le bout de la voie du milieu.
 - [ ] Vague 6 : le boss final, le dragon rouge, dans son antre (GDD, section 23).
 - [ ] Tour détruite : le gong descend au pied de la tour, et remonte à la reconstruction.
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.

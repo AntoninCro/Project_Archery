@@ -22,6 +22,7 @@ namespace Archery.World
         static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
         static readonly int k_IntensityId = Shader.PropertyToID("_Intensity");
         static readonly int k_TintId = Shader.PropertyToID("_Tint");
+        static readonly int k_BottomFadeId = Shader.PropertyToID("_BottomFade");
 
         const string k_Fireflies = "Lucioles";
         const string k_Crystals = "Cristaux";
@@ -636,6 +637,8 @@ namespace Archery.World
                 shaft.Beam.localScale = new Vector3(1.4f, length * 0.5f, 1.4f);
                 m_Block.Clear();
                 m_Block.SetColor(k_BaseColorId, color);
+                // Planté dans le sol : il naît en douceur sur son premier tiers, sans tache au sol.
+                m_Block.SetFloat(k_BottomFadeId, 0.35f);
                 shaft.Renderer.SetPropertyBlock(m_Block);
             }
         }

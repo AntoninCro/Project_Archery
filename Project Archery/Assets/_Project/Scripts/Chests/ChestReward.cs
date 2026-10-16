@@ -28,6 +28,9 @@ namespace Archery.Chests
         public string Subtitle;
         public Color Color;
 
+        /// <summary>Icône de la boutique qui dit la même chose (vide pour le morceau d'arc : son orbe garde sa boule).</summary>
+        public Sprite Icon;
+
         /// <summary>Gardée toute la partie (amélioration, morceau d'arc), et non temporaire (bonus).</summary>
         public bool IsPermanent => Kind != ChestRewardKind.Buff;
 
@@ -121,8 +124,25 @@ namespace Archery.Chests
                 Title = upgrade.displayName,
                 Subtitle = ShopCatalog.NameOf(upgrade.rarity),
                 Color = catalog.ColorOf(upgrade.rarity),
+                Icon = upgrade.icon,
             };
             return true;
+        }
+
+        // L'icône d'une amélioration de la boutique qui a cet effet (les bonus reprennent celle qui leur ressemble).
+        static Sprite ShopIcon(UpgradeEffect effect)
+        {
+            var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
+            if (catalog == null)
+                return null;
+
+            foreach (var upgrade in catalog.upgrades)
+            {
+                if (upgrade != null && upgrade.effect == effect && upgrade.icon != null)
+                    return upgrade.icon;
+            }
+
+            return null;
         }
 
         static bool PickUpgrade(ShopCatalog catalog, UpgradeRarity rarity, PlayerUpgrades owned, List<ChestReward> taken,
@@ -168,6 +188,13 @@ namespace Archery.Chests
                     TemporaryBuff.PerfectShots => colors.perfect,
                     _ => colors.fastRing,
                 },
+                // Dégâts doublés : l'épée ; tirs parfaits : la cible ; anneau rapide : l'anneau de Charge rapide.
+                Icon = ShopIcon(buff switch
+                {
+                    TemporaryBuff.DoubleDamage => UpgradeEffect.Damage,
+                    TemporaryBuff.PerfectShots => UpgradeEffect.Precision,
+                    _ => UpgradeEffect.QuickCharge,
+                }),
             };
         }
     }

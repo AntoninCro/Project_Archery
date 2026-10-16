@@ -74,7 +74,7 @@ Il prend la place de la boutique, à ta gauche. Ils ne sont jamais visibles en m
 3. Dans `Main Menu`, *UI > Image*, nomme-la `Content` : étirée sur tout le Canvas, noire, alpha 170.
 4. Dans `Content`, un texte `Title` (*UI > Text - TextMeshPro*) :
    - ancre en haut au centre, position `(0, -60)`, 900 × 90 ;
-   - taille 56, gras, centré, texte « VR Archery Challenge ».
+   - taille 56, gras, centré, texte « THUNK VR » (le nom du jeu depuis le 16 octobre au soir ; avant, « VR Archery Challenge » puis « SLACK VR »). Le titre se met tout seul : à l'ouverture de la scène, l'éditeur remplace un ancien nom par celui de `GameInfo.Name` (il reste à enregistrer la scène).
 
 ### Les pages
 

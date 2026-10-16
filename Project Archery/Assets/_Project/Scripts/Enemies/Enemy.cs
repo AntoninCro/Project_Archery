@@ -118,6 +118,12 @@ namespace Archery.Enemies
         /// <summary>Multiplicateur de vitesse durable (1 = vitesse normale). Pour un ralentissement passager, voir <see cref="Slow"/>.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>
+        /// Vitesse de l'animation de course par rapport à celle des ennemis normaux (1). Un boss géant fait de grandes
+        /// enjambées : il la règle plus bas (<see cref="Boss"/>).
+        /// </summary>
+        public float RunAnimationScale { get; set; } = 1f;
+
         /// <summary>Vitesse effective (m/s) : difficulté, vague, multiplicateur durable et ralentissement en cours.</summary>
         public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * SlowMultiplier;
 
@@ -273,7 +279,7 @@ namespace Archery.Enemies
 
             if (m_HasSpeed)
                 m_Animator.SetFloat(k_SpeedId, CurrentVelocity.magnitude);
-            m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed : 1f;
+            m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed * RunAnimationScale : 1f;
         }
 
         bool BehaviourControlsAnimator => m_Behaviour != null && m_Behaviour.ControlsAnimator;

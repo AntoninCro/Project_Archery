@@ -73,6 +73,10 @@ namespace Archery.EditorTools
                         Undo.DestroyObjectImmediate(existing.gameObject);
                     Report(scene, MapLighting.Bake(scene) is { } created ? created.gameObject : null);
                 }
+                else
+                {
+                    RefreshLairVeins(scene, existing);
+                }
             }
 
             if (Has<ArenaDirector>(scene))
@@ -85,6 +89,26 @@ namespace Archery.EditorTools
                     Report(scene, ArenaLights.Bake(scene) is { } created ? created.gameObject : null);
                 }
             }
+        }
+
+        // Les veines de l'antre fabriquées pour l'ancienne porte (plus haute, sans titre gravé au-dessus) : on refait ce
+        // seul groupe, le reste de « Effet » ne bouge pas. Un groupe supprimé à la main n'est pas refait.
+        static void RefreshLairVeins(Scene scene, MapLighting lighting)
+        {
+            var old = lighting.GetComponentInChildren<MapLairVeins>(true);
+            if (old == null || old.IsCurrent)
+                return;
+
+            var index = old.transform.GetSiblingIndex();
+            Undo.DestroyObjectImmediate(old.gameObject);
+            var veins = lighting.BuildLairVeins(index);
+            if (veins == null)
+                return;
+
+            Undo.RegisterCreatedObjectUndo(veins.gameObject, "Effets");
+            EditorSceneManager.MarkSceneDirty(scene);
+            Debug.Log($"Effets : veines de l'antre refaites pour la nouvelle porte dans la scène {scene.name} " +
+                      $"({veins.transform.childCount} objets). Enregistre la scène (Ctrl+S) pour les garder.", veins);
         }
 
         static void Report(Scene scene, GameObject created)
