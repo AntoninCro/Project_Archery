@@ -75,8 +75,23 @@ namespace Archery.World
 
         readonly List<Transform> m_Falls = new List<Transform>();
 
-        /// <summary>Les cascades de la rivière (pièces « cliff_waterfall… »), trouvées au lancement.</summary>
-        public IReadOnlyList<Transform> Falls => m_Falls;
+        /// <summary>Les cascades de la rivière (pièces « cliff_waterfall… »), trouvées au lancement (hors du jeu : tout de suite).</summary>
+        public IReadOnlyList<Transform> Falls
+        {
+            get
+            {
+                if (!Application.isPlaying && m_Falls.Count == 0 && m_RiverRoot != null)
+                {
+                    foreach (var t in m_RiverRoot.GetComponentsInChildren<Transform>())
+                    {
+                        if (t.name.StartsWith("cliff_waterfall"))
+                            m_Falls.Add(t);
+                    }
+                }
+
+                return m_Falls;
+            }
+        }
 
         void Start()
         {
@@ -101,6 +116,8 @@ namespace Archery.World
 
         List<Node> CollectPieces()
         {
+            // (La liste a pu être remplie dans l'éditeur, par Falls.)
+            m_Falls.Clear();
             var byKey = new Dictionary<Vector3Int, Node>();
             foreach (var t in m_RiverRoot.GetComponentsInChildren<Transform>())
             {

@@ -2,6 +2,7 @@ using System;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Effects;
 using Archery.UI;
 using UnityEngine;
 using UnityEngine.AI;
@@ -63,6 +64,11 @@ namespace Archery.Enemies
         [SerializeField]
         Color m_TextColor = new Color(1f, 0.35f, 0.25f);
 
+        [Header("Points faibles")]
+        [Tooltip("Couleur de la gemme de ses points faibles (Hitbox « WeakPoint ») : une par boss, qui ressort sur son modèle.")]
+        [SerializeField]
+        Color m_WeakPointColor = new Color(0.15f, 0.92f, 1f);
+
         Enemy m_Enemy;
         float m_SummonTimer;
 
@@ -89,6 +95,13 @@ namespace Archery.Enemies
             var growth = 1f + m_HealthGrowthPerBoss * Mathf.Max(0, BossNumber - 1);
             if (!Mathf.Approximately(growth, 1f))
                 Health.ResetHealth(Health.Max * growth);
+
+            // Ses points faibles deviennent des gemmes serties d'or (la boule des prefabs ne sert qu'à les placer).
+            foreach (var hitbox in GetComponentsInChildren<Hitbox>(true))
+            {
+                if (hitbox.Zone == HitZone.WeakPoint)
+                    WeakPointVisual.Attach(hitbox, m_WeakPointColor);
+            }
 
             m_SummonTimer = m_FirstSummonDelay;
             Health.Died += OnDied;

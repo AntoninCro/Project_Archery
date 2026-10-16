@@ -8,6 +8,8 @@ namespace Archery.FinalBoss
     /// le dragon le contourne et ne pose pas de rocher ni de flaque de lave dessus. Il faut aussi lui donner un collider
     /// pour qu'il arrête les flèches, le souffle et les boules de feu.
     /// </summary>
+    // Toujours actif : la liste des piliers sert aussi dans l'éditeur (pour poser les lumières de l'arène).
+    [ExecuteAlways]
     [DisallowMultipleComponent]
     public class ArenaPillar : MonoBehaviour
     {

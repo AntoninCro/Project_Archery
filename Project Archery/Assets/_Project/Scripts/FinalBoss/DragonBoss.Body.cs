@@ -1,6 +1,7 @@
 using System;
 using Archery.Combat;
 using Archery.Core;
+using Archery.Effects;
 using UnityEngine;
 
 namespace Archery.FinalBoss
@@ -485,7 +486,8 @@ namespace Archery.FinalBoss
             BuildWeakPoint(health, scale);
         }
 
-        // Point faible : une boule cyan qui pulse sous la poitrine (dégâts ×3), comme les autres boss.
+        // Point faible sous la poitrine (dégâts ×3), comme les autres boss : une boule (sa zone), habillée en jeu d'une
+        // gemme sertie d'or qui bat comme un cœur (WeakPointVisual).
         void BuildWeakPoint(Health health, float scale)
         {
             if (m_Chest == null || m_Spine == null)
@@ -512,6 +514,9 @@ namespace Archery.FinalBoss
             var hitbox = orb.AddComponent<Hitbox>();
             hitbox.Configure(HitZone.WeakPoint, 3f, health);
             m_Hitboxes.Add(collider);
+
+            // La boule devient une gemme sertie d'or, comme chez les autres boss.
+            WeakPointVisual.Attach(hitbox, m_WeakPointColor);
         }
 
         void AddChain(string[] bones, float radiusFactor, HitZone zone, Health health, float scale)

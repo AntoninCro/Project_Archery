@@ -30,10 +30,12 @@ namespace Archery.World
         /// <summary>Les zones d'eau actives de la scène.</summary>
         public static System.Collections.Generic.IReadOnlyList<SlowWater> All => s_All;
 
-        /// <summary>Ce point est-il dans l'eau d'une des zones ?</summary>
+        /// <summary>Ce point est-il dans l'eau d'une des zones ? (Aussi hors du jeu, dans l'éditeur.)</summary>
         public static bool InAnyWater(Vector3 position)
         {
-            foreach (var water in s_All)
+            // Hors du jeu, les zones ne s'inscrivent pas (pas d'OnEnable) : on les cherche dans la scène.
+            var waters = Application.isPlaying ? (System.Collections.Generic.IEnumerable<SlowWater>)s_All : FindObjectsByType<SlowWater>();
+            foreach (var water in waters)
             {
                 if (water != null && water.Contains(position))
                     return true;

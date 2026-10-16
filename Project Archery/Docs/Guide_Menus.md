@@ -197,6 +197,16 @@ Il se place tout seul devant toi quand il apparaît : sa position dans la scène
 5. *Rejouer* : fondu au noir, retour au menu. Ton nom sera proposé à la partie suivante, et les paramètres sont gardés.
 6. Relance Unity : le classement et les paramètres sont toujours là (fichiers JSON).
 
+## 7. Le thème des menus (16 octobre)
+
+Les menus (menu principal, paramètres, classement, fin de partie, boutique, panneau de construction et cartes), la montre, le panneau des vagues, les panneaux de difficulté (prefab `Difficulty Panel` : un Canvas « Cadre » ajouté devant la planche) et la barre de PV des boss des vagues (prefabs `Boss_…` : 300 × 56, le nom posé dessus) sont habillés par un thème fantasy ; le bandeau des messages, la barre de PV du dragon (1300 × 72, le nom posé dessus), les orbes des coffres, les cibles de fin et les textes flottants, fabriqués ou réglés par le code, le prennent tout seuls en jeu (s'il manque l'asset `Resources/UiTheme`, ils gardent leur ancien aspect) : panneaux sombres à bordure dorée ornée, boutons colorés selon leur rôle, titres dorés en Cinzel, sons Kenney (GDD, section 14).
+
+- **Rien à faire à la main** : à l'ouverture de la scène, l'éditeur prépare tout (sprites Kenney en 9-slice, polices Cinzel pour TextMeshPro dans `_Project/UI/Fonts`, asset `Resources/UiTheme`), habille le prefab `Prefabs/UI/Shop Card` et les menus de la scène, puis marque la scène comme modifiée : **enregistre-la** (Ctrl+S). Si le résultat ne te plaît pas, ferme-la sans enregistrer.
+- **Changer les couleurs, les sprites, les polices ou les sons** : `Assets/_Project/Resources/UiTheme`, puis menu *Archery > Interface > Réappliquer le thème aux menus*. Les retouches faites à la main dans un menu restent tant que tu ne réappliques pas le thème.
+- **Le rôle d'un bouton** vient de son nom ou de son texte : « Jouer », « Rejouer », « Enregistrer », « Terminer » → valider (émeraude) ; « Retour », « Fermer » → revenir (prune) ; « Quitter » → rubis ; `<` et `>` → améthyste ; les autres → saphir.
+- **Ajouter un menu** : construis-le comme les autres (un fond `Content`, des boutons, des textes `Title`), puis réapplique le thème.
+- **Ce qui est ajouté** : un enfant « Bordure » sur les panneaux, boutons, cartes et curseurs, deux « Ornement » sous les titres (ignorés par les mises en page), et les composants `Ui Button Fx` (réaction au survol, sons) et `Ui Panel Fx` (apparition).
+
 ## En cas de problème
 
 - **Les boutons ne réagissent pas au rayon** : le Canvas doit avoir le *Tracked Device Graphic Raycaster*, et la main qui vise doit être vide.

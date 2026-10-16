@@ -16,6 +16,7 @@ namespace Archery.UI
 
         TextMeshPro m_Text;
         Color m_Color;
+        bool m_Themed;
         Vector3 m_Velocity;
         float m_Age;
         float m_Duration;
@@ -44,11 +45,17 @@ namespace Archery.UI
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.fontSize = 2.5f;
             text.fontStyle = FontStyles.Bold;
+
+            // Le thème des menus : en Cinzel, dégradé du clair vers la couleur du texte, contour violet très sombre.
+            var theme = UiTheme.Load();
+            if (theme != null)
+                UiThemer.ApplyLabel(text, theme);
             text.outlineWidth = 0.2f;
-            text.outlineColor = new Color32(0, 0, 0, 200);
+            text.outlineColor = theme != null ? new Color32(18, 8, 34, 220) : new Color32(0, 0, 0, 200);
 
             var item = go.AddComponent<FloatingText>();
             item.m_Text = text;
+            item.m_Themed = theme != null;
             return item;
         }
 
@@ -59,6 +66,15 @@ namespace Archery.UI
             m_Text.text = text;
             m_Color = color;
             m_Text.color = color;
+            if (m_Themed)
+            {
+                // La teinte passe dans le dégradé ; la couleur du texte ne garde que la transparence (le fondu).
+                var top = Color.Lerp(color, Color.white, 0.55f);
+                m_Text.enableVertexGradient = true;
+                m_Text.colorGradient = new VertexGradient(top, top, color, color);
+                m_Color = new Color(1f, 1f, 1f, color.a);
+                m_Text.color = m_Color;
+            }
             m_Size = size;
             m_Duration = Mathf.Max(0.1f, duration);
             m_Age = 0f;

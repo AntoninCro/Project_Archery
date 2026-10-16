@@ -393,12 +393,16 @@ Des nuages en blocs, à la Minecraft, apparaissent au lancement du jeu (pas dans
 
 ### Les lumières (15 octobre)
 
-Torches, lucioles, plantes et cristaux lumineux, rivière bioluminescente, phare de la tour, runes, veines de l'antre… (détail dans le GDD, section 17 bis). Comme les nuages, tout apparaît au lancement du jeu, sous un objet « Lumières de la carte » : rien à poser, et la scène n'a pas été modifiée. Les lumières trouvent seules leur place : les arbres, champignons et fleurs par le nom de leur modèle, les voies par le NavMesh (du point d'apparition à la tour), les parois par des rayons.
+Torches, lucioles, plantes et cristaux lumineux, rivière bioluminescente, phare de la tour, runes, veines de l'antre… (détail dans le GDD, section 17 bis). Tout est rangé sous un seul objet de la scène, **« Effet »**, avec un groupe par famille : « Torches », « Nature » (lucioles, cristaux, pollen, rayons de soleil, cascades), « Jeu » (tour, runes, âmes, lueur du joueur), « Antre » (veines autour de la porte). Les lumières ont trouvé seules leur place : les arbres, champignons et fleurs par le nom de leur modèle, les voies par le NavMesh (du point d'apparition à la tour), les parois par des rayons.
 
-- **Les régler** : `Assets/_Project/Resources/MapLighting` (nombre de torches, de lucioles, de cristaux, couleurs, forces). En Play, la plupart des couleurs changent tout de suite ; le nombre et la place des objets, au prochain lancement.
+- **La première fois** : à l'ouverture de la scène, l'éditeur fabrique « Effet » (la console l'annonce) et marque la scène comme modifiée : **enregistre la scène** (Ctrl+S) pour le garder. Même chose pour l'arène : ouvre une fois `Scenes/Arena_Dragon` et enregistre-la.
+- **Déplacer, modifier, supprimer** : chaque torche, grappe de cristaux, essaim de lucioles, rayon, brume, rune… est un objet normal. En jeu, chacun est animé tel qu'il est : sa place, la couleur, la portée et la force de sa lumière (ou la couleur de son matériau) servent de départ. Une torche à moins de 9 m d'une voie s'allume avec elle ; les autres sont « de la forêt ». On peut dupliquer une torche (Ctrl+D) pour en ajouter.
+- **Tout cacher** : décoche « Effet » (ou un seul groupe) : rien ne s'allume en jeu, même pas les plantes lumineuses ni les remous de la rivière.
+- **Tout refaire** (après avoir changé la carte, les voies ou les réglages) : menu *Archery > Effets > Refaire les effets des scènes ouvertes*. Attention : les retouches faites à la main sont perdues.
+- **Les régler** : `Assets/_Project/Resources/MapLighting` (nombre de torches, de lucioles, de cristaux, couleurs, forces) : ces réglages servent quand « Effet » est refait.
 - **La force selon l'heure** : *Lamps* dans le ciel de chaque difficulté (`Data/Difficulties`), avec les aurores, les étoiles filantes, les éclairs et l'étalonnage (*Color Filter*, *Saturation*, *Contrast*).
 - **La rivière** : la lueur se règle dans son matériau (*Bioluminescence*, *Force de la bioluminescence*) ; les remous, dans `MapLighting` (*Ripple Color*).
-- **Si les voies changent**, refais le **Bake** du NavMesh : les torches suivent le chemin calculé des ennemis.
+- **Si les voies changent**, refais le **Bake** du NavMesh, puis refais les effets (menu ci-dessus) : les torches sont posées le long du chemin calculé des ennemis. Si la console dit « aucune voie trouvée (NavMesh ?) » en fabriquant « Effet », le NavMesh n'était pas chargé : refais les effets une fois la scène ouverte.
 - **Images par seconde** : si ça rame dans le casque, baisse d'abord *Light Every* (une vraie lumière toutes les N torches : mets 3 ou 4), puis le nombre de lucioles et de torches de la forêt.
 - **En cas de problème** : rien n'apparaît → la console dit « réglages Resources/MapLighting introuvables ». Des objets roses → un shader n'a pas compilé (envoie-moi l'erreur). Les champignons ne luisent pas dans un build mais bien dans l'éditeur → dis-le-moi (variante de shader manquante).
 

@@ -2,6 +2,7 @@ using System;
 using Archery.Bows;
 using Archery.Core;
 using Archery.Player;
+using Archery.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +21,7 @@ namespace Archery.FinalBoss
         const float k_Height = 0.42f;          // m au-dessus du regard
         const float k_PixelSize = 0.001f;
         const float k_Width = 1300f;
-        const float k_BarHeight = 46f;
+        const float k_BarHeight = 72f;         // assez haute pour le nom, posé dessus
         const float k_FollowAngle = 22f;
         const float k_SettleAngle = 4f;
         const float k_Smoothing = 0.25f;
@@ -51,36 +52,58 @@ namespace Archery.FinalBoss
             bar.m_Group = go.AddComponent<CanvasGroup>();
             bar.m_Group.alpha = 0f;
 
-            // Nom au-dessus de la barre.
-            var nameObject = new GameObject("Nom", typeof(RectTransform));
-            var nameRect = (RectTransform)nameObject.transform;
-            nameRect.SetParent(rect, false);
-            nameRect.anchoredPosition = new Vector2(0f, 62f);
-            nameRect.sizeDelta = new Vector2(k_Width, 80f);
-            var text = nameObject.AddComponent<TextMeshProUGUI>();
-            text.text = bossName;
-            text.fontSize = 56f;
-            text.fontStyle = FontStyles.Bold | FontStyles.SmallCaps;
-            text.alignment = TextAlignmentOptions.Bottom;
-            text.color = new Color(1f, 0.82f, 0.7f);
-            text.characterSpacing = 6f;
-            text.raycastTarget = false;
-            bar.m_Name = text;
+            // Le thème des menus : cadre sombre à bordure dorée ornée, nom doré en Cinzel Decorative.
+            var theme = UiTheme.Load();
 
             // Cadre, fond, traînée, remplissage.
-            CreateBox(rect, "Cadre", new Vector2(k_Width + 16f, k_BarHeight + 16f), new Color(0.05f, 0.02f, 0.02f, 0.85f));
-            CreateBox(rect, "Fond", new Vector2(k_Width, k_BarHeight), new Color(0.2f, 0.04f, 0.03f, 0.9f));
+            var frame = CreateBox(rect, "Cadre", new Vector2(k_Width + (theme != null ? 44f : 16f), k_BarHeight + (theme != null ? 30f : 16f)),
+                                  new Color(0.05f, 0.02f, 0.02f, 0.85f));
+            var track = CreateBox(rect, "Fond", new Vector2(k_Width, k_BarHeight), new Color(0.2f, 0.04f, 0.03f, 0.9f));
             bar.m_Trail = CreateBox(rect, "Traînée", new Vector2(k_Width, k_BarHeight), new Color(1f, 0.8f, 0.45f, 0.9f), leftAligned: true);
             bar.m_Fill = CreateBox(rect, "PV", new Vector2(k_Width, k_BarHeight), new Color(0.85f, 0.08f, 0.06f, 1f), leftAligned: true);
+            if (theme != null)
+            {
+                UiThemer.ApplyPanel(frame.GetComponent<Image>(), theme, 16f, 0.92f);
+                UiThemer.ApplyGaugeTrack(track.GetComponent<Image>(), theme);
+                UiThemer.ApplyGaugeFill(bar.m_Trail.GetComponent<Image>(), theme, new Color(1f, 0.82f, 0.5f, 0.9f));
+                UiThemer.ApplyGaugeFill(bar.m_Fill.GetComponent<Image>(), theme, new Color(0.85f, 0.08f, 0.1f, 1f));
+            }
 
             // Repères des changements de phase.
             if (markers != null)
             {
                 foreach (var marker in markers)
                 {
-                    var tick = CreateBox(rect, "Repère", new Vector2(6f, k_BarHeight + 10f), new Color(1f, 0.9f, 0.8f, 0.8f));
+                    var color = theme != null ? theme.panelBorderColor : new Color(1f, 0.9f, 0.8f, 0.8f);
+                    var tick = CreateBox(rect, "Repère", new Vector2(6f, k_BarHeight + 10f), color);
                     tick.anchoredPosition = new Vector2((marker - 0.5f) * k_Width, 0f);
                 }
+            }
+
+            // Nom posé sur la barre, comme les boss des vagues : il tient dans sa hauteur, centré sur les lettres,
+            // et rétrécit s'il est trop long.
+            var nameObject = new GameObject("Nom", typeof(RectTransform));
+            var nameRect = (RectTransform)nameObject.transform;
+            nameRect.SetParent(rect, false);
+            nameRect.sizeDelta = new Vector2(k_Width - 40f, k_BarHeight - 12f);
+            var text = nameObject.AddComponent<TextMeshProUGUI>();
+            text.text = bossName;
+            text.fontSize = 48f;
+            text.enableAutoSizing = true;
+            text.fontSizeMax = 48f;
+            text.fontSizeMin = 28f;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.fontStyle = FontStyles.Bold | FontStyles.SmallCaps;
+            text.horizontalAlignment = HorizontalAlignmentOptions.Center;
+            text.verticalAlignment = VerticalAlignmentOptions.Geometry;
+            text.color = new Color(1f, 0.82f, 0.7f);
+            text.characterSpacing = 6f;
+            text.raycastTarget = false;
+            bar.m_Name = text;
+            if (theme != null)
+            {
+                UiThemer.ApplyTitle(text, theme, false);
+                text.characterSpacing = 3f;
             }
 
             bar.SetValue(0f, instant: true);
@@ -128,12 +151,13 @@ namespace Archery.FinalBoss
                 m_Name.color = color;
         }
 
+        // La barre raccourcit par la droite (sa largeur, pas son échelle : les coins du thème restent nets).
         void Apply()
         {
             if (m_Fill != null)
-                m_Fill.localScale = new Vector3(m_Value, 1f, 1f);
+                m_Fill.sizeDelta = new Vector2(k_Width * m_Value, k_BarHeight);
             if (m_Trail != null)
-                m_Trail.localScale = new Vector3(m_TrailValue, 1f, 1f);
+                m_Trail.sizeDelta = new Vector2(k_Width * m_TrailValue, k_BarHeight);
         }
 
         void LateUpdate()

@@ -275,7 +275,8 @@ namespace Archery.FinalBoss
         {
             CreateLavaLights();
             SetLight(0f);
-            ArenaLights.Create(this, m_Arena, m_Dragon, m_Crystals, m_Turrets);
+            // Les lumières de l'arène : l'objet « Effet » de la scène (fabriqué tout de suite s'il n'y en a pas).
+            ArenaLights.Attach(this, m_Arena, m_Dragon, m_Crystals, m_Turrets);
 
             if (m_Dragon != null)
             {

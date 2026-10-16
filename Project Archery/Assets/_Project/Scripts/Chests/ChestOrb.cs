@@ -1,6 +1,8 @@
 using Archery.Player;
+using Archery.UI;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
@@ -46,6 +48,12 @@ namespace Archery.Chests
 
         Chest m_Chest;
         MaterialPropertyBlock m_Block;
+
+        // Le thème des menus : une plaque ornée derrière l'étiquette, un sceau qui tourne derrière l'orbe.
+        UiTheme m_Theme;
+        Image m_Seal;
+        Color m_SealColor;
+        float m_Hover;
         Vector3 m_From;
         Vector3 m_To;
         Vector3 m_BaseScale;
@@ -87,6 +95,32 @@ namespace Archery.Chests
                 m_Label.text = $"<size=55%><color=#FFFFFFC0>{kind}</color></size>\n<b>{reward.Title}</b>\n<size=70%>{reward.Subtitle}</size>";
                 m_Label.color = reward.Color;
             }
+
+            ApplyTheme(reward.Color);
+        }
+
+        // L'étiquette en Cinzel sur une plaque ornée de la couleur de la récompense ; derrière l'orbe, un sceau orné.
+        void ApplyTheme(Color color)
+        {
+            m_Theme ??= UiTheme.Load();
+            if (m_Theme == null)
+                return;
+
+            if (m_Label != null)
+            {
+                UiThemer.ApplyLabel(m_Label, m_Theme);
+                UiThemer.InFrontOfPlaques(m_Label);
+                m_Label.ForceMeshUpdate();
+                var bounds = m_Label.textBounds;
+                var border = Color.Lerp(color, Color.white, 0.15f);
+                UiThemer.Plaque(m_Label.transform, "Plaque", m_Theme, (Vector2)bounds.size + new Vector2(0.12f, 0.08f),
+                                new Vector3(bounds.center.x, bounds.center.y, 0.01f), border);
+
+                // Le sceau, au niveau de l'orbe (sous l'étiquette), un peu derrière elle : il tourne avec l'étiquette vers le joueur.
+                var orb = m_Label.transform.InverseTransformPoint(transform.position);
+                m_SealColor = Color.Lerp(color, m_Theme.panelBorderColor, 0.35f);
+                m_Seal = UiThemer.Seal(m_Label.transform, "Sceau", m_Theme, 0.3f, new Vector3(orb.x, orb.y, 0.1f), m_SealColor);
+            }
         }
 
         void Update()
@@ -112,6 +146,16 @@ namespace Archery.Chests
 
             var targetScale = m_BaseScale * (isHovered ? m_HoverScale : 1f);
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, 1f - Mathf.Exp(-deltaTime * 12f));
+
+            // Le sceau tourne doucement, plus vite et plus clair quand la main vise l'orbe.
+            if (m_Seal != null)
+            {
+                m_Hover = Mathf.MoveTowards(m_Hover, isHovered ? 1f : 0f, deltaTime * 5f);
+                m_Seal.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f + (m_Age + m_Phase) * Mathf.Lerp(18f, 60f, m_Hover));
+                var color = Color.Lerp(m_SealColor, Color.white, 0.5f * m_Hover);
+                color.a = Mathf.Lerp(0.75f, 1f, m_Hover) * (0.85f + 0.15f * Mathf.Sin(m_Age * 3f));
+                m_Seal.color = color;
+            }
 
             FaceLabelToPlayer();
         }

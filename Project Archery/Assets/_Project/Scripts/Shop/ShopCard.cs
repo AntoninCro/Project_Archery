@@ -51,9 +51,15 @@ namespace Archery.Shop
         [SerializeField]
         Color m_TooExpensiveColor = new Color(1f, 0.45f, 0.4f);
 
+        // Le cadre orné du thème des menus (enfant « Bordure »), teinté de la couleur de l'offre.
+        Image m_Border;
+
         public ShopOffer Offer { get; private set; }
 
         public event Action<ShopCard> Clicked;
+
+        /// <summary>Couleur du fond avant la teinte de l'offre (réglée par le thème des menus).</summary>
+        public void SetBaseColor(Color color) => m_BaseColor = color;
 
         void Awake()
         {
@@ -61,6 +67,9 @@ namespace Archery.Shop
                 m_Button = GetComponent<Button>();
             if (m_Background == null)
                 m_Background = GetComponent<Image>();
+            var border = transform.Find(UI.UiThemer.BorderName);
+            if (border != null)
+                m_Border = border.GetComponent<Image>();
             if (m_Button != null)
                 m_Button.onClick.AddListener(() => Clicked?.Invoke(this));
         }
@@ -89,6 +98,13 @@ namespace Archery.Shop
                 var color = Color.Lerp(m_BaseColor, offer.Color, m_Tint);
                 color.a = m_BaseColor.a * (available ? 1f : 0.6f);
                 m_Background.color = color;
+            }
+
+            if (m_Border != null)
+            {
+                var color = Color.Lerp(offer.Color, Color.white, 0.15f);
+                color.a = available ? 1f : 0.45f;
+                m_Border.color = color;
             }
 
             if (m_Icon != null)

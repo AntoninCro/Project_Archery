@@ -2,6 +2,7 @@ using System;
 using Archery.Bows;
 using Archery.Core;
 using Archery.Player;
+using Archery.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,14 +71,35 @@ namespace Archery.FinalBoss
             text.alignment = TextAlignmentOptions.Center;
             text.color = Color.Lerp(color, Color.white, 0.4f);
             text.rectTransform.sizeDelta = new Vector2(2.6f, 1f);
+
+            // Le thème des menus : le texte en Cinzel Decorative dégradé vers la couleur du choix, sur une plaque ornée de
+            // cette couleur ; derrière le disque, un sceau doré qui tourne.
+            var theme = UiTheme.Load();
+            if (theme != null)
+            {
+                UiThemer.ApplyTitle(text, theme, false);
+                var top = Color.Lerp(color, Color.white, 0.6f);
+                text.colorGradient = new VertexGradient(top, top, color, color);
+                UiThemer.InFrontOfPlaques(text);
+                text.ForceMeshUpdate();
+                var bounds = text.textBounds;
+                UiThemer.Plaque(textObject.transform, "Plaque", theme, (Vector2)bounds.size + new Vector2(0.5f, 0.3f),
+                                new Vector3(bounds.center.x, bounds.center.y, 0.02f), Color.Lerp(color, Color.white, 0.15f));
+                target.m_Seal = UiThemer.Seal(go.transform, "Sceau", theme, 1.45f, new Vector3(0f, 0f, 0.06f), theme.panelBorderColor);
+            }
+
             return target;
         }
+
+        Image m_Seal;
 
         void Update()
         {
             m_Age += Time.unscaledDeltaTime;
             if (m_Disc != null && !m_Used)
                 m_Disc.localScale = Vector3.one * (0.55f * (1f + 0.05f * Mathf.Sin(m_Age * 4f)));
+            if (m_Seal != null)
+                m_Seal.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f + m_Age * (m_Used ? 120f : 15f));
         }
 
         public bool OnArrowHit(in ArrowHit hit)

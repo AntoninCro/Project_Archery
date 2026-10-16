@@ -123,6 +123,10 @@ namespace Archery.FinalBoss
         [SerializeField]
         Material m_WeakPointMaterial;
 
+        [Tooltip("Couleur de la gemme de son point faible (cyan glacé : elle tranche avec le feu).")]
+        [SerializeField]
+        Color m_WeakPointColor = new Color(0.45f, 0.9f, 1f);
+
         [Tooltip("Matériau des flammes (particules).")]
         [SerializeField]
         Material m_FireMaterial;

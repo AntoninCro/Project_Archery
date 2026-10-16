@@ -40,6 +40,23 @@ namespace Archery.UI
         }
 
         static HeadMessages s_Instance;
+        static UiTheme s_Theme;
+        static bool s_ThemeLoaded;
+
+        // Le thème des menus (panneau sombre à bordure dorée ornée, texte en Cinzel) ; sans lui, l'ancien bandeau.
+        static UiTheme Theme
+        {
+            get
+            {
+                if (!s_ThemeLoaded)
+                {
+                    s_ThemeLoaded = true;
+                    s_Theme = UiTheme.Load();
+                }
+
+                return s_Theme;
+            }
+        }
 
         readonly List<Entry> m_Entries = new List<Entry>();
         RectTransform m_Stack;
@@ -118,6 +135,18 @@ namespace Archery.UI
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.raycastTarget = false;
+
+            var theme = Theme;
+            if (theme != null)
+            {
+                // Coins à la mesure du message (plus grands pour un titre), et deux traits ornés sous les grands messages.
+                UiThemer.ApplyPanel(backdrop, theme, 18f * size, 0.86f);
+                UiThemer.ApplyLabel(tmp, theme);
+                if (size >= 1.3f)
+                    UiThemer.AddSideOrnaments((RectTransform)root.transform, theme, new Vector2(0f, padding * 0.5f), 8f, 220f * size, 24f,
+                                              new Vector2(0.5f, 0f));
+            }
+
             var element = label.AddComponent<LayoutElement>();
             element.preferredWidth = Mathf.Min(k_MaxWidth, tmp.GetPreferredValues(text, float.PositiveInfinity, float.PositiveInfinity).x + 4f);
 
@@ -232,6 +261,11 @@ namespace Archery.UI
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => s_Instance = null;
+        static void ResetStatics()
+        {
+            s_Instance = null;
+            s_Theme = null;
+            s_ThemeLoaded = false;
+        }
     }
 }

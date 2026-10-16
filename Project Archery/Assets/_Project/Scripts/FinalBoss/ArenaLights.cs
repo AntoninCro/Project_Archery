@@ -4,29 +4,32 @@ using Archery.Player;
 using Archery.World;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace Archery.FinalBoss
 {
     /// <summary>
-    /// Les petites lumières de l'arène du dragon, créées au lancement par l'<see cref="ArenaDirector"/> (rien à poser
-    /// dans la scène) :
+    /// L'objet « Effet » de l'arène du dragon : toutes ses petites lumières, rangées par groupe et enregistrées avec la
+    /// scène (on peut les déplacer, les modifier, les supprimer ; cacher « Effet » ou un groupe les éteint) :
     /// <list type="bullet">
-    /// <item>des veines de lave dans les parois et la voûte, qui battent sur la musique ; il y en a plus à chaque phase ;</item>
-    /// <item>des bulles qui éclatent à la surface de la lave, et une vapeur de chaleur au-dessus ;</item>
-    /// <item>des braises qui montent dans toute la grotte, plus nombreuses à chaque phase ;</item>
-    /// <item>des gerbes d'étincelles et un halo au pied des coulées de lave ;</item>
-    /// <item>le sol qui reste brûlant (orange, puis il refroidit) là où frappent les boules de feu, le souffle et le slam ;</item>
-    /// <item>le sol qui chauffe là où le souffle va frapper, et les craquelures qui flashent avant le slam ;</item>
-    /// <item>à l'envol et à la rage : une onde de lumière sur le sol, les braseros et la lave qui s'embrasent ;</item>
-    /// <item>une rune bleue sous chaque tourelle téléportée ;</item>
-    /// <item>des flèches traçantes et une lueur douce autour du joueur ;</item>
-    /// <item>à la victoire : la lave s'éteint, les cristaux blanchissent, des rayons de soleil percent la voûte.</item>
+    /// <item>« Veines » : des veines de lave dans les parois et la voûte, qui battent sur la musique ; il y en a plus à
+    /// chaque phase (dans l'ordre des objets du groupe) ;</item>
+    /// <item>« Braises de la grotte » : des braises qui montent dans toute la grotte, plus nombreuses à chaque phase ;</item>
+    /// <item>« Coulées » : des gerbes d'étincelles, un halo et une lueur au pied des coulées de lave ;</item>
+    /// <item>« Soleil » : les rayons de soleil qui percent la voûte à la victoire (cachés jusque-là) ;</item>
+    /// <item>« Piliers » (<see cref="PillarLights"/>) : lumière d'en bas, couronne de cristaux, abri au sol ;</item>
+    /// <item>en jeu seulement, sous « En jeu » : bulles et vapeur de la lave, sol brûlant, sol qui chauffe avant le
+    /// souffle, onde de lumière aux changements de phase, runes sous les tourelles, lueur du joueur.</item>
     /// </list>
+    /// En jeu aussi : flèches traçantes, craquelures qui flashent avant le slam, braseros et lave qui s'embrasent à
+    /// l'envol et à la rage ; à la victoire, la lave s'éteint et les cristaux blanchissent.
     /// </summary>
     /// <remarks>
-    /// Les matériaux, couleurs et quantités viennent de <see cref="MapLightingSettings"/> (« Resources/MapLighting »),
-    /// partie « Arène du boss final ».
+    /// L'objet est créé par l'éditeur à l'ouverture de la scène s'il n'existe pas (menu Archery > Effets pour le
+    /// refaire) ; sans lui, tout est fabriqué au lancement par l'<see cref="ArenaDirector"/>. Réglages :
+    /// « Resources/MapLighting », partie « Arène du boss final ».
     /// </remarks>
+    [DisallowMultipleComponent]
     public class ArenaLights : MonoBehaviour
     {
         static readonly int k_ColorId = Shader.PropertyToID("_Color");
@@ -34,6 +37,13 @@ namespace Archery.FinalBoss
         static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int k_ArenaId = Shader.PropertyToID("_ArcheryArena");
         static readonly int k_FallCutoffId = Shader.PropertyToID("_LavaFallCutoffY");
+
+        const string k_Veins = "Veines";
+        const string k_Embers = "Braises de la grotte";
+        const string k_Feet = "Coulées";
+        const string k_Sun = "Soleil";
+        const string k_Pillars = "Piliers";
+        const string k_Runtime = "En jeu";
 
         const int k_ScorchCount = 24;
         const int k_BubbleCount = 6;
@@ -67,10 +77,12 @@ namespace Archery.FinalBoss
 
         class Foot
         {
-            public Pose Pose;
+            public Vector3 Position;
             public ParticleSystem Sparks;
+            public float SparkRate;
             public MeshRenderer Halo;
             public Light Light;
+            public float LightIntensity;
         }
 
         class Rune
@@ -84,7 +96,9 @@ namespace Archery.FinalBoss
             public MeshRenderer Beam;
             public MeshRenderer Spot;
             public Light Light;
+            public float LightIntensity;
             public ParticleSystem Dust;
+            public float DustRate;
         }
 
         readonly List<MeshRenderer> m_Veins = new List<MeshRenderer>();
@@ -106,11 +120,13 @@ namespace Archery.FinalBoss
         CeilingCrystals m_Crystals;
         ArenaTurrets m_Turrets;
         MaterialPropertyBlock m_Block;
-        Material m_Bright;
+        Transform m_RuntimeGroup;
         Material m_Soft;
         Mesh[] m_Blobs;
         Mesh m_RuneMesh;
+        Material m_RuneMaterial;
         float m_CeilingHeight = 15f;
+        bool m_Bound;
 
         ParticleSystem m_Embers;
         ParticleSystem m_Vapour;
@@ -137,181 +153,107 @@ namespace Archery.FinalBoss
         float m_VictoryTime = -1f;
         float m_AppliedCool = -1f;
 
-        /// <summary>Crée les lumières de l'arène (rien sans les réglages « Resources/MapLighting »).</summary>
-        public static ArenaLights Create(ArenaDirector director, ArenaShape arena, DragonBoss dragon, CeilingCrystals crystals, ArenaTurrets turrets)
+        static MapLightingSettings LoadSettings() => Resources.Load<MapLightingSettings>(MapLightingSettings.ResourceName);
+
+        /// <summary>L'objet « Effet » de cette scène, même caché ; null s'il n'y en a pas.</summary>
+        public static ArenaLights FindIn(Scene scene)
         {
-            var settings = Resources.Load<MapLightingSettings>(MapLightingSettings.ResourceName);
+            if (!scene.IsValid() || !scene.isLoaded)
+                return null;
+
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                if (root.TryGetComponent<ArenaLights>(out var lights))
+                    return lights;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Au lancement (par l'<see cref="ArenaDirector"/>) : l'objet « Effet » de la scène de l'arène s'il existe (caché :
+        /// rien ne s'allume), sinon un neuf, fabriqué tout de suite ; puis on commence à animer ses lumières.
+        /// </summary>
+        public static ArenaLights Attach(ArenaDirector director, ArenaShape arena, DragonBoss dragon, CeilingCrystals crystals, ArenaTurrets turrets)
+        {
+            var settings = LoadSettings();
             if (settings == null || director == null || arena == null)
                 return null;
 
-            var lights = new GameObject("Lumières de l'arène").AddComponent<ArenaLights>();
-            lights.transform.SetParent(director.transform, false);
-            lights.Init(settings, director, arena, dragon, crystals, turrets);
+            var scene = director.gameObject.scene;
+            var lights = FindIn(scene);
+            if (lights == null)
+            {
+                lights = CreateRoot(scene);
+                lights.Build(settings, arena);
+            }
+
+            if (lights.isActiveAndEnabled)
+                lights.Bind(settings, director, arena, dragon, crystals, turrets);
             return lights;
         }
 
-        void Init(MapLightingSettings settings, ArenaDirector director, ArenaShape arena, DragonBoss dragon, CeilingCrystals crystals, ArenaTurrets turrets)
+        /// <summary>
+        /// Éditeur : crée l'objet « Effet » dans cette scène et y fabrique les lumières de l'arène (elles seront enregistrées
+        /// avec la scène). Null sans arène ou sans réglages.
+        /// </summary>
+        public static ArenaLights Bake(Scene scene)
+        {
+            var settings = LoadSettings();
+            ArenaShape arena = null;
+            foreach (var candidate in FindObjectsByType<ArenaShape>())
+            {
+                if (candidate.gameObject.scene == scene && candidate.isActiveAndEnabled)
+                    arena = candidate;
+            }
+
+            if (settings == null || arena == null)
+                return null;
+
+            var lights = CreateRoot(scene);
+            lights.Build(settings, arena);
+            return lights;
+        }
+
+        static ArenaLights CreateRoot(Scene scene)
+        {
+            var lights = new GameObject(MapLighting.RootName).AddComponent<ArenaLights>();
+            if (scene.IsValid() && scene.isLoaded)
+                SceneManager.MoveGameObjectToScene(lights.gameObject, scene);
+            return lights;
+        }
+
+        // ---------------------------------------------------------------- fabrication (jeu ou éditeur)
+
+        void Build(MapLightingSettings settings, ArenaShape arena)
         {
             m_Settings = settings;
-            m_Director = director;
             m_Arena = arena;
             m_Grid = arena as ArenaGridBuilder;
-            m_Dragon = dragon;
-            m_Crystals = crystals;
-            m_Turrets = turrets;
-            m_Block = new MaterialPropertyBlock();
             m_CeilingHeight = Mathf.Max(4f, m_Arena.CeilingPoint(m_Arena.Center, out _).y - m_Arena.FloorY);
+            m_Blobs = new[] { BuildBlob(3, 0.3f), BuildBlob(7, 0.4f), BuildBlob(11, 0.25f) };
 
-            if (settings.fireMaterial != null)
-            {
-                m_Bright = Tinted(settings.fireMaterial, 3f, "braises");
-                m_Soft = Tinted(settings.fireMaterial, 1f, "vapeur");
-            }
-
-            m_Blobs = new[] { Own(BuildBlob(3, 0.3f)), Own(BuildBlob(7, 0.4f)), Own(BuildBlob(11, 0.25f)) };
-
-            // Les colliders de l'arène viennent d'être fabriqués : la physique doit les connaître avant les rayons.
+            // Les colliders de l'arène viennent peut-être d'être fabriqués : la physique doit les connaître avant les rayons.
             Physics.SyncTransforms();
-            BuildVeins();
-            CreateEmbers();
-            CreateLava();
-            CreateFallFeet();
-            CreateScorches();
-            CreateWarning();
-            CreateWave();
-            CreatePlayerLight();
-
-            Shader.SetGlobalFloat(k_ArenaId, 1f);
-            if (m_Dragon != null)
-            {
-                m_Dragon.PhaseChanged += OnPhaseChanged;
-                m_Dragon.Slammed += OnSlammed;
-                if (m_Dragon.TryGetComponent(out m_DragonHealth))
-                    m_DragonHealth.Died += OnDragonDied;
-            }
-
-            DragonFireball.Exploded += OnFireballExploded;
-            if (m_Turrets != null)
-                m_Turrets.TurretLanded += OnTurretLanded;
-
-            // En dernier : un souci avec les piliers ne prive pas l'arène du reste.
-            gameObject.AddComponent<PillarLights>().Init(settings, director, arena, dragon, crystals);
+            BuildVeins(EffectBuild.Group(transform, k_Veins));
+            BuildEmbers();
+            BuildFallFeet(EffectBuild.Group(transform, k_Feet));
+            BuildSunbeams(EffectBuild.Group(transform, k_Sun));
+            EffectBuild.Group(transform, k_Pillars).gameObject.AddComponent<PillarLights>().Build(settings, arena);
         }
 
-        void OnDestroy()
-        {
-            Shader.SetGlobalFloat(k_ArenaId, 0f);
-            DragonFireball.Exploded -= OnFireballExploded;
-            if (m_Dragon != null)
-            {
-                m_Dragon.PhaseChanged -= OnPhaseChanged;
-                m_Dragon.Slammed -= OnSlammed;
-            }
-
-            if (m_DragonHealth != null)
-                m_DragonHealth.Died -= OnDragonDied;
-            if (m_Turrets != null)
-                m_Turrets.TurretLanded -= OnTurretLanded;
-            if (m_Grid != null)
-            {
-                m_Grid.CrackBoost = 0f;
-                m_Grid.SetDecorBoost(0f);
-            }
-
-            foreach (var owned in m_Owned)
-            {
-                if (owned != null)
-                    Destroy(owned);
-            }
-        }
-
-        T Own<T>(T owned) where T : Object
-        {
-            m_Owned.Add(owned);
-            return owned;
-        }
-
-        Material Tinted(Material source, float brightness, string label)
+        static Material Tinted(Material source, float brightness, string label)
         {
             var material = new Material(source) { name = $"{source.name} (arène, {label})" };
             if (material.HasProperty(k_BaseColorId))
                 material.SetColor(k_BaseColorId, new Color(brightness, brightness, brightness, 1f));
-            return Own(material);
+            return material;
         }
 
-        void Update()
-        {
-            var deltaTime = Time.deltaTime;
-            var level = m_Director != null ? m_Director.LightLevel : 1f;
-            var victory = m_VictoryTime >= 0f;
-            var sinceVictory = victory ? Time.time - m_VictoryTime : 0f;
-            var cool = victory ? Smooth01(sinceVictory / 5f) : 0f;
-            var phase = m_Dragon != null ? m_Dragon.Phase : DragonPhase.Ground;
-            var heat = phase == DragonPhase.Enraged ? 1f : phase == DragonPhase.Air ? 0.55f : 0.2f;
-            var beat = BeatPhase(out var downbeat);
-            var pulse = Mathf.Exp(-beat * 5f) * (downbeat ? 1.5f : 1f);
-
-            m_CrackFlash *= Mathf.Exp(-deltaTime * 2.2f);
-            m_DecorFlash *= Mathf.Exp(-deltaTime * 1.5f);
-            m_LavaFlash *= Mathf.Exp(-deltaTime * 1.2f);
-
-            UpdateVeins(level, cool, phase, pulse, deltaTime);
-            UpdateEmbers(level, cool, heat);
-            UpdateLava(level, cool, heat, deltaTime);
-            UpdateFeet(level, cool);
-            UpdateFlashes(deltaTime);
-            UpdateScorches(deltaTime);
-            UpdateBreath(deltaTime);
-            UpdateWave(deltaTime);
-            UpdateRunes(level, deltaTime);
-            UpdatePlayerLight(level);
-            if (victory)
-                UpdateVictory(sinceVictory, cool);
-            ApplyBoosts(cool);
-        }
-
-        // Position dans le temps de la musique (0 sur le temps, vers 1 juste avant le suivant) ; temps fort tous les 4.
-        float BeatPhase(out bool downbeat)
-        {
-            var beat = m_Director != null ? m_Director.Beat : -1.0;
-            if (beat < 0.0)
-                beat = Time.time * (m_Director != null ? m_Director.Bpm : 140f) / 60.0;
-            var whole = System.Math.Floor(beat);
-            downbeat = (long)whole % 4 == 0;
-            return (float)(beat - whole);
-        }
-
-        // Les craquelures, les braseros et la lave : leurs embrasements passagers, et la lave qui s'éteint à la victoire.
-        void ApplyBoosts(float cool)
-        {
-            var slam = m_Dragon != null ? m_Dragon.SlamProgress : -1f;
-            var slamGlow = slam >= 0f ? 3f * slam * slam * (0.8f + 0.2f * Mathf.Sin(Time.time * 40f)) : 0f;
-            if (m_Grid != null)
-            {
-                m_Grid.CrackBoost = m_CrackFlash + slamGlow;
-                if (Mathf.Abs(m_DecorFlash - m_AppliedDecor) > 0.02f || (m_DecorFlash < 0.02f && m_AppliedDecor > 0f))
-                {
-                    m_AppliedDecor = m_DecorFlash < 0.02f ? 0f : m_DecorFlash;
-                    m_Grid.SetDecorBoost(m_AppliedDecor);
-                }
-            }
-
-            if (m_Director != null)
-                m_Director.LavaBoost = m_LavaFlash - 0.8f * cool;
-        }
-
-        void SetGlow(Renderer renderer, Color color, float intensity)
-        {
-            m_Block.Clear();
-            m_Block.SetColor(k_ColorId, color);
-            m_Block.SetFloat(k_IntensityId, intensity);
-            renderer.SetPropertyBlock(m_Block);
-        }
-
-        MeshRenderer CreateRenderer(string objectName, Mesh mesh, Material material)
+        static MeshRenderer CreateRenderer(string objectName, Transform parent, Mesh mesh, Material material)
         {
             var go = new GameObject(objectName);
-            go.transform.SetParent(transform, false);
+            go.transform.SetParent(parent, false);
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = go.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
@@ -320,24 +262,21 @@ namespace Archery.FinalBoss
             return renderer;
         }
 
-        Light CreateLight(string objectName, Color color, float range)
+        static Light CreateLight(string objectName, Transform parent, Color color, float range, float intensity)
         {
             var light = new GameObject(objectName).AddComponent<Light>();
-            light.transform.SetParent(transform, false);
+            light.transform.SetParent(parent, false);
             light.type = LightType.Point;
             light.shadows = LightShadows.None;
             light.color = color;
             light.range = range;
-            light.intensity = 0f;
-            light.enabled = false;
+            light.intensity = intensity;
             return light;
         }
 
-        // ---------------------------------------------------------------- veines des parois et de la voûte
-
         // Des veines qui serpentent sur la roche, parties de points pris sur les parois (rayons horizontaux depuis le
         // centre) et sur la voûte (rayons vers le haut). Rangées au hasard : à chaque phase, d'autres s'allument.
-        void BuildVeins()
+        void BuildVeins(Transform group)
         {
             if (m_Settings.glowMaterial == null)
                 return;
@@ -368,6 +307,14 @@ namespace Archery.FinalBoss
                 starts.Add((point, normal, true));
             }
 
+            // Au hasard, parois et voûte mêlées : c'est l'ordre dans lequel elles s'allument.
+            for (var i = starts.Count - 1; i > 0; i--)
+            {
+                var j = random.Next(i + 1);
+                (starts[i], starts[j]) = (starts[j], starts[i]);
+            }
+
+            var material = EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.arenaVeinColor, 1.4f, "Veines de l'arène");
             foreach (var start in starts)
             {
                 var builder = new MeshBuilder();
@@ -378,17 +325,7 @@ namespace Archery.FinalBoss
                 if (random.NextDouble() < 0.5)
                     Grow(builder, start.Point, start.Normal, 3 + random.Next(4), width * 0.6f, random);
 
-                var renderer = CreateRenderer(start.Ceiling ? "Veine de la voûte" : "Veine de la paroi", Own(builder.ToMesh("Veine de l'arène")),
-                                              m_Settings.glowMaterial);
-                renderer.enabled = false;
-                m_Veins.Add(renderer);
-            }
-
-            // Au hasard, parois et voûte mêlées.
-            for (var i = m_Veins.Count - 1; i > 0; i--)
-            {
-                var j = random.Next(i + 1);
-                (m_Veins[i], m_Veins[j]) = (m_Veins[j], m_Veins[i]);
+                CreateRenderer(start.Ceiling ? "Veine de la voûte" : "Veine de la paroi", group, builder.ToMesh("Veine de l'arène"), material);
             }
         }
 
@@ -472,52 +409,33 @@ namespace Archery.FinalBoss
             return false;
         }
 
-        // Une part des veines par phase (au sol, en vol, enragé) ; elles battent sur chaque temps, plus fort sur le temps fort.
-        void UpdateVeins(float level, float cool, DragonPhase phase, float pulse, float deltaTime)
+        // Des braises dans tout le volume de la grotte.
+        void BuildEmbers()
         {
-            if (m_Veins.Count == 0)
-                return;
-
-            var share = phase == DragonPhase.Enraged || phase == DragonPhase.Dead ? 1f : phase == DragonPhase.Air ? 0.75f : 0.45f;
-            m_ShownVeins = Mathf.MoveTowards(m_ShownVeins, share * m_Veins.Count, deltaTime * 3f);
-            var enraged = phase == DragonPhase.Enraged ? 1f : 0f;
-            var color = Color.Lerp(m_Settings.arenaVeinColor, new Color(1f, 0.55f, 0.15f), enraged * 0.5f);
-            var intensity = Mathf.Lerp(0.9f, 1.8f, share) * level * (1f - cool) * (0.55f + 0.9f * pulse);
-            for (var i = 0; i < m_Veins.Count; i++)
-            {
-                var fade = Mathf.Clamp01(m_ShownVeins - i);
-                var vein = m_Veins[i];
-                vein.enabled = fade > 0.01f && intensity > 0.01f;
-                if (vein.enabled)
-                    SetGlow(vein, color, intensity * fade);
-            }
-        }
-
-        // ---------------------------------------------------------------- braises dans l'air
-
-        void CreateEmbers()
-        {
-            if (m_Bright == null)
+            if (m_Settings.fireMaterial == null)
                 return;
 
             var size = m_Arena.RoamRadius * 2f + 6f;
-            m_Embers = GlowParticles.Create("Braises de la grotte", transform, m_Arena.Center + Vector3.up * (m_CeilingHeight * 0.45f), m_Bright);
-            var main = m_Embers.main;
+            var embers = GlowParticles.Create(k_Embers, transform, m_Arena.Center + Vector3.up * (m_CeilingHeight * 0.45f),
+                                              Tinted(m_Settings.fireMaterial, 3f, "braises"));
+            var main = embers.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(7f, 11f);
             main.startSpeed = 0f;
             main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.07f);
             main.startColor = m_Settings.emberColor;
             main.maxParticles = 500;
-            var shape = m_Embers.shape;
+            var emission = embers.emission;
+            emission.rateOverTime = 20f;
+            var shape = embers.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
             shape.scale = new Vector3(size, m_CeilingHeight * 0.9f, size);
-            var velocity = m_Embers.velocityOverLifetime;
+            var velocity = embers.velocityOverLifetime;
             velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.World;
             velocity.x = new ParticleSystem.MinMaxCurve(0f, 0f);
             velocity.y = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
             velocity.z = new ParticleSystem.MinMaxCurve(0f, 0f);
-            var noise = m_Embers.noise;
+            var noise = embers.noise;
             noise.enabled = true;
             noise.strength = 0.6f;
             noise.frequency = 0.2f;
@@ -530,10 +448,391 @@ namespace Archery.FinalBoss
                     new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.1f), new GradientAlphaKey(0.5f, 0.4f),
                     new GradientAlphaKey(1f, 0.6f), new GradientAlphaKey(0f, 1f),
                 });
-            var color = m_Embers.colorOverLifetime;
+            var color = embers.colorOverLifetime;
             color.enabled = true;
             color.color = new ParticleSystem.MinMaxGradient(gradient);
-            m_Embers.Play();
+        }
+
+        // Au pied de chaque coulée : une gerbe d'étincelles, un halo sur la lave, et une lueur pour deux pieds (en VR, les
+        // lumières coûtent cher).
+        void BuildFallFeet(Transform group)
+        {
+            if (m_Grid == null || m_Settings.fireMaterial == null || m_Settings.glowMaterial == null)
+                return;
+
+            var poses = new List<Pose>();
+            m_Grid.GetLavaFallFeet(poses);
+            var cell = m_Grid.CellSize;
+            var sparksMaterial = Tinted(m_Settings.fireMaterial, 3f, "étincelles");
+            var haloMaterial = EffectBuild.GlowMaterial(m_Settings.glowMaterial, new Color(1f, 0.45f, 0.1f), 1.5f, "Halo des coulées");
+            for (var i = 0; i < poses.Count; i++)
+            {
+                var pose = poses[i];
+                var root = new GameObject("Pied de coulée").transform;
+                root.SetParent(group, false);
+                root.SetPositionAndRotation(pose.position, pose.rotation);
+
+                var sparks = GlowParticles.Create("Étincelles", root, pose.position + Vector3.up * 0.15f, sparksMaterial);
+                sparks.transform.rotation = Quaternion.LookRotation(Vector3.up * 0.8f + pose.forward * 0.6f);
+                var main = sparks.main;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 4.5f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
+                main.startColor = m_Settings.emberColor;
+                main.gravityModifier = 0.9f;
+                main.maxParticles = 60;
+                var emission = sparks.emission;
+                emission.rateOverTime = 16f;
+                var shape = sparks.shape;
+                shape.shapeType = ParticleSystemShapeType.Cone;
+                shape.angle = 35f;
+                shape.radius = cell * 0.4f;
+
+                var halo = CreateRenderer("Halo", root, m_Blobs[i % m_Blobs.Length], haloMaterial);
+                halo.transform.SetPositionAndRotation(pose.position + Vector3.up * 0.05f + pose.forward * (cell * 0.3f), pose.rotation);
+                halo.transform.localScale = new Vector3(cell * 0.9f, 1f, cell * 0.9f);
+
+                if (i % 2 == 0)
+                {
+                    var light = CreateLight("Lueur", root, new Color(1f, 0.45f, 0.12f), 7f, 2f);
+                    light.transform.position = pose.position + Vector3.up * 1.2f + pose.forward * 1f;
+                }
+            }
+        }
+
+        // Les rayons de soleil de la victoire : du centre et de trois points autour, de la voûte au sol. Dans l'éditeur, ils
+        // sont visibles (pour les placer) ; en jeu, cachés jusqu'à la mort du dragon.
+        void BuildSunbeams(Transform group)
+        {
+            if (m_Settings.beamMaterial == null || m_Settings.glowMaterial == null)
+                return;
+
+            var center = m_Arena.Center;
+            var spots = new List<Vector3> { center };
+            for (var i = 0; i < 3; i++)
+            {
+                var angle = (30f + i * 120f) * Mathf.Deg2Rad;
+                spots.Add(center + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * (m_Arena.RoamRadius * 0.45f));
+            }
+
+            var spotMaterial = EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.sunColor, 1.3f, "Tache de soleil");
+            var dustMaterial = Tinted(m_Settings.fireMaterial != null ? m_Settings.fireMaterial : m_Settings.beamMaterial, 1f, "poussière");
+            var index = 0;
+            foreach (var spot in spots)
+            {
+                var ceiling = m_Arena.CeilingPoint(spot, out _);
+                var floor = new Vector3(ceiling.x, m_Arena.GroundHeightAt(ceiling), ceiling.z);
+                var height = ceiling.y - floor.y;
+                if (height < 4f)
+                    continue;
+
+                // L'objet du rayon est au sol ; le faisceau, la tache, la lumière et la poussière le suivent.
+                var root = new GameObject("Rayon de soleil").transform;
+                root.SetParent(group, false);
+                root.position = floor;
+
+                // Retourné : le rayon s'efface vers le sol, pas vers la voûte.
+                var beam = EffectBuild.Cylinder("Faisceau", root);
+                beam.transform.SetPositionAndRotation(floor + Vector3.up * (height * 0.5f), Quaternion.Euler(180f, 0f, 0f));
+                beam.transform.localScale = new Vector3(2.4f, height * 0.5f, 2.4f);
+                var beamRenderer = beam.GetComponent<MeshRenderer>();
+                beamRenderer.sharedMaterial = m_Settings.beamMaterial;
+                beamRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                beamRenderer.receiveShadows = false;
+
+                var spotRenderer = CreateRenderer("Tache", root, m_Blobs[index++ % m_Blobs.Length], spotMaterial);
+                spotRenderer.transform.position = floor + Vector3.up * 0.04f;
+                spotRenderer.transform.localScale = new Vector3(1.9f, 1f, 1.9f);
+
+                var light = new GameObject("Soleil").AddComponent<Light>();
+                light.transform.SetParent(root, false);
+                light.transform.SetPositionAndRotation(ceiling - Vector3.up * 0.3f, Quaternion.LookRotation(Vector3.down));
+                light.type = LightType.Spot;
+                light.spotAngle = 35f;
+                light.range = height + 4f;
+                light.color = m_Settings.sunColor;
+                light.shadows = LightShadows.None;
+                light.intensity = 5f;
+
+                var dust = GlowParticles.Create("Poussière", root, floor + Vector3.up * (height * 0.5f), dustMaterial);
+                var main = dust.main;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(5f, 8f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.08f);
+                main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.05f);
+                main.startColor = m_Settings.sunColor;
+                main.maxParticles = 150;
+                var emission = dust.emission;
+                emission.rateOverTime = 20f;
+                var shape = dust.shape;
+                shape.shapeType = ParticleSystemShapeType.Box;
+                shape.scale = new Vector3(1.8f, height, 1.8f);
+                var noise = dust.noise;
+                noise.enabled = true;
+                noise.strength = 0.15f;
+                noise.frequency = 0.3f;
+            }
+        }
+
+        // ---------------------------------------------------------------- en jeu : retrouver et compléter
+
+        void Bind(MapLightingSettings settings, ArenaDirector director, ArenaShape arena, DragonBoss dragon, CeilingCrystals crystals, ArenaTurrets turrets)
+        {
+            m_Settings = settings;
+            m_Director = director;
+            m_Arena = arena;
+            m_Grid = arena as ArenaGridBuilder;
+            m_Dragon = dragon;
+            m_Crystals = crystals;
+            m_Turrets = turrets;
+            m_Block = new MaterialPropertyBlock();
+            m_CeilingHeight = Mathf.Max(4f, m_Arena.CeilingPoint(m_Arena.Center, out _).y - m_Arena.FloorY);
+            m_Blobs ??= new[] { Own(BuildBlob(3, 0.3f)), Own(BuildBlob(7, 0.4f)), Own(BuildBlob(11, 0.25f)) };
+            if (settings.fireMaterial != null)
+                m_Soft = Own(Tinted(settings.fireMaterial, 1f, "vapeur"));
+
+            if (Find(transform, k_Veins) is { } veins)
+                m_Veins.AddRange(veins.GetComponentsInChildren<MeshRenderer>());
+            foreach (var vein in m_Veins)
+                vein.enabled = false;
+
+            if (Find(transform, k_Embers) is { } embers && embers.TryGetComponent(out m_Embers))
+                m_Embers.Play();
+
+            if (Find(transform, k_Feet) is { } feet)
+            {
+                for (var i = 0; i < feet.childCount; i++)
+                {
+                    var root = feet.GetChild(i);
+                    if (!root.gameObject.activeInHierarchy)
+                        continue;
+
+                    var foot = new Foot { Position = root.position };
+                    if (Find(root, "Étincelles") is { } sparks && sparks.TryGetComponent(out foot.Sparks))
+                    {
+                        foot.SparkRate = foot.Sparks.emission.rateOverTimeMultiplier;
+                        foot.Sparks.Play();
+                    }
+
+                    if (Find(root, "Halo") is { } halo)
+                        halo.TryGetComponent(out foot.Halo);
+                    foot.Light = root.GetComponentInChildren<Light>();
+                    if (foot.Light != null)
+                        foot.LightIntensity = foot.Light.intensity;
+                    m_Feet.Add(foot);
+                }
+            }
+
+            if (Find(transform, k_Sun) is { } sun)
+            {
+                for (var i = 0; i < sun.childCount; i++)
+                {
+                    var root = sun.GetChild(i);
+                    if (!root.gameObject.activeInHierarchy)
+                        continue;
+
+                    var sunbeam = new Sunbeam();
+                    if (Find(root, "Faisceau") is { } beam)
+                        beam.TryGetComponent(out sunbeam.Beam);
+                    if (Find(root, "Tache") is { } spot)
+                        spot.TryGetComponent(out sunbeam.Spot);
+                    sunbeam.Light = root.GetComponentInChildren<Light>();
+                    if (sunbeam.Light != null)
+                        sunbeam.LightIntensity = sunbeam.Light.intensity;
+                    if (Find(root, "Poussière") is { } dust && dust.TryGetComponent(out sunbeam.Dust))
+                    {
+                        sunbeam.DustRate = sunbeam.Dust.emission.rateOverTimeMultiplier;
+                        sunbeam.Dust.Play();
+                    }
+
+                    m_Sunbeams.Add(sunbeam);
+                }
+            }
+
+            if (Find(transform, k_Pillars) is { } pillars && pillars.TryGetComponent<PillarLights>(out var pillarLights))
+                pillarLights.Bind(settings, director, arena, dragon, crystals);
+
+            // Ce qui n'existe qu'en jeu, rangé à part.
+            m_RuntimeGroup = EffectBuild.Group(transform, k_Runtime);
+            Physics.SyncTransforms();
+            CreateLava();
+            CreateScorches();
+            CreateWarning();
+            CreateWave();
+            m_PlayerLight = CreateLight("Lueur du joueur", m_RuntimeGroup, m_Settings.playerLightColor, 6f, 0f);
+            m_PlayerLight.enabled = false;
+
+            Shader.SetGlobalFloat(k_ArenaId, 1f);
+            if (m_Dragon != null)
+            {
+                m_Dragon.PhaseChanged += OnPhaseChanged;
+                m_Dragon.Slammed += OnSlammed;
+                if (m_Dragon.TryGetComponent(out m_DragonHealth))
+                    m_DragonHealth.Died += OnDragonDied;
+            }
+
+            DragonFireball.Exploded += OnFireballExploded;
+            if (m_Turrets != null)
+                m_Turrets.TurretLanded += OnTurretLanded;
+            m_Bound = true;
+            UpdateVictory(0f, 0f);
+        }
+
+        // Un enfant visible de ce nom (null sinon).
+        static Transform Find(Transform parent, string name)
+        {
+            var child = parent.Find(name);
+            return child != null && child.gameObject.activeInHierarchy ? child : null;
+        }
+
+        T Own<T>(T owned) where T : Object
+        {
+            m_Owned.Add(owned);
+            return owned;
+        }
+
+        void OnEnable()
+        {
+            if (m_Bound)
+                Shader.SetGlobalFloat(k_ArenaId, 1f);
+        }
+
+        // Caché en jeu : plus de traceurs, ni d'embrasement des craquelures, des braseros ou de la lave.
+        void OnDisable()
+        {
+            if (!m_Bound)
+                return;
+
+            Shader.SetGlobalFloat(k_ArenaId, 0f);
+            if (m_Grid != null)
+            {
+                m_Grid.CrackBoost = 0f;
+                m_Grid.SetDecorBoost(0f);
+            }
+
+            m_AppliedDecor = -1f;
+            if (m_Director != null)
+                m_Director.LavaBoost = 0f;
+        }
+
+        void OnDestroy()
+        {
+            if (!m_Bound)
+                return;
+
+            DragonFireball.Exploded -= OnFireballExploded;
+            if (m_Dragon != null)
+            {
+                m_Dragon.PhaseChanged -= OnPhaseChanged;
+                m_Dragon.Slammed -= OnSlammed;
+            }
+
+            if (m_DragonHealth != null)
+                m_DragonHealth.Died -= OnDragonDied;
+            if (m_Turrets != null)
+                m_Turrets.TurretLanded -= OnTurretLanded;
+
+            foreach (var owned in m_Owned)
+            {
+                if (owned != null)
+                    Destroy(owned);
+            }
+        }
+
+        void Update()
+        {
+            if (!m_Bound)
+                return;
+
+            var deltaTime = Time.deltaTime;
+            var level = m_Director != null ? m_Director.LightLevel : 1f;
+            var victory = m_VictoryTime >= 0f;
+            var sinceVictory = victory ? Time.time - m_VictoryTime : 0f;
+            var cool = victory ? Smooth01(sinceVictory / 5f) : 0f;
+            var phase = m_Dragon != null ? m_Dragon.Phase : DragonPhase.Ground;
+            var heat = phase == DragonPhase.Enraged ? 1f : phase == DragonPhase.Air ? 0.55f : 0.2f;
+            var beat = BeatPhase(out var downbeat);
+            var pulse = Mathf.Exp(-beat * 5f) * (downbeat ? 1.5f : 1f);
+
+            m_CrackFlash *= Mathf.Exp(-deltaTime * 2.2f);
+            m_DecorFlash *= Mathf.Exp(-deltaTime * 1.5f);
+            m_LavaFlash *= Mathf.Exp(-deltaTime * 1.2f);
+
+            UpdateVeins(level, cool, phase, pulse, deltaTime);
+            UpdateEmbers(level, cool, heat);
+            UpdateLava(level, cool, heat, deltaTime);
+            UpdateFeet(level, cool);
+            UpdateFlashes(deltaTime);
+            UpdateScorches(deltaTime);
+            UpdateBreath(deltaTime);
+            UpdateWave(deltaTime);
+            UpdateRunes(level, deltaTime);
+            UpdatePlayerLight(level);
+            if (victory)
+                UpdateVictory(sinceVictory, cool);
+            ApplyBoosts(cool);
+        }
+
+        // Position dans le temps de la musique (0 sur le temps, vers 1 juste avant le suivant) ; temps fort tous les 4.
+        float BeatPhase(out bool downbeat)
+        {
+            var beat = m_Director != null ? m_Director.Beat : -1.0;
+            if (beat < 0.0)
+                beat = Time.time * (m_Director != null ? m_Director.Bpm : 140f) / 60.0;
+            var whole = System.Math.Floor(beat);
+            downbeat = (long)whole % 4 == 0;
+            return (float)(beat - whole);
+        }
+
+        // Les craquelures, les braseros et la lave : leurs embrasements passagers, et la lave qui s'éteint à la victoire.
+        void ApplyBoosts(float cool)
+        {
+            var slam = m_Dragon != null ? m_Dragon.SlamProgress : -1f;
+            var slamGlow = slam >= 0f ? 3f * slam * slam * (0.8f + 0.2f * Mathf.Sin(Time.time * 40f)) : 0f;
+            if (m_Grid != null)
+            {
+                m_Grid.CrackBoost = m_CrackFlash + slamGlow;
+                if (Mathf.Abs(m_DecorFlash - m_AppliedDecor) > 0.02f || (m_DecorFlash < 0.02f && m_AppliedDecor > 0f))
+                {
+                    m_AppliedDecor = m_DecorFlash < 0.02f ? 0f : m_DecorFlash;
+                    m_Grid.SetDecorBoost(m_AppliedDecor);
+                }
+            }
+
+            if (m_Director != null)
+                m_Director.LavaBoost = m_LavaFlash - 0.8f * cool;
+        }
+
+        void SetGlow(Renderer renderer, Color color, float intensity)
+        {
+            m_Block.Clear();
+            m_Block.SetColor(k_ColorId, color);
+            m_Block.SetFloat(k_IntensityId, intensity);
+            renderer.SetPropertyBlock(m_Block);
+        }
+
+        // ---------------------------------------------------------------- veines et braises
+
+        // Une part des veines par phase (au sol, en vol, enragé) ; elles battent sur chaque temps, plus fort sur le temps fort.
+        void UpdateVeins(float level, float cool, DragonPhase phase, float pulse, float deltaTime)
+        {
+            if (m_Veins.Count == 0)
+                return;
+
+            var share = phase == DragonPhase.Enraged || phase == DragonPhase.Dead ? 1f : phase == DragonPhase.Air ? 0.75f : 0.45f;
+            m_ShownVeins = Mathf.MoveTowards(m_ShownVeins, share * m_Veins.Count, deltaTime * 3f);
+            var enraged = phase == DragonPhase.Enraged ? 0.5f : 0f;
+            var intensity = Mathf.Lerp(0.9f, 1.8f, share) * level * (1f - cool) * (0.55f + 0.9f * pulse);
+            for (var i = 0; i < m_Veins.Count; i++)
+            {
+                var vein = m_Veins[i];
+                if (vein == null)
+                    continue;
+
+                var fade = Mathf.Clamp01(m_ShownVeins - i);
+                vein.enabled = fade > 0.01f && intensity > 0.01f;
+                if (vein.enabled)
+                    SetGlow(vein, Color.Lerp(EffectBuild.GlowColor(vein), new Color(1f, 0.55f, 0.15f), enraged), intensity * fade);
+            }
         }
 
         void UpdateEmbers(float level, float cool, float heat)
@@ -556,25 +855,28 @@ namespace Archery.FinalBoss
             if (m_LavaPoints.Count == 0)
                 return;
 
+            var group = EffectBuild.Group(m_RuntimeGroup, "Lave");
             if (m_Settings.flameCoreMaterial != null)
             {
-                var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                var sphereMesh = sphere.GetComponent<MeshFilter>().sharedMesh;
-                Destroy(sphere);
+                var sphereMesh = EffectBuild.SphereMesh();
                 for (var i = 0; i < k_BubbleCount; i++)
                 {
-                    var renderer = CreateRenderer("Bulle de lave", sphereMesh, m_Settings.flameCoreMaterial);
+                    var renderer = CreateRenderer("Bulle de lave", group, sphereMesh, m_Settings.flameCoreMaterial);
                     renderer.gameObject.SetActive(false);
                     m_Bubbles.Add(new Bubble { Transform = renderer.transform });
                 }
             }
 
             for (var i = 0; i < k_FlashCount; i++)
-                m_Flashes.Add(new Flash { Light = CreateLight("Éclat de bulle", new Color(1f, 0.5f, 0.15f), 5f) });
+            {
+                var light = CreateLight("Éclat de bulle", group, new Color(1f, 0.5f, 0.15f), 5f, 0f);
+                light.enabled = false;
+                m_Flashes.Add(new Flash { Light = light });
+            }
 
             if (m_Soft != null)
             {
-                m_Vapour = GlowParticles.Create("Vapeur de la lave", transform, m_Arena.Center, m_Soft);
+                m_Vapour = GlowParticles.Create("Vapeur de la lave", group, m_Arena.Center, m_Soft);
                 var main = m_Vapour.main;
                 main.maxParticles = 120;
                 var emission = m_Vapour.emission;
@@ -697,52 +999,6 @@ namespace Archery.FinalBoss
 
         // ---------------------------------------------------------------- pied des coulées
 
-        void CreateFallFeet()
-        {
-            if (m_Grid == null || m_Bright == null)
-                return;
-
-            var poses = new List<Pose>();
-            m_Grid.GetLavaFallFeet(poses);
-            var cell = m_Grid.CellSize;
-            for (var i = 0; i < poses.Count; i++)
-            {
-                var pose = poses[i];
-                var foot = new Foot { Pose = pose };
-                var sparks = GlowParticles.Create("Étincelles de la coulée", transform, pose.position + Vector3.up * 0.15f, m_Bright);
-                sparks.transform.rotation = Quaternion.LookRotation(Vector3.up * 0.8f + pose.forward * 0.6f);
-                var main = sparks.main;
-                main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1f);
-                main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 4.5f);
-                main.startSize = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
-                main.startColor = m_Settings.emberColor;
-                main.gravityModifier = 0.9f;
-                main.maxParticles = 60;
-                var emission = sparks.emission;
-                emission.rateOverTime = 0f;
-                var shape = sparks.shape;
-                shape.shapeType = ParticleSystemShapeType.Cone;
-                shape.angle = 35f;
-                shape.radius = cell * 0.4f;
-                sparks.Play();
-                foot.Sparks = sparks;
-
-                foot.Halo = CreateRenderer("Halo de la coulée", m_Blobs[i % m_Blobs.Length], m_Settings.glowMaterial);
-                foot.Halo.transform.SetPositionAndRotation(pose.position + Vector3.up * 0.05f + pose.forward * (cell * 0.3f), pose.rotation);
-                foot.Halo.transform.localScale = new Vector3(cell * 0.9f, 1f, cell * 0.9f);
-                foot.Halo.enabled = false;
-
-                // Une vraie lumière pour deux pieds de coulée : en VR, elles coûtent cher.
-                if (i % 2 == 0)
-                {
-                    foot.Light = CreateLight("Lueur de la coulée", new Color(1f, 0.45f, 0.12f), 7f);
-                    foot.Light.transform.position = pose.position + Vector3.up * 1.2f + pose.forward * 1f;
-                }
-
-                m_Feet.Add(foot);
-            }
-        }
-
         // Les coulées n'arrivent en bas qu'à la fin de l'intro : leur pied s'anime à ce moment-là.
         void UpdateFeet(float level, float cool)
         {
@@ -753,21 +1009,25 @@ namespace Archery.FinalBoss
             var flicker = 0.85f + 0.15f * Mathf.Sin(Time.time * 7f) * Mathf.Sin(Time.time * 3.1f);
             foreach (var foot in m_Feet)
             {
-                var active = level > 0.05f && cutoff < foot.Pose.position.y + 1f;
+                var active = level > 0.05f && cutoff < foot.Position.y + 1f;
                 var strength = active ? level * (1f - cool) : 0f;
-                var emission = foot.Sparks.emission;
-                emission.rateOverTimeMultiplier = 16f * strength;
+                if (foot.Sparks != null)
+                {
+                    var emission = foot.Sparks.emission;
+                    emission.rateOverTimeMultiplier = foot.SparkRate * strength;
+                }
+
                 if (foot.Halo != null)
                 {
                     foot.Halo.enabled = strength > 0.01f;
                     if (foot.Halo.enabled)
-                        SetGlow(foot.Halo, new Color(1f, 0.45f, 0.1f), 1.5f * strength * flicker);
+                        SetGlow(foot.Halo, EffectBuild.GlowColor(foot.Halo), 1.5f * strength * flicker);
                 }
 
                 if (foot.Light != null)
                 {
                     foot.Light.enabled = strength > 0.01f;
-                    foot.Light.intensity = 2f * strength * flicker;
+                    foot.Light.intensity = foot.LightIntensity * strength * flicker;
                 }
             }
         }
@@ -779,9 +1039,10 @@ namespace Archery.FinalBoss
             if (m_Settings.glowMaterial == null)
                 return;
 
+            var group = EffectBuild.Group(m_RuntimeGroup, "Sol brûlant");
             for (var i = 0; i < k_ScorchCount; i++)
             {
-                var renderer = CreateRenderer("Sol brûlant", m_Blobs[i % m_Blobs.Length], m_Settings.glowMaterial);
+                var renderer = CreateRenderer("Sol brûlant", group, m_Blobs[i % m_Blobs.Length], m_Settings.glowMaterial);
                 renderer.enabled = false;
                 m_Scorches.Add(new Scorch { Renderer = renderer });
             }
@@ -836,7 +1097,7 @@ namespace Archery.FinalBoss
         void OnFireballExploded(Vector3 point, float radius)
         {
             // Une boule qui éclate en l'air (sur un pilier, contre une paroi) ne brûle pas le sol.
-            if (point.y - m_Arena.GroundHeightAt(point) < 2f)
+            if (isActiveAndEnabled && point.y - m_Arena.GroundHeightAt(point) < 2f)
                 ScorchAt(point, Mathf.Clamp(radius * 0.6f, 1f, 3f), 1f);
         }
 
@@ -849,7 +1110,7 @@ namespace Archery.FinalBoss
             if (m_Dragon == null || m_Settings.glowMaterial == null)
                 return;
 
-            m_Warning = CreateRenderer("Sol qui chauffe", Own(BuildSector(m_Dragon.BreathHalfAngle)), m_Settings.glowMaterial);
+            m_Warning = CreateRenderer("Sol qui chauffe", m_RuntimeGroup, Own(BuildSector(m_Dragon.BreathHalfAngle)), m_Settings.glowMaterial);
             m_Warning.enabled = false;
         }
 
@@ -914,6 +1175,9 @@ namespace Archery.FinalBoss
 
         void OnSlammed(Vector3 paws)
         {
+            if (!isActiveAndEnabled)
+                return;
+
             ScorchAt(paws, 3.2f, 1.3f);
             FlashAt(paws + Vector3.up * 1f, 6f, 14f);
             m_CrackFlash = Mathf.Max(m_CrackFlash, 5f);
@@ -950,7 +1214,7 @@ namespace Archery.FinalBoss
             m_WaveMesh.uv = uvs;
             m_WaveMesh.colors = colors;
             m_WaveMesh.triangles = triangles;
-            m_Wave = CreateRenderer("Onde de lumière", m_WaveMesh, m_Settings.glowMaterial);
+            m_Wave = CreateRenderer("Onde de lumière", m_RuntimeGroup, m_WaveMesh, m_Settings.glowMaterial);
             m_Wave.enabled = false;
         }
 
@@ -958,7 +1222,7 @@ namespace Archery.FinalBoss
         // et la lave s'embrasent.
         void OnPhaseChanged(DragonPhase phase)
         {
-            if (phase != DragonPhase.Air && phase != DragonPhase.Enraged)
+            if (!isActiveAndEnabled || (phase != DragonPhase.Air && phase != DragonPhase.Enraged))
                 return;
 
             var origin = m_Dragon != null ? m_Dragon.transform.position : m_Arena.Center;
@@ -1012,11 +1276,12 @@ namespace Archery.FinalBoss
 
         void OnTurretLanded(Vector3 position)
         {
-            if (m_Settings.glowMaterial == null)
+            if (!isActiveAndEnabled || m_Settings.glowMaterial == null)
                 return;
 
             m_RuneMesh ??= Own(MapGameplayLights.BuildRuneMesh());
-            var renderer = CreateRenderer("Rune de la tourelle", m_RuneMesh, m_Settings.glowMaterial);
+            m_RuneMaterial ??= Own(EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.runeColor, 1.4f, "Runes des tourelles"));
+            var renderer = CreateRenderer("Rune de la tourelle", EffectBuild.Group(m_RuntimeGroup, "Runes des tourelles"), m_RuneMesh, m_RuneMaterial);
             renderer.transform.SetPositionAndRotation(position + Vector3.up * 0.06f, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
             renderer.transform.localScale = Vector3.one * 1.5f;
             m_Runes.Add(new Rune { Renderer = renderer });
@@ -1027,6 +1292,9 @@ namespace Archery.FinalBoss
             var spin = Quaternion.Euler(0f, 10f * deltaTime, 0f);
             foreach (var rune in m_Runes)
             {
+                if (rune.Renderer == null)
+                    continue;
+
                 rune.Age += deltaTime;
                 rune.Renderer.transform.rotation = spin * rune.Renderer.transform.rotation;
                 var breath = 0.85f + 0.15f * Mathf.Sin(Time.time * 1.6f + rune.Age);
@@ -1035,11 +1303,6 @@ namespace Archery.FinalBoss
         }
 
         // ---------------------------------------------------------------- joueur
-
-        void CreatePlayerLight()
-        {
-            m_PlayerLight = CreateLight("Lueur du joueur (arène)", m_Settings.playerLightColor, 6f);
-        }
 
         void UpdatePlayerLight(float level)
         {
@@ -1058,125 +1321,55 @@ namespace Archery.FinalBoss
 
         void OnDragonDied(Health health, DamageInfo info)
         {
-            if (m_VictoryTime >= 0f)
-                return;
-
-            m_VictoryTime = Time.time;
-            CreateSunbeams();
+            if (m_VictoryTime < 0f)
+                m_VictoryTime = Time.time;
         }
 
-        // Des rayons de soleil tombent de la voûte (au centre et autour), avec de la poussière qui y danse.
-        void CreateSunbeams()
-        {
-            if (m_Settings.beamMaterial == null)
-                return;
-
-            var center = m_Arena.Center;
-            var spots = new List<Vector3> { center };
-            for (var i = 0; i < 3; i++)
-            {
-                var angle = (30f + i * 120f) * Mathf.Deg2Rad;
-                spots.Add(center + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * (m_Arena.RoamRadius * 0.45f));
-            }
-
-            foreach (var spot in spots)
-            {
-                var ceiling = m_Arena.CeilingPoint(spot, out _);
-                var floor = new Vector3(ceiling.x, m_Arena.GroundHeightAt(ceiling), ceiling.z);
-                var height = ceiling.y - floor.y;
-                if (height < 4f)
-                    continue;
-
-                var sunbeam = new Sunbeam();
-                var beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                beam.name = "Rayon de soleil";
-                Destroy(beam.GetComponent<Collider>());
-                beam.transform.SetParent(transform, false);
-                // Retourné : le rayon s'efface vers le sol, pas vers la voûte.
-                beam.transform.SetPositionAndRotation(floor + Vector3.up * (height * 0.5f), Quaternion.Euler(180f, 0f, 0f));
-                beam.transform.localScale = new Vector3(2.4f, height * 0.5f, 2.4f);
-                sunbeam.Beam = beam.GetComponent<MeshRenderer>();
-                sunbeam.Beam.sharedMaterial = m_Settings.beamMaterial;
-                sunbeam.Beam.shadowCastingMode = ShadowCastingMode.Off;
-                sunbeam.Beam.receiveShadows = false;
-                sunbeam.Beam.enabled = false;
-
-                sunbeam.Spot = CreateRenderer("Tache de soleil", m_Blobs[m_Sunbeams.Count % m_Blobs.Length], m_Settings.glowMaterial);
-                sunbeam.Spot.transform.position = floor + Vector3.up * 0.04f;
-                sunbeam.Spot.transform.localScale = new Vector3(1.9f, 1f, 1.9f);
-                sunbeam.Spot.enabled = false;
-
-                sunbeam.Light = new GameObject("Soleil").AddComponent<Light>();
-                sunbeam.Light.transform.SetParent(transform, false);
-                sunbeam.Light.transform.SetPositionAndRotation(ceiling - Vector3.up * 0.3f, Quaternion.LookRotation(Vector3.down));
-                sunbeam.Light.type = LightType.Spot;
-                sunbeam.Light.spotAngle = 35f;
-                sunbeam.Light.range = height + 4f;
-                sunbeam.Light.color = m_Settings.sunColor;
-                sunbeam.Light.shadows = LightShadows.None;
-                sunbeam.Light.intensity = 0f;
-                sunbeam.Light.enabled = false;
-
-                if (m_Soft != null)
-                {
-                    var dust = GlowParticles.Create("Poussière dans le soleil", transform, floor + Vector3.up * (height * 0.5f), m_Soft);
-                    var main = dust.main;
-                    main.startLifetime = new ParticleSystem.MinMaxCurve(5f, 8f);
-                    main.startSpeed = new ParticleSystem.MinMaxCurve(0.02f, 0.08f);
-                    main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.05f);
-                    main.startColor = m_Settings.sunColor;
-                    main.maxParticles = 150;
-                    var emission = dust.emission;
-                    emission.rateOverTime = 0f;
-                    var shape = dust.shape;
-                    shape.shapeType = ParticleSystemShapeType.Box;
-                    shape.scale = new Vector3(1.8f, height, 1.8f);
-                    var noise = dust.noise;
-                    noise.enabled = true;
-                    noise.strength = 0.15f;
-                    noise.frequency = 0.3f;
-                    dust.Play();
-                    sunbeam.Dust = dust;
-                }
-
-                m_Sunbeams.Add(sunbeam);
-            }
-        }
-
-        // La lave s'éteint et la grotte s'assombrit, les cristaux blanchissent, puis le soleil entre.
+        // La lave s'éteint et la grotte s'assombrit, les cristaux blanchissent, puis le soleil entre (au lancement : caché).
         void UpdateVictory(float since, float cool)
         {
-            if (Mathf.Abs(cool - m_AppliedCool) > 0.005f)
+            if (m_VictoryTime >= 0f && Mathf.Abs(cool - m_AppliedCool) > 0.005f)
             {
                 m_AppliedCool = cool;
                 m_Arena.SetLightLevel(Mathf.Lerp(1f, 0.4f, cool));
             }
 
-            if (m_Crystals != null && since < 6f)
+            if (m_VictoryTime >= 0f && m_Crystals != null && since < 6f)
                 m_Crystals.SetTint(Color.Lerp(new Color(1f, 0.85f, 0.6f), new Color(0.92f, 0.96f, 1f), Smooth01((since - 0.5f) / 3f)));
 
-            var sun = Smooth01((since - 1.5f) / 3.5f);
+            var sun = m_VictoryTime >= 0f ? Smooth01((since - 1.5f) / 3.5f) : 0f;
             foreach (var sunbeam in m_Sunbeams)
             {
-                var color = m_Settings.sunColor;
-                color.a = 0.4f * sun;
-                sunbeam.Beam.enabled = sun > 0.005f;
-                if (sunbeam.Beam.enabled)
+                if (sunbeam.Beam != null)
                 {
-                    m_Block.Clear();
-                    m_Block.SetColor(k_BaseColorId, color);
-                    sunbeam.Beam.SetPropertyBlock(m_Block);
+                    sunbeam.Beam.enabled = sun > 0.005f;
+                    if (sunbeam.Beam.enabled)
+                    {
+                        var color = m_Settings.sunColor;
+                        color.a = 0.4f * sun;
+                        m_Block.Clear();
+                        m_Block.SetColor(k_BaseColorId, color);
+                        sunbeam.Beam.SetPropertyBlock(m_Block);
+                    }
                 }
 
-                sunbeam.Spot.enabled = sun > 0.005f;
-                if (sunbeam.Spot.enabled)
-                    SetGlow(sunbeam.Spot, m_Settings.sunColor, 1.3f * sun);
-                sunbeam.Light.enabled = sun > 0.005f;
-                sunbeam.Light.intensity = 5f * sun;
+                if (sunbeam.Spot != null)
+                {
+                    sunbeam.Spot.enabled = sun > 0.005f;
+                    if (sunbeam.Spot.enabled)
+                        SetGlow(sunbeam.Spot, EffectBuild.GlowColor(sunbeam.Spot), 1.3f * sun);
+                }
+
+                if (sunbeam.Light != null)
+                {
+                    sunbeam.Light.enabled = sun > 0.005f;
+                    sunbeam.Light.intensity = sunbeam.LightIntensity * sun;
+                }
+
                 if (sunbeam.Dust != null)
                 {
                     var emission = sunbeam.Dust.emission;
-                    emission.rateOverTimeMultiplier = 20f * sun;
+                    emission.rateOverTimeMultiplier = sunbeam.DustRate * sun;
                 }
             }
         }

@@ -76,6 +76,13 @@ namespace Archery.UI
 
         void Awake() => m_Rect = (RectTransform)transform;
 
+        /// <summary>Couleurs du fond quand le bouton est prêt et quand il ne l'est pas (réglées par le thème des menus).</summary>
+        public void SetColors(Color ready, Color disabled)
+        {
+            m_ReadyColor = ready;
+            m_DisabledColor = disabled;
+        }
+
         void Start()
         {
             if (m_Teleporter == null)

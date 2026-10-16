@@ -97,7 +97,7 @@ namespace Archery.World
 
             // Des nuages en blocs, de la couleur du ciel, et les lumières de la carte (torches, lucioles…).
             m_Clouds = CloudLayer.Create();
-            m_Lighting = MapLighting.Create();
+            m_Lighting = MapLighting.Attach(gameObject.scene);
             FindGrading();
 
             m_Target = DifficultyManager.Current.sky;
@@ -114,7 +114,8 @@ namespace Archery.World
                 Destroy(m_RuntimeSky);
             if (m_Clouds != null)
                 Destroy(m_Clouds.gameObject);
-            if (m_Lighting != null)
+            // L'objet « Effet » enregistré dans la scène part avec elle ; celui fabriqué au lancement, on le détruit.
+            if (m_Lighting != null && m_Lighting.RuntimeCreated)
                 Destroy(m_Lighting.gameObject);
             Shader.SetGlobalFloat(k_FlashId, 0f);
         }

@@ -34,6 +34,10 @@ namespace Archery.Difficulty
         [SerializeField]
         Renderer[] m_TintedRenderers = Array.Empty<Renderer>();
 
+        [Tooltip("Images (bordure ornée, traits du thème des menus) teintées avec la couleur de la difficulté.")]
+        [SerializeField]
+        UnityEngine.UI.Graphic[] m_TintedGraphics = Array.Empty<UnityEngine.UI.Graphic>();
+
         [Tooltip("Optionnel : objet affiché seulement quand cette difficulté est choisie (cadre, halo…).")]
         [SerializeField]
         GameObject m_SelectedIndicator;
@@ -56,6 +60,15 @@ namespace Archery.Difficulty
         bool m_IsSelected;
 
         public DifficultyDefinition Difficulty => m_Difficulty;
+
+        /// <summary>Le texte du nom (le thème des menus le passe en Cinzel dégradé).</summary>
+        public TMP_Text NameText => m_NameText;
+
+        /// <summary>Le texte du résumé, s'il y en a un.</summary>
+        public TMP_Text DescriptionText => m_DescriptionText;
+
+        /// <summary>Images teintées de la couleur de la difficulté (réglées par le thème des menus).</summary>
+        public void SetTintedGraphics(UnityEngine.UI.Graphic[] graphics) => m_TintedGraphics = graphics ?? Array.Empty<UnityEngine.UI.Graphic>();
 
         void Awake()
         {
@@ -134,6 +147,22 @@ namespace Archery.Difficulty
                 tinted.GetPropertyBlock(m_PropertyBlock);
                 m_PropertyBlock.SetColor(k_BaseColorId, color);
                 tinted.SetPropertyBlock(m_PropertyBlock);
+            }
+
+            foreach (var graphic in m_TintedGraphics)
+            {
+                if (graphic != null)
+                    graphic.color = color;
+            }
+
+            // Nom en dégradé (thème des menus) : clair en haut, de la couleur de la difficulté en bas.
+            if (m_NameText != null && m_NameText.enableVertexGradient)
+            {
+                var top = Color.Lerp(m_Difficulty.color, Color.white, 0.65f);
+                var bottom = m_Difficulty.color;
+                bottom.a = top.a = 1f;
+                m_NameText.colorGradient = new VertexGradient(top, top, bottom, bottom);
+                m_NameText.color = m_IsSelected ? Color.white : new Color(0.75f, 0.75f, 0.8f);
             }
         }
     }

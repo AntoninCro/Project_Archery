@@ -153,7 +153,8 @@ namespace Archery.World
         void FindForestPoints()
         {
             var random = new System.Random(11);
-            var tower = Tower.Instance != null ? Tower.Instance.transform.position : Vector3.zero;
+            var towerObject = Tower.Instance != null ? Tower.Instance : Object.FindAnyObjectByType<Tower>();
+            var tower = towerObject != null ? towerObject.transform.position : Vector3.zero;
             foreach (var tree in Trees)
             {
                 for (var attempt = 0; attempt < 2; attempt++)

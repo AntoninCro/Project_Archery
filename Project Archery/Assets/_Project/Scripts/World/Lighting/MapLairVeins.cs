@@ -7,9 +7,10 @@ using UnityEngine.Rendering;
 namespace Archery.World
 {
     /// <summary>
-    /// Des veines de lave dans la face de la montagne, autour de la porte de l'antre (<see cref="LairGate"/>) : une
-    /// seule, faible, au début de la partie ; à chaque vague, d'autres s'allument, plus loin de la porte, et toutes
-    /// battent comme un cœur, de plus en plus vite. À la vague du boss final, elles sont toutes au plus fort.
+    /// Des veines de lave dans la face de la montagne, autour de la porte de l'antre (<see cref="LairGate"/>), groupe
+    /// « Antre » de l'objet « Effet » : une seule, faible, au début de la partie ; à chaque vague, d'autres s'allument
+    /// (dans l'ordre des objets du groupe : de la plus proche de la porte à la plus lointaine), et toutes battent comme
+    /// un cœur, de plus en plus vite. À la vague du boss final, elles sont toutes au plus fort.
     /// </summary>
     public class MapLairVeins : MonoBehaviour
     {
@@ -17,21 +18,22 @@ namespace Archery.World
         static readonly int k_IntensityId = Shader.PropertyToID("_Intensity");
 
         const float k_MapTop = 150f;
+        const string k_LightName = "Lueur de l'antre";
 
         readonly List<MeshRenderer> m_Veins = new List<MeshRenderer>();
-        readonly List<Object> m_Owned = new List<Object>();
         readonly HashSet<Collider> m_GateColliders = new HashSet<Collider>();
         MapLightingSettings m_Settings;
         MaterialPropertyBlock m_Block;
         Transform m_Gate;
         Light m_Light;
+        float m_LightIntensity = 1f;
         float m_Shown;
+        bool m_Bound;
 
-        public void Init(MapLightingSettings settings)
+        /// <summary>Fabrique les veines (sous cet objet) sur la roche autour de la porte de l'antre, et leur lumière.</summary>
+        public void Build(MapLightingSettings settings)
         {
             m_Settings = settings;
-            m_Block = new MaterialPropertyBlock();
-
             LairGate gate = null;
             foreach (var candidate in FindObjectsByType<LairGate>())
             {
@@ -48,27 +50,38 @@ namespace Archery.World
 
             BuildVeins();
 
-            m_Light = new GameObject("Lueur de l'antre").AddComponent<Light>();
-            m_Light.transform.SetParent(transform, false);
-            m_Light.transform.position = m_Gate.TransformPoint(0f, 3f, -4f);
-            m_Light.type = LightType.Point;
-            m_Light.shadows = LightShadows.None;
-            m_Light.color = settings.veinColor;
-            m_Light.range = 12f;
+            var light = new GameObject(k_LightName).AddComponent<Light>();
+            light.transform.SetParent(transform, false);
+            light.transform.position = m_Gate.TransformPoint(0f, 3f, -4f);
+            light.type = LightType.Point;
+            light.shadows = LightShadows.None;
+            light.color = settings.veinColor;
+            light.range = 12f;
+            light.intensity = 1f;
         }
 
-        void OnDestroy()
+        /// <summary>Retrouve les veines posées sous cet objet (celles qui sont visibles) et commence à les animer.</summary>
+        public void Bind(MapLightingSettings settings)
         {
-            foreach (var owned in m_Owned)
+            m_Settings = settings;
+            m_Block = new MaterialPropertyBlock();
+            for (var i = 0; i < transform.childCount; i++)
             {
-                if (owned != null)
-                    Destroy(owned);
+                var child = transform.GetChild(i);
+                if (!child.gameObject.activeInHierarchy)
+                    continue;
+                if (child.TryGetComponent<MeshRenderer>(out var vein))
+                    m_Veins.Add(vein);
+                else if (child.TryGetComponent(out m_Light))
+                    m_LightIntensity = m_Light.intensity;
             }
+
+            m_Bound = true;
         }
 
         void Update()
         {
-            if (m_Veins.Count == 0)
+            if (!m_Bound || m_Veins.Count == 0)
                 return;
 
             // Avancement de la partie : 0 avant la première vague, 1 à la dernière (et pendant le boss final).
@@ -93,21 +106,24 @@ namespace Archery.World
 
             for (var i = 0; i < m_Veins.Count; i++)
             {
-                var fade = Mathf.Clamp01(m_Shown - i);
                 var vein = m_Veins[i];
+                if (vein == null)
+                    continue;
+
+                var fade = Mathf.Clamp01(m_Shown - i);
                 vein.enabled = fade > 0.01f;
                 if (!vein.enabled)
                     continue;
 
                 m_Block.Clear();
-                m_Block.SetColor(k_ColorId, m_Settings.veinColor);
+                m_Block.SetColor(k_ColorId, EffectBuild.GlowColor(vein));
                 m_Block.SetFloat(k_IntensityId, intensity * fade);
                 vein.SetPropertyBlock(m_Block);
             }
 
             if (m_Light != null)
             {
-                m_Light.intensity = (0.2f + 1.4f * progress) * Mathf.Lerp(0.3f, 1f, lamps) * (0.6f + 0.5f * beat);
+                m_Light.intensity = m_LightIntensity * (0.2f + 1.4f * progress) * Mathf.Lerp(0.3f, 1f, lamps) * (0.6f + 0.5f * beat);
                 m_Light.enabled = m_Light.intensity > 0.02f;
             }
         }
@@ -175,24 +191,22 @@ namespace Archery.World
                 }
 
                 var mesh = builder.ToMesh("Veine de l'antre");
-                m_Owned.Add(mesh);
                 var local = m_Gate.InverseTransformPoint(point);
                 var distance = new Vector2(local.x, local.y - top * 0.5f).magnitude;
                 veins.Add((distance, mesh));
             }
 
             veins.Sort((a, b) => a.Distance.CompareTo(b.Distance));
+            var material = EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.veinColor, 1.5f, "Veines de l'antre");
             foreach (var vein in veins)
             {
                 var go = new GameObject("Veine de l'antre");
                 go.transform.SetParent(transform, false);
                 go.AddComponent<MeshFilter>().sharedMesh = vein.Mesh;
                 var renderer = go.AddComponent<MeshRenderer>();
-                renderer.sharedMaterial = m_Settings.glowMaterial;
+                renderer.sharedMaterial = material;
                 renderer.shadowCastingMode = ShadowCastingMode.Off;
                 renderer.receiveShadows = false;
-                renderer.enabled = false;
-                m_Veins.Add(renderer);
             }
         }
 
