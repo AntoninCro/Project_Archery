@@ -1,0 +1,23 @@
+Vidéos du tutoriel (menu principal > Tutoriel)
+
+Dépose ici une vidéo par fenêtre, nommée <catégorie>_<numéro> :
+
+  Tir_1           Tirer à l'arc
+  Tir_2           L'anneau et les points faibles
+  Deplacement_1   Marcher et tourner
+  Deplacement_2   Courir et sauter
+  Deplacement_3   Glisser
+  Deplacement_4   Monter sur la tour
+  Vagues_1        Lancer une vague
+  Vagues_2        Ta vie et la tour
+  Vagues_3        Les boss
+  Vagues_4        La montre
+  Construction_1  Récolter les cristaux
+  Construction_2  Choisir un bâtiment
+  Construction_3  Construire
+
+Format conseillé : .mp4 (H.264), 16:9 (par exemple 1280 x 720), quelques secondes.
+Elles tournent en boucle, sans le son. Rien d'autre à faire : chaque fenêtre trouve sa vidéo toute seule.
+Sans vidéo, le cadre affiche « Vidéo à venir ».
+
+Les textes et les titres se changent dans l'asset Resources/TutorialContent.

@@ -695,6 +695,7 @@ namespace Archery.FinalBoss
 
             // Les poses ajoutées (tête levée, patte, salto) sont redemandées à chaque image par l'état en cours.
             ClearPose();
+            UpdatePlayerCollision();
 
             if (!InIntro && m_State != State.Dead && !ArenaPlayer.IsAlive)
                 CalmDown();

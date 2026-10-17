@@ -53,6 +53,9 @@ namespace Archery.Player
 
         public XROrigin Origin => m_Origin;
         public Transform Head => m_Origin != null && m_Origin.Camera != null ? m_Origin.Camera.transform : null;
+
+        /// <summary>Le CharacterController du corps (null sans XRI).</summary>
+        public CharacterController Body => m_Body;
         public IReadOnlyList<XRBaseInputInteractor> Hands => m_Hands;
 
         /// <summary>Main qui tient (ou a tenu en dernier) l'arc.</summary>

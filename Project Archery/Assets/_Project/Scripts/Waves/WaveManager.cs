@@ -228,16 +228,16 @@ namespace Archery.Waves
             if (!CanStartWave || m_Settings == null)
                 return false;
 
+            var difficulty = DifficultyManager.Current;
             WaveNumber++;
             Phase = WavePhase.Wave;
             Stage = WaveStage.Calm;
-            WaveDuration = m_Settings.DurationFor(WaveNumber);
+            WaveDuration = m_Settings.DurationFor(WaveNumber) * difficulty.waveDuration;
             TimeRemaining = WaveDuration;
             m_NextCountdownSecond = 5;
 
             // Courbe de difficulté exponentielle, plus raide en mode infini.
             // Selon la difficulté, PV et dégâts sont réduits au début de la partie (vague 1), puis rejoignent la courbe.
-            var difficulty = DifficultyManager.Current;
             var early = difficulty.EarlyStrength(WaveNumber);
             EnemyScaling.Health = m_Settings.Growth(WaveNumber, difficulty.healthGrowthPerWave, m_Settings.endlessHealthGrowth) * early;
             EnemyScaling.Damage = m_Settings.Growth(WaveNumber, difficulty.damageGrowthPerWave, m_Settings.endlessDamageGrowth) * early;
@@ -359,6 +359,11 @@ namespace Archery.Waves
                 m_RiseQueue.RemoveAt(last);
             }
 
+            // Selon la difficulté, moins d'ennemis après l'accalmie ; ceux du début de la vague ne changent pas.
+            var lateCount = Mathf.RoundToInt(m_RiseQueue.Count * DifficultyManager.Current.lateEnemyCount);
+            if (lateCount < m_RiseQueue.Count)
+                m_RiseQueue.RemoveRange(lateCount, m_RiseQueue.Count - lateCount);
+
             m_CalmTotal = m_CalmQueue.Count;
             m_CalmSpawned = 0;
             m_RiseTotal = m_RiseQueue.Count;
@@ -429,7 +434,9 @@ namespace Archery.Waves
                 return;
             }
 
-            var interval = m_Settings.bossReinforcementInterval / Mathf.Max(0.1f, DifficultyManager.Current.enemyCount * Mathf.Sqrt(m_CountScale));
+            var difficulty = DifficultyManager.Current;
+            var interval = m_Settings.bossReinforcementInterval /
+                           Mathf.Max(0.1f, difficulty.enemyCount * difficulty.lateEnemyCount * Mathf.Sqrt(m_CountScale));
             m_SpawnTimer = interval * UnityEngine.Random.Range(0.8f, 1.2f);
             var pick = PickAffordable(float.MaxValue);
             if (pick != null && Enemy.Alive.Count < MaxAlive && m_Spawner != null)

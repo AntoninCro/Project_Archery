@@ -31,7 +31,7 @@ MonoBehaviour:
   - prefab: {fileID: 1165822100067611713, guid: 4f236c123c5c4468811f9127f7ce237c, type: 3}
     cost: 2
     firstWave: 2
-    weight: 0.4
+    weight: 1
   - prefab: {fileID: 4525739273563080954, guid: 2cd11e4d5545e0349bd1d9389613c626, type: 3}
     cost: 1.5
     firstWave: 3
@@ -78,8 +78,8 @@ MonoBehaviour:
     weight: 0.5
   - prefab: {fileID: 8620367189271681972, guid: e5fd4aca613b4b8d95c76c898b02b519, type: 3}
     cost: 3.5
-    firstWave: 4
-    weight: 0.35
+    firstWave: 3
+    weight: 0.9
   - prefab: {fileID: 799037972409055980, guid: 73eae3187f8d4148b46b0c3f16064958, type: 3}
     cost: 2
     firstWave: 4

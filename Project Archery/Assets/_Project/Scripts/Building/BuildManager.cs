@@ -21,8 +21,9 @@ namespace Archery.Building
 {
     /// <summary>
     /// Constructions du tower defense (GDD, section 9). À l'achat sur un <see cref="BuildSocket"/>, le bâtiment
-    /// apparaît en plan bleu, l'arc se range et un marteau apparaît dans la main libre. Trois coups sur le plan
-    /// le construisent ; le marteau disparaît et l'arc revient. Une amélioration se fait de la même façon.
+    /// apparaît en plan bleu, l'arc se range et un marteau apparaît dans chaque main, sans rien attraper. Trois coups
+    /// sur le plan, avec l'un ou l'autre, le construisent ; les marteaux disparaissent et l'arc revient. Une
+    /// amélioration se fait de la même façon.
     /// </summary>
     /// <remarks>
     /// À placer sur l'objet <c>Game</c>. Une seule construction à la fois. Elle se termine d'elle-même si le joueur
@@ -58,7 +59,7 @@ namespace Archery.Building
         [SerializeField]
         GameObject m_StrikeEffect;
 
-        [Tooltip("Son quand le marteau apparaît dans la main.")]
+        [Tooltip("Son quand les marteaux apparaissent dans les mains.")]
         [SerializeField]
         AudioClip m_HammerClip;
 
@@ -86,7 +87,7 @@ namespace Archery.Building
         int m_StructureKills;
 
         Structure m_Current;
-        BuildHammer m_Hammer;
+        readonly List<BuildHammer> m_Hammers = new List<BuildHammer>();
         Bow m_Bow;
         WaveManager m_Waves;
         int m_Strikes;
@@ -96,11 +97,11 @@ namespace Archery.Building
 
         public IReadOnlyList<StructureDefinition> Structures => m_Structures;
 
-        /// <summary>Une construction est en cours (le marteau est sorti).</summary>
+        /// <summary>Une construction est en cours (les marteaux sont sortis).</summary>
         public bool IsBuilding => m_Current != null;
 
-        /// <summary>Le marteau de la construction en cours, ou null.</summary>
-        public BuildHammer Hammer => m_Hammer;
+        /// <summary>Un marteau de la construction en cours (le premier), ou null.</summary>
+        public BuildHammer Hammer => m_Hammers.Count > 0 ? m_Hammers[0] : null;
 
         /// <summary>Nombre de coups déjà donnés sur le plan en cours.</summary>
         public int Strikes => m_Strikes;
@@ -201,45 +202,59 @@ namespace Archery.Building
             m_Current = structure;
             m_Strikes = 0;
             m_FarTime = 0f;
-            HandOverHammer(hand);
+            HandOverHammers(hand);
 
             var title = level == 1 ? definition.displayName : $"{definition.displayName} niveau {level}";
-            Announce($"{title}\n<size=70%>Frappe le plan {m_StrikesToBuild} fois avec le marteau</size>");
+            Announce($"{title}\n<size=70%>Frappe le plan {m_StrikesToBuild} fois avec tes marteaux</size>");
             return ShopResult.Done(level == 1 ? $"{definition.displayName} : à toi de construire !" : $"Amélioration : niveau {level}", definition.color);
         }
 
-        // L'arc se range, et un marteau apparaît dans la main libre (celle qui a ouvert le panneau, sinon celle sans l'arc).
-        void HandOverHammer(XRBaseInputInteractor hand)
+        // L'arc se range, et un marteau apparaît dans chaque main, sans rien attraper (sans casque : dans la main qui a
+        // ouvert le panneau).
+        void HandOverHammers(XRBaseInputInteractor opener)
         {
             if (m_Bow == null)
                 m_Bow = FindAnyObjectByType<Bow>();
             if (m_Bow != null)
                 m_Bow.SetStowed(true);
 
-            var rig = PlayerRig.Instance;
-            if (hand == null && rig != null)
-            {
-                var free = rig.BowHand == InteractorHandedness.Left ? InteractorHandedness.Right : InteractorHandedness.Left;
-                rig.TryGetHand(free, out hand);
-            }
-
-            if (m_HammerPrefab == null || hand == null)
+            if (m_HammerPrefab == null)
                 return;
 
-            // La main lâche ce qu'elle tient encore (une flèche).
-            if (hand.hasSelection && hand.interactionManager != null)
-                hand.interactionManager.CancelInteractorSelection((IXRSelectInteractor)hand);
+            var hands = new List<XRBaseInputInteractor>();
+            var rig = PlayerRig.Instance;
+            if (rig != null)
+            {
+                foreach (var side in new[] { InteractorHandedness.Left, InteractorHandedness.Right })
+                {
+                    if (rig.TryGetHand(side, out var hand) && hand != null && !hands.Contains(hand))
+                        hands.Add(hand);
+                }
+            }
 
-            m_Hammer = Instantiate(m_HammerPrefab);
-            m_Hammer.Begin(this, m_Current, hand);
-            Haptics.Pulse(hand, 0.4f, 0.08f);
-            Sfx.Play(m_HammerClip, hand.transform.position, 0.8f);
+            if (hands.Count == 0 && opener != null)
+                hands.Add(opener);
+
+            foreach (var hand in hands)
+            {
+                // La main lâche ce qu'elle tient encore (une flèche).
+                if (hand.hasSelection && hand.interactionManager != null)
+                    hand.interactionManager.CancelInteractorSelection((IXRSelectInteractor)hand);
+
+                var hammer = Instantiate(m_HammerPrefab);
+                hammer.Begin(this, m_Current, hand);
+                m_Hammers.Add(hammer);
+                Haptics.Pulse(hand, 0.4f, 0.08f);
+            }
+
+            if (hands.Count > 0)
+                Sfx.Play(m_HammerClip, hands[0].transform.position, 0.8f);
         }
 
         /// <summary>Un coup de marteau sur le plan en construction.</summary>
         internal void OnHammerStrike(BuildHammer hammer, Vector3 point, float speed, IXRSelectInteractor hand)
         {
-            if (hammer != m_Hammer || m_Current == null)
+            if (!m_Hammers.Contains(hammer) || m_Current == null)
                 return;
 
             m_Strikes++;
@@ -289,14 +304,13 @@ namespace Archery.Building
             m_Current = null;
             structure.FinishConstruction();
 
-            if (m_Hammer != null)
+            foreach (var hammer in m_Hammers)
             {
-                var grab = m_Hammer.GetComponent<XRGrabInteractable>();
-                if (grab != null && grab.isSelected && grab.interactionManager != null)
-                    grab.interactionManager.CancelInteractableSelection((IXRSelectInteractable)grab);
-                Destroy(m_Hammer.gameObject);
-                m_Hammer = null;
+                if (hammer != null)
+                    Destroy(hammer.gameObject);
             }
+
+            m_Hammers.Clear();
 
             if (m_Bow != null)
                 m_Bow.SetStowed(false);

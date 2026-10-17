@@ -50,6 +50,37 @@ namespace Archery.FinalBoss
             Triangle(a, c, d, color, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(1f, 0f));
         }
 
+        /// <summary>Un quadrilatère en dégradé : <paramref name="bottom"/> sur a et d, <paramref name="top"/> sur b et c.</summary>
+        public void GradientQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color bottom, Color top)
+        {
+            var normal = Vector3.Cross(b - a, c - a);
+            if (normal.sqrMagnitude < 1e-12f)
+                return;
+
+            normal.Normalize();
+            var start = m_Vertices.Count;
+            m_Vertices.Add(a);
+            m_Vertices.Add(b);
+            m_Vertices.Add(c);
+            m_Vertices.Add(d);
+            m_Colors.Add(bottom);
+            m_Colors.Add(top);
+            m_Colors.Add(top);
+            m_Colors.Add(bottom);
+            for (var i = 0; i < 4; i++)
+                m_Normals.Add(normal);
+            m_Uvs.Add(new Vector2(0f, 0f));
+            m_Uvs.Add(new Vector2(0f, 1f));
+            m_Uvs.Add(new Vector2(1f, 1f));
+            m_Uvs.Add(new Vector2(1f, 0f));
+            m_Triangles.Add(start);
+            m_Triangles.Add(start + 1);
+            m_Triangles.Add(start + 2);
+            m_Triangles.Add(start);
+            m_Triangles.Add(start + 2);
+            m_Triangles.Add(start + 3);
+        }
+
         /// <summary>Un quadrilatère avec ses coordonnées de texture (lave qui coule).</summary>
         public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, Vector2 uvA, Vector2 uvB, Vector2 uvC, Vector2 uvD)
         {

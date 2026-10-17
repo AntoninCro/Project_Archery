@@ -54,6 +54,7 @@ namespace Archery.Player
         bool m_LockCursor = true;
 
         const float k_CheckInterval = 1f;
+        const float k_StartupGrace = 6f;
         const float k_Gravity = -18f;
 
         static readonly List<XRDisplaySubsystem> s_Displays = new List<XRDisplaySubsystem>();
@@ -67,6 +68,7 @@ namespace Archery.Player
         float m_Pitch;
         float m_VerticalSpeed;
         float m_NextCheck;
+        float m_StartTime;
         int m_RefocusFrame = -1;
 
         public static DesktopControls Instance { get; private set; }
@@ -88,6 +90,7 @@ namespace Archery.Player
             if (Instance != null && Instance != this)
                 Debug.LogWarning("Il y a plusieurs Desktop Controls dans la scène.", this);
             Instance = this;
+            m_StartTime = Time.unscaledTime;
         }
 
         void OnDestroy()
@@ -101,7 +104,7 @@ namespace Archery.Player
             if (Time.unscaledTime >= m_NextCheck)
             {
                 m_NextCheck = Time.unscaledTime + k_CheckInterval;
-                var wanted = m_AlwaysActive || !HeadsetActive();
+                var wanted = m_AlwaysActive || !HeadsetActive(Time.unscaledTime - m_StartTime < k_StartupGrace);
                 if (wanted != IsActive)
                     SetActive(wanted);
             }
@@ -116,12 +119,14 @@ namespace Archery.Player
                 SetActive(false);
         }
 
-        static bool HeadsetActive()
+        // Au lancement, le casque met quelques secondes à démarrer son affichage : pendant ce délai, un affichage XR
+        // créé (le casque a répondu) mais pas encore lancé compte déjà comme un casque.
+        static bool HeadsetActive(bool starting)
         {
             SubsystemManager.GetSubsystems(s_Displays);
             foreach (var display in s_Displays)
             {
-                if (display.running)
+                if (display.running || starting)
                     return true;
             }
 

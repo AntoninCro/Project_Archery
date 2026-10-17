@@ -209,7 +209,11 @@ namespace Archery.Save
                 return;
 
             foreach (var provider in origin.GetComponentsInChildren<SnapTurnProvider>(true))
+            {
+                // Pas de demi-tour en tirant le joystick vers soi : seulement les rotations à gauche et à droite.
+                provider.enableTurnAround = false;
                 AddTurnProvider(provider);
+            }
             foreach (var provider in origin.GetComponentsInChildren<ContinuousTurnProvider>(true))
                 AddTurnProvider(provider);
         }

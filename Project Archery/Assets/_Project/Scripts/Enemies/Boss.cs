@@ -2,6 +2,7 @@ using System;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Difficulty;
 using Archery.Effects;
 using Archery.UI;
 using UnityEngine;
@@ -108,8 +109,8 @@ namespace Archery.Enemies
 
         void Start()
         {
-            // Enemy a déjà appliqué la difficulté ; on ajoute la croissance d'un boss à l'autre.
-            var growth = 1f + m_HealthGrowthPerBoss * Mathf.Max(0, BossNumber - 1);
+            // Enemy a déjà appliqué la difficulté des ennemis ; on ajoute celle des boss et la croissance d'un boss à l'autre.
+            var growth = (1f + m_HealthGrowthPerBoss * Mathf.Max(0, BossNumber - 1)) * DifficultyManager.Current.bossHealth;
             if (!Mathf.Approximately(growth, 1f))
                 Health.ResetHealth(Health.Max * growth);
 

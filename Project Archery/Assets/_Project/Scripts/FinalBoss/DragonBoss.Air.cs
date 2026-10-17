@@ -1,4 +1,5 @@
 using Archery.Core;
+using Archery.Player;
 using UnityEngine;
 
 namespace Archery.FinalBoss
@@ -7,7 +8,11 @@ namespace Archery.FinalBoss
     public partial class DragonBoss
     {
         const float k_LeapTime = 1.2f;
+        const float k_StripGlowHeight = 10f;
 
+        static readonly Collider[] s_PlayerOverlaps = new Collider[128];
+
+        bool m_PlayerCollisionIgnored;
         float m_OrbitAngle;
         float m_AirSpit;
         float m_SinceAirSpit = 10f;
@@ -544,6 +549,47 @@ namespace Archery.FinalBoss
             EndGroundAttack();
         }
 
+        // Pendant le salto et le temps qu'il se relève, le corps du dragon ne bouscule pas le joueur : en lui retombant
+        // dessus, il l'enfonçait dans le sol, et le joueur tombait à travers la carte. Le contact revient une fois le
+        // joueur dégagé.
+        void UpdatePlayerCollision()
+        {
+            var rig = PlayerRig.Instance;
+            var body = rig != null ? rig.Body : null;
+            if (body == null)
+                return;
+
+            var ignore = m_State == State.Salto || m_State == State.Recover;
+            if (!ignore && m_PlayerCollisionIgnored && PlayerInsideBody(body))
+                ignore = true;
+            if (ignore == m_PlayerCollisionIgnored)
+                return;
+
+            m_PlayerCollisionIgnored = ignore;
+            foreach (var hitbox in m_Hitboxes)
+            {
+                if (hitbox != null)
+                    Physics.IgnoreCollision(body, hitbox, ignore);
+            }
+        }
+
+        bool PlayerInsideBody(CharacterController body)
+        {
+            var scale = body.transform.lossyScale.y;
+            var center = body.transform.TransformPoint(body.center);
+            var radius = body.radius * scale + 0.1f;
+            var half = Mathf.Max(0f, body.height * 0.5f * scale - radius);
+            var count = Physics.OverlapCapsuleNonAlloc(center + Vector3.up * half, center - Vector3.up * half, radius,
+                                                       s_PlayerOverlaps, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (m_Hitboxes.Contains(s_PlayerOverlaps[i]))
+                    return true;
+            }
+
+            return false;
+        }
+
         // Place le dragon pour que le milieu de son corps soit à ce point : il tourne sur lui-même, pas autour de ses pieds.
         void SetBodyPose(Vector3 center, Quaternion rotation)
         {
@@ -628,6 +674,8 @@ namespace Archery.FinalBoss
             var builder = new MeshBuilder();
             var fill = new Color(1f, 0.15f, 0.05f, 0.35f);
             var edge = new Color(1f, 0.2f, 0.05f, 0.85f);
+            var glow = new Color(2.4f, 0.6f, 0.18f, 0.5f);
+            var clear = new Color(1f, 0.25f, 0.08f, 0f);
             var half = width * 0.5f;
             var segments = Mathf.Max(1, Mathf.CeilToInt(length / 2f));
             for (var i = 0; i < segments; i++)
@@ -639,10 +687,32 @@ namespace Archery.FinalBoss
                 builder.Quad(new Vector3(-half, y0, z0), new Vector3(-half, y1, z1), new Vector3(half, y1, z1), new Vector3(half, y0, z0), fill);
                 builder.Quad(new Vector3(-half, y0, z0), new Vector3(-half, y1, z1), new Vector3(-half + 0.2f, y1, z1), new Vector3(-half + 0.2f, y0, z0), edge);
                 builder.Quad(new Vector3(half - 0.2f, y0, z0), new Vector3(half - 0.2f, y1, z1), new Vector3(half, y1, z1), new Vector3(half, y0, z0), edge);
+
+                // Deux rideaux de lumière montent des bords de la bande : on la voit même la tête levée vers le dragon.
+                foreach (var x in new[] { -half, half })
+                {
+                    builder.GradientQuad(new Vector3(x, y0, z0), new Vector3(x, y0 + k_StripGlowHeight, z0),
+                                         new Vector3(x, y1 + k_StripGlowHeight, z1), new Vector3(x, y1, z1), glow, clear);
+                }
             }
 
             m_Strip = CreateWarning("Alerte de ruée", builder.ToMesh("Alerte de ruée"));
             m_Strip.SetPositionAndRotation(middle, rotation);
+
+            // Et deux projecteurs, aux bouts de la bande, rougissent la voûte au-dessus d'elle.
+            foreach (var z in new[] { -length * 0.35f, length * 0.35f })
+            {
+                var lightObject = new GameObject("Lueur de l'alerte");
+                lightObject.transform.SetParent(m_Strip, false);
+                lightObject.transform.SetLocalPositionAndRotation(new Vector3(0f, 0.5f, z), Quaternion.Euler(-90f, 0f, 0f));
+                var light = lightObject.AddComponent<Light>();
+                light.type = LightType.Spot;
+                light.color = new Color(1f, 0.25f, 0.08f);
+                light.spotAngle = 75f;
+                light.range = 26f;
+                light.intensity = 8f;
+                light.shadows = LightShadows.None;
+            }
         }
 
         // Cercle rouge sur la cible du piqué.

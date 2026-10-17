@@ -516,7 +516,7 @@ namespace Archery.FinalBoss
             m_Hitboxes.Add(collider);
 
             // La boule devient une gemme sertie d'or, comme chez les autres boss.
-            WeakPointVisual.Attach(hitbox, m_WeakPointColor);
+            WeakPointVisual.Attach(hitbox, m_WeakPointColor, surface: false);
         }
 
         void AddChain(string[] bones, float radiusFactor, HitZone zone, Health health, float scale)

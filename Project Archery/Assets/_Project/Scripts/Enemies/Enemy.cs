@@ -181,6 +181,10 @@ namespace Archery.Enemies
             m_Colliders = GetComponentsInChildren<Collider>(true);
             if (m_Animator == null)
                 m_Animator = GetComponentInChildren<Animator>();
+            // Toujours animé, même quand Unity croit le modèle hors de vue (ses bornes sont souvent fausses, comme pour
+            // le mage, agrandi ×100) : sinon il glisse, figé.
+            if (m_Animator != null)
+                m_Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             CacheAnimatorParameters();
 
             if (m_Definition == null)
@@ -261,9 +265,12 @@ namespace Archery.Enemies
             ChooseTarget();
             UpdatePendingHit(deltaTime);
 
+            // Un ennemi qui attaque ne repart qu'une fois nettement hors de portée : sinon, à la limite (un tireur à 25 m
+            // du joueur, qui bouge sans cesse avec le casque), il s'arrêtait et repartait plusieurs fois par seconde.
+            var range = Def.attackRange + (m_State == State.Attacking ? AttackRangeSlack : 0f);
             if (m_Target == null)
                 Stop();
-            else if (HorizontalDistance(transform.position, m_TargetPoint) <= Def.attackRange)
+            else if (HorizontalDistance(transform.position, m_TargetPoint) <= range)
                 UpdateAttack(deltaTime);
             else
                 UpdateMove(deltaTime);
@@ -283,6 +290,10 @@ namespace Archery.Enemies
         }
 
         bool BehaviourControlsAnimator => m_Behaviour != null && m_Behaviour.ControlsAnimator;
+
+        // Marge de la portée pendant une attaque : 12 % (3 m pour un tireur), au moins 25 cm (corps à corps, où le coup
+        // porte encore jusqu'à 30 cm au-delà de la portée).
+        float AttackRangeSlack => Mathf.Max(0.25f, Def.attackRange * 0.12f);
 
         Vector3 CurrentVelocity
         {

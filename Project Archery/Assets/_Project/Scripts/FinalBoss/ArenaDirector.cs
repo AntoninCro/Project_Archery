@@ -523,10 +523,33 @@ namespace Archery.FinalBoss
             if (m_Bar != null && m_Dragon != null && m_Dragon.TryGetComponent<Health>(out var health))
                 m_Bar.SetValue(health.Normalized);
 
+            KeepPlayerAboveGround();
+
             // L'ambiance rougit doucement pendant la rage.
             var target = m_Raging ? m_AmbientRage : m_AmbientLit;
             m_Ambient = Color.Lerp(m_Ambient, target, 1f - Mathf.Exp(-Time.deltaTime * 1.5f));
             ApplyRenderSettings(m_Light);
+        }
+
+        // Filet de sécurité : si le joueur passe sous le sol (le dragon qui lui retombe dessus peut l'y enfoncer), on le
+        // remet dessus avant qu'il ne tombe à travers la carte.
+        void KeepPlayerAboveGround()
+        {
+            var rig = PlayerRig.Instance;
+            if (rig == null || rig.Origin == null || m_Arena == null)
+                return;
+
+            var depth = m_Arena.GroundHeightAt(rig.BodyPosition) - rig.Origin.transform.position.y;
+            if (depth < 0.3f)
+                return;
+
+            var body = rig.Body;
+            if (body != null)
+                body.enabled = false;
+            rig.Origin.transform.position += Vector3.up * (depth + 0.05f);
+            Physics.SyncTransforms();
+            if (body != null)
+                body.enabled = true;
         }
 
         void OnDragonPhaseChanged(DragonPhase phase)

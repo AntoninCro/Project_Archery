@@ -1,5 +1,6 @@
 using Archery.Bows;
 using Archery.Core;
+using Archery.Difficulty;
 using Archery.Enemies;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Archery.Building
 {
     /// <summary>
     /// Baliste sur un socle au bord de la voie (GDD, section 9) : elle pivote vers l'ennemi le plus proche à portée,
-    /// volants compris, et tire seule un carreau (15 / 22 / 32 dégâts à la vague 1 en Normal, toutes les 1,5 / 1,2 / 1 s). Au niveau 3,
+    /// volants compris, et tire seule un carreau (10 / 14,7 / 21,3 dégâts à la vague 1 en Normal, toutes les 2,4 / 1,6 / 1 s). Au niveau 3,
     /// le carreau traverse 2 ennemis. Elle profite de la moitié des bonus de dégâts de l'arc.
     /// </summary>
     /// <remarks>
@@ -24,7 +25,7 @@ namespace Archery.Building
 
         [Tooltip("Dégâts d'un carreau, par niveau, à la vague 1 en Normal (ils suivent ensuite la force des ennemis), avant le bonus de l'arc.")]
         [SerializeField]
-        float[] m_DamagePerLevel = { 15f, 22f, 32f };
+        float[] m_DamagePerLevel = { 10f, 14.67f, 21.33f };
 
         [Tooltip("Temps (s) entre deux tirs, par niveau : lente au début, la baliste garde toute sa cadence au niveau 3.")]
         [SerializeField]
@@ -187,7 +188,7 @@ namespace Archery.Building
 
         void Fire(Vector3 direction)
         {
-            m_Cooldown = ValueFor(m_IntervalPerLevel, Level, 2.4f);
+            m_Cooldown = ValueFor(m_IntervalPerLevel, Level, 2.4f) / Mathf.Max(0.1f, DifficultyManager.Current.ballistaFireRate);
             if (m_BoltPrefab == null)
                 return;
 

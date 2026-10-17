@@ -1,4 +1,5 @@
 using Archery.Core;
+using Archery.Difficulty;
 using UnityEngine;
 
 namespace Archery.FinalBoss
@@ -27,6 +28,11 @@ namespace Archery.FinalBoss
 
         void Start()
         {
+            // Enemy a déjà appliqué la difficulté des ennemis ; on ajoute celle des boss.
+            var bossHealth = DifficultyManager.Current.bossHealth;
+            if (!Mathf.Approximately(bossHealth, 1f))
+                Enemy.Health.ResetHealth(Enemy.Health.Max * bossHealth);
+
             if (m_Arena != null && m_Arena.TryGetLavaFallTop(out var top))
             {
                 transform.SetPositionAndRotation(top.position, top.rotation);

@@ -54,9 +54,9 @@ MonoBehaviour:
   - {fileID: 580209315091270297}
   m_Range: 20
   m_DamagePerLevel:
-  - 15
-  - 22
-  - 32
+  - 10
+  - 14.67
+  - 21.33
   m_IntervalPerLevel:
   - 2.4
   - 1.6

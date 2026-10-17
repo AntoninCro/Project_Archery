@@ -61,6 +61,12 @@ Le son du choix est dans `Audio/Placeholder` : `difficulty_select`.
 
 Tu peux ensuite modifier chaque valeur à la main ; chaque champ a une infobulle. Pour le ciel, c'est plus simple de le régler en jeu (section 8).
 
+Depuis le 16 octobre, quatre réglages rendent le Facile très simple ; ils sont à 0,5 dans `Difficulty_facile` et à 1 ailleurs :
+- *Boss Health* : PV des boss de vague et du dragon, en plus de *Enemy Health* ;
+- *Wave Duration* : durée du chrono des vagues ;
+- *Late Enemy Count* : part des ennemis gardée après l'accalmie (montée et renforts du boss) ; ceux du début de la vague ne changent pas ;
+- *Ballista Fire Rate* : cadence de tir des balistes (0,5 = deux fois moins de tirs).
+
 ## 2. Le gestionnaire
 
 Sur l'objet `Game` : *Add Component > Difficulty Manager*.

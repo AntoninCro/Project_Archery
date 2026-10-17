@@ -85,15 +85,15 @@ Cette étape construit tout le chemin d'un achat, du socle jusqu'au bâtiment te
 
 1. Sur la carte, des **socles** marquent les emplacements de construction : quatre coins orange au sol. Il y en a deux sortes. **Sur la voie**, on peut construire une barricade ou des pièges à piques. **Au bord de la voie**, on peut construire une baliste ou une tour de givre.
 2. Vise un socle avec la main libre, à 5 m au plus, et appuie sur la **poignée**. Un petit panneau s'ouvre devant toi, du côté du socle. Il montre tes matériaux et les deux bâtiments possibles, avec leur prix. Sur un bâtiment déjà construit, il montre le niveau suivant et son prix.
-3. Clique une carte avec la **gâchette**. Les matériaux sont dépensés, et le bâtiment apparaît en **plan bleu transparent**. L'arc disparaît, et un **marteau** flotte dans ta main libre.
-4. Attrape le marteau avec la **poignée**. Frappe le plan **3 fois**. Chaque coup fait un bruit, des étincelles et une vibration, et le plan se remplit d'un tiers, de bas en haut.
-5. Au troisième coup, le bâtiment prend ses vraies couleurs. Le marteau disparaît, et l'arc réapparaît à sa place près de toi : reprends-le comme d'habitude.
+3. Clique une carte avec la **gâchette**. Les matériaux sont dépensés, et le bâtiment apparaît en **plan bleu transparent**. L'arc disparaît, et un **marteau** apparaît dans **chaque main** : pas besoin de l'attraper, la main se ferme dessus toute seule (depuis le 16 octobre).
+4. Frappe le plan **3 fois**, avec l'un ou l'autre marteau. Chaque coup fait un bruit, des étincelles et une vibration, et le plan se remplit d'un tiers, de bas en haut.
+5. Au troisième coup, le bâtiment prend ses vraies couleurs. Les marteaux disparaissent, et l'arc réapparaît à sa place près de toi : reprends-le comme d'habitude.
 6. Une amélioration (niveaux 2 et 3) se fait de la même façon. Vise le socle ou le bâtiment : le panneau propose le niveau suivant. Pendant les coups de marteau, le bâtiment repasse en plan bleu, mais il continue de fonctionner à son niveau actuel.
 
 Quelques règles :
 
-- **Une seule construction à la fois** : le marteau doit avoir fini avant d'en acheter une autre.
-- **Le marteau ne se perd pas.** Si tu le lâches, il revient flotter dans la main qui l'a tenu en dernier.
+- **Une seule construction à la fois** : les marteaux doivent avoir fini avant d'en acheter une autre.
+- **Les marteaux ne se perdent pas** : ils restent dans les mains jusqu'à la fin de la construction (on ne peut pas les lâcher).
 - **Pour frapper de nouveau**, ressors la tête du marteau du plan, ou marque un arrêt, comme après un vrai coup. Un coup ne compte que s'il va vers le plan, assez vite (1,2 m/s).
 - **La construction ne bloque jamais le joueur.** Si tu t'éloignes à plus de 15 m (par exemple avec le téléporteur de la tour), ou si la partie se termine, elle se termine toute seule et l'arc revient.
 - **Le panneau se ferme** après un achat, avec son bouton X, ou quand tu t'éloignes de plus de 2,5 m.
@@ -108,7 +108,7 @@ Quelques règles :
 | `Scripts/Building/BuildSocket.cs` | Le socle qu'on vise. Au lancement, il vérifie que le sol est plat dessous, et prévient dans la console sinon |
 | `Scripts/Building/BuildPanel.cs` | Le panneau des socles. Il réutilise les cartes de la boutique (`Prefabs/UI/Shop Card`) |
 | `Scripts/Building/BuildManager.cs` | Sur `Game` : la liste des bâtiments, l'achat, le marteau, les coups et la fin de la construction |
-| `Scripts/Building/BuildHammer.cs` | Le marteau : il flotte dans la main et détecte les coups sur le plan |
+| `Scripts/Building/BuildHammer.cs` | Un marteau (un par main) : il suit la main sans être attrapé, et détecte les coups sur le plan |
 | `Shaders/Blueprint.shader`, `Resources/Blueprint.mat` | Le plan bleu : un hologramme parcouru de lignes qui montent, plus plein sous la partie construite. Déjà prêt, rien à faire |
 | `Bow.cs` | L'arc peut se ranger pendant la construction : il devient invisible et impossible à prendre |
 | `ShopOffer` / `ShopCard` | Une carte peut afficher son prix en matériaux (« 40 mat. ») |
@@ -320,7 +320,7 @@ Tous les réglages sont sur le composant à la racine de chaque prefab de `Prefa
 | | *Size*, *Spike Height Per Level* | 2,6 × 2,6 m, 0,3 / 0,38 / 0,46 m | Zone piégée, hauteur des piques |
 | `Givre` | *Radius Per Level*, *Speed Per Level* | 8 / 9 / 10 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
 | | *Range Color*, *Crystal Scale Per Level*, *Light Intensity Per Level* | bleu, 1 / 1,15 / 1,3, 1,5 / 2,2 / 3 | Apparence |
-| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 15 / 22 / 32, 2,4 / 1,6 / 1 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
+| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 10 / 14,67 / 21,33, 2,4 / 1,6 / 1 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
 | `Data/Difficulties` | *Structure Power* | 0,75 / 1 / 1,25 / 1,6 | Puissance des bâtiments selon la difficulté (Facile, Normal, Difficile, Impossible), en plus de la force des ennemis |
 | | *Pierce Per Level*, *Bow Bonus Share* | 0 / 0 / 2, 0,5 | Ennemis traversés, part des bonus de l'arc |
 | | *Bolt Speed*, *Turn Speed*, *Max Pitch* | 45 m/s, 220 °/s, 40° | Carreau et rotation |
@@ -350,7 +350,7 @@ Le tower defense doit être **très présent** à la fin d'une partie (10 vagues
 |---|---|---|
 | Matériaux d'un gisement (`Crystal Spawner` sur `Game`) | 10, +1 par vague | **20, +2 par vague** |
 | Dégâts des bâtiments | fixes | **suivent la force des ennemis** : PV de la difficulté × renforcement de la vague, mode infini compris |
-| Baliste (dégâts à la vague 1 en Normal) | 25 / 35 / 50 | **15 / 22 / 32** |
+| Baliste (dégâts à la vague 1 en Normal) | 25 / 35 / 50 | **10 / 14,7 / 21,3** (15 / 22 / 32 avant le 16 octobre) |
 | Pièges à piques | 20 / 30 / 45 | **12 / 18 / 27** |
 | Pointes de la barricade | 15 | **10** |
 | Textes des cartes | dégâts en PV | **multiplicateurs** (« Dégâts ×1,5 »), toujours justes puisque les dégâts suivent les ennemis |

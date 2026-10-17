@@ -1,6 +1,7 @@
 using System;
 using Archery.Core;
 using Archery.Difficulty;
+using Archery.UI;
 using Archery.Waves;
 using TMPro;
 using UnityEngine;
@@ -8,12 +9,15 @@ using UnityEngine;
 namespace Archery.Menus
 {
     /// <summary>
-    /// Menu principal (GDD, section 14), en haut de la tour avant la première vague : jouer et choisir la difficulté,
-    /// paramètres, classement, quitter. Il disparaît dès que la partie commence.
+    /// Menu principal (GDD, section 14), en haut de la tour avant la première vague : paramètres, tutoriel, classement,
+    /// quitter. On choisit la difficulté en tirant sur un panneau (ou en le cliquant), et on lance la partie avec le gong.
+    /// Il disparaît dès que la partie commence.
     /// </summary>
     /// <remarks>
-    /// Chaque page est un objet enfant (accueil, paramètres, classement…). Les boutons appellent les méthodes
-    /// publiques dans leur événement On Click : <see cref="ShowPage"/>, <see cref="Play"/>, <see cref="Quit"/>…
+    /// Chaque page est un objet enfant (accueil, paramètres, classement…) ; la page du tutoriel est fabriquée en jeu
+    /// (<see cref="TutorialMenu"/>). Les boutons appellent les méthodes publiques dans leur événement On Click :
+    /// <see cref="ShowPage"/>, <see cref="ShowTutorial"/>, <see cref="Quit"/>… Tout se clique au rayon de la main, ou se
+    /// déclenche d'une flèche (<see cref="MenuArrowTarget"/>).
     /// </remarks>
     [DisallowMultipleComponent]
     public class MainMenuPanel : MonoBehaviour
@@ -34,10 +38,37 @@ namespace Archery.Menus
         [SerializeField]
         AudioClip m_ClickClip;
 
+        int m_TutorialPage = -1;
+
         void Start()
         {
+            BuildTutorial();
             SetPage(0);
             RefreshDifficulty(DifficultyManager.Current);
+
+            // Tout le menu se clique au rayon de la main, ou se déclenche d'une flèche.
+            MenuArrowTarget.AttachAll(m_Content);
+        }
+
+        // La page du tutoriel, ajoutée aux autres pages.
+        void BuildTutorial()
+        {
+            if (m_Content == null || m_TutorialPage >= 0)
+                return;
+
+            var tutorial = TutorialMenu.Create(m_Content.transform, this);
+            var pages = new GameObject[m_Pages.Length + 1];
+            m_Pages.CopyTo(pages, 0);
+            pages[m_Pages.Length] = tutorial.gameObject;
+            m_Pages = pages;
+            m_TutorialPage = m_Pages.Length - 1;
+        }
+
+        /// <summary>Ouvre le tutoriel (bouton « Tutoriel » de l'accueil).</summary>
+        public void ShowTutorial()
+        {
+            if (m_TutorialPage >= 0)
+                ShowPage(m_TutorialPage);
         }
 
         void OnEnable() => DifficultyManager.Changed += RefreshDifficulty;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Archery.Combat;
 using Archery.Core;
 using Archery.FinalBoss;
@@ -43,6 +44,7 @@ namespace Archery.Effects
         Hitbox m_Hitbox;
         Health m_Owner;
         Color m_Color;
+        bool m_Surface;              // la gemme sort du corps jusqu'à la peau (boss des vagues)
         float m_Radius;              // rayon de la gemme, dans le repère de cet objet
         Transform m_Jewel;           // la gemme et sa monture, tournées vers l'extérieur du corps
         Transform m_Gem;
@@ -67,23 +69,29 @@ namespace Archery.Effects
 
         float WorldRadius => m_Radius * Mathf.Abs(transform.lossyScale.x);
 
-        /// <summary>Habille ce point faible (sa zone de touche, avec la boule de l'éditeur) d'une gemme de cette couleur.</summary>
-        public static WeakPointVisual Attach(Hitbox hitbox, Color color)
+        /// <summary>
+        /// Habille ce point faible (sa zone de touche, avec la boule de l'éditeur) d'une gemme de cette couleur.
+        /// <paramref name="surface"/> : la gemme sort horizontalement du corps (par l'avant si elle est dans le torse) et
+        /// avance jusqu'à la peau, avec sa zone de touche (boss des vagues) ; sinon, elle reste où elle est (le dragon,
+        /// dont le point faible est déjà placé sous la poitrine).
+        /// </summary>
+        public static WeakPointVisual Attach(Hitbox hitbox, Color color, bool surface = true)
         {
             if (hitbox == null)
                 return null;
             if (!hitbox.TryGetComponent<WeakPointVisual>(out var visual))
                 visual = hitbox.gameObject.AddComponent<WeakPointVisual>();
-            visual.Setup(hitbox, color);
+            visual.Setup(hitbox, color, surface);
             return visual;
         }
 
-        void Setup(Hitbox hitbox, Color color)
+        void Setup(Hitbox hitbox, Color color, bool surface)
         {
             m_Color = color;
             if (m_Jewel != null)
                 return;
 
+            m_Surface = surface;
             m_Hitbox = hitbox;
             m_Hitbox.Struck += OnStruck;
             m_Owner = hitbox.Owner != null ? hitbox.Owner : GetComponentInParent<Health>();
@@ -102,8 +110,10 @@ namespace Archery.Effects
             if (TryGetComponent<Pulse>(out var pulse))
                 pulse.Stop();
 
-            // La table de la gemme regarde vers l'extérieur du corps.
+            // La table de la gemme regarde vers l'extérieur du corps, et la gemme affleure à sa surface.
             var outward = Outward(out var forward);
+            if (m_Surface)
+                SurfaceOnBody(outward);
             m_Jewel = new GameObject("Joyau").transform;
             m_Jewel.gameObject.layer = gameObject.layer;
             m_Jewel.SetParent(transform, false);
@@ -228,7 +238,9 @@ namespace Archery.Effects
             m_Wave.color = waveColor;
         }
 
-        // Du milieu du corps (ses modèles animés) vers le point faible ; « forward » : l'avant du boss.
+        // Vers l'extérieur du corps : depuis le milieu du corps (sur l'axe du boss, à mi-hauteur de ses modèles animés) vers
+        // le point faible ; par l'avant s'il est dans le torse, sur cet axe et à mi-hauteur (ceux de Nolan et de Clitorine
+        // sont posés sur la colonne). « forward » : l'avant du boss.
         Vector3 Outward(out Vector3 forward)
         {
             var root = m_Owner != null ? m_Owner.transform : transform.root;
@@ -244,8 +256,109 @@ namespace Archery.Effects
                 found = true;
             }
 
-            var outward = transform.position - (found ? bounds.center : root.position);
-            return outward.sqrMagnitude > 1e-6f ? outward.normalized : forward;
+            if (!m_Surface)
+            {
+                var fromCenter = transform.position - (found ? bounds.center : root.position);
+                return fromCenter.sqrMagnitude > 1e-6f ? fromCenter.normalized : forward;
+            }
+
+            var height = found ? bounds.size.y : 2f;
+            var middle = new Vector3(root.position.x, found ? bounds.center.y : root.position.y + 1f, root.position.z);
+            var offset = transform.position - middle;
+            var flat = new Vector3(offset.x, 0f, offset.z);
+            if (flat.magnitude < height * 0.1f && Mathf.Abs(offset.y) < height * 0.3f)
+            {
+                var front = new Vector3(forward.x, 0f, forward.z);
+                return front.sqrMagnitude > 1e-6f ? front.normalized : Vector3.forward;
+            }
+
+            return offset.sqrMagnitude > 1e-6f ? offset.normalized : forward;
+        }
+
+        // Un point faible caché dans le corps (la boule de l'éditeur dépassait à peine, la gemme est plus plate) avance
+        // jusqu'à la peau du modèle, le long de « outward » : la ceinture de la gemme sur la peau, la couronne dehors.
+        // Sa zone de touche (la boule, ce même objet) le suit. La peau : les sommets du modèle animé autour de cet axe.
+        void SurfaceOnBody(Vector3 outward)
+        {
+            var root = m_Owner != null ? m_Owner.transform : transform.root;
+            var bodies = root.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            if (bodies.Length == 0)
+                return;
+
+            var center = transform.position;
+            var radius = Mathf.Max(0.01f, WorldRadius);
+            var baked = new Mesh();
+            var skin = float.NegativeInfinity;
+            // Les sommets du modèle dans sa pose actuelle, dans le monde.
+            var points = new List<Vector3>();
+            foreach (var body in bodies)
+            {
+                body.BakeMesh(baked, true);
+                var vertices = baked.vertices;
+                var pose = BakedToWorld(body, vertices);
+                foreach (var vertex in vertices)
+                    points.Add(pose.MultiplyPoint3x4(vertex));
+            }
+
+            Destroy(baked);
+
+            // Les sommets près de l'axe ; si le modèle est trop grossier pour en avoir, on élargit.
+            foreach (var reach in new[] { 0.8f, 2f })
+            {
+                foreach (var point in points)
+                {
+                    var offset = point - center;
+                    var along = Vector3.Dot(offset, outward);
+                    if ((offset - outward * along).sqrMagnitude <= radius * radius * reach * reach)
+                        skin = Mathf.Max(skin, along);
+                }
+
+                if (!float.IsNegativeInfinity(skin))
+                    break;
+            }
+
+            // Pas de peau trouvée : la surface des zones de touche du boss (corps, tête), le long du même axe.
+            var method = "peau du modèle";
+            if (float.IsNegativeInfinity(skin))
+            {
+                method = "zones de touche";
+                var ray = new Ray(center + outward * 20f, -outward);
+                foreach (var zone in root.GetComponentsInChildren<Collider>())
+                {
+                    if (zone.transform == transform || zone.isTrigger || !zone.enabled)
+                        continue;
+                    if (zone.Raycast(ray, out var hit, 40f))
+                        skin = Mathf.Max(skin, Vector3.Dot(hit.point - center, outward));
+                }
+            }
+
+            // Déjà dehors : rien à faire. Sinon, jusqu'à la peau (6 rayons de gemme au plus : pas jusqu'au bout d'un bâton).
+            var push = float.IsNegativeInfinity(skin) || skin <= 0f ? 0f : Mathf.Min(skin, radius * 6f);
+            Debug.Log($"Point faible de {root.name} : {(push > 0f ? $"avancé de {push:0.00} m jusqu'à la surface ({method})" : float.IsNegativeInfinity(skin) ? "aucune surface trouvée, laissé en place" : "déjà dehors")}, " +
+                      $"gemme de {radius:0.00} m de rayon, à {transform.position.y + outward.y * push - root.position.y:0.00} m de haut.", this);
+            if (push > 0f)
+                transform.position = center + outward * push;
+        }
+
+        // Le repère des sommets d'un modèle « cuit » (BakeMesh) : selon les modèles, l'échelle de son objet y est déjà ou
+        // non (ceux du pack Mini Legion sont à l'échelle 0,01). On garde celui qui redonne au modèle sa taille connue.
+        static Matrix4x4 BakedToWorld(SkinnedMeshRenderer body, Vector3[] vertices)
+        {
+            var unscaled = Matrix4x4.TRS(body.transform.position, body.transform.rotation, Vector3.one);
+            var scaled = body.transform.localToWorldMatrix;
+            if (vertices.Length == 0)
+                return unscaled;
+
+            var target = Mathf.Max(1e-4f, body.bounds.size.magnitude);
+            float Mismatch(Matrix4x4 pose)
+            {
+                var bounds = new Bounds(pose.MultiplyPoint3x4(vertices[0]), Vector3.zero);
+                foreach (var vertex in vertices)
+                    bounds.Encapsulate(pose.MultiplyPoint3x4(vertex));
+                return Mathf.Abs(Mathf.Log(Mathf.Max(1e-6f, bounds.size.magnitude) / target));
+            }
+
+            return Mismatch(scaled) < Mismatch(unscaled) ? scaled : unscaled;
         }
 
         MeshRenderer CreateRenderer(string name, Transform parent, Mesh mesh, Material material)

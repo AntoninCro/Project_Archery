@@ -3,12 +3,16 @@
 Ce guide ajoute les menus du GDD (sections 14 et 15) à la scène `Prototype_Tir` :
 
 1. **Menu principal**, en haut de la tour avant la première vague :
-   - *Jouer*, avec le choix de la difficulté ;
    - *Paramètres* ;
+   - *Tutoriel* ;
    - *Classement* ;
    - *Quitter*.
 
-   Le gong et les panneaux de difficulté marchent toujours.
+   Depuis le 16 octobre, *Jouer* et la ligne de difficulté sont retirés : on choisit la difficulté en tirant sur un panneau (ou en le cliquant), et on lance la partie avec le gong ; une phrase le rappelle en haut de l'accueil. L'éditeur fait ce changement tout seul à l'ouverture de la scène (`Editor/MainMenuBaker.cs`) : il reste à l'enregistrer. Les étapes de montage ci-dessous décrivent encore l'ancien accueil.
+
+   **Tout se clique ou se tire** : chaque bouton, case et curseur des menus se clique au rayon de la main, ou se déclenche d'une flèche (un curseur prend la valeur de l'endroit touché ; « Quitter » demande deux flèches). Les panneaux de difficulté se cliquent aussi au rayon.
+
+   **Tutoriel** (page fabriquée en jeu, `Scripts/Menus/TutorialMenu.cs`) : 4 catégories (Tir, Déplacement, Vagues, Construction) et 13 fenêtres, chacune avec un titre, un cadre vidéo 16:9, deux ou trois lignes, les flèches « < » « > » et « Retour ». Les textes sont dans l'asset `Resources/TutorialContent` (créé par l'éditeur, modifiable dans l'inspecteur). Les vidéos se branchent toutes seules : dépose `Tir_1.mp4`, `Tir_2.mp4`, `Deplacement_1.mp4`… dans `Resources/Tutoriel` (la liste complète est dans `LISEZMOI.txt` de ce dossier) ; elles tournent en boucle, sans le son, et sans vidéo le cadre affiche « Vidéo à venir ».
 2. **Paramètres** : volumes général, musique et effets, et rotation au joystick (par crans). Ils sont enregistrés dans `settings.json`.
 3. **Fin de partie** : après ta mort, un écran apparaît devant toi.
    - Il affiche le résumé de la partie : score, vague, difficulté, ennemis tués, tirs à la tête, tirs parfaits.
@@ -138,7 +142,7 @@ Ensuite, en dessous des lignes :
    - *Snap Turn Button* : `Snap Turn`, et *Snap Turn Text* : son texte.
    - le curseur « Confort » (vignette de confort) s'ajoute avec `Guide_Deplacements.md`.
 
-Le menu disparaît dès que la vague 1 commence, que ce soit par le gong ou par *Jouer*.
+Le menu disparaît dès que la vague 1 commence, au coup de gong.
 
 ## 4. Le clavier virtuel
 

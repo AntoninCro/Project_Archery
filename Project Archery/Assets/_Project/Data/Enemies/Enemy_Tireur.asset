@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Tireur
   maxHealth: 40
-  moveSpeed: 2
+  moveSpeed: 2.6
   attackDamage: 12
   attackRange: 25
   attackInterval: 3
