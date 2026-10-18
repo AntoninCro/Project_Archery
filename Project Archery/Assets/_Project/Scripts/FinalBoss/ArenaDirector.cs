@@ -511,7 +511,10 @@ namespace Archery.FinalBoss
             SetLight(1f);
             SetFallProgress(1f);
             if (m_Dragon != null)
+            {
                 m_Dragon.WakeUp();
+                DragonPointer.Create(m_Dragon, m_Dragon.WarningMaterial);
+            }
             if (m_Turrets != null)
                 m_Turrets.StartFighting();
         }

@@ -11,7 +11,7 @@ namespace Archery.EditorTools
     /// <summary>
     /// Le nom du jeu (<see cref="GameInfo.Name"/>) dans les scènes : à l'ouverture d'une scène, les textes qui portent
     /// encore un ancien nom (le titre du menu) prennent le nouveau, et la scène est marquée comme modifiée ; il suffit
-    /// de l'enregistrer.
+    /// de l'enregistrer. Le nom du produit (Player Settings) le suit aussi.
     /// </summary>
     [InitializeOnLoad]
     static class GameNameBaker
@@ -22,6 +22,20 @@ namespace Archery.EditorTools
         {
             EditorSceneManager.sceneOpened += (scene, mode) => Schedule();
             Schedule();
+            EditorApplication.delayCall += SyncProductName;
+        }
+
+        // Le nom du produit donne le titre de la fenêtre du build et le dossier des sauvegardes
+        // (%USERPROFILE%\AppData\LocalLow\<Company Name>\<Product Name>).
+        static void SyncProductName()
+        {
+            if (PlayerSettings.productName == GameInfo.Name)
+                return;
+
+            var previous = PlayerSettings.productName;
+            PlayerSettings.productName = GameInfo.Name;
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Nom du produit (Player Settings) : « {previous} » devient « {GameInfo.Name} ».");
         }
 
         static void Schedule()

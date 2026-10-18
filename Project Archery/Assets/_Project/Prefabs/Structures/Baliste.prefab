@@ -58,9 +58,9 @@ MonoBehaviour:
   - 14.67
   - 21.33
   m_IntervalPerLevel:
-  - 2.4
-  - 1.6
-  - 1
+  - 3
+  - 2
+  - 1.25
   m_PiercePerLevel:
   - 0
   - 0

@@ -198,6 +198,11 @@ namespace Archery.Upgrades
         }
 
         readonly Dictionary<Arrow, Tracked> m_Tracked = new Dictionary<Arrow, Tracked>();
+
+        // Auto-visée : les zones de touche de chaque ennemi visé, et les obstacles entre la flèche et la zone.
+        const float k_OwnBodyMargin = 0.6f;
+        static readonly RaycastHit[] s_SightHits = new RaycastHit[16];
+        readonly Dictionary<Enemy, Hitbox[]> m_Hitboxes = new Dictionary<Enemy, Hitbox[]>();
         readonly Stack<Tracked> m_Free = new Stack<Tracked>();
         readonly List<Arrow> m_Splitting = new List<Arrow>();
         readonly List<PendingEcho> m_Echoes = new List<PendingEcho>();
@@ -453,7 +458,8 @@ namespace Archery.Upgrades
 
         // --- En vol ---
 
-        // Auto-visée : la direction tourne doucement vers l'ennemi le plus proche devant la flèche.
+        // Auto-visée : la direction tourne doucement vers l'ennemi le plus proche devant la flèche, sur son point faible,
+        // sinon sur sa tête (un bon tireur n'est pas dévié de la tête vers le ventre).
         void UpdateHoming(float deltaTime)
         {
             var upgrades = PlayerUpgrades.Instance;
@@ -479,9 +485,69 @@ namespace Archery.Upgrades
                 if (target == null)
                     continue;
 
-                var toTarget = (Center(target) - position).normalized;
+                var toTarget = (AimPoint(target, position) - position).normalized;
                 arrow.Velocity = Vector3.RotateTowards(direction, toTarget, maxRadians, 0f) * speed;
             }
+        }
+
+        // Point visé : le point faible, sinon la tête, sinon le centre ; seulement s'il se voit depuis la flèche (un point
+        // faible dans le dos ne fait pas tourner la flèche dans le ventre).
+        Vector3 AimPoint(Enemy enemy, Vector3 from)
+        {
+            if (!m_Hitboxes.TryGetValue(enemy, out var hitboxes))
+            {
+                if (m_Hitboxes.Count > 64)
+                    m_Hitboxes.Clear();
+                hitboxes = enemy.GetComponentsInChildren<Hitbox>();
+                m_Hitboxes[enemy] = hitboxes;
+            }
+
+            if (TryAimAt(enemy, hitboxes, HitZone.WeakPoint, from, out var point) || TryAimAt(enemy, hitboxes, HitZone.Head, from, out point))
+                return point;
+            return Center(enemy);
+        }
+
+        static bool TryAimAt(Enemy enemy, Hitbox[] hitboxes, HitZone zone, Vector3 from, out Vector3 point)
+        {
+            foreach (var hitbox in hitboxes)
+            {
+                if (hitbox == null || hitbox.Zone != zone || !hitbox.isActiveAndEnabled)
+                    continue;
+                if (!hitbox.TryGetComponent<Collider>(out var collider) || !collider.enabled)
+                    continue;
+
+                point = collider.bounds.center;
+                if (InSight(enemy, collider, from, point))
+                    return true;
+            }
+
+            point = default;
+            return false;
+        }
+
+        // Rien ne cache le point entre la flèche et lui. Le corps du même ennemi a un peu de marge : il englobe souvent
+        // le bord de la tête ou de la gemme.
+        static bool InSight(Enemy enemy, Collider target, Vector3 from, Vector3 point)
+        {
+            var offset = point - from;
+            var distance = offset.magnitude;
+            if (distance < 0.05f)
+                return true;
+
+            var count = Physics.RaycastNonAlloc(from, offset / distance, s_SightHits, distance, Physics.DefaultRaycastLayers,
+                                                QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_SightHits[i];
+                if (hit.collider == null || hit.collider == target || ArrowIgnore.IsIgnored(hit.collider))
+                    continue;
+
+                var margin = hit.collider.GetComponentInParent<Enemy>() == enemy ? k_OwnBodyMargin : 0.05f;
+                if (hit.distance < distance - margin)
+                    return false;
+            }
+
+            return true;
         }
 
         Enemy HomingTarget(Vector3 position, Vector3 direction)

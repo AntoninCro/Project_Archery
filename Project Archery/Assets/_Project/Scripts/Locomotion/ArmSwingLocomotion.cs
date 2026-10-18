@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Player;
 using Archery.Save;
@@ -117,8 +118,8 @@ namespace Archery.Locomotion
         float m_SlideCooldown = 0.4f;
 
         [Header("Saut aux bras")]
-        [Tooltip("Lever les deux bras d'un coup en se déplaçant fait sauter. Il faut les deux mains, vite et vers le haut : prendre " +
-                 "une flèche, lever l'arc ou courir (une main monte, l'autre descend) ne fait pas sauter.")]
+        [Tooltip("Lever les deux bras d'un coup fait sauter, en se déplaçant comme à l'arrêt. Il faut les deux mains, vite et vers " +
+                 "le haut : prendre une flèche, lever l'arc ou courir (une main monte, l'autre descend) ne fait pas sauter.")]
         [SerializeField]
         bool m_ArmJump = true;
 
@@ -130,7 +131,8 @@ namespace Archery.Locomotion
         [SerializeField]
         float m_JumpHandSpeed = 1.8f;
 
-        [Tooltip("Vitesse (m/s) minimale du joueur pour sauter : on saute en se déplaçant.")]
+        [Tooltip("Vitesse (m/s) en dessous de laquelle le joueur est à l'arrêt. À l'arrêt, on saute aussi, sauf avec une flèche " +
+                 "encochée : en visant, on lève souvent l'arc et la main d'un coup.")]
         [SerializeField]
         float m_JumpMinimumSpeed = 0.3f;
 
@@ -182,6 +184,7 @@ namespace Archery.Locomotion
         float m_RightRise;
         float m_JumpCooldownTimer;
         JumpProvider m_Jump;
+        Bow m_Bow;
         float m_SmoothedYaw;
         bool m_HasYaw;
         Vector3 m_Velocity;
@@ -400,15 +403,18 @@ namespace Archery.Locomotion
             m_Jump.enabled = true;
         }
 
-        // Les deux mains montent vite en même temps, pendant qu'on se déplace et qu'on touche le sol : on saute.
+        // Les deux mains montent vite en même temps, les pieds au sol : on saute (à l'arrêt, pas en visant).
         void UpdateArmJump(bool grounded, float deltaTime)
         {
             m_JumpCooldownTimer -= deltaTime;
             if (!m_ArmJump || m_Jump == null || !m_Jump.isActiveAndEnabled || !grounded || m_JumpCooldownTimer > 0f)
                 return;
 
+            if (Mathf.Min(m_LeftRise, m_RightRise) < m_JumpHandSpeed || !m_Jump.CanJump())
+                return;
+
             var moving = Speed >= m_JumpMinimumSpeed || ReadStick().sqrMagnitude > 0f;
-            if (!moving || Mathf.Min(m_LeftRise, m_RightRise) < m_JumpHandSpeed || !m_Jump.CanJump())
+            if (!moving && Aiming())
                 return;
 
             m_Jump.jumpHeight = m_JumpHeight;
@@ -417,6 +423,14 @@ namespace Archery.Locomotion
             Sfx.Play(m_JumpClip, m_Rig.BodyPosition, 0.7f, Random.Range(0.95f, 1.05f), 0f);
             foreach (var hand in m_Rig.Hands)
                 Haptics.Pulse(hand, 0.35f, 0.08f);
+        }
+
+        // Une flèche est encochée sur l'arc du joueur.
+        bool Aiming()
+        {
+            if (m_Bow == null)
+                m_Bow = FindAnyObjectByType<Bow>();
+            return m_Bow != null && m_Bow.HasArrow;
         }
 
         bool SlidePressed() => m_LeftSlideInput.ReadWasPerformedThisFrame() || m_RightSlideInput.ReadWasPerformedThisFrame();

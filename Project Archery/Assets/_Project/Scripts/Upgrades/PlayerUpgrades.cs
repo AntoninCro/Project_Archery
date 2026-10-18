@@ -62,6 +62,7 @@ namespace Archery.Upgrades
         readonly int[] m_Stacks = new int[k_EffectCount];
         readonly float[] m_BuffTimers = new float[k_BuffCount];
         readonly float[] m_Totals = new float[k_EffectCount];
+        bool m_Suspended;
         readonly List<Upgrade> m_Owned = new List<Upgrade>();
         float m_BaseMaxHealth = -1f;
 
@@ -157,12 +158,30 @@ namespace Archery.Upgrades
                 Instance = null;
         }
 
-        public int Stacks(UpgradeEffect effect) => m_Stacks[(int)effect];
+        public int Stacks(UpgradeEffect effect) => m_Suspended ? 0 : m_Stacks[(int)effect];
 
         /// <summary>Secondes restantes d'un bonus temporaire (0 = inactif).</summary>
-        public float BuffTimeLeft(TemporaryBuff buff) => m_BuffTimers[(int)buff];
+        public float BuffTimeLeft(TemporaryBuff buff) => m_Suspended ? 0f : m_BuffTimers[(int)buff];
 
-        public bool HasBuff(TemporaryBuff buff) => m_BuffTimers[(int)buff] > 0f;
+        public bool HasBuff(TemporaryBuff buff) => !m_Suspended && m_BuffTimers[(int)buff] > 0f;
+
+        /// <summary>
+        /// Améliorations et bonus temporaires mis de côté : le joueur n'a plus que son arc, sans bonus (épreuve du portail
+        /// des étoiles). Il les retrouve tels quels quand on remet à faux.
+        /// </summary>
+        public bool Suspended
+        {
+            get => m_Suspended;
+            set
+            {
+                if (m_Suspended == value)
+                    return;
+                m_Suspended = value;
+                Apply();
+                Changed?.Invoke();
+                BuffsChanged?.Invoke();
+            }
+        }
 
         public static string NameOf(TemporaryBuff buff) => buff switch
         {
@@ -182,6 +201,10 @@ namespace Archery.Upgrades
 
         void Update()
         {
+            // Mis de côté (épreuve du portail), les bonus temporaires attendent le retour.
+            if (m_Suspended)
+                return;
+
             var expired = false;
             for (var i = 0; i < m_BuffTimers.Length; i++)
             {
@@ -209,8 +232,8 @@ namespace Archery.Upgrades
             HeadMessages.Show("Fin : " + NameOf(buff), m_BuffEndColor, 3f, 0.8f);
         }
 
-        /// <summary>Somme des valeurs de tous les exemplaires de cet effet.</summary>
-        public float Total(UpgradeEffect effect) => m_Totals[(int)effect];
+        /// <summary>Somme des valeurs de tous les exemplaires de cet effet (0 tant qu'elles sont mises de côté).</summary>
+        public float Total(UpgradeEffect effect) => m_Suspended ? 0f : m_Totals[(int)effect];
 
         /// <summary>Faux si l'amélioration a déjà atteint son nombre maximal d'exemplaires.</summary>
         public bool CanTake(Upgrade upgrade) =>

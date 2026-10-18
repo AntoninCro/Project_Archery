@@ -69,7 +69,7 @@ Ouvrir `Arena_Dragon` seule permet de voir la grotte, éclairée, avec le dragon
 | le dragon est trop grand ou trop petit | `Arena > Dragon > Model (Red Dragon)` | *Scale* (et `Dragon Boss` > *Body Radius*, la place qu'il prend au sol) |
 | le dragon avance à reculons | même objet | *Rotation Y* à 180 |
 | les flèches le traversent ou le touchent dans le vide | `Dragon Boss` | *Hitbox Scale* (pendant le jeu, sélectionne le dragon pour voir ses zones de touche en vert dans la vue *Scene*) |
-| il est trop solide ou trop fragile | `Data/Enemies/Boss_Dragon` | *Max Health* (6 750 de base depuis le 16 octobre, environ 16 200 en Normal à la vague 6) |
+| il est trop solide ou trop fragile | `Data/Enemies/Boss_Dragon` | *Max Health* (7 760 de base depuis le 18 octobre, environ 18 500 en Normal à la vague 6) |
 | il fait trop mal | `Boss_Dragon` | *Attack Damage* (8,33 ; toutes ses attaques en dépendent) |
 | la lave brûle trop ou pas assez | `Arena` > `Arena Lava` | *Damage Per Second* (4,67) |
 | les tourelles n'atteignent pas le dragon, ou trop facilement | `Arena Director` > `Arena Turrets` | *Range Scale* (2 : portée doublée dans l'arène) |

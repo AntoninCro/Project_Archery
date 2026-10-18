@@ -320,7 +320,7 @@ Tous les réglages sont sur le composant à la racine de chaque prefab de `Prefa
 | | *Size*, *Spike Height Per Level* | 2,6 × 2,6 m, 0,3 / 0,38 / 0,46 m | Zone piégée, hauteur des piques |
 | `Givre` | *Radius Per Level*, *Speed Per Level* | 8 / 9 / 10 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
 | | *Range Color*, *Crystal Scale Per Level*, *Light Intensity Per Level* | bleu, 1 / 1,15 / 1,3, 1,5 / 2,2 / 3 | Apparence |
-| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 10 / 14,67 / 21,33, 2,4 / 1,6 / 1 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
+| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 10 / 14,67 / 21,33, 3 / 2 / 1,25 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
 | `Data/Difficulties` | *Structure Power* | 0,75 / 1 / 1,25 / 1,6 | Puissance des bâtiments selon la difficulté (Facile, Normal, Difficile, Impossible), en plus de la force des ennemis |
 | | *Pierce Per Level*, *Bow Bonus Share* | 0 / 0 / 2, 0,5 | Ennemis traversés, part des bonus de l'arc |
 | | *Bolt Speed*, *Turn Speed*, *Max Pitch* | 45 m/s, 220 °/s, 40° | Carreau et rotation |

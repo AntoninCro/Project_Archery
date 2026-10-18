@@ -4,8 +4,28 @@
 
 ## 1. Tests complets (dans le casque)
 
-Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
+Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la console ouverte : aucune ligne rouge, et le moins possible de lignes « Image lente ».
 
+**Nouveau cette semaine (13 au 17 octobre), jamais testé en casque : à vérifier en premier**
+- [ ] Menu d'accueil : plus de boutons « Jouer » ni « Difficulté » ; le titre THUNK VR, le bouton **Tutoriel** et une ligne d'aide.
+- [ ] Les menus se visent à l'arc : une flèche dans un bouton le presse, dans un curseur le règle ; « Quitter » demande deux flèches en 3 s. Les paramètres se règlent aussi à l'arc.
+- [ ] Les panneaux de difficulté se choisissent au rayon de la manette (ils grossissent au survol).
+- [ ] Tutoriel : 4 rubriques (Tir, Déplacement, Vagues, Construction) avec leur icône ; dans chaque fenêtre, le titre, le cadre de la vidéo, le texte, « < » et « > », le compteur et « Retour ».
+- [ ] Les 13 vidéos du tutoriel enregistrées et déposées dans `Assets/_Project/Resources/Tutoriel` (noms dans `LISEZMOI.txt`). Sans vidéo, le cadre affiche « Vidéo à venir ».
+- [ ] Facile très simple : vagues deux fois plus courtes, deux fois moins d'ennemis après l'accalmie, boss (et MK) deux fois moins résistants, balistes deux fois plus lentes.
+- [ ] Construction : un marteau dans chaque main, sans rien saisir ; la main se ferme dessus.
+- [ ] Boss : barre de PV plus haute, avec le nom dedans ; point faible en gemme sertie d'or, de la couleur du boss, qui bat comme un cœur ; la gemme de Nolan et celle de Francine se voient, et on ne les traverse plus.
+- [ ] Mage (Tireur) : il avance normalement ; plus de Tireurs, et des Liches dès la vague 3.
+- [ ] Boutique : cartes au texte court, avec une icône ; le montant d'or ne touche plus le cadre.
+- [ ] Coffres : les 3 orbes montrent l'icône de leur récompense.
+- [ ] Rayons de lumière de la carte : plus de bavure là où ils touchent le sol.
+- [ ] Porte de l'antre : elle remplit l'arche et touche le sol ; « THUNK VR » creusé dans la roche, sans fissures jaunes.
+- [ ] MK (le dragon) : 6 750 PV de base ; après son triple salto, il ne t'enfonce plus dans le sol ; pendant la triple ruée, la bande rouge envoie de la lumière vers le haut, visible la tête levée.
+- [ ] Balistes : un tiers de dégâts en moins.
+- [ ] Rotation au joystick : plus de demi-tour en tirant le joystick vers soi.
+- [ ] Au lancement avec le casque, pas de message « pas de casque, jeu au clavier ».
+
+- [ ] Portail des étoiles (`Guide_Portail.md`) : les 5 runes à toucher pendant une vague, le portail qui s'ouvre, la carte figée, la dimension (panneaux d'erreur, monstre corrompu qui change d'apparence), le retour (étoile au classement en cas de réussite). Dans l'éditeur, P ouvre le portail puis fait entrer.
 **Tir**
 - [ ] Prendre l'arc dans chaque main ; prendre une flèche dans le dos, l'encocher, tendre, tirer.
 - [ ] Anneau vide au centre : rouge, orange, vert, vert pastel ; « ding » et vibration en entrant dans le vert ; tir parfait plus rapide et plus fort ; le cercle s'arrête dans le vert pastel sans recommencer.
@@ -13,26 +33,25 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Coup au corps à corps : la flèche reste plantée dans l'ennemi.
 
 **Partie**
-- [ ] Menu : Jouer, difficulté (le ciel change), Paramètres (volumes, rotation, confort), Classement, Quitter.
+- [ ] Menu : difficulté sur les panneaux (le ciel change), Tutoriel, Paramètres (volumes, rotation, confort), Classement, Quitter.
 - [ ] Gong, chrono, montre (score, chrono, vague, PV, tour, or, combo, difficulté, bonus).
 - [ ] Voile rouge autour de la vision quand les PV baissent, qui bat sous 25 % des PV.
-- [ ] Ennemis : vague 1 Rampants, Gluants, Champignons ; vague 2 Tireurs, Gluants bleus, Étoiles de mer ; vague 3 Volants, Guêpes, Champignons furieux, Cactus, Fantassins ; vague 4 Orcs, Tortues, Liches, Gargouilles ; vague 5 Mimiques. Chacun s'anime (course, attaque, touché, mort) et ses zones de touche tombent juste (tête ×2).
-- [ ] Un boss différent à chaque vague (Thomas le champignon, Jean la mimique, Gontrand la tortue, Clitorine le chef orc, Nolan la liche), avec son nom, sa barre de PV, son point faible cyan et ses renforts.
+- [ ] Ennemis : vague 1 Rampants, Gluants, Champignons ; vague 2 Tireurs, Gluants bleus, Étoiles de mer ; vague 3 Volants, Guêpes, Champignons furieux, Cactus, Fantassins, Liches ; vague 4 Orcs, Tortues, Gargouilles ; vague 5 Mimiques. Chacun s'anime (course, attaque, touché, mort) et ses zones de touche tombent juste (tête ×2).
+- [ ] Un boss différent à chaque vague (Thomas le champignon, Jean la mimique, Gontrand la tortue, Francine le chef orc, Nolan la liche), avec son nom, sa barre de PV, sa gemme et ses renforts.
 - [ ] Les boss courent à grandes enjambées (animation lente) et leur point faible se vise sans peine.
-- [ ] La porte de l'antre : double porte arrondie, qui s'ouvre sans rentrer dans l'arche ; « THUNK VR » se lit au-dessus, creusé dans son cartouche de pierre, depuis le bout de la voie du milieu.
-- [ ] Vague 6 : le boss final, le dragon rouge, dans son antre (GDD, section 23).
+- [ ] Vague 6 : MK, le dragon rouge, dans son antre (GDD, section 23).
 - [ ] Tour détruite : le gong descend au pied de la tour, et remonte à la reconstruction.
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
 - [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
 - [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes avec leur nom, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
-- [ ] Tower defense : gisements de cristaux pendant la vague, récolte, matériaux sur la montre ; socle visé à la poignée, panneau, plan bleu, marteau, 3 coups, l'arc revient ; amélioration d'un bâtiment.
+- [ ] Tower defense : gisements de cristaux pendant la vague, récolte, matériaux sur la montre ; socle visé à la poignée, panneau, plan bleu, un marteau dans chaque main, 3 coups, l'arc revient ; amélioration d'un bâtiment.
 - [ ] Bâtiments : la baliste pivote et tire (volants compris), la tour de givre ralentit, les piques jaillissent, les ennemis s'arrêtent devant une barricade construite ; le message « Défenses : … % des dégâts » en fin de vague.
 - [ ] Déplacements : marche, course aux bras, slide, descente de la tour à pied, téléporteur (bande autour de la tour, bouton « Retour à la tour » de la boutique), pas de flèche au joystick droit.
 - [ ] Vagues : accalmie (peu d'ennemis), montée, boss à la fin du chrono ; deux coups de gong font venir le boss plus tôt (bonus affiché) ; or de fin de vague avec ses bonus.
 - [ ] Bouton « Tour » sous la montre : on le touche avec l'autre main, téléportation, 25 s de recharge pendant les vagues.
-- [ ] Victoire après le boss final de la vague 6 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
+- [ ] Victoire après MK, à la vague 6 : « Terminer la partie » dans la boutique (écran « Victoire ! »), ou le gong pour le mode infini (plusieurs boss).
 - [ ] Tour détruite : les ruines remplacent la tour (fumée, son), le joueur est évacué ; reconstruite en boutique, elle revient.
 - [ ] Les messages (début de vague, boss, coffre, cristaux) restent devant le regard, lisibles.
 - [ ] Les deux ponts de la voie du milieu se traversent sans sauter.
@@ -41,43 +60,48 @@ Une partie en **Normal**, puis une en **Impossible**, en vérifiant :
 - [ ] Les paramètres et le classement sont gardés après avoir relancé le jeu.
 
 **Confort et fluidité**
-- [ ] Au moins 72 images par seconde dans les moments chargés (fin de vague Impossible, multitir, déluge). Vue *Game* > *Stats*.
+- [ ] Au moins 72 images par seconde dans les moments chargés (fin de vague Impossible, multitir, déluge, phases 2 et 3 de MK). Vue *Game* > *Stats*.
 - [ ] Aucune erreur rouge dans la console pendant toute une partie.
 - [ ] La vignette de confort pendant le slide ; aucun malaise sur une partie de 15 minutes.
+- [ ] Pendant le jeu dans l'éditeur, la fenêtre *Scene* fermée (elle alourdit la carte graphique).
 
 ## 2. Le build
 
-- [ ] *File > Build Profiles* > *Windows*, la scène `Prototype_Tir` dans la liste.
-- [ ] *Player* : *Company Name* et *Product Name* corrects (ils donnent le dossier des sauvegardes).
+- [ ] *File > Build Profiles* > *Windows* : `Prototype_Tir` et `Arena_Dragon` cochées dans la liste (c'est le cas au 17 octobre ; `SampleScene` reste décochée).
+- [x] *Player* : *Product Name* `THUNK VR` (17 octobre). Les sauvegardes sont dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\THUNK VR` ; le classement et les paramètres y ont été recopiés depuis l'ancien dossier `Project Archery`.
+- [ ] *Player* : *Company Name* encore `DefaultCompany`. Le changer (le nom de l'équipe, par exemple) déplace aussi le dossier des sauvegardes.
 - [ ] Le build se lance, le casque l'affiche via Quest Link, et une partie entière se joue sans l'éditeur.
-- [ ] Les raccourcis clavier de test sont absents du build final (ils n'existent que dans l'éditeur et les builds *Development*).
+- [ ] Les raccourcis clavier de test sont absents du build final (ils n'existent que dans l'éditeur et les builds *Development*). Pour la démo, faire aussi un build *Development* : les raccourcis permettent de tout montrer vite (`Demo_Vendredi.md`, partie 4).
 
 ## 3. Le jour de la démo
 
 **Matériel**
+- [ ] Pilote NVIDIA **591.86 ou plus ancien** sur le PC de la démo : à partir de la 595.71, Meta Horizon Link fige l'image du casque en pleine partie. Aucun bandeau rouge dans l'application Meta Horizon Link, et refuser les mises à jour de pilote.
 - [ ] Casque chargé, manettes avec des piles neuves (et des piles de rechange).
 - [ ] Câble Link testé sur le PC de la démo, ou Air Link sur un réseau 5 GHz fiable.
 - [ ] Zone de jeu (*Guardian*) tracée, assez grande pour se tourner et balancer les bras.
 - [ ] Le build sur le PC (et une copie sur une clé USB).
 
-**Avant de commencer**
-- [ ] Vider le classement de test : supprimer `leaderboard.json` dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\Project Archery`, ou garder quelques bons scores pour l'exemple.
-- [ ] Volumes réglés pour la salle.
-- [ ] Décider de la difficulté : Normal pour une démo fluide, Impossible pour impressionner.
+**Si l'image du casque se fige** (le jeu continue sur le PC) : PowerShell en administrateur, `Restart-Service OVRService`, puis relancer Link dans le casque. Si le casque ne se reconnecte plus en USB, redémarrer le PC.
 
-**Déroulé conseillé (5 à 10 minutes)**
-1. Le menu : changer de difficulté et montrer le ciel qui change.
+**Avant de commencer**
+- [ ] Vider le classement de test : supprimer `leaderboard.json` dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\THUNK VR`, ou garder quelques bons scores pour l'exemple.
+- [ ] Volumes réglés pour la salle.
+- [ ] Décider de la difficulté : Facile pour quelqu'un qui découvre la réalité virtuelle, Normal pour une démo fluide, Impossible pour impressionner.
+
+**Déroulé conseillé (5 à 10 minutes)** : en résumé ci-dessous ; le déroulé minute par minute, le pitch, les questions du jury et les plans B sont dans `Demo_Vendredi.md`.
+1. Le menu : choisir la difficulté sur les panneaux et montrer le ciel qui change ; ouvrir le Tutoriel.
 2. Les cibles d'entraînement : le tir, l'anneau, un tir parfait.
 3. Le gong : vague 1, une flèche enflammée au brasero, puis la boutique (une amélioration).
 4. Une vague avec un coffre : descendre, courir, glisser, ouvrir le coffre.
-5. Montrer un boss, puis le boss final (dans l'éditeur, **N** appelle le boss ou le tue, jusqu'à la vague 6).
+5. Montrer un boss, puis MK, le boss final (dans l'éditeur, **N** appelle le boss ou le tue, jusqu'à la vague 6).
 6. Mourir, saisir son nom, montrer le classement.
 
 **Solution de secours** : si le build pose problème, jouer depuis l'éditeur, où les raccourcis (**N**, **M**, **C**) permettent de montrer chaque partie rapidement.
 
 ## 4. Le rendu
 
-- [ ] README à jour : crédits complets (packs de la carte, sons et musiques définitifs), équipe.
+- [ ] README à jour : crédits complets (packs de la carte, sons et musiques définitifs), équipe. Inventaire et licences : `Credits_Licences.md` (18 octobre), dont les 3 points « À régler avant le rendu » (dépôt public et packs de l'Asset Store, crédit de la musique de MK, auteurs à confirmer).
 - [ ] GDD à jour (planning coché, choix finaux).
 - [ ] Dépôt GitHub propre : `main` jouable, dernier commit poussé.
 - [ ] Rapport : ce qui a été fait, les choix, l'usage de l'IA.

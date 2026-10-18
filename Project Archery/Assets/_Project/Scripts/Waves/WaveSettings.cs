@@ -47,6 +47,11 @@ namespace Archery.Waves
         [Range(0f, 0.9f)]
         public float calmFraction = 0.4f;
 
+        [Tooltip("Durée de la montée (la part du chrono après l'accalmie), en part de sa durée prévue : 0,5 = deux fois plus " +
+                 "courte. Ses ennemis arrivent tous, plus serrés.")]
+        [Range(0.1f, 1f)]
+        public float riseDurationScale = 0.5f;
+
         [Header("Ennemis")]
         [Tooltip("Budget de la vague 1 : chaque ennemi coûte son « Cost ».")]
         public float firstWaveBudget = 20f;
@@ -69,6 +74,21 @@ namespace Archery.Waves
         public float maxSpeedScale = 2f;
 
         public List<WaveEnemy> enemies = new List<WaveEnemy>();
+
+        [Header("Courbe vague par vague")]
+        [Tooltip("PV des ennemis et des boss à chaque vague (vague 1, 2, 3…), en plus de la croissance de la difficulté : " +
+                 "elle suit le joueur, qui devient bien plus fort à chaque boutique. Au-delà de la liste : la dernière valeur. " +
+                 "La vague du boss final n'en tient pas compte (le dragon est réglé à part).")]
+        public List<float> healthPerWave = new List<float> { 0.85f, 1.1f, 1.65f, 2.2f, 2.85f };
+
+        [Tooltip("Nombre d'ennemis à chaque vague (vague 1, 2, 3…), en plus de la croissance de la difficulté. " +
+                 "Au-delà de la liste : la dernière valeur.")]
+        public List<float> countPerWave = new List<float> { 0.85f, 1f, 1.2f, 1.4f, 1.6f };
+
+        [Tooltip("Part des ennemis de la vague 1 qui arrivent pendant l'accalmie : peu, pour que le joueur ose sortir récolter " +
+                 "(aux vagues suivantes, ses défenses s'en chargent).")]
+        [Range(0f, 0.5f)]
+        public float firstWaveCalmShare = 0.07f;
 
         [Header("Mode infini")]
         [Tooltip("Après la dernière vague, la courbe s'accélère : chaque vague multiplie encore les PV des ennemis par cette valeur.")]
@@ -127,6 +147,22 @@ namespace Archery.Waves
         public float DurationFor(int wave) => firstWaveDuration + durationIncrease * Mathf.Max(0, wave - 1);
 
         public float BudgetFor(int wave) => firstWaveBudget + budgetIncrease * Mathf.Max(0, wave - 1);
+
+        /// <summary>PV des ennemis de cette vague, selon la courbe vague par vague (1 à la vague du boss final).</summary>
+        public float HealthCurve(int wave) => IsFinalBossWave(wave) ? 1f : Curve(healthPerWave, wave);
+
+        /// <summary>Nombre d'ennemis de cette vague, selon la courbe vague par vague.</summary>
+        public float CountCurve(int wave) => Curve(countPerWave, wave);
+
+        /// <summary>Part des ennemis qui arrivent pendant l'accalmie de cette vague.</summary>
+        public float CalmShareFor(int wave) => wave <= 1 ? firstWaveCalmShare : calmBudgetShare;
+
+        static float Curve(List<float> values, int wave)
+        {
+            if (values == null || values.Count == 0)
+                return 1f;
+            return Mathf.Max(0.05f, values[Mathf.Clamp(wave - 1, 0, values.Count - 1)]);
+        }
 
         /// <summary>Nombre de boss à la fin de la vague : un seul, puis de plus en plus en mode infini.</summary>
         public int BossCountFor(int wave)

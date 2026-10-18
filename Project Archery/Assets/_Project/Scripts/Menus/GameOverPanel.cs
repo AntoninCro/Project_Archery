@@ -187,6 +187,7 @@ namespace Archery.Menus
                 wave = m_Waves != null ? m_Waves.WaveNumber : 0,
                 kills = score != null ? score.Kills : 0,
                 date = LeaderboardEntry.Now(),
+                stars = Portal.StarPortal.TrialCompleted,
             });
 
             if (m_NameSection != null)

@@ -8,7 +8,7 @@ namespace Archery.FinalBoss
     public partial class DragonBoss
     {
         const float k_LeapTime = 1.2f;
-        const float k_StripGlowHeight = 10f;
+        const float k_StripGlowHeight = 4f;
 
         static readonly Collider[] s_PlayerOverlaps = new Collider[128];
 
@@ -599,6 +599,12 @@ namespace Archery.FinalBoss
 
         Vector3 BodyCenter => transform.position + transform.rotation * (m_BodyCenter * transform.lossyScale.x);
 
+        /// <summary>Le milieu de son corps (monde) : ce que montre la flèche au bord de la vue.</summary>
+        public Vector3 BodyPoint => BodyCenter;
+
+        /// <summary>Matériau des alertes au sol (couleurs des sommets, transparent), repris par la flèche au bord de la vue.</summary>
+        public Material WarningMaterial => m_WarningMaterial;
+
         // ---------------------------------------------------------------- retour au sol sans perchoir
 
         void BeginLanding()
@@ -674,7 +680,7 @@ namespace Archery.FinalBoss
             var builder = new MeshBuilder();
             var fill = new Color(1f, 0.15f, 0.05f, 0.35f);
             var edge = new Color(1f, 0.2f, 0.05f, 0.85f);
-            var glow = new Color(2.4f, 0.6f, 0.18f, 0.5f);
+            var glow = new Color(1.5f, 0.38f, 0.12f, 0.28f);
             var clear = new Color(1f, 0.25f, 0.08f, 0f);
             var half = width * 0.5f;
             var segments = Mathf.Max(1, Mathf.CeilToInt(length / 2f));
@@ -709,8 +715,8 @@ namespace Archery.FinalBoss
                 light.type = LightType.Spot;
                 light.color = new Color(1f, 0.25f, 0.08f);
                 light.spotAngle = 75f;
-                light.range = 26f;
-                light.intensity = 8f;
+                light.range = 18f;
+                light.intensity = 3f;
                 light.shadows = LightShadows.None;
             }
         }

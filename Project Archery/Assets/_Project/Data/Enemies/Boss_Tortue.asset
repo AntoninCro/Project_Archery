@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Boss_Tortue
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Gontrand
-  maxHealth: 650
+  maxHealth: 910
   moveSpeed: 1
   attackDamage: 60
   attackRange: 3.4

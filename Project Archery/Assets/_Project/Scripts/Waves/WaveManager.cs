@@ -129,6 +129,9 @@ namespace Archery.Waves
 
         public static WaveManager Instance { get; private set; }
 
+        /// <summary>Le message épinglé de la vague du boss final (« la porte de l'antre s'ouvre »).</summary>
+        public const string FinalBossMessageId = "boss-final";
+
         public WavePhase Phase { get; private set; } = WavePhase.Ready;
 
         /// <summary>Temps de la vague en cours : accalmie, montée ou boss.</summary>
@@ -164,7 +167,7 @@ namespace Archery.Waves
         public bool IsWaitingForBoss => IsBossWave;
 
         /// <summary>Durée (s) de l'accalmie de la vague en cours.</summary>
-        public float CalmDuration => WaveDuration * (m_Settings != null ? m_Settings.calmFraction : 0f);
+        public float CalmDuration { get; private set; }
 
         // La difficulté et la courbe des vagues augmentent aussi le maximum d'ennemis en même temps (moins vite que leur nombre).
         int MaxAlive => Mathf.Clamp(Mathf.RoundToInt(m_Settings.maxAlive * DifficultyManager.Current.enemyCount * Mathf.Sqrt(m_CountScale)),
@@ -232,18 +235,24 @@ namespace Archery.Waves
             WaveNumber++;
             Phase = WavePhase.Wave;
             Stage = WaveStage.Calm;
-            WaveDuration = m_Settings.DurationFor(WaveNumber) * difficulty.waveDuration;
+            // Le chrono : l'accalmie, puis la montée, raccourcie (Rise Duration Scale) ; ses ennemis arrivent tous, plus serrés.
+            var plannedDuration = m_Settings.DurationFor(WaveNumber) * difficulty.waveDuration;
+            CalmDuration = plannedDuration * m_Settings.calmFraction;
+            WaveDuration = CalmDuration + plannedDuration * (1f - m_Settings.calmFraction) * m_Settings.riseDurationScale;
             TimeRemaining = WaveDuration;
             m_NextCountdownSecond = 5;
 
             // Courbe de difficulté exponentielle, plus raide en mode infini.
             // Selon la difficulté, PV et dégâts sont réduits au début de la partie (vague 1), puis rejoignent la courbe.
+            // Par-dessus, la courbe vague par vague des Wave Settings (PV et nombre d'ennemis), selon la difficulté.
             var early = difficulty.EarlyStrength(WaveNumber);
-            EnemyScaling.Health = m_Settings.Growth(WaveNumber, difficulty.healthGrowthPerWave, m_Settings.endlessHealthGrowth) * early;
+            var waveHealth = Mathf.Lerp(1f, m_Settings.HealthCurve(WaveNumber), difficulty.waveCurve);
+            var waveCount = Mathf.Lerp(1f, m_Settings.CountCurve(WaveNumber), difficulty.waveCurve);
+            EnemyScaling.Health = m_Settings.Growth(WaveNumber, difficulty.healthGrowthPerWave, m_Settings.endlessHealthGrowth) * early * waveHealth;
             EnemyScaling.Damage = m_Settings.Growth(WaveNumber, difficulty.damageGrowthPerWave, m_Settings.endlessDamageGrowth) * early;
             EnemyScaling.Speed = Mathf.Min(Mathf.Max(1f, m_Settings.maxSpeedScale),
                                            m_Settings.Growth(WaveNumber, difficulty.speedGrowthPerWave, m_Settings.endlessSpeedGrowth));
-            m_CountScale = m_Settings.Growth(WaveNumber, difficulty.countGrowthPerWave, m_Settings.endlessCountGrowth);
+            m_CountScale = m_Settings.Growth(WaveNumber, difficulty.countGrowthPerWave, m_Settings.endlessCountGrowth) * waveCount;
 
             m_Bosses.Clear();
             m_BossArrivalTime = -1f;
@@ -261,11 +270,16 @@ namespace Archery.Waves
             {
                 Stage = WaveStage.FinalBoss;
                 WaveDuration = 0f;
+                CalmDuration = 0f;
                 TimeRemaining = 0f;
                 m_CalmQueue.Clear();
                 m_RiseQueue.Clear();
-                Announce($"Vague {WaveNumber} / {WavesToWin}\nBoss final\n<size=60%>La porte de l'antre s'ouvre,\nau bout de la voie du milieu</size>",
-                         new Color(1f, 0.35f, 0.25f), m_WaveStartClip);
+
+                // Le message reste devant le joueur tant qu'il n'est pas entré dans l'arène (Final Boss Director).
+                HeadMessages.Pin(FinalBossMessageId,
+                                 $"Vague {WaveNumber} / {WavesToWin}\nBoss final\n<size=60%>La porte de l'antre s'ouvre,\nau bout de la voie du milieu</size>",
+                                 new Color(1f, 0.35f, 0.25f), 1.15f);
+                Sfx.Play(m_WaveStartClip, AnnouncePosition(), 1f, 1f, 0f);
             }
             else
             {
@@ -351,7 +365,7 @@ namespace Archery.Waves
             }
 
             // Une petite part arrive pendant l'accalmie, le reste pendant la montée.
-            var calmCount = Mathf.RoundToInt(m_RiseQueue.Count * m_Settings.calmBudgetShare);
+            var calmCount = Mathf.RoundToInt(m_RiseQueue.Count * m_Settings.CalmShareFor(WaveNumber));
             for (var i = 0; i < calmCount && m_RiseQueue.Count > 0; i++)
             {
                 var last = m_RiseQueue.Count - 1;
@@ -606,6 +620,7 @@ namespace Archery.Waves
 
         void EndWave(bool finishGame)
         {
+            HeadMessages.Unpin(FinalBossMessageId);
             TrackPerformance();
             Phase = finishGame ? WavePhase.GameOver : WavePhase.Intermission;
             m_CalmQueue.Clear();
@@ -706,6 +721,7 @@ namespace Archery.Waves
                 return;
 
             Phase = WavePhase.GameOver;
+            HeadMessages.Unpin(FinalBossMessageId);
             m_CalmQueue.Clear();
             m_RiseQueue.Clear();
             MakeSurvivorsFlee();

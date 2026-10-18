@@ -1,6 +1,7 @@
 using System.Collections;
 using Archery.Defense;
 using Archery.Player;
+using Archery.UI;
 using Archery.Waves;
 using Archery.World;
 using UnityEngine;
@@ -148,6 +149,7 @@ namespace Archery.FinalBoss
         {
             m_Busy = true;
             PlayerInArena = true;
+            HeadMessages.Unpin(WaveManager.FinalBossMessageId);
             AmbienceManager.Silenced = true;
             if (m_Gate != null && m_Gate.IsOpen)
                 m_Gate.Close();

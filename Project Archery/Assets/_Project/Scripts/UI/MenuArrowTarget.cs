@@ -47,7 +47,9 @@ namespace Archery.UI
         {
             m_Selectable = GetComponent<Selectable>();
             m_Rect = (RectTransform)transform;
-            m_Collider = gameObject.AddComponent<BoxCollider>();
+            // Un élément copié (Instantiate) a déjà la boîte de son modèle.
+            if (!TryGetComponent(out m_Collider))
+                m_Collider = gameObject.AddComponent<BoxCollider>();
             Fit();
         }
 

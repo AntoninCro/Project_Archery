@@ -187,6 +187,9 @@ namespace Archery.Bows
             set => m_Definition = value;
         }
 
+        /// <summary>L'arc du début de la partie, avant tout achat (l'épreuve du portail des étoiles le rend le temps du passage).</summary>
+        public BowDefinition StartingDefinition { get; private set; }
+
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
 
@@ -245,6 +248,7 @@ namespace Archery.Bows
         protected override void Awake()
         {
             base.Awake();
+            StartingDefinition = m_Definition;
             m_Body = GetComponent<Rigidbody>();
             m_OwnColliders = GetComponentsInChildren<Collider>(true);
             ArrowIgnore.Register(m_OwnColliders);

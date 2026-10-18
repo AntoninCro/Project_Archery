@@ -239,7 +239,7 @@ namespace Archery.Effects
         }
 
         // Vers l'extérieur du corps : depuis le milieu du corps (sur l'axe du boss, à mi-hauteur de ses modèles animés) vers
-        // le point faible ; par l'avant s'il est dans le torse, sur cet axe et à mi-hauteur (ceux de Nolan et de Clitorine
+        // le point faible ; par l'avant s'il est dans le torse, sur cet axe et à mi-hauteur (ceux de Nolan et de Francine
         // sont posés sur la colonne). « forward » : l'avant du boss.
         Vector3 Outward(out Vector3 forward)
         {

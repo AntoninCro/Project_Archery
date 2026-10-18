@@ -473,7 +473,7 @@ MonoBehaviour:
   m_Spread: 2
   m_FireClip: {fileID: 8300000, guid: 32853708fff2feb4980277859ddedc86, type: 3}
   m_ChargeTime: 1.6
-  m_ChargedSize: 3
+  m_ChargedSize: 6
   m_ChargeClip: {fileID: 0}
 --- !u!114 &1050637188601452053
 MonoBehaviour:

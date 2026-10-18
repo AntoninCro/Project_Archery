@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Boss_Liche
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Nolan
-  maxHealth: 750
+  maxHealth: 1335
   moveSpeed: 1.2
   attackDamage: 45
   attackRange: 30

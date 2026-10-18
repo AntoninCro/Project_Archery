@@ -97,8 +97,9 @@ namespace Archery.UI
             if (m_CooldownLeft > 0f)
                 m_CooldownLeft = Mathf.Max(0f, m_CooldownLeft - deltaTime);
 
-            // Caché aussi dans l'arène du boss final : on n'en ressort qu'en battant le dragon.
-            var visible = m_Teleporter != null && !m_Teleporter.IsPlayerAtDestination && !FinalBoss.FinalBossDirector.PlayerInArena;
+            // Caché aussi dans l'arène du boss final (on n'en ressort qu'en battant le dragon) et dans la dimension du portail.
+            var visible = m_Teleporter != null && !m_Teleporter.IsPlayerAtDestination && !FinalBoss.FinalBossDirector.PlayerInArena &&
+                          !Portal.StarPortal.PlayerInDimension;
             if (m_Visual != null && m_Visual.activeSelf != visible)
                 m_Visual.SetActive(visible);
             if (!visible)

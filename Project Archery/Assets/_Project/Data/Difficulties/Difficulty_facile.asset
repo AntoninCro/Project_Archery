@@ -35,6 +35,7 @@ MonoBehaviour:
   speedGrowthPerWave: 1.02
   earlyStrength: 1
   fullStrengthWave: 3
+  waveCurve: 0
   sky:
     elevation: 75
     azimuth: 30

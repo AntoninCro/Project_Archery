@@ -24,6 +24,7 @@ namespace Archery.Building
     public class CrystalDeposit : XRBaseInteractable
     {
         static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
+        static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
 
         [Tooltip("Optionnel : objet qui contient les modèles des cristaux. Vide : tous les enfants. Sans modèle, un amas low-poly est généré.")]
         [SerializeField]
@@ -49,6 +50,27 @@ namespace Archery.Building
         [SerializeField]
         int m_ShardCount = 16;
 
+        [Header("Rayon de lumière")]
+        [Tooltip("Matériau du rayon qui monte du gisement, pour le repérer de loin (Light_Beam, shader Archery/LightBeam). Vide : pas de rayon.")]
+        [SerializeField]
+        Material m_BeamMaterial;
+
+        [Tooltip("Hauteur (m) du rayon.")]
+        [SerializeField]
+        float m_BeamHeight = 30f;
+
+        [Tooltip("Largeur (m) du rayon.")]
+        [SerializeField]
+        float m_BeamWidth = 1.2f;
+
+        [Tooltip("Couleur du rayon.")]
+        [SerializeField]
+        Color m_BeamColor = new Color(0.62f, 0.4f, 1f);
+
+        [Tooltip("Force de la lueur du rayon (sa couleur × cette valeur).")]
+        [SerializeField]
+        float m_BeamIntensity = 1.6f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_HarvestClip;
@@ -69,6 +91,7 @@ namespace Archery.Building
 
         Renderer[] m_Renderers;
         MaterialPropertyBlock m_Block;
+        MeshRenderer m_Beam;
         Vector3 m_BaseScale;
         float m_LightIntensity;
         float m_Age;
@@ -100,6 +123,48 @@ namespace Archery.Building
             transform.localScale = Vector3.zero;
         }
 
+        void Start() => CreateBeam();
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (m_Beam != null)
+                Destroy(m_Beam.gameObject);
+        }
+
+        // Un rayon violet monte du gisement, à part (le gisement pousse et rétrécit) : on le repère de loin, du haut
+        // de la tour comme de l'autre bout de la carte.
+        void CreateBeam()
+        {
+            if (m_BeamMaterial == null || m_BeamHeight <= 0f)
+                return;
+
+            var beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beam.name = "Rayon du gisement";
+            Destroy(beam.GetComponent<Collider>());
+            beam.transform.SetPositionAndRotation(transform.position + Vector3.up * (m_BeamHeight * 0.5f), Quaternion.identity);
+            beam.transform.localScale = new Vector3(m_BeamWidth, m_BeamHeight * 0.5f, m_BeamWidth);
+            m_Beam = beam.GetComponent<MeshRenderer>();
+            m_Beam.sharedMaterial = m_BeamMaterial;
+            m_Beam.shadowCastingMode = ShadowCastingMode.Off;
+            m_Beam.receiveShadows = false;
+            SetBeam(0f, 1f);
+        }
+
+        // Le rayon s'allume pendant que le gisement pousse, bat avec sa lueur, et s'éteint quand il disparaît.
+        void SetBeam(float strength, float pulse)
+        {
+            if (m_Beam == null)
+                return;
+
+            m_Block ??= new MaterialPropertyBlock();
+            m_Beam.GetPropertyBlock(m_Block);
+            var color = m_BeamColor * (m_BeamIntensity * (0.85f + 0.3f * pulse));
+            color.a = 0.75f * Mathf.Clamp01(strength);
+            m_Block.SetColor(k_BaseColorId, color);
+            m_Beam.SetPropertyBlock(m_Block);
+        }
+
         void Update()
         {
             var deltaTime = Time.deltaTime;
@@ -109,6 +174,7 @@ namespace Archery.Building
             {
                 m_ShrinkAge += deltaTime;
                 transform.localScale = m_BaseScale * Mathf.Max(0f, 1f - m_ShrinkAge / k_ShrinkTime);
+                SetBeam(1f - m_ShrinkAge / k_ShrinkTime, 1f);
                 if (m_ShrinkAge >= k_ShrinkTime)
                     Destroy(gameObject);
                 return;
@@ -123,6 +189,7 @@ namespace Archery.Building
             var pulse = 0.75f + 0.25f * Mathf.Sin((m_Age + m_Phase) * 2.2f);
             if (m_Light != null)
                 m_Light.intensity = m_LightIntensity * pulse;
+            SetBeam(t, pulse);
             m_Block ??= new MaterialPropertyBlock();
             foreach (var renderer in m_Renderers)
             {

@@ -8,7 +8,7 @@ namespace Archery.Building
 {
     /// <summary>
     /// Baliste sur un socle au bord de la voie (GDD, section 9) : elle pivote vers l'ennemi le plus proche à portée,
-    /// volants compris, et tire seule un carreau (10 / 14,7 / 21,3 dégâts à la vague 1 en Normal, toutes les 2,4 / 1,6 / 1 s). Au niveau 3,
+    /// volants compris, et tire seule un carreau (10 / 14,7 / 21,3 dégâts à la vague 1 en Normal, toutes les 3 / 2 / 1,25 s). Au niveau 3,
     /// le carreau traverse 2 ennemis. Elle profite de la moitié des bonus de dégâts de l'arc.
     /// </summary>
     /// <remarks>
@@ -29,7 +29,7 @@ namespace Archery.Building
 
         [Tooltip("Temps (s) entre deux tirs, par niveau : lente au début, la baliste garde toute sa cadence au niveau 3.")]
         [SerializeField]
-        float[] m_IntervalPerLevel = { 2.4f, 1.6f, 1f };
+        float[] m_IntervalPerLevel = { 3f, 2f, 1.25f };
 
         [Tooltip("Ennemis qu'un carreau traverse avant de s'arrêter, par niveau (0 = il s'arrête au premier).")]
         [SerializeField]

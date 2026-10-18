@@ -17,6 +17,7 @@ MonoBehaviour:
   firstWaveDuration: 120
   durationIncrease: 15
   calmFraction: 0.4
+  riseDurationScale: 0.5
   firstWaveBudget: 20
   budgetIncrease: 10
   calmBudgetShare: 0.15
@@ -88,6 +89,19 @@ MonoBehaviour:
     cost: 3
     firstWave: 5
     weight: 0.4
+  healthPerWave:
+  - 0.85
+  - 1.1
+  - 1.65
+  - 2.2
+  - 2.85
+  countPerWave:
+  - 0.85
+  - 1
+  - 1.2
+  - 1.4
+  - 1.6
+  firstWaveCalmShare: 0.07
   endlessHealthGrowth: 1.25
   endlessDamageGrowth: 1.14
   endlessCountGrowth: 1.19

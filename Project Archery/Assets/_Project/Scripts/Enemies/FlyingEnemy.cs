@@ -12,7 +12,8 @@ namespace Archery.Enemies
     /// Après le piqué, touché ou raté, il remonte et recommence. À sa mort, il tombe au sol.
     /// </summary>
     /// <remarks>
-    /// Il n'utilise pas le NavMesh et ne se cogne à rien : il vole au-dessus de la clairière.
+    /// Il n'utilise pas le NavMesh : il vole au-dessus de la clairière. Il ne traverse ni les murs ni le relief : devant
+    /// un obstacle, il glisse le long et remonte par-dessus, et il reste toujours un peu au-dessus du sol sous lui.
     /// Ses réglages de base (PV, vitesse, dégâts, temps entre deux piqués, durée du sur-place) viennent
     /// de son <see cref="EnemyDefinition"/>.
     /// Son pivot est le centre de son corps : un modèle dont le pivot est au sol (corps en l'air) se place
@@ -77,6 +78,15 @@ namespace Archery.Enemies
         [SerializeField]
         float m_RecoverTime = 1.5f;
 
+        [Header("Obstacles")]
+        [Tooltip("Rayon (m) de son corps face aux murs, aux rochers et au relief.")]
+        [SerializeField]
+        float m_AvoidRadius = 0.6f;
+
+        [Tooltip("Hauteur (m) minimale au-dessus du sol juste sous lui (piqué compris).")]
+        [SerializeField]
+        float m_GroundClearance = 0.8f;
+
         [Header("Retours")]
         [Tooltip("Optionnel : ailes à faire battre.")]
         [SerializeField]
@@ -95,6 +105,8 @@ namespace Archery.Enemies
                  "placé plus bas que le pivot, ce décalage : le modèle touche alors le sol, et son animation de mort le couche.")]
         [SerializeField]
         float m_CorpseHeight;
+
+        static readonly RaycastHit[] s_Hits = new RaycastHit[16];
 
         Phase m_Phase = Phase.Circling;
         Vector3 m_Velocity;
@@ -262,10 +274,88 @@ namespace Archery.Enemies
 
         void Move(float deltaTime)
         {
+            AvoidObstacles(deltaTime);
             transform.position += m_Velocity * deltaTime;
+            StayAboveTerrain();
             if (m_Velocity.sqrMagnitude > 0.04f && m_Phase != Phase.Hovering)
                 transform.rotation = Quaternion.LookRotation(m_Velocity) * Quaternion.Euler(0f, 0f, m_Bank);
         }
+
+        // Devant un mur, un rocher ou une pente : ce qui va dedans est retiré de sa vitesse, et il s'en écarte en
+        // remontant, d'autant plus fort que l'obstacle est proche. Il glisse ainsi le long et passe par-dessus.
+        void AvoidObstacles(float deltaTime)
+        {
+            var speed = m_Velocity.magnitude;
+            if (speed < 0.01f)
+                return;
+
+            var direction = m_Velocity / speed;
+            var lookAhead = speed * deltaTime + 1.5f;
+            var count = Physics.SphereCastNonAlloc(transform.position, m_AvoidRadius, direction, s_Hits, lookAhead,
+                                                   Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            var nearest = float.MaxValue;
+            var normal = Vector3.zero;
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_Hits[i];
+                if (hit.distance <= 0f || hit.distance >= nearest || !IsObstacle(hit.collider))
+                    continue;
+                nearest = hit.distance;
+                normal = hit.normal;
+            }
+
+            if (nearest == float.MaxValue)
+                return;
+
+            var into = Vector3.Dot(m_Velocity, normal);
+            if (into < 0f)
+                m_Velocity -= normal * into;
+            var urgency = 1f - Mathf.Clamp01(nearest / lookAhead);
+            m_Velocity += (normal + Vector3.up).normalized * (m_Acceleration * 3f * urgency * deltaTime);
+        }
+
+        // Jamais sous le sol qui est juste sous lui (colline, falaise, toit) : s'il y passe, il est remis dessus.
+        void StayAboveTerrain()
+        {
+            var position = transform.position;
+            if (!TryGetGroundBelow(position, out var ground))
+                return;
+
+            var minimum = ground + m_GroundClearance;
+            if (position.y >= minimum)
+                return;
+
+            transform.position = new Vector3(position.x, minimum, position.z);
+            if (m_Velocity.y < 0f)
+                m_Velocity.y = 0f;
+        }
+
+        // Le dessus du premier obstacle sous lui, cherché d'un peu plus haut : s'il s'enfonce dans une pente, c'est
+        // elle qui est trouvée.
+        bool TryGetGroundBelow(Vector3 position, out float height)
+        {
+            height = 0f;
+            const float probe = 6f;
+            var count = Physics.RaycastNonAlloc(position + Vector3.up * probe, Vector3.down, s_Hits, probe + 30f,
+                                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            var best = float.MaxValue;
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_Hits[i];
+                if (hit.distance >= best || !IsObstacle(hit.collider))
+                    continue;
+                best = hit.distance;
+                height = hit.point.y;
+            }
+
+            return best < float.MaxValue;
+        }
+
+        // Un vrai obstacle : pas un autre ennemi, ni le joueur, ni une flèche, ni ce que les flèches traversent.
+        static bool IsObstacle(Collider collider) =>
+            collider != null && !(collider is CharacterController) && !ArrowIgnore.IsIgnored(collider) &&
+            collider.GetComponentInParent<Enemy>() == null && collider.GetComponentInParent<Arrow>() == null &&
+            collider.GetComponentInParent<EnemyProjectile>() == null;
 
         void Face(Vector3 direction, float deltaTime)
         {

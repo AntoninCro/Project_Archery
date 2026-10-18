@@ -81,20 +81,22 @@ Project Archery/
 └── Tools/           vérifications sans ouvrir Unity : compilation des scripts, syntaxe des shaders
 ```
 
-Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\Project Archery`.
+Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\THUNK VR`.
 
 ## Crédits
 
-- Arcs et flèches : pack *Easy Weapons* et *Low Poly Style Bows & Quivers* (Dimasjk Studio).
-- Marteau de construction : *Stylized Mechanized Hammer* (AgeSoft).
-- Chevaliers : *Toon RTS Units – Demo*.
-- Coffre animé : *Animated PBR Chest Demo*.
-- Volant (Beholder) et mimique : *RPG Monster Partners PBR Polyart* ; tireur (mage) : *Wizard PolyArt*.
-- Bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO PBR Polyart*, *RPG Monster Buddies PBR Polyart*, *RPG Monster Couple PBR Polyart*, *Monster Minion Survivor PBR Polyart* ; boss final, le dragon rouge : *Four Evil Dragons PBR* (Dungeon Mason).
-- Décor et constructions : *Nature Kit*, *Castle Kit* et *Tower Defense Kit* de Kenney (www.kenney.nl), licence CC0 ; sons *Impact Sounds* et *RPG Audio*, icônes *Game Icons* de Kenney.
-- Musique du boss final : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
-- Autres sons, ambiances et musiques : provisoires, générés par script pour le prototype ; portes de l'antre : *RPG Audio* de Kenney.
-- Porte de l'antre (coupée en double porte par le jeu) : *Modular Dungeon* de Quaternius, licence CC0.
+Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archery/Docs/Credits_Licences.md`.
+
+- **Modèles 3D (Asset Store de Unity, EULA standard)** :
+  - bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO / Buddies / Couple / Partners PBR Polyart*, *Monster Minion Survivor PBR Polyart*, *Wizard PolyArt* (le mage) ; MK, le dragon rouge : *Four Evil Dragons PBR* (Dungeon Mason) ;
+  - arcs et flèches : *Low Poly Style Bows & Quivers* (Dimasjk Studio) et *Easy Weapons* ; décor de l'antre : autres packs *Low Poly Style* de Dimasjk Studio ;
+  - marteau de construction : *Stylized Mechanized Hammer* (AgeSoft) ; coffre animé : *Animated PBR Chest Demo* ; chevalier : *Toon RTS Units – Demo*.
+- **Kenney** (www.kenney.nl), licence CC0 : *Nature Kit*, *Castle Kit*, *Tower Defense Kit*, *UI Pack*, *UI Pack: RPG Extension*, *Fantasy UI Borders*, *Game Icons*, sons *Impact Sounds*, *Interface Sounds* et *RPG Audio*.
+- **Quaternius**, licence CC0 : le gant low-poly des mains, et la porte de l'antre (*Modular Dungeon*, coupée en double porte par le jeu).
+- **Polices**, licence SIL Open Font License 1.1 : *Cinzel* et *Cinzel Decorative* (Natanael Gama) ; *Share Tech Mono* (Carrois Type Design, Ralph du Carrois), pour les panneaux d'erreur du portail des étoiles.
+- **Musique du boss final** : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
+- **Autres sons, ambiances et musiques** : provisoires, générés par script pour le prototype.
+- **Unity** : XR Interaction Toolkit et ses exemples, XR Hands, TextMesh Pro.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
 
 ## Équipe

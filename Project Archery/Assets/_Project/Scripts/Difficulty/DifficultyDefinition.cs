@@ -108,6 +108,11 @@ namespace Archery.Difficulty
         [Min(2)]
         public int fullStrengthWave = 3;
 
+        [Tooltip("Part de la courbe vague par vague des Wave Settings (PV et nombre d'ennemis) appliquée : 1 = toute, " +
+                 "0 = aucune (Facile).")]
+        [Range(0f, 1f)]
+        public float waveCurve = 1f;
+
         [Header("Score")]
         [Tooltip("Multiplie tous les points gagnés.")]
         [Min(0f)]
@@ -165,6 +170,7 @@ namespace Archery.Difficulty
             speedGrowthPerWave = 1.02f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 0f;
             sky = SkySettings.Noon();
             EndFill();
         }
@@ -195,6 +201,7 @@ namespace Archery.Difficulty
             speedGrowthPerWave = 1.05f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.Sunset();
             EndFill();
         }
@@ -225,6 +232,7 @@ namespace Archery.Difficulty
             speedGrowthPerWave = 1.06f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.Night();
             EndFill();
         }
@@ -255,6 +263,7 @@ namespace Archery.Difficulty
             speedGrowthPerWave = 1.07f;
             earlyStrength = 0.5f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.BloodMoon();
             EndFill();
         }
