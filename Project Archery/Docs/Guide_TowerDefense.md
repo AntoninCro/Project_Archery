@@ -57,7 +57,7 @@ Pour déplacer un emplacement, bouge simplement son objet dans `Map > Crystal Sp
 
 Cette étape construit tout le chemin d'un achat, du socle jusqu'au bâtiment terminé. Les bâtiments ne font encore rien : ce sont des modèles provisoires, qui prendront vie à l'étape 3.
 
-> **Où en est cette étape** : montée par Claude le 11 octobre au soir, directement dans les fichiers, en suivant la partie « Montage » ci-dessous. Rien n'a encore été testé dans Unity ni dans le casque. Ce qui a été fait :
+> **Où en est cette étape** : montée par Claude le 11 octobre au soir, directement dans les fichiers, en suivant la partie « Montage » ci-dessous. Testée depuis dans le casque (13 octobre). Ce qui a été fait :
 >
 > - les 4 définitions remplies avec les valeurs du GDD et reliées à leur prefab ;
 > - les prefabs `Build Socket`, `Build Hammer` et `Structures/Baliste`, `Givre`, `Barricade` et `Pieges` ;
@@ -85,15 +85,15 @@ Cette étape construit tout le chemin d'un achat, du socle jusqu'au bâtiment te
 
 1. Sur la carte, des **socles** marquent les emplacements de construction : quatre coins orange au sol. Il y en a deux sortes. **Sur la voie**, on peut construire une barricade ou des pièges à piques. **Au bord de la voie**, on peut construire une baliste ou une tour de givre.
 2. Vise un socle avec la main libre, à 5 m au plus, et appuie sur la **poignée**. Un petit panneau s'ouvre devant toi, du côté du socle. Il montre tes matériaux et les deux bâtiments possibles, avec leur prix. Sur un bâtiment déjà construit, il montre le niveau suivant et son prix.
-3. Clique une carte avec la **gâchette**. Les matériaux sont dépensés, et le bâtiment apparaît en **plan bleu transparent**. L'arc disparaît, et un **marteau** flotte dans ta main libre.
-4. Attrape le marteau avec la **poignée**. Frappe le plan **3 fois**. Chaque coup fait un bruit, des étincelles et une vibration, et le plan se remplit d'un tiers, de bas en haut.
-5. Au troisième coup, le bâtiment prend ses vraies couleurs. Le marteau disparaît, et l'arc réapparaît à sa place près de toi : reprends-le comme d'habitude.
+3. Clique une carte avec la **gâchette**. Les matériaux sont dépensés, et le bâtiment apparaît en **plan bleu transparent**. L'arc disparaît, et un **marteau** apparaît dans **chaque main** : pas besoin de l'attraper, la main se ferme dessus toute seule (depuis le 16 octobre).
+4. Frappe le plan **3 fois**, avec l'un ou l'autre marteau. Chaque coup fait un bruit, des étincelles et une vibration, et le plan se remplit d'un tiers, de bas en haut.
+5. Au troisième coup, le bâtiment prend ses vraies couleurs. Les marteaux disparaissent, et l'arc réapparaît à sa place près de toi : reprends-le comme d'habitude.
 6. Une amélioration (niveaux 2 et 3) se fait de la même façon. Vise le socle ou le bâtiment : le panneau propose le niveau suivant. Pendant les coups de marteau, le bâtiment repasse en plan bleu, mais il continue de fonctionner à son niveau actuel.
 
 Quelques règles :
 
-- **Une seule construction à la fois** : le marteau doit avoir fini avant d'en acheter une autre.
-- **Le marteau ne se perd pas.** Si tu le lâches, il revient flotter dans la main qui l'a tenu en dernier.
+- **Une seule construction à la fois** : les marteaux doivent avoir fini avant d'en acheter une autre.
+- **Les marteaux ne se perdent pas** : ils restent dans les mains jusqu'à la fin de la construction (on ne peut pas les lâcher).
 - **Pour frapper de nouveau**, ressors la tête du marteau du plan, ou marque un arrêt, comme après un vrai coup. Un coup ne compte que s'il va vers le plan, assez vite (1,2 m/s).
 - **La construction ne bloque jamais le joueur.** Si tu t'éloignes à plus de 15 m (par exemple avec le téléporteur de la tour), ou si la partie se termine, elle se termine toute seule et l'arc revient.
 - **Le panneau se ferme** après un achat, avec son bouton X, ou quand tu t'éloignes de plus de 2,5 m.
@@ -108,7 +108,7 @@ Quelques règles :
 | `Scripts/Building/BuildSocket.cs` | Le socle qu'on vise. Au lancement, il vérifie que le sol est plat dessous, et prévient dans la console sinon |
 | `Scripts/Building/BuildPanel.cs` | Le panneau des socles. Il réutilise les cartes de la boutique (`Prefabs/UI/Shop Card`) |
 | `Scripts/Building/BuildManager.cs` | Sur `Game` : la liste des bâtiments, l'achat, le marteau, les coups et la fin de la construction |
-| `Scripts/Building/BuildHammer.cs` | Le marteau : il flotte dans la main et détecte les coups sur le plan |
+| `Scripts/Building/BuildHammer.cs` | Un marteau (un par main) : il suit la main sans être attrapé, et détecte les coups sur le plan |
 | `Shaders/Blueprint.shader`, `Resources/Blueprint.mat` | Le plan bleu : un hologramme parcouru de lignes qui montent, plus plein sous la partie construite. Déjà prêt, rien à faire |
 | `Bow.cs` | L'arc peut se ranger pendant la construction : il devient invisible et impossible à prendre |
 | `ShopOffer` / `ShopCard` | Une carte peut afficher son prix en matériaux (« 40 mat. ») |
@@ -168,10 +168,10 @@ Dans le casque, le manche doit pointer vers le haut et un peu vers l'avant, et l
 2. Ajoute-lui ces composants :
    - un **Box Collider** : *Size* (3 ; 0,05 ; 3), *Center* (0 ; 0,025 ; 0). C'est la plaque que vise le rayon de la main. Les flèches la traversent ;
    - un **Build Socket**. Laisse sa liste *Colliders* vide : il trouve le Box Collider tout seul.
-3. Glisse en enfant le modèle `selection-a` du Tower Defense Kit (les quatre coins). Renomme-le `Marker`, et règle *Position* (0 ; 0,03 ; 0) et *Scale* (3 ; 2 ; 3). Glisse-le dans *Marker* du Build Socket. Les coins respirent doucement et grossissent quand le rayon les vise. Ils se cachent une fois le bâtiment posé.
+3. ~~Glisse en enfant le modèle `selection-a` du Tower Defense Kit (les quatre coins), nommé `Marker`.~~ Retiré du prefab le 15 octobre : les emplacements libres sont maintenant signalés par un cercle de runes lumineuses au sol, créé au lancement par les lumières de la carte (GDD, section 17 bis). Les runes tournent doucement, grossissent et brillent plus quand le rayon les vise, et disparaissent une fois le bâtiment posé. Le champ *Marker* du Build Socket reste vide (il sert encore si tu veux remettre un repère).
 4. Fais-en le prefab `Prefabs/Build Socket`, puis supprime-le de la scène.
 
-Garde **Scale 1** sur la racine du socle : le bâtiment s'y pose en enfant et prendrait son échelle. Pour un socle plus petit, change plutôt *Size* et l'échelle de `Marker`.
+Garde **Scale 1** sur la racine du socle : le bâtiment s'y pose en enfant et prendrait son échelle. Pour un socle plus petit, change plutôt *Size* et la taille du Box Collider (les runes suivent sa taille).
 
 #### 5. Le panneau
 
@@ -259,7 +259,7 @@ Au lancement, la console signale les socles posés sur un sol qui n'est pas plat
 
 Les bâtiments construits à l'étape 2 prennent vie : la barricade arrête les ennemis, les piques les blessent, la tour de givre les ralentit et la baliste leur tire dessus. Chaque niveau les renforce et se voit.
 
-> **Où en est cette étape** : montée par Claude le 12 octobre, directement dans les fichiers. Rien n'a encore été testé dans Unity ni dans le casque. Les 4 prefabs de `Prefabs/Structures` ont été refaits avec leur composant et leurs pièces de niveau. Ils gardent les mêmes identifiants, donc les définitions et les socles n'ont pas bougé. Il n'y a rien à monter dans la scène.
+> **Où en est cette étape** : montée par Claude le 12 octobre, directement dans les fichiers. Testée depuis dans le casque (13 octobre). Les 4 prefabs de `Prefabs/Structures` ont été refaits avec leur composant et leurs pièces de niveau. Ils gardent les mêmes identifiants, donc les définitions et les socles n'ont pas bougé. Il n'y a rien à monter dans la scène.
 
 ### En jeu
 
@@ -320,7 +320,7 @@ Tous les réglages sont sur le composant à la racine de chaque prefab de `Prefa
 | | *Size*, *Spike Height Per Level* | 2,6 × 2,6 m, 0,3 / 0,38 / 0,46 m | Zone piégée, hauteur des piques |
 | `Givre` | *Radius Per Level*, *Speed Per Level* | 8 / 9 / 10 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
 | | *Range Color*, *Crystal Scale Per Level*, *Light Intensity Per Level* | bleu, 1 / 1,15 / 1,3, 1,5 / 2,2 / 3 | Apparence |
-| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 15 / 22 / 32, 2,4 / 1,6 / 1 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
+| `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 10 / 14,67 / 21,33, 3 / 2 / 1,25 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
 | `Data/Difficulties` | *Structure Power* | 0,75 / 1 / 1,25 / 1,6 | Puissance des bâtiments selon la difficulté (Facile, Normal, Difficile, Impossible), en plus de la force des ennemis |
 | | *Pierce Per Level*, *Bow Bonus Share* | 0 / 0 / 2, 0,5 | Ennemis traversés, part des bonus de l'arc |
 | | *Bolt Speed*, *Turn Speed*, *Max Pitch* | 45 m/s, 220 °/s, 40° | Carreau et rotation |
@@ -338,7 +338,7 @@ Les prix et les descriptions restent dans les définitions (`Data/Structures`). 
 
 ## Étape 4 : l'équilibrage
 
-> **Où en est cette étape** : faite par Claude le 12 octobre, sur simulation. Rien n'a encore été testé en jeu. Il n'y a rien à monter : les valeurs sont déjà dans les prefabs, les définitions et la scène.
+> **Où en est cette étape** : faite par Claude le 12 octobre, sur simulation. Testée depuis en jeu (13 octobre), puis réglée à la main : les valeurs de la scène et des assets font foi. Il n'y a rien à monter : les valeurs sont déjà dans les prefabs, les définitions et la scène.
 
 ### Le choix de départ
 
@@ -350,7 +350,7 @@ Le tower defense doit être **très présent** à la fin d'une partie (10 vagues
 |---|---|---|
 | Matériaux d'un gisement (`Crystal Spawner` sur `Game`) | 10, +1 par vague | **20, +2 par vague** |
 | Dégâts des bâtiments | fixes | **suivent la force des ennemis** : PV de la difficulté × renforcement de la vague, mode infini compris |
-| Baliste (dégâts à la vague 1 en Normal) | 25 / 35 / 50 | **15 / 22 / 32** |
+| Baliste (dégâts à la vague 1 en Normal) | 25 / 35 / 50 | **10 / 14,7 / 21,3** (15 / 22 / 32 avant le 16 octobre) |
 | Pièges à piques | 20 / 30 / 45 | **12 / 18 / 27** |
 | Pointes de la barricade | 15 | **10** |
 | Textes des cartes | dégâts en PV | **multiplicateurs** (« Dégâts ×1,5 »), toujours justes puisque les dégâts suivent les ennemis |

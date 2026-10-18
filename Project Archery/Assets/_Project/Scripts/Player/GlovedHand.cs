@@ -255,6 +255,10 @@ namespace Archery.Player
                 holding = true;
             }
 
+            // Un marteau de construction est dans cette main sans être attrapé : le poing se ferme dessus.
+            if (!holding && Building.BuildHammer.InHand(m_Interactor))
+                holding = true;
+
             Mode mode;
             if (bow != null && bow.Model != null && bow.ArrowRest != null)
                 mode = Mode.Bow;

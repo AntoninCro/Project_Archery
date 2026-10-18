@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Bows;
 using Archery.Combat;
 using Archery.Core;
 using UnityEngine;
@@ -59,7 +60,13 @@ namespace Archery.Defense
                 m_Colliders = m_Intact.GetComponentsInChildren<Collider>(true);
             else
                 Debug.LogWarning("Barricade : renseigne « Intact » (les planches).", this);
+
+            // Les flèches (et les carreaux des balistes) traversent les planches : un ennemi caché derrière reste
+            // touchable. Elles arrêtent toujours les ennemis au sol.
+            ArrowIgnore.Register(m_Colliders);
         }
+
+        void OnDestroy() => ArrowIgnore.Unregister(m_Colliders);
 
         void OnEnable()
         {

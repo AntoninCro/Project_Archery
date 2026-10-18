@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Archery.Shop
 {
     /// <summary>
-    /// Une carte de la boutique : nom, rareté ou type, description et prix.
+    /// Une carte de la boutique : icône, nom, rareté ou type, description courte et prix.
     /// Un clic dessus (rayon de la manette + gâchette) l'achète.
     /// </summary>
     /// <remarks>À placer sur un Button d'un Canvas ; tous les textes sont optionnels.</remarks>
@@ -51,9 +51,15 @@ namespace Archery.Shop
         [SerializeField]
         Color m_TooExpensiveColor = new Color(1f, 0.45f, 0.4f);
 
+        // Le cadre orné du thème des menus (enfant « Bordure »), teinté de la couleur de l'offre.
+        Image m_Border;
+
         public ShopOffer Offer { get; private set; }
 
         public event Action<ShopCard> Clicked;
+
+        /// <summary>Couleur du fond avant la teinte de l'offre (réglée par le thème des menus).</summary>
+        public void SetBaseColor(Color color) => m_BaseColor = color;
 
         void Awake()
         {
@@ -61,6 +67,9 @@ namespace Archery.Shop
                 m_Button = GetComponent<Button>();
             if (m_Background == null)
                 m_Background = GetComponent<Image>();
+            var border = transform.Find(UI.UiThemer.BorderName);
+            if (border != null)
+                m_Border = border.GetComponent<Image>();
             if (m_Button != null)
                 m_Button.onClick.AddListener(() => Clicked?.Invoke(this));
         }
@@ -91,10 +100,22 @@ namespace Archery.Shop
                 m_Background.color = color;
             }
 
+            if (m_Border != null)
+            {
+                var color = Color.Lerp(offer.Color, Color.white, 0.15f);
+                color.a = available ? 1f : 0.45f;
+                m_Border.color = color;
+            }
+
+            // L'icône, de la couleur de l'offre un peu éclaircie ; sans icône, la place se libère pour le texte.
             if (m_Icon != null)
             {
                 m_Icon.sprite = offer.Icon;
-                m_Icon.enabled = offer.Icon != null;
+                if (m_Icon.gameObject.activeSelf != (offer.Icon != null))
+                    m_Icon.gameObject.SetActive(offer.Icon != null);
+                var color = Color.Lerp(offer.Color, Color.white, 0.2f);
+                color.a = available ? 1f : 0.45f;
+                m_Icon.color = color;
             }
 
             if (m_Button != null)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Player;
 using Archery.Save;
@@ -9,6 +10,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Comfort;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Gravity;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Jump;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
 
 namespace Archery.Locomotion
@@ -20,6 +22,7 @@ namespace Archery.Locomotion
     /// <item>Course : balancer les deux bras en marchant multiplie la vitesse, jusqu'à ×3.</item>
     /// <item>Slide : A ou X pendant la course. On repart plus vite, puis on glisse environ 2,5 s,
     /// les mains libres pour tirer, avec une vignette de confort réglable dans les paramètres.</item>
+    /// <item>Saut : lever les deux bras d'un coup en se déplaçant (le saut d'XRI, déclenché par le geste et non par un bouton).</item>
     /// </list>
     /// </summary>
     /// <remarks>
@@ -114,6 +117,33 @@ namespace Archery.Locomotion
         [SerializeField]
         float m_SlideCooldown = 0.4f;
 
+        [Header("Saut aux bras")]
+        [Tooltip("Lever les deux bras d'un coup fait sauter, en se déplaçant comme à l'arrêt. Il faut les deux mains, vite et vers " +
+                 "le haut : prendre une flèche, lever l'arc ou courir (une main monte, l'autre descend) ne fait pas sauter.")]
+        [SerializeField]
+        bool m_ArmJump = true;
+
+        [Tooltip("Hauteur du saut (m). Sans casque, Espace saute d'environ 1 m.")]
+        [SerializeField]
+        float m_JumpHeight = 1.3f;
+
+        [Tooltip("Vitesse (m/s) vers le haut que les deux mains doivent atteindre en même temps, par rapport à la tête.")]
+        [SerializeField]
+        float m_JumpHandSpeed = 1.8f;
+
+        [Tooltip("Vitesse (m/s) en dessous de laquelle le joueur est à l'arrêt. À l'arrêt, on saute aussi, sauf avec une flèche " +
+                 "encochée : en visant, on lève souvent l'arc et la main d'un coup.")]
+        [SerializeField]
+        float m_JumpMinimumSpeed = 0.3f;
+
+        [Tooltip("Temps (s) minimal entre deux sauts.")]
+        [SerializeField]
+        float m_JumpCooldown = 0.6f;
+
+        [Tooltip("Optionnel : son du saut.")]
+        [SerializeField]
+        AudioClip m_JumpClip;
+
         [Header("Retours")]
         [Tooltip("Optionnel : son du slide.")]
         [SerializeField]
@@ -150,6 +180,11 @@ namespace Archery.Locomotion
         Vector3 m_RightPrevious;
         bool m_HasPrevious;
         float m_HandSpeed;
+        float m_LeftRise;
+        float m_RightRise;
+        float m_JumpCooldownTimer;
+        JumpProvider m_Jump;
+        Bow m_Bow;
         float m_SmoothedYaw;
         bool m_HasYaw;
         Vector3 m_Velocity;
@@ -221,6 +256,10 @@ namespace Archery.Locomotion
 
             if (m_Vignette == null && m_Rig != null && m_Rig.Origin != null)
                 m_Vignette = m_Rig.Origin.GetComponentInChildren<TunnelingVignetteController>(true);
+
+            if (mediator != null)
+                m_Jump = mediator.GetComponentInChildren<JumpProvider>(true);
+            SetupArmJump();
         }
 
         void Update()
@@ -235,6 +274,7 @@ namespace Archery.Locomotion
             m_SlideCooldownTimer -= deltaTime;
 
             var grounded = IsGrounded();
+            UpdateArmJump(grounded, deltaTime);
             if (IsSliding)
             {
                 IsRunning = false;
@@ -308,6 +348,7 @@ namespace Archery.Locomotion
             if (head == null || !TryGetHands(out var left, out var right))
             {
                 m_HandSpeed = 0f;
+                m_LeftRise = m_RightRise = 0f;
                 m_HasPrevious = false;
                 return;
             }
@@ -321,6 +362,11 @@ namespace Archery.Locomotion
 
                 // Filtre : la vitesse des mains varie beaucoup au fil d'un balancement.
                 m_HandSpeed = Mathf.Lerp(m_HandSpeed, speed, 1f - Mathf.Exp(-deltaTime / 0.25f));
+
+                // Vitesse vers le haut de chaque main, à peine lissée : le geste du saut est bref.
+                var rise = 1f - Mathf.Exp(-deltaTime / 0.05f);
+                m_LeftRise = Mathf.Lerp(m_LeftRise, (leftLocal.y - m_LeftPrevious.y) / deltaTime, rise);
+                m_RightRise = Mathf.Lerp(m_RightRise, (rightLocal.y - m_RightPrevious.y) / deltaTime, rise);
             }
 
             m_LeftPrevious = leftLocal;
@@ -340,6 +386,51 @@ namespace Archery.Locomotion
             }
 
             m_SmoothedYaw = Mathf.LerpAngle(m_SmoothedYaw, yaw, 1f - Mathf.Exp(-deltaTime / m_DirectionSmoothing));
+        }
+
+        // Le saut d'XRI, déclenché par le geste : son bouton (A, qui sert au slide) est retiré, puis il est réactivé
+        // (le Player Rig le coupe au lancement). Pas de saut en l'air, pas de hauteur variable (il n'y a pas de bouton à tenir).
+        void SetupArmJump()
+        {
+            if (!m_ArmJump || m_Jump == null)
+                return;
+
+            m_Jump.jumpInput = new XRInputButtonReader("Arm Jump", null, false, XRInputButtonReader.InputSourceMode.Unused);
+            m_Jump.variableHeightJump = false;
+            m_Jump.unlimitedInAirJumps = false;
+            m_Jump.inAirJumpCount = 0;
+            m_Jump.jumpHeight = m_JumpHeight;
+            m_Jump.enabled = true;
+        }
+
+        // Les deux mains montent vite en même temps, les pieds au sol : on saute (à l'arrêt, pas en visant).
+        void UpdateArmJump(bool grounded, float deltaTime)
+        {
+            m_JumpCooldownTimer -= deltaTime;
+            if (!m_ArmJump || m_Jump == null || !m_Jump.isActiveAndEnabled || !grounded || m_JumpCooldownTimer > 0f)
+                return;
+
+            if (Mathf.Min(m_LeftRise, m_RightRise) < m_JumpHandSpeed || !m_Jump.CanJump())
+                return;
+
+            var moving = Speed >= m_JumpMinimumSpeed || ReadStick().sqrMagnitude > 0f;
+            if (!moving && Aiming())
+                return;
+
+            m_Jump.jumpHeight = m_JumpHeight;
+            m_Jump.Jump();
+            m_JumpCooldownTimer = m_JumpCooldown;
+            Sfx.Play(m_JumpClip, m_Rig.BodyPosition, 0.7f, Random.Range(0.95f, 1.05f), 0f);
+            foreach (var hand in m_Rig.Hands)
+                Haptics.Pulse(hand, 0.35f, 0.08f);
+        }
+
+        // Une flèche est encochée sur l'arc du joueur.
+        bool Aiming()
+        {
+            if (m_Bow == null)
+                m_Bow = FindAnyObjectByType<Bow>();
+            return m_Bow != null && m_Bow.HasArrow;
         }
 
         bool SlidePressed() => m_LeftSlideInput.ReadWasPerformedThisFrame() || m_RightSlideInput.ReadWasPerformedThisFrame();

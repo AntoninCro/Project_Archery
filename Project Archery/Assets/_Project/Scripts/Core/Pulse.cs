@@ -25,5 +25,13 @@ namespace Archery.Core
         }
 
         void Update() => transform.localScale = m_BaseScale * (1f + m_Amplitude * Mathf.Sin(Time.time * m_Speed + m_Offset));
+
+        /// <summary>Arrête l'oscillation et rend sa taille d'origine (le point faible bat à sa façon).</summary>
+        public void Stop()
+        {
+            if (m_BaseScale != Vector3.zero)
+                transform.localScale = m_BaseScale;
+            enabled = false;
+        }
     }
 }

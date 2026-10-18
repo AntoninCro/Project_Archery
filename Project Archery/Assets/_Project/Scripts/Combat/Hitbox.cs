@@ -37,6 +37,9 @@ namespace Archery.Combat
         public HitZone Zone => m_Zone;
         public Health Owner => m_Owner;
 
+        /// <summary>Une flèche tirée vient de toucher cette zone (point d'impact) : réaction du point faible.</summary>
+        public event System.Action<Vector3> Struck;
+
         // Un point faible ou la tête passent avant le corps quand la flèche traverse les deux.
         public int HitPriority => m_Zone switch
         {
@@ -57,6 +60,15 @@ namespace Archery.Combat
         {
             if (m_Owner == null)
                 m_Owner = GetComponentInParent<Health>();
+        }
+
+        /// <summary>Règle une zone créée en jeu (zones du dragon du boss final, accrochées à ses os au lancement).</summary>
+        public void Configure(HitZone zone, float damageMultiplier, Health owner)
+        {
+            m_Zone = zone;
+            m_DamageMultiplier = damageMultiplier;
+            if (owner != null)
+                m_Owner = owner;
         }
 
         /// <summary>
@@ -115,6 +127,7 @@ namespace Archery.Combat
                     Source = hit.Arrow,
                 });
                 Sfx.Play(m_HitClip, hit.Point, 0.9f);
+                Struck?.Invoke(hit.Point);
             }
 
             return true;

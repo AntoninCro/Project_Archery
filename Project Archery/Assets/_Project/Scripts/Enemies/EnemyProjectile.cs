@@ -46,27 +46,97 @@ namespace Archery.Enemies
         GameObject m_BreakEffect;
 
         Collider[] m_Colliders;
+        TrailRenderer[] m_Trails;
+        Light[] m_Lights;
+        float[] m_TrailWidths;
+        float[] m_LightRanges;
+        Vector3 m_BaseScale;
         Vector3 m_Velocity;
         float m_Damage;
         Enemy m_Shooter;
         float m_Age;
+        float m_Size = 1f;
+        bool m_Held;
         bool m_Done;
 
-        void Awake() => m_Colliders = GetComponentsInChildren<Collider>(true);
+        void Awake()
+        {
+            m_Colliders = GetComponentsInChildren<Collider>(true);
+            m_Trails = GetComponentsInChildren<TrailRenderer>(true);
+            m_Lights = GetComponentsInChildren<Light>(true);
+            m_TrailWidths = System.Array.ConvertAll(m_Trails, trail => trail.widthMultiplier);
+            m_LightRanges = System.Array.ConvertAll(m_Lights, light => light.range);
+            m_BaseScale = transform.localScale;
+        }
+
+        /// <summary>Un projectile vient d'être lancé (la nuit, il éclaire le sol en passant).</summary>
+        public static event System.Action<EnemyProjectile> Launched;
+
+        /// <summary>Tenu au bout du bâton pendant sa charge (liche) : il ne vole pas encore.</summary>
+        public bool IsHeld => m_Held && !m_Done;
+
+        /// <summary>
+        /// Charge du projectile, tenu à <paramref name="position"/> : il grossit de presque rien jusqu'à
+        /// <paramref name="size"/> fois sa taille (<paramref name="progress"/> de 0 à 1). Une flèche peut déjà l'abattre.
+        /// </summary>
+        public void Charge(Vector3 position, float progress, float size)
+        {
+            if (m_Done)
+                return;
+
+            if (!m_Held)
+            {
+                m_Held = true;
+                foreach (var trail in m_Trails)
+                    trail.emitting = false;
+            }
+
+            transform.position = position;
+            SetSize(size * Mathf.Lerp(0.12f, 1f, 1f - (1f - progress) * (1f - progress)));
+        }
+
+        // Plus gros : la boule, son collider, sa zone de touche, sa traînée et sa lumière.
+        void SetSize(float size)
+        {
+            m_Size = Mathf.Max(0.01f, size);
+            transform.localScale = m_BaseScale * m_Size;
+            for (var i = 0; i < m_Trails.Length; i++)
+                m_Trails[i].widthMultiplier = m_TrailWidths[i] * m_Size;
+            for (var i = 0; i < m_Lights.Length; i++)
+                m_Lights[i].range = m_LightRanges[i] * Mathf.Max(1f, m_Size);
+        }
+
+        /// <summary>La charge est interrompue (le lanceur est mort) : la boule se dissipe.</summary>
+        public void Fizzle()
+        {
+            if (!m_Done)
+                Break(transform.position, null);
+        }
 
         /// <summary>Lance le projectile (appelé par <see cref="EnemyRangedAttack"/>).</summary>
         public void Launch(Vector3 velocity, float damage, Enemy shooter)
         {
+            if (m_Held)
+            {
+                m_Held = false;
+                foreach (var trail in m_Trails)
+                {
+                    trail.Clear();
+                    trail.emitting = true;
+                }
+            }
+
             m_Velocity = velocity;
             m_Damage = damage;
             m_Shooter = shooter;
             if (velocity.sqrMagnitude > 1e-4f)
                 transform.rotation = Quaternion.LookRotation(velocity);
+            Launched?.Invoke(this);
         }
 
         void Update()
         {
-            if (m_Done)
+            if (m_Done || m_Held)
                 return;
 
             var deltaTime = Time.deltaTime;
@@ -112,7 +182,8 @@ namespace Archery.Enemies
             var head = rig.Head.position;
             var segment = head - feet;
             var t = segment.sqrMagnitude > 1e-4f ? Mathf.Clamp01(Vector3.Dot(point - feet, segment) / segment.sqrMagnitude) : 0f;
-            return (point - (feet + segment * t)).sqrMagnitude <= m_HitRadius * m_HitRadius;
+            var radius = m_HitRadius * m_Size;
+            return (point - (feet + segment * t)).sqrMagnitude <= radius * radius;
         }
 
         void HitPlayer(Vector3 point)

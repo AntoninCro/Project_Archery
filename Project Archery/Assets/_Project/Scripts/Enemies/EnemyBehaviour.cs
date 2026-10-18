@@ -21,6 +21,12 @@ namespace Archery.Enemies
         /// <summary>Décalage par rapport au point d'apparition (un volant apparaît en l'air).</summary>
         public virtual Vector3 SpawnOffset => Vector3.zero;
 
+        /// <summary>
+        /// Vrai si le comportement pilote lui-même l'Animator (états joués par leur nom, comme le dragon du boss final) :
+        /// <see cref="Enemy"/> ne touche alors ni à sa vitesse, ni à ses paramètres, ni à l'animation de mort.
+        /// </summary>
+        public virtual bool ControlsAnimator => false;
+
         protected virtual void Awake() => Enemy = GetComponent<Enemy>();
 
         /// <summary>Une image de jeu, tant que l'ennemi est en vie et ne s'enfuit pas : déplacement et attaque.</summary>

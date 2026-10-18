@@ -177,6 +177,9 @@ namespace Archery.Bows
         Collider[] m_OwnColliders = Array.Empty<Collider>();
         bool m_Stowed;
         readonly List<Renderer> m_StowedRenderers = new List<Renderer>();
+        bool m_DesktopHeld;
+        Transform m_DesktopRingAnchor;
+        readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
 
         public BowDefinition Definition
         {
@@ -184,11 +187,23 @@ namespace Archery.Bows
             set => m_Definition = value;
         }
 
+        /// <summary>L'arc du début de la partie, avant tout achat (l'épreuve du portail des étoiles le rend le temps du passage).</summary>
+        public BowDefinition StartingDefinition { get; private set; }
+
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
 
         /// <summary>Arc rangé pendant une construction au marteau (GDD, section 9) : invisible et impossible à prendre.</summary>
         public bool IsStowed => m_Stowed;
+
+        /// <summary>Sans casque : l'arc est tenu devant la caméra par le <see cref="DesktopArcher"/>.</summary>
+        public bool IsDesktopHeld => m_DesktopHeld;
+
+        /// <summary>
+        /// Position du repose-flèche par rapport à la racine de l'arc, modèle au repos : sans casque, l'arc se place
+        /// pour que la flèche passe là où on la veut à l'écran.
+        /// </summary>
+        public Vector3 RestOffset => (m_Model != null ? m_Model.localPosition : Vector3.zero) + m_RestLocal;
 
         /// <summary>Partie visuelle qui pivote pendant la visée, et son repose-flèche : la main gantée s'y cale.</summary>
         public Transform Model => m_Model;
@@ -233,6 +248,7 @@ namespace Archery.Bows
         protected override void Awake()
         {
             base.Awake();
+            StartingDefinition = m_Definition;
             m_Body = GetComponent<Rigidbody>();
             m_OwnColliders = GetComponentsInChildren<Collider>(true);
             ArrowIgnore.Register(m_OwnColliders);
@@ -280,9 +296,9 @@ namespace Archery.Bows
 
         // Une seule main tient l'arc : l'autre ne peut pas le lui « voler » en approchant pour encocher.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            base.IsSelectableBy(interactor) && !m_Stowed && (!isSelected || IsSelected(interactor));
+            base.IsSelectableBy(interactor) && !m_Stowed && !m_DesktopHeld && (!isSelected || IsSelected(interactor));
 
-        public override bool IsHoverableBy(IXRHoverInteractor interactor) => base.IsHoverableBy(interactor) && !m_Stowed;
+        public override bool IsHoverableBy(IXRHoverInteractor interactor) => base.IsHoverableBy(interactor) && !m_Stowed && !m_DesktopHeld;
 
         /// <summary>
         /// Range l'arc (construction au marteau) : la main le lâche, il disparaît à sa place près du joueur.
@@ -370,7 +386,7 @@ namespace Archery.Bows
                         TryNock();
                         UpdateDraw(Time.deltaTime, true);
                     }
-                    else
+                    else if (!m_DesktopHeld)
                     {
                         UpdateReturn(Time.deltaTime);
                     }
@@ -451,6 +467,111 @@ namespace Archery.Bows
                 Origin = origin,
                 Direction = m_AimDirection,
             });
+        }
+
+        // ---- Sans casque (DesktopArcher) : l'arc est tenu devant la caméra, le clic gauche tend la corde.
+
+        /// <summary>
+        /// Sans casque : l'arc est tenu devant la caméra (<see cref="DesktopUpdate"/> le place) au lieu de revenir près
+        /// du joueur. L'anneau de timing se place sur <paramref name="ringAnchor"/> (autour du viseur), s'il est donné.
+        /// </summary>
+        public void SetDesktopHeld(bool held, Transform ringAnchor = null)
+        {
+            m_DesktopRingAnchor = held ? ringAnchor : null;
+            if (held == m_DesktopHeld)
+                return;
+
+            m_DesktopHeld = held;
+            if (held)
+            {
+                if (isSelected && interactionManager != null)
+                    interactionManager.CancelInteractableSelection((IXRSelectInteractable)this);
+                m_Holstered = false;
+                if (m_Nocked == null)
+                    CacheGeometry();
+
+                // Collé devant la caméra, l'arc ne doit ni heurter le corps du joueur, ni cacher ce qu'on vise :
+                // personne ne l'attrape sans casque, ses colliders sont coupés.
+                m_DesktopDisabledColliders.Clear();
+                foreach (var collider in m_OwnColliders)
+                {
+                    if (collider == null || !collider.enabled)
+                        continue;
+                    collider.enabled = false;
+                    m_DesktopDisabledColliders.Add(collider);
+                }
+
+                return;
+            }
+
+            foreach (var collider in m_DesktopDisabledColliders)
+            {
+                if (collider != null)
+                    collider.enabled = true;
+            }
+
+            m_DesktopDisabledColliders.Clear();
+            Unnock();
+            if (m_AimGuide != null)
+                m_AimGuide.Hide();
+            m_TimeSinceRelease = m_ReturnDelay;
+        }
+
+        /// <summary>
+        /// Sans casque : encoche une flèche sortie du carquois. Faux si l'arc n'est pas tenu au clavier, s'il est rangé
+        /// (construction) ou s'il a déjà une flèche.
+        /// </summary>
+        public bool DesktopNock(Arrow arrow)
+        {
+            if (!m_DesktopHeld || m_Stowed || m_Nocked != null || arrow == null || m_Model == null)
+                return false;
+
+            arrow.NockWithoutHand(this);
+            m_Nocked = arrow;
+            m_DrawRatio = 0f;
+            m_DrawDistance = 0f;
+            m_LastTickRatio = 0f;
+            m_ModelRotation = Quaternion.identity;
+            m_Model.localRotation = Quaternion.identity;
+            arrow.SetNockedPose(m_Model.TransformPoint(NockLocal(0f)), m_Model.rotation);
+            Sfx.Play(m_NockClip, arrow.NockPosition, 0.8f);
+            return true;
+        }
+
+        /// <summary>
+        /// Sans casque, à chaque image : place l'arc (son axe Z donne la direction du tir) et tend la corde à
+        /// <paramref name="drawRatio"/> (0 à 1) de la tension maximale. L'anneau de timing, le grincement et l'aide
+        /// à la visée suivent, comme en VR.
+        /// </summary>
+        public void DesktopUpdate(Vector3 position, Quaternion rotation, float drawRatio, float deltaTime)
+        {
+            if (!m_DesktopHeld)
+                return;
+
+            if (m_Body != null && !m_Body.isKinematic)
+                m_Body.isKinematic = true;
+            transform.SetPositionAndRotation(position, rotation);
+            if (m_Nocked == null || m_Model == null)
+                return;
+
+            m_ModelRotation = Quaternion.identity;
+            m_Model.localRotation = Quaternion.identity;
+            ApplyDraw(Mathf.Clamp01(drawRatio) * MaxDraw, deltaTime, true, null);
+        }
+
+        /// <summary>
+        /// Sans casque : lâche la corde. La flèche part si la corde était assez tendue ; sinon, elle retourne dans le
+        /// carquois (en VR, elle tomberait).
+        /// </summary>
+        public void DesktopRelease()
+        {
+            if (!m_DesktopHeld || m_Nocked == null)
+                return;
+
+            if (m_DrawRatio < Def.minDrawToFire)
+                Unnock();
+            else
+                OnNockedArrowReleased(m_Nocked, null, true);
         }
 
         /// <summary>
@@ -678,6 +799,12 @@ namespace Archery.Bows
                 m_ModelRotation = Quaternion.Slerp(m_ModelRotation, targetRotation, 1f - Mathf.Exp(-m_AimSmoothing * deltaTime));
 
             m_Model.localRotation = m_ModelRotation;
+            ApplyDraw(draw, deltaTime, gameplay, hand);
+        }
+
+        // La flèche se place sur la corde tendue de « draw » (m) ; en jeu, la tension fait vibrer, grincer et lance l'anneau.
+        void ApplyDraw(float draw, float deltaTime, bool gameplay, IXRSelectInteractor hand)
+        {
             m_DrawDistance = draw;
             m_Nocked.SetNockedPose(m_Model.TransformPoint(NockLocal(draw)), m_Model.rotation);
             m_AimDirection = m_Model.forward;
@@ -809,9 +936,17 @@ namespace Archery.Bows
 
             if (m_TimingRing != null)
             {
-                var offset = m_RingOffset;
-                offset.x = Mathf.Abs(offset.x) * OutsideSign();
-                m_TimingRing.transform.position = m_Model.TransformPoint(offset);
+                if (m_DesktopRingAnchor != null)
+                {
+                    // Sans casque : autour du viseur, au centre de l'écran.
+                    m_TimingRing.transform.position = m_DesktopRingAnchor.position;
+                }
+                else
+                {
+                    var offset = m_RingOffset;
+                    offset.x = Mathf.Abs(offset.x) * OutsideSign();
+                    m_TimingRing.transform.position = m_Model.TransformPoint(offset);
+                }
             }
 
             UpdateAimGuide(drawRatio);

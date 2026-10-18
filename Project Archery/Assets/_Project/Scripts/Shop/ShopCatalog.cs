@@ -102,6 +102,18 @@ namespace Archery.Shop
         public Color towerColor = new Color(0.9f, 0.68f, 0.45f);
         public Color defenseColor = new Color(1f, 0.55f, 0.25f);
 
+        [Header("Icônes des cartes")]
+        [Tooltip("Carte des arcs. Celles des améliorations sont dans la liste « Upgrades » (champ « Icon »).")]
+        public Sprite bowIcon;
+
+        [Tooltip("Carte « Réparer la tour ».")]
+        public Sprite repairIcon;
+
+        [Tooltip("Carte « Reconstruire la tour », et la carte de la tour quand elle est intacte.")]
+        public Sprite towerIcon;
+
+        public Sprite barricadeIcon;
+
         public Color ColorOf(UpgradeRarity rarity) => rarity switch
         {
             UpgradeRarity.Rare => rareColor,
@@ -205,27 +217,27 @@ namespace Archery.Shop
             // Aucune limite d'achat : les bonus se cumulent, et au-delà de 100 % de chance un effet devient plus fort.
             upgrades = new List<Upgrade>
             {
-                new Upgrade("Dégâts", "+10 % de dégâts.", UpgradeRarity.Common, UpgradeEffect.Damage, 0.1f),
-                new Upgrade("Flèches rapides", "+8 % de vitesse : les flèches vont plus loin et tombent moins.", UpgradeRarity.Common, UpgradeEffect.ArrowSpeed, 0.08f),
-                new Upgrade("Charge rapide", "L'anneau va 15 % plus vite, et toutes ses bandes s'élargissent un peu.", UpgradeRarity.Common, UpgradeEffect.QuickCharge, 0.15f),
-                new Upgrade("Précision", "Bande verte (tir parfait) 15 % plus large.", UpgradeRarity.Common, UpgradeEffect.Precision, 0.15f),
-                new Upgrade("Vitalité", "+15 PV max.", UpgradeRarity.Common, UpgradeEffect.Vitality, 15f),
-                new Upgrade("Butin", "+20 % d'or : 30 % des points deviennent de l'or au lieu de 25 %.", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
-                new Upgrade("Chasseur de têtes", "+25 % de dégâts à la tête.", UpgradeRarity.Common, UpgradeEffect.HeadHunter, 0.25f),
-                new Upgrade("Chance", "Les cartes rares et légendaires sortent plus souvent (+25 % de poids). Il reste toujours des cartes communes.", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
-                new Upgrade("Puissance", "+25 % de dégâts.", UpgradeRarity.Rare, UpgradeEffect.Damage, 0.25f),
-                new Upgrade("Multitir", "+50 % de chance de tirer une flèche en plus. Avec 2 exemplaires, une flèche en plus à chaque tir ; avec 3, 50 % de chance d'une deuxième, etc. La flèche de l'arc part toujours tout droit.", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
-                new Upgrade("Flèche de foudre", "Chaque flèche a 20 % de chance d'appeler un éclair qui blesse la cible et la ralentit. Au-delà de 100 % : éclairs plus forts.", UpgradeRarity.Rare, UpgradeEffect.Lightning, 0.2f),
-                new Upgrade("Perçage", "Chaque flèche a 25 % de chance de traverser un ennemi. Au-delà de 100 % : plusieurs ennemis traversés.", UpgradeRarity.Rare, UpgradeEffect.Piercing, 0.25f),
-                new Upgrade("Vampirisme", "Chaque tir à la tête rend 2 PV.", UpgradeRarity.Rare, UpgradeEffect.Vampirism, 2f),
-                new Upgrade("Tir écho", "25 % de chance que la volée se répète un instant après, à la même puissance. Au-delà de 100 % : plusieurs échos.", UpgradeRarity.Rare, UpgradeEffect.Echo, 0.25f),
-                new Upgrade("Flèche de glace", "Chaque flèche a 25 % de chance de laisser au sol une zone de glace qui ralentit les ennemis. Au-delà de 100 % : glace plus forte et plus grande.", UpgradeRarity.Rare, UpgradeEffect.Frost, 0.25f),
-                new Upgrade("Force du géant", "+60 % de dégâts.", UpgradeRarity.Legendary, UpgradeEffect.Damage, 0.6f),
-                new Upgrade("Déluge", "En vol, chaque flèche a 50 % de chance de se diviser en deux. Avec 2 exemplaires, toujours ; avec 3, 50 % de chance d'une troisième flèche, etc. Elle continue tout droit.", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
-                new Upgrade("Chaîne d'éclairs", "La foudre rebondit sur 3 ennemis proches de plus. Sans Flèche de foudre, 20 % des flèches l'appellent.", UpgradeRarity.Legendary, UpgradeEffect.ChainLightning, 3f),
-                new Upgrade("Flèche explosive", "Chaque flèche a 25 % de chance d'exploser et de toucher les ennemis autour. Au-delà de 100 % : explosions plus fortes et plus larges.", UpgradeRarity.Legendary, UpgradeEffect.Explosive, 0.25f),
-                new Upgrade("Auto-visée", "Les flèches dévient vers l'ennemi le plus proche, s'il est à moins de 12 m devant elles. Encore : elles tournent plus vite.", UpgradeRarity.Legendary, UpgradeEffect.Homing, 30f),
-                new Upgrade("Tir ricochet", "Après avoir touché un ennemi, la flèche rebondit vers un autre ennemi proche. Encore : un rebond de plus.", UpgradeRarity.Legendary, UpgradeEffect.Ricochet, 1f),
+                new Upgrade("Dégâts", "+10 % de dégâts", UpgradeRarity.Common, UpgradeEffect.Damage, 0.1f),
+                new Upgrade("Flèches rapides", "+8 % de vitesse des flèches", UpgradeRarity.Common, UpgradeEffect.ArrowSpeed, 0.08f),
+                new Upgrade("Charge rapide", "Anneau 15 % plus rapide", UpgradeRarity.Common, UpgradeEffect.QuickCharge, 0.15f),
+                new Upgrade("Précision", "Bande verte 15 % plus large", UpgradeRarity.Common, UpgradeEffect.Precision, 0.15f),
+                new Upgrade("Vitalité", "+15 PV max", UpgradeRarity.Common, UpgradeEffect.Vitality, 15f),
+                new Upgrade("Butin", "+20 % d'or", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
+                new Upgrade("Chasseur de têtes", "+25 % de dégâts à la tête", UpgradeRarity.Common, UpgradeEffect.HeadHunter, 0.25f),
+                new Upgrade("Chance", "Plus de cartes rares et légendaires", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
+                new Upgrade("Puissance", "+25 % de dégâts", UpgradeRarity.Rare, UpgradeEffect.Damage, 0.25f),
+                new Upgrade("Multitir", "+50 % de chance de tirer une flèche supplémentaire", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
+                new Upgrade("Flèche de foudre", "20 % de chance d'appeler la foudre", UpgradeRarity.Rare, UpgradeEffect.Lightning, 0.2f),
+                new Upgrade("Perçage", "25 % de chance de traverser un ennemi", UpgradeRarity.Rare, UpgradeEffect.Piercing, 0.25f),
+                new Upgrade("Vampirisme", "+2 PV par tir à la tête", UpgradeRarity.Rare, UpgradeEffect.Vampirism, 2f),
+                new Upgrade("Tir écho", "25 % de chance de répéter le tir", UpgradeRarity.Rare, UpgradeEffect.Echo, 0.25f),
+                new Upgrade("Flèche de glace", "25 % de chance de geler le sol", UpgradeRarity.Rare, UpgradeEffect.Frost, 0.25f),
+                new Upgrade("Force du géant", "+60 % de dégâts", UpgradeRarity.Legendary, UpgradeEffect.Damage, 0.6f),
+                new Upgrade("Déluge", "50 % de chance que la flèche se divise", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
+                new Upgrade("Chaîne d'éclairs", "La foudre rebondit sur 3 ennemis", UpgradeRarity.Legendary, UpgradeEffect.ChainLightning, 3f),
+                new Upgrade("Flèche explosive", "25 % de chance d'exploser", UpgradeRarity.Legendary, UpgradeEffect.Explosive, 0.25f),
+                new Upgrade("Auto-visée", "Les flèches visent l'ennemi proche", UpgradeRarity.Legendary, UpgradeEffect.Homing, 30f),
+                new Upgrade("Tir ricochet", "La flèche rebondit sur un autre ennemi", UpgradeRarity.Legendary, UpgradeEffect.Ricochet, 1f),
             };
 
             rarityOdds = new List<RarityOdds>

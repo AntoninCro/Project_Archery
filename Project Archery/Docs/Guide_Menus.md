@@ -3,12 +3,16 @@
 Ce guide ajoute les menus du GDD (sections 14 et 15) à la scène `Prototype_Tir` :
 
 1. **Menu principal**, en haut de la tour avant la première vague :
-   - *Jouer*, avec le choix de la difficulté ;
    - *Paramètres* ;
+   - *Tutoriel* ;
    - *Classement* ;
    - *Quitter*.
 
-   Le gong et les panneaux de difficulté marchent toujours.
+   Depuis le 16 octobre, *Jouer* et la ligne de difficulté sont retirés : on choisit la difficulté en tirant sur un panneau (ou en le cliquant), et on lance la partie avec le gong ; une phrase le rappelle en haut de l'accueil. L'éditeur fait ce changement tout seul à l'ouverture de la scène (`Editor/MainMenuBaker.cs`) : il reste à l'enregistrer. Les étapes de montage ci-dessous décrivent encore l'ancien accueil.
+
+   **Tout se clique ou se tire** : chaque bouton, case et curseur des menus se clique au rayon de la main, ou se déclenche d'une flèche (un curseur prend la valeur de l'endroit touché ; « Quitter » demande deux flèches). Les panneaux de difficulté se cliquent aussi au rayon.
+
+   **Tutoriel** (page fabriquée en jeu, `Scripts/Menus/TutorialMenu.cs`) : 4 catégories (Tir, Déplacement, Vagues, Construction) et 13 fenêtres, chacune avec un titre, un cadre vidéo 16:9, deux ou trois lignes, les flèches « < » « > » et « Retour ». Les textes sont dans l'asset `Resources/TutorialContent` (créé par l'éditeur, modifiable dans l'inspecteur). Les vidéos se branchent toutes seules : dépose `Tir_1.mp4`, `Tir_2.mp4`, `Deplacement_1.mp4`… dans `Resources/Tutoriel` (la liste complète est dans `LISEZMOI.txt` de ce dossier) ; elles tournent en boucle, sans le son, et sans vidéo le cadre affiche « Vidéo à venir ».
 2. **Paramètres** : volumes général, musique et effets, et rotation au joystick (par crans). Ils sont enregistrés dans `settings.json`.
 3. **Fin de partie** : après ta mort, un écran apparaît devant toi.
    - Il affiche le résumé de la partie : score, vague, difficulté, ennemis tués, tirs à la tête, tirs parfaits.
@@ -74,7 +78,7 @@ Il prend la place de la boutique, à ta gauche. Ils ne sont jamais visibles en m
 3. Dans `Main Menu`, *UI > Image*, nomme-la `Content` : étirée sur tout le Canvas, noire, alpha 170.
 4. Dans `Content`, un texte `Title` (*UI > Text - TextMeshPro*) :
    - ancre en haut au centre, position `(0, -60)`, 900 × 90 ;
-   - taille 56, gras, centré, texte « VR Archery Challenge ».
+   - taille 56, gras, centré, texte « THUNK VR » (le nom du jeu depuis le 16 octobre au soir ; avant, « VR Archery Challenge » puis « SLACK VR »). Le titre se met tout seul : à l'ouverture de la scène, l'éditeur remplace un ancien nom par celui de `GameInfo.Name` (il reste à enregistrer la scène).
 
 ### Les pages
 
@@ -138,7 +142,7 @@ Ensuite, en dessous des lignes :
    - *Snap Turn Button* : `Snap Turn`, et *Snap Turn Text* : son texte.
    - le curseur « Confort » (vignette de confort) s'ajoute avec `Guide_Deplacements.md`.
 
-Le menu disparaît dès que la vague 1 commence, que ce soit par le gong ou par *Jouer*.
+Le menu disparaît dès que la vague 1 commence, au coup de gong.
 
 ## 4. Le clavier virtuel
 
@@ -196,6 +200,16 @@ Il se place tout seul devant toi quand il apparaît : sa position dans la scène
    - Le message indique ta place.
 5. *Rejouer* : fondu au noir, retour au menu. Ton nom sera proposé à la partie suivante, et les paramètres sont gardés.
 6. Relance Unity : le classement et les paramètres sont toujours là (fichiers JSON).
+
+## 7. Le thème des menus (16 octobre)
+
+Les menus (menu principal, paramètres, classement, fin de partie, boutique, panneau de construction et cartes), la montre, le panneau des vagues, les panneaux de difficulté (prefab `Difficulty Panel` : un Canvas « Cadre » ajouté devant la planche) et la barre de PV des boss des vagues (prefabs `Boss_…` : 300 × 56, le nom posé dessus) sont habillés par un thème fantasy ; le bandeau des messages, la barre de PV du dragon (1300 × 72, le nom posé dessus), les orbes des coffres, les cibles de fin et les textes flottants, fabriqués ou réglés par le code, le prennent tout seuls en jeu (s'il manque l'asset `Resources/UiTheme`, ils gardent leur ancien aspect) : panneaux sombres à bordure dorée ornée, boutons colorés selon leur rôle, titres dorés en Cinzel, sons Kenney (GDD, section 14).
+
+- **Rien à faire à la main** : à l'ouverture de la scène, l'éditeur prépare tout (sprites Kenney en 9-slice, polices Cinzel pour TextMeshPro dans `_Project/UI/Fonts`, asset `Resources/UiTheme`), habille le prefab `Prefabs/UI/Shop Card` et les menus de la scène, puis marque la scène comme modifiée : **enregistre-la** (Ctrl+S). Si le résultat ne te plaît pas, ferme-la sans enregistrer.
+- **Changer les couleurs, les sprites, les polices ou les sons** : `Assets/_Project/Resources/UiTheme`, puis menu *Archery > Interface > Réappliquer le thème aux menus*. Les retouches faites à la main dans un menu restent tant que tu ne réappliques pas le thème.
+- **Le rôle d'un bouton** vient de son nom ou de son texte : « Jouer », « Rejouer », « Enregistrer », « Terminer » → valider (émeraude) ; « Retour », « Fermer » → revenir (prune) ; « Quitter » → rubis ; `<` et `>` → améthyste ; les autres → saphir.
+- **Ajouter un menu** : construis-le comme les autres (un fond `Content`, des boutons, des textes `Title`), puis réapplique le thème.
+- **Ce qui est ajouté** : un enfant « Bordure » sur les panneaux, boutons, cartes et curseurs, deux « Ornement » sous les titres (ignorés par les mises en page), et les composants `Ui Button Fx` (réaction au survol, sons) et `Ui Panel Fx` (apparition).
 
 ## En cas de problème
 

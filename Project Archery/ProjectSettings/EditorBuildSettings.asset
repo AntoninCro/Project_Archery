@@ -8,9 +8,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Prototype_Tir.unity
     guid: e9099b1c51e965049aeb6ff4170e6989
+  - enabled: 1
+    path: Assets/_Project/Scenes/Arena_Dragon.unity
+    guid: 497431d333613405a283f0796dd6fda1
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 55daccc09a3b69647bbab145b54a3ab3
+  - enabled: 1
+    path: Assets/_Project/Scenes/Dimension_Etoiles.unity
+    guid: 709103ad548a44d79c264ea6fa51f43d
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}

@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace Archery.Save
 {
@@ -17,8 +18,14 @@ namespace Archery.Save
         public float musicVolume = 0.8f;
         public float effectsVolume = 1f;
 
-        /// <summary>Rotation par crans au joystick (GDD, section 12) : pratique à désactiver avec le câble Link.</summary>
+        /// <summary>Rotation au joystick droit (GDD, section 12) : pratique à désactiver avec le câble Link.</summary>
         public bool snapTurn = true;
+
+        /// <summary>Rotation continue (douce) au lieu des crans de 45° ; elle peut gêner les joueurs sensibles au mal des transports.</summary>
+        public bool smoothTurn;
+
+        /// <summary>Vitesse de la rotation continue (°/s).</summary>
+        public float turnSpeed = 60f;
 
         /// <summary>Force de la vignette de confort pendant le slide (0 = désactivée, 1 = la plus forte).</summary>
         public float comfortVignette = 0.5f;
@@ -61,6 +68,8 @@ namespace Archery.Save
 
         readonly List<LocomotionProvider> m_TurnProviders = new List<LocomotionProvider>();
         readonly List<bool> m_TurnProvidersEnabled = new List<bool>();
+        readonly List<ContinuousTurnProvider> m_ContinuousTurns = new List<ContinuousTurnProvider>();
+        readonly List<ControllerInputActionManager> m_InputManagers = new List<ControllerInputActionManager>();
         readonly HashSet<string> m_MissingParameters = new HashSet<string>();
         bool m_Dirty;
         float m_SaveTimer;
@@ -107,6 +116,7 @@ namespace Archery.Save
             }
         }
 
+        /// <summary>Rotation au joystick activée (par crans ou continue).</summary>
         public bool SnapTurn
         {
             get => Data.snapTurn;
@@ -117,6 +127,33 @@ namespace Archery.Save
                 MarkDirty();
             }
         }
+
+        /// <summary>Rotation continue au lieu des crans.</summary>
+        public bool SmoothTurn
+        {
+            get => Data.smoothTurn;
+            set
+            {
+                Data.smoothTurn = value;
+                ApplyTurn();
+                MarkDirty();
+            }
+        }
+
+        /// <summary>Vitesse de la rotation continue (°/s), entre <see cref="MinTurnSpeed"/> et <see cref="MaxTurnSpeed"/>.</summary>
+        public float TurnSpeed
+        {
+            get => Data.turnSpeed;
+            set
+            {
+                Data.turnSpeed = Mathf.Clamp(value, MinTurnSpeed, MaxTurnSpeed);
+                ApplyTurn();
+                MarkDirty();
+            }
+        }
+
+        public const float MinTurnSpeed = 30f;
+        public const float MaxTurnSpeed = 180f;
 
         void Awake()
         {
@@ -209,9 +246,20 @@ namespace Archery.Save
                 return;
 
             foreach (var provider in origin.GetComponentsInChildren<SnapTurnProvider>(true))
+            {
+                // Pas de demi-tour en tirant le joystick vers soi : seulement les rotations à gauche et à droite.
+                provider.enableTurnAround = false;
                 AddTurnProvider(provider);
+            }
             foreach (var provider in origin.GetComponentsInChildren<ContinuousTurnProvider>(true))
+            {
+                provider.enableTurnAround = false;
+                m_ContinuousTurns.Add(provider);
                 AddTurnProvider(provider);
+            }
+
+            // Ce sont les gestionnaires d'entrées des manettes qui choisissent entre les crans et la rotation continue.
+            m_InputManagers.AddRange(origin.GetComponentsInChildren<ControllerInputActionManager>(true));
         }
 
         void AddTurnProvider(LocomotionProvider provider)
@@ -220,13 +268,27 @@ namespace Archery.Save
             m_TurnProvidersEnabled.Add(provider.enabled);
         }
 
-        // Désactivée, la rotation au joystick est coupée ; activée, on retrouve les réglages d'origine du XR Origin.
+        // Désactivée, la rotation au joystick est coupée ; activée, on retrouve les réglages d'origine du XR Origin,
+        // par crans ou en continu à la vitesse choisie.
         void ApplyTurn()
         {
             for (var i = 0; i < m_TurnProviders.Count; i++)
             {
                 if (m_TurnProviders[i] != null)
                     m_TurnProviders[i].enabled = Data.snapTurn && m_TurnProvidersEnabled[i];
+            }
+
+            foreach (var manager in m_InputManagers)
+            {
+                if (manager != null)
+                    manager.smoothTurnEnabled = Data.smoothTurn;
+            }
+
+            var speed = Mathf.Clamp(Data.turnSpeed, MinTurnSpeed, MaxTurnSpeed);
+            foreach (var provider in m_ContinuousTurns)
+            {
+                if (provider != null)
+                    provider.turnSpeed = speed;
             }
         }
 

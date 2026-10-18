@@ -17,7 +17,7 @@ MonoBehaviour:
   slot: 1
   prefab: {fileID: 240102816089958725, guid: bed273d7943f84f5fc2cd1220537aeb7, type: 3}
   color: {r: 0.55, g: 0.85, b: 1, a: 1}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
   levels:
   - cost: 40
     description: "Ralentit de 30 % les ennemis \xE0 8 m, volants compris."

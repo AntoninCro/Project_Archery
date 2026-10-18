@@ -52,3 +52,11 @@ MonoBehaviour:
     fogDensity: 0.006
     reflections: 0.7
     night: 0
+    lamps: 0.7
+    aurora: 0
+    auroraColor: {r: 0.25, g: 1, b: 0.6, a: 1}
+    shootingStars: 0
+    lightning: 0
+    colorFilter: {r: 1, g: 0.96, b: 0.92, a: 1}
+    saturation: 5
+    contrast: 0

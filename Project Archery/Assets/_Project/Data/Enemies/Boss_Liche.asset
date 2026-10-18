@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 087d9161621415942ae4e439855329e7, type: 3}
   m_Name: Boss_Liche
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
-  displayName: "Liche supr\xEAme"
-  maxHealth: 750
+  displayName: Nolan
+  maxHealth: 1335
   moveSpeed: 1.2
   attackDamage: 45
   attackRange: 30

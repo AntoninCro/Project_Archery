@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 830b09fe26fb1ce4bbbfd4a716423a11, type: 3}
+  m_Name: MapLighting
+  m_EditorClassIdentifier: Archery.Runtime::Archery.World.MapLightingSettings
+  fireMaterial: {fileID: 2100000, guid: 7abbb9439566481aba49eaa960538419, type: 2}
+  flameCoreMaterial: {fileID: 2100000, guid: 9f4c1d8e3a5b4c6d0b7e2f3a4b5c6d7e, type: 2}
+  woodMaterial: {fileID: 2100000, guid: 7e8efd45d49342de811a36665926c074, type: 2}
+  ironMaterial: {fileID: 2100000, guid: 57d2180f14c04069b21f0403e8547d96, type: 2}
+  crystalMaterial: {fileID: 2100000, guid: f1793b0a47cbda1ef932c1f451e32da8, type: 2}
+  glowMaterial: {fileID: 2100000, guid: 3ae48da0ddd2df0265d94e0eac5b8b74, type: 2}
+  beamMaterial: {fileID: 2100000, guid: da154ed903e01b840b930a340aee295a, type: 2}
+  thunderClip: {fileID: 8300000, guid: 3b3b5715bdafedb4d9c628f4a1906911, type: 3}
+  laneTorchSpacing: 9
+  lightEvery: 2
+  torchColor: {r: 1, g: 0.55, b: 0.2, a: 1}
+  torchLightRange: 7
+  torchLightIntensity: 2.5
+  igniteDuration: 4
+  alarmColor: {r: 1, g: 0.12, b: 0.06, a: 1}
+  alarmSpeed: 22
+  forestTorches: 14
+  fireflyGroups: 24
+  firefliesPerGroup: 9
+  fireflyColor: {r: 0.75, g: 1, b: 0.35, a: 1}
+  redMushroomGlow: {r: 1, g: 0.25, b: 0.55, a: 1}
+  tanMushroomGlow: {r: 0.25, g: 0.75, b: 1, a: 1}
+  mushroomGlow: 1.6
+  flowerShare: 0.35
+  flowerGlow: 1.2
+  cliffCrystals: 16
+  crystalColor: {r: 0.3, g: 1, b: 0.85, a: 1}
+  crystalIntensity: 2.5
+  lightShafts: 8
+  moteColor: {r: 1, g: 0.88, b: 0.55, a: 1}
+  waterfallMist: 1
+  rainbow: 1
+  rippleColor: {r: 0.3, g: 1, b: 0.9, a: 1}
+  beaconFull: {r: 0.35, g: 1, b: 0.5, a: 1}
+  beaconHalf: {r: 1, g: 0.7, b: 0.2, a: 1}
+  beaconLow: {r: 1, g: 0.15, b: 0.1, a: 1}
+  runeColor: {r: 0.45, g: 0.85, b: 1, a: 1}
+  soulColor: {r: 0.7, g: 0.9, b: 1, a: 1}
+  projectileLightRange: 5
+  playerLightRange: 7
+  playerLightIntensity: 0.7
+  playerLightColor: {r: 1, g: 0.85, b: 0.65, a: 1}
+  veinColor: {r: 1, g: 0.15, b: 0.05, a: 1}
+  veins: 10
+  arenaWallVeins: 18
+  arenaCeilingVeins: 10
+  arenaVeinColor: {r: 1, g: 0.28, b: 0.05, a: 1}
+  emberColor: {r: 1, g: 0.5, b: 0.15, a: 1}
+  scorchColor: {r: 1, g: 0.45, b: 0.1, a: 1}
+  warningColor: {r: 1, g: 0.18, b: 0.05, a: 1}
+  sunColor: {r: 1, g: 0.93, b: 0.78, a: 1}
+  arenaPlayerLightIntensity: 0.5
+  pillarRimMaterial: {fileID: 2100000, guid: 2a006c2281c489f584ee9e0d50c0bc6c, type: 2}
+  pillarLightColor: {r: 0.55, g: 0.72, b: 1, a: 1}
+  pillarLightIntensity: 25
+  pillarCrystalColor: {r: 0.35, g: 0.88, b: 1, a: 1}
+  coverColor: {r: 0.3, g: 0.75, b: 1, a: 1}

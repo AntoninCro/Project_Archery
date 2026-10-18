@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c80d8441badc4254891d9589d3a98680, type: 3}
   m_Name: WaveSettings
   m_EditorClassIdentifier: Archery.Runtime::Archery.Waves.WaveSettings
-  wavesToWin: 5
+  wavesToWin: 6
+  finalBossOnLastWave: 1
   firstWaveDuration: 120
   durationIncrease: 15
   calmFraction: 0.4
+  riseDurationScale: 0.5
   firstWaveBudget: 20
   budgetIncrease: 10
   calmBudgetShare: 0.15
@@ -30,7 +32,7 @@ MonoBehaviour:
   - prefab: {fileID: 1165822100067611713, guid: 4f236c123c5c4468811f9127f7ce237c, type: 3}
     cost: 2
     firstWave: 2
-    weight: 0.4
+    weight: 1
   - prefab: {fileID: 4525739273563080954, guid: 2cd11e4d5545e0349bd1d9389613c626, type: 3}
     cost: 1.5
     firstWave: 3
@@ -77,8 +79,8 @@ MonoBehaviour:
     weight: 0.5
   - prefab: {fileID: 8620367189271681972, guid: e5fd4aca613b4b8d95c76c898b02b519, type: 3}
     cost: 3.5
-    firstWave: 4
-    weight: 0.35
+    firstWave: 3
+    weight: 0.9
   - prefab: {fileID: 799037972409055980, guid: 73eae3187f8d4148b46b0c3f16064958, type: 3}
     cost: 2
     firstWave: 4
@@ -87,13 +89,26 @@ MonoBehaviour:
     cost: 3
     firstWave: 5
     weight: 0.4
+  healthPerWave:
+  - 0.85
+  - 1.1
+  - 1.65
+  - 2.2
+  - 2.85
+  countPerWave:
+  - 0.85
+  - 1
+  - 1.2
+  - 1.4
+  - 1.6
+  firstWaveCalmShare: 0.07
   endlessHealthGrowth: 1.25
   endlessDamageGrowth: 1.14
   endlessCountGrowth: 1.19
   endlessSpeedGrowth: 1.07
   endlessBossesEvery: 2
   bosses:
-  - {fileID: 6166983361453300783, guid: 1745f7196da84d4294921ad32e24c072, type: 3}
+  - {fileID: 6166983361453300783, guid: bfa2d7780abaf2cd4d952edc55b4e76f, type: 3}
   - {fileID: 3230386798650704038, guid: 2458fbb2beba424fb20cc4251ec2e013, type: 3}
   - {fileID: 6601253806700801804, guid: 3835919a5af44612988a963f437d8c51, type: 3}
   - {fileID: 6833927624573668485, guid: c6cb381b6f17401d9840ce2ca65874c3, type: 3}

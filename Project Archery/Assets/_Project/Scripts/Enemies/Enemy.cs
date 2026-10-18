@@ -90,6 +90,9 @@ namespace Archery.Enemies
         float m_RunAnimationSpeed = 1f;
         float m_SlowMultiplier = 1f;
         float m_SlowTimer;
+        float m_FadingSlow;
+        float m_FadingDuration;
+        float m_FadingAge;
         bool m_HasSpeed;
         bool m_HasAttack;
         bool m_HasHit;
@@ -115,8 +118,44 @@ namespace Archery.Enemies
         /// <summary>Multiplicateur de vitesse durable (1 = vitesse normale). Pour un ralentissement passager, voir <see cref="Slow"/>.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
+        /// <summary>
+        /// Vitesse de l'animation de course par rapport à celle des ennemis normaux (1). Un boss géant fait de grandes
+        /// enjambées : il la règle plus bas (<see cref="Boss"/>).
+        /// </summary>
+        public float RunAnimationScale { get; set; } = 1f;
+
         /// <summary>Vitesse effective (m/s) : difficulté, vague, multiplicateur durable et ralentissement en cours.</summary>
-        public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * m_SlowMultiplier;
+        public float CurrentSpeed => m_MoveSpeed * SpeedMultiplier * SlowMultiplier;
+
+        /// <summary>
+        /// Ralentissement en cours (1 = aucun, 0,75 = 25 % plus lent) : le plus fort entre <see cref="Slow"/> et
+        /// <see cref="SlowFading"/>, dans la limite de <see cref="MaxSlow"/>.
+        /// </summary>
+        public float SlowMultiplier => Mathf.Max(1f - Mathf.Clamp01(MaxSlow), Mathf.Min(m_SlowMultiplier, 1f - FadingStrength));
+
+        /// <summary>
+        /// Où en est le ralentissement qui s'estompe (<see cref="SlowFading"/>) : 1 au coup, puis de moins en moins, au même
+        /// rythme que lui, jusqu'à 0 (la teinte bleutée du dragon le suit).
+        /// </summary>
+        public float FadingSlowLevel => m_FadingSlow > 0f ? FadingStrength / m_FadingSlow : 0f;
+
+        // Part de vitesse retirée en ce moment par un ralentissement qui s'estompe : forte au coup, elle décroît au carré.
+        float FadingStrength
+        {
+            get
+            {
+                if (m_FadingAge >= m_FadingDuration)
+                    return 0f;
+                var left = 1f - m_FadingAge / m_FadingDuration;
+                return m_FadingSlow * left * left;
+            }
+        }
+
+        /// <summary>
+        /// Part de sa vitesse qu'un ralentissement peut lui retirer, tous ralentissements confondus (1 = sans limite ;
+        /// 0,25 = jamais plus de 25 % plus lent, comme le dragon du boss final).
+        /// </summary>
+        public float MaxSlow { get; set; } = 1f;
 
         /// <summary>Multiplicateur des dégâts infligés : celui de la difficulté au départ.</summary>
         public float DamageMultiplier { get; set; } = 1f;
@@ -142,6 +181,10 @@ namespace Archery.Enemies
             m_Colliders = GetComponentsInChildren<Collider>(true);
             if (m_Animator == null)
                 m_Animator = GetComponentInChildren<Animator>();
+            // Toujours animé, même quand Unity croit le modèle hors de vue (ses bornes sont souvent fausses, comme pour
+            // le mage, agrandi ×100) : sinon il glisse, figé.
+            if (m_Animator != null)
+                m_Animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             CacheAnimatorParameters();
 
             if (m_Definition == null)
@@ -199,6 +242,9 @@ namespace Archery.Enemies
                     m_SlowMultiplier = 1f;
             }
 
+            if (m_FadingAge < m_FadingDuration)
+                m_FadingAge += deltaTime;
+
             if (m_State == State.Fleeing)
             {
                 if (m_Behaviour != null)
@@ -219,9 +265,12 @@ namespace Archery.Enemies
             ChooseTarget();
             UpdatePendingHit(deltaTime);
 
+            // Un ennemi qui attaque ne repart qu'une fois nettement hors de portée : sinon, à la limite (un tireur à 25 m
+            // du joueur, qui bouge sans cesse avec le casque), il s'arrêtait et repartait plusieurs fois par seconde.
+            var range = Def.attackRange + (m_State == State.Attacking ? AttackRangeSlack : 0f);
             if (m_Target == null)
                 Stop();
-            else if (HorizontalDistance(transform.position, m_TargetPoint) <= Def.attackRange)
+            else if (HorizontalDistance(transform.position, m_TargetPoint) <= range)
                 UpdateAttack(deltaTime);
             else
                 UpdateMove(deltaTime);
@@ -232,13 +281,19 @@ namespace Archery.Enemies
         // Paramètre Speed de l'Animator. En course, l'animation accélère avec les vagues, pour que les pieds ne glissent pas.
         void UpdateAnimation()
         {
-            if (m_Animator == null)
+            if (m_Animator == null || BehaviourControlsAnimator)
                 return;
 
             if (m_HasSpeed)
                 m_Animator.SetFloat(k_SpeedId, CurrentVelocity.magnitude);
-            m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed : 1f;
+            m_Animator.speed = m_State == State.Moving || m_State == State.Fleeing ? m_RunAnimationSpeed * RunAnimationScale : 1f;
         }
+
+        bool BehaviourControlsAnimator => m_Behaviour != null && m_Behaviour.ControlsAnimator;
+
+        // Marge de la portée pendant une attaque : 12 % (3 m pour un tireur), au moins 25 cm (corps à corps, où le coup
+        // porte encore jusqu'à 30 cm au-delà de la portée).
+        float AttackRangeSlack => Mathf.Max(0.25f, Def.attackRange * 0.12f);
 
         Vector3 CurrentVelocity
         {
@@ -330,10 +385,12 @@ namespace Archery.Enemies
             if (m_AttackCooldown > 0f || m_HitDelay >= 0f)
                 return;
 
-            // L'attaque démarre ; le coup porte après le délai de préparation.
+            // L'attaque démarre ; le coup porte après le délai de préparation. Une boule chargée (liche) commence tout
+            // de suite à se former, et c'est elle qui lance l'animation, au moment du lancer.
             m_AttackCooldown = Def.attackInterval;
-            m_HitDelay = Def.attackWindup;
-            if (m_HasAttack)
+            var charged = m_RangedAttack != null && m_RangedAttack.Charges;
+            m_HitDelay = charged ? 0f : Def.attackWindup;
+            if (m_HasAttack && !charged)
                 m_Animator.SetTrigger(k_AttackId);
         }
 
@@ -449,15 +506,36 @@ namespace Archery.Enemies
 
         /// <summary>
         /// Ralentit l'ennemi pendant un moment (flèche de foudre). 0,6 = 40 % plus lent.
-        /// Si plusieurs ralentissements se cumulent, le plus fort et le plus long l'emportent.
+        /// Si plusieurs ralentissements se cumulent, le plus fort et le plus long l'emportent, dans la limite de
+        /// <see cref="MaxSlow"/>.
         /// </summary>
         public void Slow(float multiplier, float duration)
         {
             if (m_State == State.Dead || duration <= 0f)
                 return;
 
-            m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, Mathf.Clamp01(multiplier));
+            multiplier = Mathf.Max(Mathf.Clamp01(multiplier), 1f - Mathf.Clamp01(MaxSlow));
+            m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, multiplier);
             m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
+        }
+
+        /// <summary>
+        /// Ralentissement qui s'estompe vite (boule de glace d'une tour de givre, arène du boss final) : <paramref name="multiplier"/>
+        /// au coup (0,7 = 30 % plus lent, dans la limite de <see cref="MaxSlow"/>), puis de moins en moins, au carré,
+        /// jusqu'à plus rien après <paramref name="duration"/> s. Un nouveau coup repart du plus fort des deux.
+        /// </summary>
+        public void SlowFading(float multiplier, float duration)
+        {
+            if (m_State == State.Dead || duration <= 0f)
+                return;
+
+            var strength = 1f - Mathf.Clamp01(multiplier);
+            if (strength < FadingStrength)
+                return;
+
+            m_FadingSlow = strength;
+            m_FadingDuration = duration;
+            m_FadingAge = 0f;
         }
 
         void UpdateFlee(float deltaTime)
@@ -470,7 +548,7 @@ namespace Archery.Enemies
         void OnDamaged(Health health, DamageInfo info)
         {
             Damaged?.Invoke(this, info);
-            if (m_HasHit && health.IsAlive)
+            if (m_HasHit && health.IsAlive && !BehaviourControlsAnimator)
                 m_Animator.SetTrigger(k_HitId);
         }
 
@@ -502,18 +580,21 @@ namespace Archery.Enemies
 
             m_DeathTime = 0f;
             m_DeathRotation = transform.rotation;
-            if (m_HasSpeed)
-                m_Animator.SetFloat(k_SpeedId, 0f);
+            if (!BehaviourControlsAnimator)
+            {
+                if (m_HasSpeed)
+                    m_Animator.SetFloat(k_SpeedId, 0f);
 
-            // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
-            if (m_HasDie)
-            {
-                m_Animator.speed = 1f;
-                m_Animator.SetTrigger(k_DieId);
-            }
-            else if (m_Animator != null)
-            {
-                m_Animator.speed = 0f;
+                // Avec une animation de mort, on la joue ; sinon on fige la pose pour qu'il ne court plus en tombant.
+                if (m_HasDie)
+                {
+                    m_Animator.speed = 1f;
+                    m_Animator.SetTrigger(k_DieId);
+                }
+                else if (m_Animator != null)
+                {
+                    m_Animator.speed = 0f;
+                }
             }
 
             Sfx.Play(m_DeathClip, transform.position + Vector3.up, 0.9f);
@@ -526,7 +607,7 @@ namespace Archery.Enemies
             var handled = m_Behaviour != null && m_Behaviour.TickCorpse(deltaTime);
 
             // Sans animation de mort (ni chute gérée par le comportement), l'ennemi bascule en arrière.
-            if (!m_HasDie && !handled)
+            if (!m_HasDie && !handled && !BehaviourControlsAnimator)
             {
                 var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(m_DeathTime / 0.5f));
                 transform.rotation = m_DeathRotation * Quaternion.Euler(-80f * t, 0f, 0f);

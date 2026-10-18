@@ -77,8 +77,10 @@ namespace Archery.Menus
             if (highlighted)
                 m_Builder.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(m_HighlightColor)).Append('>');
 
-            m_Builder.Append(rank + 1)
-                .Append("<pos=8%>").Append(entry.name)
+            m_Builder.Append(rank + 1).Append("<pos=8%>");
+            if (entry.stars)
+                m_Builder.Append("<color=#FFD45A>").Append(StarMark()).Append("</color> ");
+            m_Builder.Append(entry.name)
                 .Append("<pos=46%>").Append(entry.score.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', ' '))
                 .Append("<pos=64%>").Append(entry.difficulty)
                 .Append("<pos=88%>").Append(entry.wave);
@@ -87,5 +89,19 @@ namespace Archery.Menus
                 m_Builder.Append("</color>");
             m_Builder.Append('\n');
         }
+
+        // L'étoile du portail des étoiles : ★ si la police (ou ses polices de secours) l'a, sinon un astérisque.
+        string StarMark()
+        {
+            if (m_StarMark == null)
+            {
+                var font = m_Table != null ? m_Table.font : null;
+                m_StarMark = font != null && font.HasCharacter('★', true, true) ? "★" : "*";
+            }
+
+            return m_StarMark;
+        }
+
+        string m_StarMark;
     }
 }

@@ -2,13 +2,13 @@
 
 Ce guide monte la boucle de jeu dans la scène `Prototype_Tir`.
 
-> **Refonte du 12 octobre** (GDD, section 3 bis), déjà réglée dans `WaveSettings` et la scène : 5 vagues de 2 à 3 min, en trois temps (accalmie, montée, puis un boss à la fin du chrono), or surtout en fin de vague avec des bonus de performance, gong pour appeler le boss plus tôt, bouton « Tour » sur la montre. Les valeurs de la partie 1 ci-dessous sont celles d'origine ; les valeurs actuelles sont dans le GDD.
+> **Refonte du 12 octobre** (GDD, section 3 bis), déjà réglée dans `WaveSettings` et la scène : des vagues de 2 à 3 min (6 vagues depuis le 13 octobre, la 6e étant celle du boss final), en trois temps (accalmie, montée, puis un boss à la fin du chrono), or surtout en fin de vague avec des bonus de performance, gong pour appeler le boss plus tôt, bouton « Tour » sur la montre. Les valeurs de la partie 1 ci-dessous sont celles d'origine ; les valeurs actuelles sont dans le GDD.
 
 1. tu tires dans un **gong** ;
 2. une **vague** démarre : un chrono de 2 min pour la première vague, puis 15 s de plus à chaque vague, d'abord une accalmie, puis la montée ;
 3. des ennemis apparaissent au fil du chrono, de plus en plus vite ;
 4. à la fin du chrono, le boss arrive ; à sa mort, les survivants s'enfuient, tes PV reviennent et tu gagnes des points et de l'or ;
-5. tu retires dans le gong pour la vague suivante. Après le boss de la vague 5, c'est la victoire : tu termines la partie depuis la boutique, ou tu continues en mode infini avec le gong.
+5. tu retires dans le gong pour la vague suivante. Après le boss final de la vague 6, c'est la victoire : tu termines la partie depuis la boutique, ou tu continues en mode infini avec le gong.
 
 Le score suit le GDD (section 8) :
 - chaque touche rapporte 5 points au corps et 10 à la tête ;
@@ -116,7 +116,7 @@ Un tableau visible depuis la tour, pour le chrono, la vague et le score.
 
 ## 8. Tester
 
-1. Lance Play et tire dans le gong : « Vague 1 / 10 » s'affiche et les chevaliers arrivent.
+1. Lance Play et tire dans le gong : « Vague 1 / 6 » s'affiche et les premiers ennemis arrivent.
 2. Tue-les :
    - chaque élimination affiche « +points » en doré, avec un son de pièce ;
    - le combo monte à chaque touche et retombe à zéro si une flèche ne touche aucun ennemi.

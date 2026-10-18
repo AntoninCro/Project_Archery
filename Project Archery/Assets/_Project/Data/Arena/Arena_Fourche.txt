@@ -1,0 +1,44 @@
+// Plan de l'arène « la fourche » : une lettre par case, 30 x 30 cases.
+// 1 case = 1 cube : réglage « Cell Size » de l'Arena Grid Builder (scènes Arena_Dragon et Arena_Fourche), 2,5 m.
+// La première ligne du plan est le fond de la grotte (côté dragon), la dernière le côté porte.
+// Change une lettre et enregistre : le sol se refait tout seul dans la scène.
+//
+//   #  roche (paroi)                  ^  plateau en hauteur (inaccessible)
+//   .  sol                            ~  lave au niveau du sol
+//   !  lave sur le plateau (coulée qui tombe sur la lave du sol)
+//   o  pilier (abri)                  D  estrade du dragon
+//   T  emplacement de tourelle (sur le plateau)
+//   S  arrivée du joueur              P  porte (au bout du couloir)
+//
+// Une rangée de roche entoure toujours le plan. Les lignes qui commencent par // sont ignorées.
+
+##########^^^^!!^^^^##########
+#######^^^^^^^!!^^^^^^^#######
+#######^^^^^^^!!^^^^^^^#######
+####^^^^^^T^^^!!^^^T^^^^^^####
+###^^^^^^^^^^^!!^^^^^^^^^^^###
+###^^^T^^^D..^!!^^....^T^^^###
+##^^^^^^DDD...~~.......oo^^^##
+#^^^^^^.DD....~~...oo..oo.^^^#
+#^^^^^.......~~~...oo....^^^^#
+##^^^^^......~~~.........^T^^#
+##^^^T^.....~~~~~.........^^^^
+##^^^^^....~~~.~~~~.......^^^^
+^^^^^.....~~~...~~~~~~~~..^^^^
+^^^^.....~~~......~~~~~~~~~^^^
+^^^...~~~~~.............~~~~##
+^^^.~~~~~...............^^^~##
+^~~~~~..................^^^^##
+~~~~........o............^^^##
+~~^.........o.............^^^^
+^^^........................^^^
+#^^^^....oo..............^^^^#
+#^^^^....oo.......oo.....^^^^#
+#^^^^.^...........oo...^.^^^^#
+##^^^^^^............^^^^^^^^##
+###^^^^^^^.......^^^^^^^^^^###
+###^^^^^^^^^^.S.^^^^^^^^^^^###
+####^^^^^^^^^...^^^^^^^^^^####
+#######^^^^^^...^^^^^^^#######
+#######^^^^^^...^^^^^^^#######
+##########^^^PPP^^^^##########

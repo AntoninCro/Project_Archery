@@ -12,6 +12,8 @@ Ce guide ajoute les coffres du GDD (section 13) à la scène `Prototype_Tir`, av
 
 Au-dessus de chaque orbe, « PERMANENT » ou « TEMPORAIRE », puis le nom de la récompense dans sa couleur : blanc, bleu ou doré pour une amélioration, comme en boutique (avec sa rareté dessous) ; rouge (dégâts), vert (tirs parfaits) ou cyan (anneau rapide) pour un bonus (avec sa durée dessous).
 
+L'orbe elle-même n'est plus une boule mais l'icône de sa récompense, celle de la boutique, de la même couleur, dans un sceau doré qui tourne. Un bonus prend l'icône de l'amélioration qui lui ressemble : l'épée de Dégâts, la cible de Précision, l'anneau de Charge rapide. Le morceau d'arc légendaire garde sa boule. La boule du prefab `Chest Orb` reste comme repère dans l'éditeur ; elle est cachée en jeu quand la récompense a une icône.
+
 Le ralenti dure jusqu'au choix d'une orbe, au plus 6 s ; les orbes restent ensuite jusqu'à la fin de la vague.
 
 Pendant **Tirs parfaits**, l'anneau est presque entièrement vert, et tout tir lâché à pleine tension compte comme parfait.

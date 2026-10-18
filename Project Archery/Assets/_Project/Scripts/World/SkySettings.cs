@@ -82,6 +82,38 @@ namespace Archery.World
         [Tooltip("Ciel de nuit : allume les objets « Night Only » (lanterne de la tour, yeux des ennemis).")]
         public bool night;
 
+        [Header("Lumières de la carte")]
+        [Tooltip("Éclat des lumières de la carte (torches, lucioles, champignons, cristaux, rivière…) : 0 = plein jour " +
+                 "(presque rien), 1 = pleine nuit.")]
+        [Range(0f, 1f)]
+        public float lamps = 0.7f;
+
+        [Tooltip("Aurore dans le ciel (0 = aucune).")]
+        [Range(0f, 1f)]
+        public float aurora;
+
+        public Color auroraColor = new Color(0.25f, 1f, 0.6f);
+
+        [Tooltip("Étoiles filantes (0 = aucune, 1 = une toutes les quelques secondes). Elles ne se voient que là où il y a des étoiles.")]
+        [Range(0f, 1f)]
+        public float shootingStars;
+
+        [Tooltip("Éclairs au loin : nombre moyen par minute (0 = aucun).")]
+        [Range(0f, 12f)]
+        public float lightning;
+
+        [Header("Étalonnage de l'image")]
+        [Tooltip("Teinte de toute l'image (blanc = aucune).")]
+        public Color colorFilter = new Color(1f, 0.96f, 0.92f);
+
+        [Tooltip("Ajouté à la saturation réglée dans le volume de la carte.")]
+        [Range(-50f, 50f)]
+        public float saturation = 5f;
+
+        [Tooltip("Ajouté au contraste réglé dans le volume de la carte.")]
+        [Range(-50f, 50f)]
+        public float contrast;
+
         /// <summary>Direction de l'astre vue depuis le sol (vecteur unitaire).</summary>
         public Vector3 DiscDirection => Quaternion.Euler(-elevation, azimuth, 0f) * Vector3.forward;
 
@@ -114,6 +146,14 @@ namespace Archery.World
             fogDensity = Mathf.Lerp(from.fogDensity, to.fogDensity, t);
             reflections = Mathf.Lerp(from.reflections, to.reflections, t);
             night = t < 0.5f ? from.night : to.night;
+            lamps = Mathf.Lerp(from.lamps, to.lamps, t);
+            aurora = Mathf.Lerp(from.aurora, to.aurora, t);
+            auroraColor = Color.Lerp(from.auroraColor, to.auroraColor, t);
+            shootingStars = Mathf.Lerp(from.shootingStars, to.shootingStars, t);
+            lightning = Mathf.Lerp(from.lightning, to.lightning, t);
+            colorFilter = Color.Lerp(from.colorFilter, to.colorFilter, t);
+            saturation = Mathf.Lerp(from.saturation, to.saturation, t);
+            contrast = Mathf.Lerp(from.contrast, to.contrast, t);
         }
 
         // Les quatre ciels du GDD (section 11). Valeurs de départ, à ajuster à l'œil dans les assets.
@@ -142,6 +182,9 @@ namespace Archery.World
             fogDensity = 0.004f,
             reflections = 1f,
             night = false,
+            lamps = 0.15f,
+            colorFilter = Color.white,
+            saturation = 0f,
         };
 
         /// <summary>Normal : coucher de soleil, à gauche du chemin des ennemis.</summary>
@@ -171,6 +214,13 @@ namespace Archery.World
             fogDensity = 0.012f,
             reflections = 0.2f,
             night = true,
+            lamps = 1f,
+            aurora = 0.8f,
+            auroraColor = new Color(0.25f, 1f, 0.6f),
+            shootingStars = 1f,
+            colorFilter = new Color(0.88f, 0.94f, 1.05f),
+            saturation = -5f,
+            contrast = 5f,
         };
 
         /// <summary>Impossible : ciel et lune rouges, la lune juste au-dessus du chemin des ennemis.</summary>
@@ -197,6 +247,14 @@ namespace Archery.World
             fogDensity = 0.015f,
             reflections = 0.25f,
             night = true,
+            lamps = 1f,
+            aurora = 0.6f,
+            auroraColor = new Color(1f, 0.2f, 0.25f),
+            shootingStars = 0.3f,
+            lightning = 4f,
+            colorFilter = new Color(1.05f, 0.92f, 0.9f),
+            saturation = 5f,
+            contrast = 8f,
         };
     }
 }

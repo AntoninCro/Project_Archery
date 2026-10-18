@@ -327,7 +327,7 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 ### L'antre du boss (porte fermée pour l'instant)
 
 - L'entrée est maintenant la grande face du fond de la voie du milieu (section 6). La grotte du prototype (`cliff_blockCave_stone`, à `(73.5, 0, 79.5)`) est cachée derrière : tu peux la supprimer.
-- La porte : au pied de la face, au milieu de la voie, en `(67.5, 0, 67.5)`, tournée vers la tour (vers le sud-ouest). Elle peut être très grande : la partie lisse fait 12 m de large et 15 m de haut. Le nom du jeu se gravera au-dessus.
+- La porte : au pied de la face, au milieu de la voie, en `(67.5, 0, 67.5)`, tournée vers la tour (vers le sud-ouest). Elle peut être très grande : la partie lisse fait 12 m de large et 15 m de haut. Le nom du jeu est gravé au-dessus (script `Lair Gate`, GDD section 10 bis).
 - Derrière, garde un replat d'environ 30 m pour l'arène : le combat final viendra plus tard (GDD, section 23).
 
 ## 9. Les ennemis, les barricades et les coffres
@@ -371,6 +371,40 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 | `tent_detailedOpen` (1,7 m de haut) | 1,4 |
 
 > **Petits décors partout, le 11 octobre** (`Map > Dressing > Small Decor`, 828 pièces) : herbes, massifs de fleurs d'une même couleur, champignons près des arbres, cailloux plats, cailloux ronds au pied des falaises, petites plantes ; par groupes de 2 à 7, plus des touffes isolées. Ils sont posés seulement sur le dessus des blocs de terrain (jungle, terrasses, clairières), à plat : ni sur les voies, ni dans la rivière, ni sur les escaliers et les rampes, et à l'écart de la tour, des coffres, des arbres et du décor existant. Herbes, fleurs, champignons et plantes n'ont pas de collider (on marche au travers) ; les cailloux en ont un, d'où les cailloux plats sur les zones de passage. Le groupe peut être effacé et refait d'un coup si la carte change.
+
+### Le vent dans la végétation (15 octobre)
+
+Les arbres, les herbes, les fleurs et les plantes ondulent au vent ; le sol herbu, les rochers, les champignons, les souches et les falaises ne bougent pas. Rien n'a été changé dans la scène : ce sont leurs modèles qui sont préparés.
+
+- **Comment** : à l'import des modèles `tree_*`, `grass*`, `flower_*` et `plant_*` du kit Nature, le script `Assets/_Project/Editor/FoliageWindImporter.cs` écrit dans la couleur de chaque sommet sa hauteur dans le modèle, et passe leurs matériaux au shader `Archery/Foliage` (le Lit d'URP, avec du vent). Le shader pousse chaque sommet selon le vent, d'autant plus qu'il est haut : le pied ne bouge pas, les ombres suivent. Ça marche aussi sur les objets statiques (fusionnés au lancement).
+- **La première fois** qu'Unity ouvre le projet avec ces fichiers, il réimporte les modèles (une minute ou deux). La console affiche « Vent dans la végétation : … modèle(s) réimporté(s) » si certains l'ont été une seconde fois pour prendre le shader.
+- **Le régler** : `Assets/_Project/Scripts/World/Wind.cs` (*Direction*, *Strength* : 1,5 depuis le 15 octobre, 1 = brise légère, 0 = plus de vent ; *Speed*). En jeu, `Wind.Set(direction, force, vitesse)` le change pour toute la végétation (une tempête, par exemple). L'amplitude et le rythme des vagues sont dans `Assets/_Project/Shaders/FoliageWind.hlsl`.
+- **Dans la vue Scene**, le vent ne se voit qu'avec *Always Refresh* coché (menu des effets de la vue Scene).
+- **Ajouter un modèle qui bouge** : ajouter son préfixe à la liste `k_Prefixes` du script, puis clic droit sur le modèle, *Reimport*.
+- **En cas de problème** : des arbres ou des herbes roses → le shader `Archery/Foliage` n'a pas compilé (envoie-moi l'erreur de la console). Rien ne bouge → clic droit sur le dossier `kenney_nature-kit/Models`, *Reimport*, et vérifie que le matériau d'un arbre (déplie le modèle) utilise bien `Archery/Foliage`.
+
+### Les nuages (15 octobre)
+
+Des nuages en blocs, à la Minecraft, apparaissent au lancement du jeu (pas dans la vue Scene hors Play) : le `SkyController` crée un objet « Nuages » à la racine de la scène. Rien à poser.
+
+- **Les régler** : en Play, sélectionne « Nuages » et regarde le composant `Cloud Layer` ; pour garder un réglage, change la valeur par défaut dans `Scripts/World/CloudLayer.cs` : *Altitude* (80 m), *Cell Size* (10 m, côté d'un pavé), *Thickness* (4 m), *Coverage* (0,4 : part du ciel couverte), *Speed* (2 m/s, ils suivent la direction du vent), *Seed* (un autre motif).
+- **Leur couleur** suit le ciel de la difficulté (lumière ambiante d'en haut, plus celle du soleil ou de la lune). La transparence, la distance où ils s'effacent et la part du brouillard se règlent dans le matériau `Assets/_Project/Resources/Clouds` (*Alpha*, *Fade Start*, *Fade End*, *Fog Amount*).
+- **En cas de problème** : des nuages roses → le shader `Archery/Clouds` n'a pas compilé (envoie-moi l'erreur). Pas de nuages → la console dit « matériau Resources/Clouds introuvable ».
+
+### Les lumières (15 octobre)
+
+Torches, lucioles, plantes et cristaux lumineux, rivière bioluminescente, phare de la tour, runes, veines de l'antre… (détail dans le GDD, section 17 bis). Tout est rangé sous un seul objet de la scène, **« Effet »**, avec un groupe par famille : « Torches », « Nature » (lucioles, cristaux, pollen, rayons de soleil, cascades), « Jeu » (tour, runes, âmes, lueur du joueur), « Antre » (veines autour de la porte). Les lumières ont trouvé seules leur place : les arbres, champignons et fleurs par le nom de leur modèle, les voies par le NavMesh (du point d'apparition à la tour), les parois par des rayons.
+
+- **La première fois** : à l'ouverture de la scène, l'éditeur fabrique « Effet » (la console l'annonce) et marque la scène comme modifiée : **enregistre la scène** (Ctrl+S) pour le garder. Même chose pour l'arène : ouvre une fois `Scenes/Arena_Dragon` et enregistre-la.
+- **Déplacer, modifier, supprimer** : chaque torche, grappe de cristaux, essaim de lucioles, rayon, brume, rune… est un objet normal. En jeu, chacun est animé tel qu'il est : sa place, la couleur, la portée et la force de sa lumière (ou la couleur de son matériau) servent de départ. Une torche à moins de 9 m d'une voie s'allume avec elle ; les autres sont « de la forêt ». On peut dupliquer une torche (Ctrl+D) pour en ajouter.
+- **Tout cacher** : décoche « Effet » (ou un seul groupe) : rien ne s'allume en jeu, même pas les plantes lumineuses ni les remous de la rivière.
+- **Tout refaire** (après avoir changé la carte, les voies ou les réglages) : menu *Archery > Effets > Refaire les effets des scènes ouvertes*. Attention : les retouches faites à la main sont perdues.
+- **Les régler** : `Assets/_Project/Resources/MapLighting` (nombre de torches, de lucioles, de cristaux, couleurs, forces) : ces réglages servent quand « Effet » est refait.
+- **La force selon l'heure** : *Lamps* dans le ciel de chaque difficulté (`Data/Difficulties`), avec les aurores, les étoiles filantes, les éclairs et l'étalonnage (*Color Filter*, *Saturation*, *Contrast*).
+- **La rivière** : la lueur se règle dans son matériau (*Bioluminescence*, *Force de la bioluminescence*) ; les remous, dans `MapLighting` (*Ripple Color*).
+- **Si les voies changent**, refais le **Bake** du NavMesh, puis refais les effets (menu ci-dessus) : les torches sont posées le long du chemin calculé des ennemis. Si la console dit « aucune voie trouvée (NavMesh ?) » en fabriquant « Effet », le NavMesh n'était pas chargé : refais les effets une fois la scène ouverte.
+- **Images par seconde** : si ça rame dans le casque, baisse d'abord *Light Every* (une vraie lumière toutes les N torches : mets 3 ou 4), puis le nombre de lucioles et de torches de la forêt.
+- **En cas de problème** : rien n'apparaît → la console dit « réglages Resources/MapLighting introuvables ». Des objets roses → un shader n'a pas compilé (envoie-moi l'erreur). Les champignons ne luisent pas dans un build mais bien dans l'éditeur → dis-le-moi (variante de shader manquante).
 
 ## 11. Vérifier
 

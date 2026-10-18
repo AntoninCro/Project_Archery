@@ -102,6 +102,11 @@ namespace Archery.Chests
         void OnWaveStarted(int wave)
         {
             m_Pending.Clear();
+
+            // Pas de coffre pendant la vague du boss final : la carte est vide.
+            if (m_Waves.IsFinalBossWave)
+                return;
+
             m_Pending.Add(m_SpawnMoments.x);
             m_Pending.Add(m_SpawnMoments.y);
             if (Random.value < m_ExtraChestChance)

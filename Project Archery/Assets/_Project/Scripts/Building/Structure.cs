@@ -85,6 +85,42 @@ namespace Archery.Building
         /// <summary>Volume du plan pendant la construction : c'est là qu'on frappe avec le marteau.</summary>
         public Bounds ConstructionBounds => m_Bounds;
 
+        float m_RangeScale = 1f;
+        float m_Elevation;
+
+        /// <summary>
+        /// Multiplie la portée (baliste, tour de givre) : 1 sur la carte ; plus dans l'arène du boss final, où les tourelles
+        /// téléportées tirent du haut du plateau.
+        /// </summary>
+        public float RangeScale
+        {
+            get => m_RangeScale;
+            set
+            {
+                m_RangeScale = Mathf.Max(0.1f, value);
+                OnRangeChanged();
+            }
+        }
+
+        /// <summary>
+        /// Hauteur (m) du bâtiment au-dessus du sol où se battent les ennemis : 0 sur la carte ; la hauteur du plateau dans
+        /// l'arène du boss final (il touche aussi les ennemis en contrebas).
+        /// </summary>
+        public float Elevation
+        {
+            get => m_Elevation;
+            set
+            {
+                m_Elevation = Mathf.Max(0f, value);
+                OnRangeChanged();
+            }
+        }
+
+        /// <summary>Appelé quand <see cref="RangeScale"/> ou <see cref="Elevation"/> change.</summary>
+        protected virtual void OnRangeChanged()
+        {
+        }
+
         protected virtual void Awake() => ShowLevelParts(0);
 
         // Posé à la main dans la scène, sans socle : il est construit au niveau 1 dès le départ.

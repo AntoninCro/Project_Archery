@@ -21,16 +21,21 @@ MonoBehaviour:
   headSize: 1.3
   damageTaken: 0.6
   enemyCount: 0.75
+  bossHealth: 0.5
+  waveDuration: 0.5
+  lateEnemyCount: 0.5
   goldBandWidth: 1.3
   aimGuideMode: 2
   scoreMultiplier: 0.75
   structurePower: 0.75
+  ballistaFireRate: 0.5
   healthGrowthPerWave: 1.14
   damageGrowthPerWave: 1.07
   countGrowthPerWave: 1.09
   speedGrowthPerWave: 1.02
   earlyStrength: 1
   fullStrengthWave: 3
+  waveCurve: 0
   sky:
     elevation: 75
     azimuth: 30
@@ -53,3 +58,11 @@ MonoBehaviour:
     fogDensity: 0.004
     reflections: 1
     night: 0
+    lamps: 0.15
+    aurora: 0
+    auroraColor: {r: 0.25, g: 1, b: 0.6, a: 1}
+    shootingStars: 0
+    lightning: 0
+    colorFilter: {r: 1, g: 1, b: 1, a: 1}
+    saturation: 0
+    contrast: 0

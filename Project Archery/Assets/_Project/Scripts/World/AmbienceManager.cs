@@ -71,6 +71,20 @@ namespace Archery.World
         CrossFader m_Ambience;
         CrossFader m_Music;
 
+        /// <summary>
+        /// Coupe l'ambiance et les musiques en fondu (arène du boss final, qui a sa propre musique), jusqu'à ce qu'on
+        /// le remette à faux.
+        /// </summary>
+        public static bool Silenced { get; set; }
+
+        /// <summary>
+        /// Volume de l'ambiance et des musiques de la carte, de 0 à 1 (vague du boss final : il baisse à mesure que le
+        /// joueur s'éloigne de la tour vers l'antre). Suivi en douceur.
+        /// </summary>
+        public static float MapVolume { get; set; } = 1f;
+
+        float m_Output = 1f;
+
         void Awake()
         {
             m_Ambience = new CrossFader(transform, "Ambience", m_AmbienceGroup, 200);
@@ -88,10 +102,11 @@ namespace Archery.World
         {
             var deltaTime = Time.unscaledDeltaTime;
             var night = DifficultyManager.Current.sky.night;
-            m_Ambience.Play(night ? m_NightAmbience : m_DayAmbience, m_AmbienceVolume, m_FadeTime);
-            m_Music.Play(CurrentMusic(), m_MusicVolume, m_FadeTime);
-            m_Ambience.Update(deltaTime);
-            m_Music.Update(deltaTime);
+            m_Ambience.Play(Silenced ? null : night ? m_NightAmbience : m_DayAmbience, m_AmbienceVolume, m_FadeTime);
+            m_Music.Play(Silenced ? null : CurrentMusic(), m_MusicVolume, m_FadeTime);
+            m_Output = Mathf.MoveTowards(m_Output, Mathf.Clamp01(MapVolume), deltaTime / 1.5f);
+            m_Ambience.Update(deltaTime, m_Output);
+            m_Music.Update(deltaTime, m_Output);
         }
 
         AudioClip CurrentMusic()
@@ -111,10 +126,18 @@ namespace Archery.World
             }
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            Silenced = false;
+            MapVolume = 1f;
+        }
+
         /// <summary>Deux sources en boucle qui se relaient : l'une monte pendant que l'autre descend.</summary>
         sealed class CrossFader
         {
             readonly AudioSource[] m_Sources = new AudioSource[2];
+            readonly float[] m_Levels = new float[2];
             int m_Current;
             float m_TargetVolume;
             float m_FadeTime = 1f;
@@ -156,20 +179,23 @@ namespace Archery.World
                 var next = m_Sources[m_Current];
                 next.clip = clip;
                 next.volume = 0f;
+                m_Levels[m_Current] = 0f;
                 if (clip != null)
                     next.Play();
                 else
                     next.Stop();
             }
 
-            public void Update(float deltaTime)
+            // Le fondu entre les boucles, puis le volume de la carte (output) par-dessus.
+            public void Update(float deltaTime, float output)
             {
                 for (var i = 0; i < m_Sources.Length; i++)
                 {
                     var source = m_Sources[i];
                     var target = i == m_Current && source.clip != null ? m_TargetVolume : 0f;
-                    source.volume = Mathf.MoveTowards(source.volume, target, deltaTime / m_FadeTime * Mathf.Max(0.01f, m_TargetVolume));
-                    if (i != m_Current && source.isPlaying && source.volume <= 0f)
+                    m_Levels[i] = Mathf.MoveTowards(m_Levels[i], target, deltaTime / m_FadeTime * Mathf.Max(0.01f, m_TargetVolume));
+                    source.volume = m_Levels[i] * output;
+                    if (i != m_Current && source.isPlaying && m_Levels[i] <= 0f)
                         source.Stop();
                 }
             }

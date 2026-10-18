@@ -17,7 +17,7 @@ MonoBehaviour:
   slot: 0
   prefab: {fileID: 529631301920650295, guid: 40ada162d7669bb19ee51950adabcccd, type: 3}
   color: {r: 0.95, g: 0.5, b: 0.45, a: 1}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 8beff2f2271a423d809c37e9325cea1c, type: 3}
   levels:
   - cost: 25
     description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les 0,8 s."

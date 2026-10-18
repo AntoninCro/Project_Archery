@@ -68,6 +68,10 @@ namespace Archery.Shop
         [SerializeField]
         TMP_Text m_MoneyText;
 
+        [Tooltip("Retrait (px) du montant d'or depuis le bord droit de sa zone, pour qu'il ne touche pas le cadre.")]
+        [SerializeField]
+        float m_MoneyRightInset = 30f;
+
         [Tooltip("Message après un clic (« Pas assez d'or »…).")]
         [SerializeField]
         TMP_Text m_MessageText;
@@ -163,6 +167,13 @@ namespace Archery.Shop
                 m_FinishButton.onClick.AddListener(OnFinishClicked);
             if (m_Content != null)
                 m_Content.SetActive(false);
+
+            if (m_MoneyText != null)
+            {
+                var margin = m_MoneyText.margin;
+                margin.z = Mathf.Max(margin.z, m_MoneyRightInset);
+                m_MoneyText.margin = margin;
+            }
         }
 
         void Start()

@@ -1,4 +1,5 @@
 using Archery.Save;
+using Archery.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,7 +7,8 @@ using UnityEngine.UI;
 namespace Archery.Menus
 {
     /// <summary>
-    /// Page des paramètres (GDD, section 14) : volumes général, musique et effets, rotation par crans, vignette de confort.
+    /// Page des paramètres (GDD, section 14) : volumes général, musique et effets, rotation au joystick (par crans,
+    /// continue à la vitesse choisie, ou coupée), vignette de confort.
     /// Les changements s'appliquent tout de suite et sont enregistrés dans settings.json.
     /// </summary>
     /// <remarks>Les curseurs vont de 0 à 1 (valeurs par défaut d'un Slider). Tous les champs sont optionnels.</remarks>
@@ -51,10 +53,25 @@ namespace Archery.Menus
         [SerializeField]
         TMP_Text m_SnapTurnText;
 
+        [Tooltip("Optionnel : vitesse de la rotation continue. Vide : une ligne est ajoutée sous le bouton de rotation, " +
+                 "sur le modèle de celle de la vignette.")]
+        [SerializeField]
+        Slider m_TurnSpeedSlider;
+
+        [SerializeField]
+        TMP_Text m_TurnSpeedValue;
+
+        GameObject m_TurnSpeedRow;
+
         void Awake()
         {
+            BuildTurnSpeedRow();
+
+            // Le bouton passe d'un mode à l'autre : par crans, continue, coupée.
             if (m_SnapTurnButton != null)
-                m_SnapTurnButton.onClick.AddListener(() => OnSnapTurnChanged(!GameSettings.Data.snapTurn));
+                m_SnapTurnButton.onClick.AddListener(NextTurnMode);
+            if (m_TurnSpeedSlider != null)
+                m_TurnSpeedSlider.onValueChanged.AddListener(OnTurnSpeedChanged);
 
             if (m_MasterSlider != null)
                 m_MasterSlider.onValueChanged.AddListener(value => Apply(settings => settings.MasterVolume = value, m_MasterValue, value));
@@ -79,6 +96,82 @@ namespace Archery.Menus
                 m_VignetteSlider.SetValueWithoutNotify(data.comfortVignette);
             ShowVignette(data.comfortVignette);
             ShowSnapTurn(data.snapTurn);
+        }
+
+        // La ligne « Vitesse de rotation » : une copie de celle de la vignette, placée juste sous le bouton de rotation.
+        void BuildTurnSpeedRow()
+        {
+            if (m_TurnSpeedSlider != null)
+            {
+                m_TurnSpeedRow = m_TurnSpeedSlider.transform.parent.gameObject;
+                return;
+            }
+
+            if (m_VignetteSlider == null || m_SnapTurnButton == null)
+                return;
+
+            var template = m_VignetteSlider.transform.parent;
+            var row = Instantiate(template.gameObject, template.parent, false);
+            row.name = "Turn Speed row";
+            row.transform.SetSiblingIndex(m_SnapTurnButton.transform.GetSiblingIndex() + 1);
+            m_TurnSpeedRow = row;
+            m_TurnSpeedSlider = row.GetComponentInChildren<Slider>(true);
+            foreach (var text in row.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (text.name == "Label")
+                    text.text = "Vitesse de rotation";
+                else if (text.name == "Value")
+                    m_TurnSpeedValue = text;
+            }
+
+            // Une ligne de plus : on resserre un peu les lignes pour que tout tienne dans la page.
+            if (template.parent.TryGetComponent<VerticalLayoutGroup>(out var layout))
+                layout.spacing = Mathf.Min(layout.spacing, 12f);
+            MenuArrowTarget.AttachAll(row);
+        }
+
+        void NextTurnMode()
+        {
+            var settings = GameSettings.Instance;
+            if (settings == null)
+            {
+                Debug.LogWarning("SettingsPanel : aucun Game Settings dans la scène.", this);
+                return;
+            }
+
+            var data = GameSettings.Data;
+            if (!data.snapTurn)
+            {
+                settings.SmoothTurn = false;
+                settings.SnapTurn = true;
+            }
+            else if (!data.smoothTurn)
+            {
+                settings.SmoothTurn = true;
+            }
+            else
+            {
+                settings.SnapTurn = false;
+            }
+
+            ShowSnapTurn(data.snapTurn);
+        }
+
+        void OnTurnSpeedChanged(float value)
+        {
+            var settings = GameSettings.Instance;
+            if (settings != null)
+                settings.TurnSpeed = Mathf.Lerp(GameSettings.MinTurnSpeed, GameSettings.MaxTurnSpeed, value);
+            ShowTurnSpeed();
+        }
+
+        void ShowTurnSpeed()
+        {
+            var speed = Mathf.Clamp(GameSettings.Data.turnSpeed, GameSettings.MinTurnSpeed, GameSettings.MaxTurnSpeed);
+            if (m_TurnSpeedSlider != null)
+                m_TurnSpeedSlider.SetValueWithoutNotify(Mathf.InverseLerp(GameSettings.MinTurnSpeed, GameSettings.MaxTurnSpeed, speed));
+            if (m_TurnSpeedValue != null)
+                m_TurnSpeedValue.text = Mathf.RoundToInt(speed) + " °/s";
         }
 
         void Apply(System.Action<GameSettings> change, TMP_Text label, float value)
@@ -115,10 +208,16 @@ namespace Archery.Menus
 
         void ShowSnapTurn(bool isOn)
         {
+            var smooth = isOn && GameSettings.Data.smoothTurn;
             if (m_SnapTurnToggle != null)
                 m_SnapTurnToggle.SetIsOnWithoutNotify(isOn);
             if (m_SnapTurnText != null)
-                m_SnapTurnText.text = "Rotation au joystick : " + (isOn ? "oui" : "non");
+                m_SnapTurnText.text = "Rotation au joystick : " + (!isOn ? "non" : smooth ? "continue" : "par crans");
+
+            // La vitesse ne sert qu'à la rotation continue.
+            if (m_TurnSpeedRow != null)
+                m_TurnSpeedRow.SetActive(smooth);
+            ShowTurnSpeed();
         }
 
         static void Show(Slider slider, TMP_Text label, float value)

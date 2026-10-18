@@ -42,6 +42,12 @@ namespace Archery.Combat
         public bool IsAlive => m_Current > 0f;
         public UnityEvent OnDeath => m_OnDeath;
 
+        /// <summary>
+        /// Figé (la carte pendant l'épreuve du portail des étoiles) : il ne prend plus de dégâts et ne se régénère plus.
+        /// Ses scripts sont alors désactivés : un ennemi tué pendant ce temps ne serait jamais compté comme mort.
+        /// </summary>
+        public bool Frozen { get; set; }
+
         void OnEnable() => m_Current = m_MaxHealth;
 
         public void ResetHealth(float max)
@@ -71,7 +77,7 @@ namespace Archery.Combat
 
         public void TakeDamage(in DamageInfo info)
         {
-            if (!IsAlive || info.Amount <= 0f)
+            if (!IsAlive || info.Amount <= 0f || Frozen)
                 return;
 
             m_LastDamageTime = Time.time;
@@ -87,7 +93,7 @@ namespace Archery.Combat
 
         void Update()
         {
-            if (m_RegenPerSecond > 0f && IsAlive && m_Current < m_MaxHealth && Time.time - m_LastDamageTime > m_RegenDelay)
+            if (m_RegenPerSecond > 0f && !Frozen && IsAlive && m_Current < m_MaxHealth && Time.time - m_LastDamageTime > m_RegenDelay)
                 m_Current = Mathf.Min(m_MaxHealth, m_Current + m_RegenPerSecond * Time.deltaTime);
         }
     }

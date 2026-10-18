@@ -1,6 +1,6 @@
 # Guide : le boss des vagues 5, 10, 15…
 
-> **Historique.** Ce guide décrit l'ancien boss, un chevalier géant monté à la main. Depuis le 12 octobre au soir, il est retiré : chaque vague a son propre boss (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), généré par Claude dans `Prefabs/Boss_*.prefab`, avec ses données dans `Data/Enemies/Boss_*.asset`. La liste se règle dans `WaveSettings`, champ *Bosses* (un par vague, dans l'ordre). Le composant `Boss`, la barre de PV et les points faibles marchent comme décrit ci-dessous.
+> **Historique.** Ce guide décrit l'ancien boss, un chevalier géant monté à la main. Depuis le 12 octobre au soir, il est retiré : chaque vague a son propre boss (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), généré par Claude dans `Prefabs/Boss_*.prefab`, avec ses données dans `Data/Enemies/Boss_*.asset`. La liste se règle dans `WaveSettings`, champ *Bosses* (un par vague, dans l'ordre). Le composant `Boss`, la barre de PV et les points faibles marchent comme décrit ci-dessous. Depuis le 13 octobre, la partie compte 6 vagues : la vague 6 est celle du boss final, le dragon rouge (GDD, section 23).
 
 Ce guide ajoute le boss du GDD (sections 3 et 10) à la scène `Prototype_Tir`.
 
@@ -115,3 +115,4 @@ Ils sont vides sans boss. Tu peux par exemple ajouter un texte `Boss` au grand p
 - **Les points faibles ne font pas plus de dégâts** : la sphère doit avoir son *Sphere Collider* et une `Hitbox` en *WeakPoint* avec *Damage Multiplier* 3.
 - **La console dit « le collider … n'a pas de Hitbox »** : un collider sans `Hitbox` traîne dans le boss (par exemple une sphère de décor). Supprime son collider ou ajoute-lui une `Hitbox`.
 - **La barre de PV ne bouge pas** : *Fill* doit être branché, et l'image `Fill` étirée sur toute la barre (ancres à gauche et à droite).
+- **Le boss s'agite trop vite en courant, ou son point faible bouge trop** (16 octobre) : sur le composant `Boss` du prefab `Boss_*`, *Run Animation Speed* règle la vitesse de son animation de course (0,35 par défaut : un tiers de celle des petits ennemis, à la taille d'un géant ; plus bas, ses pieds glissent) et *Weak Point Steadiness* le calme de son point faible (0,8 par défaut : il suit le corps du boss, mais ne garde qu'un quart des secousses de l'animation ; 1 = encore plus stable, 0 = comme avant). Chaque boss peut avoir ses propres valeurs.

@@ -2,6 +2,8 @@ using System;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Difficulty;
+using Archery.Effects;
 using Archery.UI;
 using UnityEngine;
 using UnityEngine.AI;
@@ -63,6 +65,24 @@ namespace Archery.Enemies
         [SerializeField]
         Color m_TextColor = new Color(1f, 0.35f, 0.25f);
 
+        [Header("Points faibles")]
+        [Tooltip("Couleur de la gemme de ses points faibles (Hitbox « WeakPoint ») : une par boss, qui ressort sur son modèle.")]
+        [SerializeField]
+        Color m_WeakPointColor = new Color(0.15f, 0.92f, 1f);
+
+        [Tooltip("Le point faible suit le corps du boss, mais garde moins les secousses de son animation (0 : il les suit " +
+                 "toutes, 1 : il ne garde que les mouvements lents) : plus facile à viser.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_WeakPointSteadiness = 0.8f;
+
+        [Header("Animation")]
+        [Tooltip("Vitesse de l'animation de course (1 : celle des ennemis normaux). Un boss géant fait de grandes enjambées : " +
+                 "plus lente, elle colle à sa taille et le rend plus facile à viser.")]
+        [Range(0.1f, 1f)]
+        [SerializeField]
+        float m_RunAnimationSpeed = 0.35f;
+
         Enemy m_Enemy;
         float m_SummonTimer;
 
@@ -81,14 +101,28 @@ namespace Archery.Enemies
         /// <summary>Numéro du boss dans la partie (1 = le premier), réglé par le Wave Manager à son apparition.</summary>
         public int BossNumber { get; set; } = 1;
 
-        void Awake() => m_Enemy = GetComponent<Enemy>();
+        void Awake()
+        {
+            m_Enemy = GetComponent<Enemy>();
+            m_Enemy.RunAnimationScale = m_RunAnimationSpeed;
+        }
 
         void Start()
         {
-            // Enemy a déjà appliqué la difficulté ; on ajoute la croissance d'un boss à l'autre.
-            var growth = 1f + m_HealthGrowthPerBoss * Mathf.Max(0, BossNumber - 1);
+            // Enemy a déjà appliqué la difficulté des ennemis ; on ajoute celle des boss et la croissance d'un boss à l'autre.
+            var growth = (1f + m_HealthGrowthPerBoss * Mathf.Max(0, BossNumber - 1)) * DifficultyManager.Current.bossHealth;
             if (!Mathf.Approximately(growth, 1f))
                 Health.ResetHealth(Health.Max * growth);
+
+            // Ses points faibles deviennent des gemmes serties d'or (la boule des prefabs ne sert qu'à les placer), qui
+            // s'agitent moins que l'os qui les porte.
+            foreach (var hitbox in GetComponentsInChildren<Hitbox>(true))
+            {
+                if (hitbox.Zone != HitZone.WeakPoint)
+                    continue;
+                WeakPointVisual.Attach(hitbox, m_WeakPointColor);
+                SteadyWeakPoint.Attach(hitbox.transform, transform, m_WeakPointSteadiness);
+            }
 
             m_SummonTimer = m_FirstSummonDelay;
             Health.Died += OnDied;

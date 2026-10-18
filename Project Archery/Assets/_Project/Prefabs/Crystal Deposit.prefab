@@ -138,6 +138,11 @@ MonoBehaviour:
   m_MaxHarvestDistance: 5
   m_GlowColor: {r: 1, g: 1, b: 1, a: 1}
   m_ShardCount: 16
+  m_BeamMaterial: {fileID: 2100000, guid: da154ed903e01b840b930a340aee295a, type: 2}
+  m_BeamHeight: 30
+  m_BeamWidth: 1.2
+  m_BeamColor: {r: 0.62, g: 0.4, b: 1, a: 1}
+  m_BeamIntensity: 1.6
   m_HarvestClip: {fileID: 8300000, guid: 5ea653a48d862a1458c496279007dad8, type: 3}
   m_VanishClip: {fileID: 8300000, guid: bb458ec4bae533f42887047fcc63da7c, type: 3}
 --- !u!1001 &608459663464267748

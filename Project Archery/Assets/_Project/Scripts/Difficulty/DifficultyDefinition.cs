@@ -57,6 +57,20 @@ namespace Archery.Difficulty
         [Min(0.1f)]
         public float enemyCount = 1f;
 
+        [Tooltip("Multiplie les PV des boss (boss de fin de vague et dragon), en plus de « Enemy Health ».")]
+        [Min(0.1f)]
+        public float bossHealth = 1f;
+
+        [Header("Vagues")]
+        [Tooltip("Multiplie la durée du chrono des vagues (accalmie et montée).")]
+        [Min(0.1f)]
+        public float waveDuration = 1f;
+
+        [Tooltip("Garde cette part des ennemis qui arrivent après l'accalmie (montée, renforts pendant le boss). " +
+                 "Ceux de l'accalmie, au début de la vague, ne changent pas.")]
+        [Range(0.1f, 1f)]
+        public float lateEnemyCount = 1f;
+
         [Header("Tir")]
         [Tooltip("Multiplie la largeur de la bande verte (tir parfait) de l'anneau de timing.")]
         [Min(0.1f)]
@@ -94,6 +108,11 @@ namespace Archery.Difficulty
         [Min(2)]
         public int fullStrengthWave = 3;
 
+        [Tooltip("Part de la courbe vague par vague des Wave Settings (PV et nombre d'ennemis) appliquée : 1 = toute, " +
+                 "0 = aucune (Facile).")]
+        [Range(0f, 1f)]
+        public float waveCurve = 1f;
+
         [Header("Score")]
         [Tooltip("Multiplie tous les points gagnés.")]
         [Min(0f)]
@@ -104,6 +123,10 @@ namespace Archery.Difficulty
                  "Il compense le nombre d'ennemis de la difficulté : une baliste garde la même utilité dans tous les modes.")]
         [Min(0f)]
         public float structurePower = 1f;
+
+        [Tooltip("Multiplie la cadence de tir des balistes (0,5 = deux fois moins de tirs).")]
+        [Min(0.1f)]
+        public float ballistaFireRate = 1f;
 
         [Header("Ciel")]
         public SkySettings sky = SkySettings.Sunset();
@@ -133,16 +156,21 @@ namespace Archery.Difficulty
             headSize = 1.3f;
             damageTaken = 0.6f;
             enemyCount = 0.75f;
+            bossHealth = 0.5f;
+            waveDuration = 0.5f;
+            lateEnemyCount = 0.5f;
             goldBandWidth = 1.3f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 0.75f;
             structurePower = 0.75f;
+            ballistaFireRate = 0.5f;
             healthGrowthPerWave = 1.14f;
             damageGrowthPerWave = 1.07f;
             countGrowthPerWave = 1.09f;
             speedGrowthPerWave = 1.02f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 0f;
             sky = SkySettings.Noon();
             EndFill();
         }
@@ -159,16 +187,21 @@ namespace Archery.Difficulty
             headSize = 1f;
             damageTaken = 1f;
             enemyCount = 1f;
+            bossHealth = 1f;
+            waveDuration = 1f;
+            lateEnemyCount = 1f;
             goldBandWidth = 1f;
             aimGuideMode = AimGuideMode.Trajectory;
             scoreMultiplier = 1f;
             structurePower = 1f;
+            ballistaFireRate = 1f;
             healthGrowthPerWave = 1.19f;
             damageGrowthPerWave = 1.09f;
             countGrowthPerWave = 1.12f;
             speedGrowthPerWave = 1.05f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.Sunset();
             EndFill();
         }
@@ -185,16 +218,21 @@ namespace Archery.Difficulty
             headSize = 0.85f;
             damageTaken = 1.3f;
             enemyCount = 1.25f;
+            bossHealth = 1f;
+            waveDuration = 1f;
+            lateEnemyCount = 1f;
             goldBandWidth = 0.85f;
             aimGuideMode = AimGuideMode.Line;
             scoreMultiplier = 1.5f;
             structurePower = 1.25f;
+            ballistaFireRate = 1f;
             healthGrowthPerWave = 1.27f;
             damageGrowthPerWave = 1.14f;
             countGrowthPerWave = 1.16f;
             speedGrowthPerWave = 1.06f;
             earlyStrength = 1f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.Night();
             EndFill();
         }
@@ -211,16 +249,21 @@ namespace Archery.Difficulty
             headSize = 0.75f;
             damageTaken = 1.8f;
             enemyCount = 1.6f;
+            bossHealth = 1f;
+            waveDuration = 1f;
+            lateEnemyCount = 1f;
             goldBandWidth = 0.7f;
             aimGuideMode = AimGuideMode.None;
             scoreMultiplier = 2f;
             structurePower = 1.6f;
+            ballistaFireRate = 1f;
             healthGrowthPerWave = 1.34f;
             damageGrowthPerWave = 1.19f;
             countGrowthPerWave = 1.21f;
             speedGrowthPerWave = 1.07f;
             earlyStrength = 0.5f;
             fullStrengthWave = 3;
+            waveCurve = 1f;
             sky = SkySettings.BloodMoon();
             EndFill();
         }

@@ -23,7 +23,30 @@ namespace Archery.World
         [SerializeField]
         float m_SpeedMultiplier = 0.6f;
 
+        static readonly System.Collections.Generic.List<SlowWater> s_All = new System.Collections.Generic.List<SlowWater>();
+
         float m_TickTimer;
+
+        /// <summary>Les zones d'eau actives de la scène.</summary>
+        public static System.Collections.Generic.IReadOnlyList<SlowWater> All => s_All;
+
+        /// <summary>Ce point est-il dans l'eau d'une des zones ? (Aussi hors du jeu, dans l'éditeur.)</summary>
+        public static bool InAnyWater(Vector3 position)
+        {
+            // Hors du jeu, les zones ne s'inscrivent pas (pas d'OnEnable) : on les cherche dans la scène.
+            var waters = Application.isPlaying ? (System.Collections.Generic.IEnumerable<SlowWater>)s_All : FindObjectsByType<SlowWater>();
+            foreach (var water in waters)
+            {
+                if (water != null && water.Contains(position))
+                    return true;
+            }
+
+            return false;
+        }
+
+        void OnEnable() => s_All.Add(this);
+
+        void OnDisable() => s_All.Remove(this);
 
         void Update()
         {
@@ -40,7 +63,8 @@ namespace Archery.World
             }
         }
 
-        bool Contains(Vector3 position)
+        /// <summary>Ce point est-il dans la zone ?</summary>
+        public bool Contains(Vector3 position)
         {
             var local = Quaternion.Inverse(transform.rotation) * (position - transform.position);
             return Mathf.Abs(local.x) <= m_Size.x * 0.5f && Mathf.Abs(local.y) <= m_Size.y * 0.5f &&

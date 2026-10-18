@@ -16,6 +16,9 @@ Shader "Archery/StylizedSky"
         _GlowSize ("Étendue du halo (radians)", Range(0.01, 1)) = 0.44
         _MoonSurface ("Taches de la lune", Range(0, 1)) = 0
         _Stars ("Étoiles", Range(0, 1)) = 0
+        _Aurora ("Aurore", Range(0, 1)) = 0
+        [HDR] _AuroraColor ("Couleur de l'aurore", Color) = (0.25, 1, 0.6, 1)
+        _ShootingStars ("Étoiles filantes", Range(0, 1)) = 0
     }
 
     SubShader
@@ -53,7 +56,13 @@ Shader "Archery/StylizedSky"
                 float _GlowSize;
                 float _MoonSurface;
                 float _Stars;
+                float _Aurora;
+                half4 _AuroraColor;
+                float _ShootingStars;
             CBUFFER_END
+
+            // Éclair en cours (0 à 1), réglé pour tout le jeu par le SkyController : le ciel blanchit un instant.
+            float _ArcheryFlash;
 
             struct Attributes
             {
@@ -103,6 +112,80 @@ Shader "Archery/StylizedSky"
                 return smoothstep(0.22, 0.0, distanceToStar) * lerp(0.35, 1.0, brightness) * twinkle;
             }
 
+            float Hash12(float2 p)
+            {
+                float3 p3 = frac(float3(p.xyx) * 0.1031);
+                p3 += dot(p3, p3.yzx + 33.33);
+                return frac((p3.x + p3.y) * p3.z);
+            }
+
+            // Bruit de valeur lissé en 2D, entre 0 et 1.
+            float Noise2(float2 p)
+            {
+                float2 i = floor(p);
+                float2 f = frac(p);
+                float2 u = f * f * (3.0 - 2.0 * f);
+                return lerp(lerp(Hash12(i), Hash12(i + float2(1, 0)), u.x), lerp(Hash12(i + float2(0, 1)), Hash12(i + float2(1, 1)), u.x), u.y);
+            }
+
+            // Aurore : des voiles verticaux qui ondulent lentement, haut dans le ciel, plus vifs à leur pied.
+            half3 Aurora(float3 direction)
+            {
+                float height = direction.y;
+                if (height < 0.05)
+                    return 0;
+
+                // Projetés sur un plafond : les voiles s'étirent vers l'horizon.
+                float2 p = direction.xz / (height + 0.25) * 1.4;
+                float time = _Time.y * 0.03;
+                half curtains = 0;
+                for (int layer = 0; layer < 3; layer++)
+                {
+                    float2 q = p * (1.0 + layer * 0.55) + float2(layer * 3.7, layer * 1.3);
+                    float warp = Noise2(q * 0.6 + float2(time * (1.0 + layer), -time)) * 5.0;
+                    float band = sin(q.x * 1.6 + q.y * 0.5 + warp);
+                    curtains += smoothstep(0.35, 1.0, band) * (0.65 - layer * 0.15) * (0.6 + 0.4 * Noise2(q * 2.0 + time * 4.0));
+                }
+
+                half fade = saturate((height - 0.05) / 0.2) * saturate((0.95 - height) / 0.45);
+                half shimmer = 0.85 + 0.15 * sin(_Time.y * 0.8 + p.x * 2.0);
+                return _AuroraColor.rgb * curtains * fade * shimmer;
+            }
+
+            // Étoiles filantes : de temps en temps, un trait lumineux traverse le ciel en moins d'une seconde.
+            half ShootingStars(float3 direction)
+            {
+                float height = direction.y;
+                if (height < 0.15)
+                    return 0;
+
+                float2 p = direction.xz / height;
+                half light = 0;
+                for (int slot = 0; slot < 2; slot++)
+                {
+                    float period = 5.0 + slot * 2.3;
+                    float t = _Time.y / period + slot * 0.37;
+                    float index = floor(t);
+                    float phase = frac(t) * period;
+                    if (phase > 0.9 || Hash12(float2(index, slot)) > _ShootingStars)
+                        continue;
+
+                    // Départ et sens tirés au hasard ; la tête avance, la queue s'efface derrière elle.
+                    float2 start = (float2(Hash12(float2(index, 7.1 + slot)), Hash12(float2(index, 3.3 + slot))) - 0.5) * 2.4;
+                    float angle = Hash12(float2(index, 9.7 + slot)) * 6.2831853;
+                    float2 velocity = float2(cos(angle), sin(angle)) * 1.6;
+                    float2 head = start + velocity * phase;
+                    float2 tail = head - velocity * 0.18;
+                    float2 segment = head - tail;
+                    float along = saturate(dot(p - tail, segment) / dot(segment, segment));
+                    float distanceToTrail = length(p - (tail + segment * along));
+                    half fade = smoothstep(0.0, 0.1, phase) * smoothstep(0.9, 0.6, phase);
+                    light += smoothstep(0.012, 0.0, distanceToTrail) * along * fade;
+                }
+
+                return light;
+            }
+
             // Tache sombre de la lune, dans le repère du disque (de -1 à 1).
             half Patch(float2 uv, float2 center, float radius, half darkness)
             {
@@ -141,6 +224,13 @@ Shader "Archery/StylizedSky"
 
                 if (_Stars > 0.001)
                     color += StarField(direction) * _Stars * saturate(height * 6.0);
+                if (_Aurora > 0.001)
+                    color += Aurora(direction) * _Aurora;
+                if (_ShootingStars > 0.001 && _Stars > 0.001)
+                    color += ShootingStars(direction) * _Stars * half3(1.0, 0.95, 0.85) * 1.5;
+
+                // Éclair : tout le ciel s'éclaire d'un coup, surtout près de l'horizon.
+                color += _ArcheryFlash * half3(0.75, 0.78, 0.95) * (0.6 + 0.4 * (1.0 - saturate(height)));
 
                 // Halo, puis disque du soleil ou de la lune. Près de l'astre, cette distance vaut l'angle en radians.
                 float3 discDirection = normalize(_DiscDirection.xyz);

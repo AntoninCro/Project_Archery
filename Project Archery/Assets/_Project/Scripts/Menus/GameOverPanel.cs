@@ -187,6 +187,7 @@ namespace Archery.Menus
                 wave = m_Waves != null ? m_Waves.WaveNumber : 0,
                 kills = score != null ? score.Kills : 0,
                 date = LeaderboardEntry.Now(),
+                stars = Portal.StarPortal.TrialCompleted,
             });
 
             if (m_NameSection != null)
@@ -213,7 +214,8 @@ namespace Archery.Menus
             var fader = ScreenFader.Instance;
             if (fader != null)
                 yield return fader.Fade(1f, 0.5f);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // La scène de cet écran (la partie), pas la scène active : dans l'arène du boss final, c'est l'arène.
+            SceneManager.LoadScene(gameObject.scene.buildIndex);
         }
 
         string Summary()

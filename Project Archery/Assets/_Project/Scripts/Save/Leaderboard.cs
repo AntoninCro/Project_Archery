@@ -21,6 +21,9 @@ namespace Archery.Save
         /// <summary>Date de la partie, « 2026-10-23 14:05 ».</summary>
         public string date;
 
+        /// <summary>L'épreuve du portail des étoiles a été réussie pendant la partie : une étoile à côté du nom.</summary>
+        public bool stars;
+
         public static string Now() => DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 

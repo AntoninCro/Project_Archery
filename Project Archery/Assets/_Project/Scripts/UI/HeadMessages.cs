@@ -20,7 +20,7 @@ namespace Archery.UI
         const float k_Distance = 2f;            // m devant les yeux
         const float k_Height = 0.12f;           // m : bas de la pile, au-dessus du regard
         const float k_PixelSize = 0.001f;       // m par unité du canevas
-        const float k_FontSize = 80f;           // 8 cm à 2 m, pour un message de taille 1
+        const float k_FontSize = 92f;           // 9 cm à 2 m, pour un message de taille 1
         const float k_MaxWidth = 1300f;         // largeur maximale d'une ligne (1,3 m)
         const float k_FollowAngle = 20f;        // écart entre le regard et le bandeau avant qu'il revienne
         const float k_SettleAngle = 4f;
@@ -29,7 +29,12 @@ namespace Archery.UI
         const float k_Fade = 0.35f;             // s
         const int k_MaxMessages = 3;
 
-        static readonly Color k_Backdrop = new Color(0.04f, 0.04f, 0.07f, 0.72f);
+        // Les messages restent plus longtemps que demandé (les joueurs n'avaient pas le temps de les lire), et au moins 4 s.
+        const float k_DurationScale = 1.6f;
+        const float k_MinDuration = 4f;
+
+        static readonly Color k_Backdrop = new Color(0.04f, 0.04f, 0.07f, 0.85f);
+        static readonly Color k_Outline = new Color(0.02f, 0.01f, 0.04f, 1f);
 
         class Entry
         {
@@ -37,9 +42,29 @@ namespace Archery.UI
             public CanvasGroup Group;
             public float Age;
             public float Duration;
+
+            /// <summary>Message épinglé : il reste jusqu'à <see cref="Unpin"/> (vide pour un message ordinaire).</summary>
+            public string PinId;
         }
 
         static HeadMessages s_Instance;
+        static UiTheme s_Theme;
+        static bool s_ThemeLoaded;
+
+        // Le thème des menus (panneau sombre à bordure dorée ornée, texte en Cinzel) ; sans lui, l'ancien bandeau.
+        static UiTheme Theme
+        {
+            get
+            {
+                if (!s_ThemeLoaded)
+                {
+                    s_ThemeLoaded = true;
+                    s_Theme = UiTheme.Load();
+                }
+
+                return s_Theme;
+            }
+        }
 
         readonly List<Entry> m_Entries = new List<Entry>();
         RectTransform m_Stack;
@@ -57,7 +82,37 @@ namespace Archery.UI
 
             if (s_Instance == null)
                 s_Instance = Create();
-            s_Instance.Add(text, color, duration, size);
+            s_Instance.Add(text, color, Mathf.Max(k_MinDuration, duration * k_DurationScale), size, null);
+        }
+
+        /// <summary>
+        /// Affiche un message qui reste devant le joueur jusqu'à <see cref="Unpin"/> avec le même <paramref name="id"/>
+        /// (un message épinglé du même nom est remplacé). Les autres messages s'empilent au-dessus.
+        /// </summary>
+        public static void Pin(string id, string text, Color color, float size = 1f)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(text))
+                return;
+
+            if (s_Instance == null)
+                s_Instance = Create();
+            Unpin(id);
+            s_Instance.Add(text, color, float.PositiveInfinity, size, id);
+        }
+
+        /// <summary>Retire (en fondu) le message épinglé <paramref name="id"/>, s'il est affiché.</summary>
+        public static void Unpin(string id)
+        {
+            if (s_Instance == null)
+                return;
+
+            foreach (var entry in s_Instance.m_Entries)
+            {
+                if (entry.PinId != id)
+                    continue;
+                entry.PinId = null;
+                entry.Duration = Mathf.Min(entry.Duration, entry.Age + k_Fade);
+            }
         }
 
         static HeadMessages Create()
@@ -90,10 +145,16 @@ namespace Archery.UI
             return messages;
         }
 
-        void Add(string text, Color color, float duration, float size)
+        void Add(string text, Color color, float duration, float size, string pinId)
         {
+            // Les plus anciens laissent la place ; un message épinglé reste.
             while (m_Entries.Count >= k_MaxMessages)
-                Remove(m_Entries[0]);
+            {
+                var oldest = m_Entries.Find(entry => entry.PinId == null);
+                if (oldest == null)
+                    break;
+                Remove(oldest);
+            }
 
             var root = new GameObject("Message", typeof(RectTransform));
             root.transform.SetParent(m_Stack, false);
@@ -118,10 +179,29 @@ namespace Archery.UI
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.raycastTarget = false;
+
+            var theme = Theme;
+            if (theme != null)
+            {
+                // Coins à la mesure du message (plus grands pour un titre), et deux traits ornés sous les grands messages.
+                UiThemer.ApplyPanel(backdrop, theme, 18f * size, 0.95f);
+                UiThemer.ApplyLabel(tmp, theme);
+                if (size >= 1.3f)
+                    UiThemer.AddSideOrnaments((RectTransform)root.transform, theme, new Vector2(0f, padding * 0.5f), 8f, 220f * size, 24f,
+                                              new Vector2(0.5f, 0f));
+            }
+
+            // Un contour sombre détache le texte de tout ce qu'il y a derrière (ciel clair, lave, explosions).
+            tmp.outlineWidth = 0.18f;
+            tmp.outlineColor = k_Outline;
+
             var element = label.AddComponent<LayoutElement>();
             element.preferredWidth = Mathf.Min(k_MaxWidth, tmp.GetPreferredValues(text, float.PositiveInfinity, float.PositiveInfinity).x + 4f);
 
-            var entry = new Entry { Root = root, Group = root.AddComponent<CanvasGroup>(), Duration = Mathf.Max(1f, duration) };
+            var entry = new Entry
+            {
+                Root = root, Group = root.AddComponent<CanvasGroup>(), Duration = Mathf.Max(1f, duration), PinId = pinId,
+            };
             entry.Group.alpha = 0f;
             m_Entries.Add(entry);
 
@@ -232,6 +312,11 @@ namespace Archery.UI
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => s_Instance = null;
+        static void ResetStatics()
+        {
+            s_Instance = null;
+            s_Theme = null;
+            s_ThemeLoaded = false;
+        }
     }
 }

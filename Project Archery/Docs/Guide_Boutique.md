@@ -20,7 +20,7 @@ Les prix montent de trois façons, qui se cumulent (tableau dans le GDD, section
 - **+5 % à chaque amélioration achetée** (celles des coffres ne comptent pas) : plus tu en achètes, plus la suivante coûte cher. Après un achat, les prix des autres cartes montent tout de suite ;
 - **en mode infini, ×1,2 à chaque vague**, pour tout (relance, arc et tour compris).
 
-L'or gagné baisse aussi à partir de la vague 5 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
+L'or gagné baisse aussi en mode infini, à partir de la vague 7 (GDD, section 8), et les flèches en plus ne rapportent pas de points de touche.
 
 ### Les 21 améliorations
 
@@ -67,7 +67,9 @@ Quelques règles :
 | `Player Upgrades` | Garde les améliorations achetées et applique leurs bonus | Objet `Game` |
 | `Special Arrows` | Flèches spéciales : division, écho, perçage, foudre, explosion, glace, auto-visée, ricochet | Objet `Game` |
 | `Shop Panel` | Affiche la boutique et transmet les clics | Canvas de la boutique |
-| `Shop Card` | Une carte : nom, rareté, description, prix | Chaque carte |
+| `Shop Card` | Une carte : icône, nom, rareté, description courte, prix | Chaque carte |
+
+**Textes et icônes des cartes** (16 octobre) : chaque carte a une petite icône, de la couleur de l'offre, au-dessus de son nom, et un texte d'une ligne ou deux (« +50 % de chance de tirer une flèche supplémentaire »). Les règles complètes restent dans le tableau ci-dessus. Les icônes sont dans `UI/Icones` (silhouettes blanches dessinées pour le jeu, libres de droits). Elles se changent dans le catalogue : champ *Icon* de chaque amélioration, et *Bow Icon*, *Repair Icon*, *Tower Icon*, *Barricade Icon* pour les autres cartes. Celles des constructions sont dans leurs assets (`Data/Structures`, champ *Icon*).
 
 Les sons sont dans `Audio/Placeholder` : `shop_buy`, `shop_error`, `shop_reroll`, `tower_repair`, `lightning`, `explosion`, `ice_zone` et `ricochet`. Le tir écho réutilise `bow_release`.
 
@@ -242,7 +244,7 @@ Sans effet, l'explosion fait une gerbe d'éclairs orange et un « boum ». Pour 
 - achète quelques *Chance* : elles augmentent leurs chances ;
 - l'or de **M** paie les relances.
 
-**Pour tester les prix** : achète une carte, les prix des autres cartes montent de 5 %. Enchaîne **N** : à chaque pause, les prix sont 10 % plus élevés.
+**Pour tester les prix** : achète une carte, les prix des autres cartes montent de 10 %. Enchaîne **N** : à chaque pause, les prix sont 24 % plus élevés.
 
 Les effets à vérifier :
 - *Multitir* : un tir sur deux, une deuxième flèche part 20 cm à côté de la première, parallèle à elle. Avec 2 exemplaires, à chaque tir ; à partir de 4 exemplaires (3 flèches), l'éventail s'ouvre de chaque côté ;

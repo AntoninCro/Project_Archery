@@ -3,11 +3,14 @@
     "rootNamespace": "Archery",
     "references": [
         "Unity.XR.Interaction.Toolkit",
+        "Unity.XR.Interaction.Toolkit.Samples.StarterAssets",
         "Unity.XR.CoreUtils",
         "Unity.InputSystem",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
-        "Unity.Animation.Rigging"
+        "Unity.Animation.Rigging",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
