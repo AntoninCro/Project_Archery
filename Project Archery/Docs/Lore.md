@@ -193,3 +193,7 @@ Pour chacun : ce qui le déclenche, puis ce qu'il révèle.
 - **À décider** : qui est MK ; à qui appartient le meilleur score.
 - **Le reflet est un jumeau numérique** : une IA essaie de le créer en reproduisant les mouvements du joueur (tirer, avancer avec les bras, sauter, se défendre…).
 - **Méthode** : le lore avance avec tes idées, au fil du projet. Les propositions de ce document (dont le fil rouge du reflet qui s'éveille) sont une réserve, pas une direction.
+
+**Idées de futurs easter eggs**
+- *La dimension des étoiles* (le portail) : faite le 18 octobre.
+- *Une ville cyberpunk déchue* (noté le 18 octobre) : une ville un peu déchue, abandonnée, à la cyberpunk.

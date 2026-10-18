@@ -68,6 +68,10 @@ namespace Archery.Portal
         [SerializeField]
         Transform[] m_RuneObjects = new Transform[0];
 
+        [SerializeField]
+        [HideInInspector]
+        int m_RuneLayout;
+
         [Header("Dimension")]
         [Tooltip("Nom de la scène de la dimension (elle doit être dans File > Build Profiles > Scene List).")]
         [SerializeField]
@@ -641,11 +645,6 @@ namespace Archery.Portal
         {
             if (m_Opening != null)
                 DestroyImmediate(m_Opening.gameObject);
-            foreach (var runeObject in m_RuneObjects)
-            {
-                if (runeObject != null)
-                    DestroyImmediate(runeObject.gameObject);
-            }
 
             MeasureRing();
             var opening = new GameObject("Ouverture du portail").transform;
@@ -654,6 +653,24 @@ namespace Archery.Portal
             var parentScale = transform.lossyScale.x;
             opening.localScale = Vector3.one * (m_Radius / Mathf.Max(0.01f, parentScale));
             m_Opening = opening;
+            PlaceRunes();
+        }
+
+        /// <summary>Version du placement des runes (2 : au milieu des faces des obélisques, plus près des arêtes).</summary>
+        public const int RuneLayoutVersion = 2;
+
+        /// <summary>La version du placement des runes posées dans la scène.</summary>
+        public int RuneLayout => m_RuneLayout;
+
+        /// <summary>Pose de nouveau les 5 runes sur les obélisques (dans l'éditeur), sans toucher à l'ouverture.</summary>
+        [ContextMenu("Replacer les runes")]
+        public void PlaceRunes()
+        {
+            foreach (var runeObject in m_RuneObjects)
+            {
+                if (runeObject != null)
+                    DestroyImmediate(runeObject.gameObject);
+            }
 
             m_Runes.Clear();
             BuildRunes();
@@ -661,6 +678,7 @@ namespace Archery.Portal
             for (var i = 0; i < m_Runes.Count; i++)
                 m_RuneObjects[i] = m_Runes[i].Transform;
             m_Runes.Clear();
+            m_RuneLayout = RuneLayoutVersion;
         }
 
         void OnDrawGizmosSelected()
@@ -818,6 +836,14 @@ namespace Archery.Portal
             var filter = obelisk.GetComponentInChildren<MeshFilter>();
             if (filter != null && TryCastMesh(filter, axis + outward * 20f, -outward, out var hit, out var normal))
             {
+                // Puis au milieu de cette face, face à l'axe de l'obélisque : vu de l'anneau, le rayon tombe souvent près
+                // d'une arête, et la rune débordait dans le vide.
+                if (TryCastMesh(filter, axis + normal * 20f, -normal, out var centered, out var centeredNormal))
+                {
+                    hit = centered;
+                    normal = centeredNormal;
+                }
+
                 facing = normal;
                 position = hit + normal * 0.02f;
             }

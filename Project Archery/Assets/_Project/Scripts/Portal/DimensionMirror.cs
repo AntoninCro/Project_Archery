@@ -48,11 +48,12 @@ namespace Archery.Portal
         {
             EnsureRoot();
 
-            // En jeu, la liste des objets reflétés (et leurs maillages et matériaux) est relue deux fois par seconde ; dans
-            // l'éditeur, à chaque modification. Entre-temps, seules les places et les effets sont recopiés.
+            // Dans l'éditeur, tout est recopié à chaque modification. En jeu, la liste des objets reflétés est relue deux fois
+            // par seconde, leurs maillages et matériaux ne sont copiés qu'à la création de la copie, et seul ce qui a bougé
+            // (un torii qui bugue, avec son flash) est replacé : il y a des centaines de torii.
+            var playing = Application.isPlaying;
             m_GatherTimer -= Time.unscaledDeltaTime;
-            var refresh = !Application.isPlaying || m_GatherTimer <= 0f || m_Reflected.Count == 0;
-            if (refresh)
+            if (!playing || m_GatherTimer <= 0f || m_Reflected.Count == 0)
             {
                 m_GatherTimer = 0.5f;
                 Gather();
@@ -71,7 +72,13 @@ namespace Archery.Portal
                     created = true;
                 }
 
-                Place(source, copy, refresh || created);
+                var full = created || !playing;
+                var sourceTransform = source.transform;
+                if (!full && !sourceTransform.hasChanged)
+                    continue;
+
+                Place(source, copy, full);
+                sourceTransform.hasChanged = false;
             }
         }
 
