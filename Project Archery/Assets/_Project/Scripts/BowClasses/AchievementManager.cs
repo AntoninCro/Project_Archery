@@ -155,6 +155,12 @@ namespace Archery.BowClasses
 
         // ---------------------------------------------------------------- lecture
 
+        /// <summary>
+        /// Fait avancer les succès de ce type, pour ce qui n'est pas suivi par un événement (l'épreuve des étoiles, réussie :
+        /// <see cref="Archery.Portal.StarPortal"/>).
+        /// </summary>
+        public void Report(AchievementType type, int amount = 1) => Add(type, amount);
+
         public bool IsUnlocked(AchievementDefinition achievement) =>
             achievement != null && m_Entries.TryGetValue(achievement.Id, out var entry) && entry.unlocked;
 

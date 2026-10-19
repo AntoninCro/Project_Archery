@@ -45,6 +45,14 @@ namespace Archery.Bows
     }
 
     /// <summary>
+    /// Avec <see cref="IArrowHitHandler"/> : le laser de l'arc cosmique traverse cet objet sans le déclencher (boutons des
+    /// menus, panneaux de difficulté). Une flèche le déclenche toujours.
+    /// </summary>
+    public interface ILaserTransparent
+    {
+    }
+
+    /// <summary>
     /// Implémenté par ce qui réagit aux flèches : zones de touche des ennemis, cibles d'entraînement…
     /// </summary>
     public interface IArrowHitHandler

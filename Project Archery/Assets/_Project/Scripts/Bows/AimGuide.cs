@@ -12,6 +12,8 @@ namespace Archery.Bows
     /// <item>Difficile : une ligne droite dans l'axe de la flèche, sans la chute ;</item>
     /// <item>Impossible : rien.</item>
     /// </list>
+    /// Arc cosmique en surcharge (lâché maintenant, ce serait le laser) : une ligne droite sur toute la portée du laser, qui
+    /// traverse les obstacles comme lui (sauf en Impossible : rien).
     /// Sa couleur est celle de l'anneau de timing à cet instant. Le <see cref="Bow"/> la crée tout seul s'il n'en trouve pas.
     /// </summary>
     [DisallowMultipleComponent]
@@ -166,6 +168,23 @@ namespace Archery.Bows
                 ShowLine(origin, direction, color);
         }
 
+        /// <summary>
+        /// Arc cosmique en surcharge : le laser part tout droit et traverse tout, la ligne aussi, sur sa portée
+        /// (<paramref name="range"/>, en m), et s'efface vers le bout.
+        /// </summary>
+        public void ShowLaser(Vector3 origin, Vector3 direction, Color color, float strength, float range)
+        {
+            if (DifficultyManager.Current.aimGuideMode == AimGuideMode.None || strength <= 0f)
+            {
+                Hide();
+                return;
+            }
+
+            color.a = m_Opacity * Mathf.Clamp01(strength);
+            range = Mathf.Max(1f, range);
+            DrawStraight(origin, direction, range, range, color);
+        }
+
         public void Hide()
         {
             if (m_Line != null && m_Line.enabled)
@@ -178,6 +197,12 @@ namespace Archery.Bows
         void ShowLine(Vector3 origin, Vector3 direction, Color color)
         {
             var length = TryHit(origin, direction, m_MaxLength, out var hit) ? hit.distance : m_MaxLength;
+            DrawStraight(origin, direction, length, m_MaxLength, color);
+        }
+
+        // Une ligne droite de cette longueur, transparente à fadeLength (m).
+        void DrawStraight(Vector3 origin, Vector3 direction, float length, float fadeLength, Color color)
+        {
             m_Line.positionCount = 2;
             m_Line.SetPosition(0, origin);
             m_Line.SetPosition(1, origin + direction * length);
@@ -185,7 +210,7 @@ namespace Archery.Bows
             m_Line.endWidth = m_Width + m_WidthPerMeter * length;
 
             var end = color;
-            end.a *= 1f - Mathf.Clamp01(length / m_MaxLength);
+            end.a *= 1f - Mathf.Clamp01(length / fadeLength);
             m_Line.startColor = color;
             m_Line.endColor = end;
             m_Line.enabled = true;

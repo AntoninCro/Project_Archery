@@ -13,6 +13,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Licence | Ce qu'elle permet | Ce qu'elle demande |
 |---|---|---|
 | **CC0** (domaine public) | Tout : utiliser, modifier, redistribuer | Rien (créditer est apprécié) |
+| **CC-BY 3.0** (Creative Commons Attribution) | Tout : utiliser, modifier, redistribuer, même dans un jeu vendu | **Créditer l'auteur** (son nom, le titre, le lien, la licence) et dire si on l'a modifié |
 | **SIL Open Font License 1.1** (polices) | Utiliser la police dans le jeu, la redistribuer | Garder le fichier de licence avec la police ; ne pas la vendre seule ; ne pas réutiliser son nom pour une version modifiée |
 | **EULA standard de l'Asset Store** | Utiliser les assets dans ses jeux | Ne pas redistribuer les fichiers eux-mêmes (dépôt public, partage du pack) |
 | **Unity Companion License** (paquets de Unity) | Utiliser ces fichiers avec Unity | Rien de plus pour un projet Unity |
@@ -35,6 +36,13 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | RPG Audio | Kenney | `kenney_rpg-audio` | Portes de l'antre, sons divers |
 | Glove (gant low-poly) | Quaternius | `Glove by Quaternius - l1zv4LaA4I` | Les mains gantées du joueur (squelette ajouté par le jeu) |
 | Modular Dungeon (porte en arche) | Quaternius | `_Project/Resources/Lair` | La porte de l'antre (coupée en double porte par le jeu) |
+| Seamless Space Backgrounds (*Purple Nebula 1*) | Screaming Brain Studios (screamingbrainstudios.itch.io/seamless-space-backgrounds, aussi sur OpenGameArt) | `_Project/Art/Bows/Cosmique/Nebuleuse_Violette.png` | La nébuleuse vue à travers le corps de l'arc cosmique |
+
+### Licence CC-BY 3.0 (créditer l'auteur : c'est fait dans le README et ici)
+
+| Asset | Auteur | Dossier | Utilisé pour |
+|---|---|---|---|
+| *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue) | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
 
 ### Polices (SIL Open Font License 1.1)
 
@@ -77,9 +85,11 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Musiques de vague, de boss et de boutique, ambiances jour et nuit (`Audio/Music/*.wav`) | Générées par script pour le prototype (`music_boss` servait aussi à la dimension jusqu'au 18 octobre) | Faites pour le projet |
 | Sons provisoires (`Audio/Placeholder`) | Générés par script pour le prototype | Faits pour le projet |
 | Sons Kenney | Voir CC0 ci-dessus | CC0 |
+| Charge de l'arc cosmique (`Audio/Arc_Cosmique_Charge.wav`) | *Sci-fi Weapon Charging 01*, Tim_Verberne (freesound.org/people/Tim_Verberne/sounds/514082) ; recoupé (2,5 à 5,2 s) et fondu. L'original est dans `Audio/` | CC0 |
+| Tir laser de l'arc cosmique (`Audio/Arc_Cosmique_Laser.wav`) | *Ion Cannon*, qubodup (freesound.org/people/qubodup/sounds/814049) ; recoupé (0 à 3,4 s), saturé (graves renforcés, distorsion) et fondu. L'original est dans `Audio/` | CC0 |
 
 ### Fait pour le projet
 
-Le code (`_Project/Scripts`, `_Project/Editor`), les 17 shaders (`_Project/Shaders`), les icônes de la boutique (`_Project/UI/Icones`, dessinées par script), les décors fabriqués par le code (arène de MK, dimension du portail, fissures de lave), les données et les scènes. Une partie du code et de la documentation a été écrite avec l'aide de l'IA (Claude, d'Anthropic), comme indiqué dans le README et le rapport.
+Le code (`_Project/Scripts`, `_Project/Editor`), les 20 shaders (`_Project/Shaders`), les icônes de la boutique (`_Project/UI/Icones`, dessinées par script), les décors fabriqués par le code (arène de MK, dimension du portail, fissures de lave), les données et les scènes. Une partie du code et de la documentation a été écrite avec l'aide de l'IA (Claude, d'Anthropic), comme indiqué dans le README et le rapport.
 
 À confirmer : `_Project/Art/Textures/TargetFace.png` (la cible d'entraînement), présente depuis le premier prototype.

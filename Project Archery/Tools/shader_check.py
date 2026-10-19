@@ -27,6 +27,10 @@ STUBS = """
 #define UNITY_SETUP_INSTANCE_ID(x)
 #define UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(x)
 #define UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(x)
+#define TEXTURE2D(name) Texture2D name
+#define SAMPLER(name) SamplerState name
+#define SAMPLE_TEXTURE2D(tex, smp, uv) tex.Sample(smp, uv)
+#define SAMPLE_TEXTURE2D_LOD(tex, smp, uv, lod) tex.SampleLevel(smp, uv, lod)
 float4 _Time;
 float4x4 _StubViewProjection;
 float4x4 _StubObjectToWorld;

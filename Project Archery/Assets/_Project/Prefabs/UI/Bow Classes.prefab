@@ -50,6 +50,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2a78677968c41e74e9dfe9f88feb4476, type: 2}
   - {fileID: 11400000, guid: f2acfdec2e150eb4e98b82ca3cb62307, type: 2}
   - {fileID: 11400000, guid: 7394413a6641ed840a77b091f0719dbf, type: 2}
+  - {fileID: 11400000, guid: d3ab72ff6bb74c42b1363d1f2cf8b63e, type: 2}
   m_UnlockClip: {fileID: 8300000, guid: e4606bf8871991840822a3ffccd6dd50, type: 3}
 --- !u!114 &3739709088050117480
 MonoBehaviour:
@@ -80,8 +81,8 @@ MonoBehaviour:
     unlockedBy: {fileID: 11400000, guid: f2acfdec2e150eb4e98b82ca3cb62307, type: 2}
     color: {r: 0.34901962, g: 0.6509804, b: 1, a: 1}
     comingSoonName: 
-  - bow: {fileID: 0}
-    unlockedBy: {fileID: 0}
+  - bow: {fileID: 11400000, guid: 73f46a1f754f47b4aca8625dda6dd9c2, type: 2}
+    unlockedBy: {fileID: 11400000, guid: d3ab72ff6bb74c42b1363d1f2cf8b63e, type: 2}
     color: {r: 0.7490196, g: 0.4509804, b: 1, a: 1}
     comingSoonName: "Arc l\xE9gendaire"
   - bow: {fileID: 0}

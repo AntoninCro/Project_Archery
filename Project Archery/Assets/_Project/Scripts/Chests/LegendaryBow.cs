@@ -63,8 +63,17 @@ namespace Archery.Chests
                 Instance = null;
         }
 
-        /// <summary>Tire au sort si ce coffre propose un morceau.</summary>
-        public bool RollPartDrop() => m_Definition != null && !IsAssembled && Random.value < m_PartChance;
+        /// <summary>
+        /// Tire au sort si ce coffre propose un morceau. Jamais avec l'arc cosmique en main (arc à surcharge) : on le garde
+        /// (décidé le 19 octobre).
+        /// </summary>
+        public bool RollPartDrop() => m_Definition != null && !IsAssembled && !HoldsOverchargeBow() && Random.value < m_PartChance;
+
+        static bool HoldsOverchargeBow()
+        {
+            var bow = FindAnyObjectByType<Bow>();
+            return bow != null && bow.Definition != null && bow.Definition.overcharge;
+        }
 
         /// <summary>Un morceau de plus ; au dernier, l'arc est assemblé et remplace celui du joueur.</summary>
         public void AddPart()

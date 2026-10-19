@@ -65,6 +65,39 @@ namespace Archery.Bows
             }
         }
 
+        [Header("Surcharge (arc cosmique)")]
+        [Tooltip("Le vert de l'anneau devient doré, et un deuxième cercle doré suit le premier : lâché dans son doré (ou " +
+                 "dans le vert clair, après, un peu moins fort), le tir devient un laser qui traverse tout (ennemis, murs, relief).")]
+        public bool overcharge;
+
+        [Tooltip("Durée (s) du deuxième cercle, du bord au centre (plus court que l'anneau).")]
+        public float overchargeDuration = 0.9f;
+
+        [Tooltip("Dégâts du laser, en multiple de ceux d'un tir parfait (lâché dans le doré) ou « très bon » (dans le vert " +
+                 "clair) ; les points faibles comptent en plus.")]
+        public float laserDamageMultiplier = 3f;
+
+        [Tooltip("Portée (m) du laser.")]
+        public float laserRange = 120f;
+
+        [Tooltip("Première couleur du laser (violet) : le large halo et une des deux spirales ; aussi la traînée d'étoiles.")]
+        [ColorUsage(false, true)]
+        public Color laserColor = new Color(0.66f, 0.16f, 1f);
+
+        [Tooltip("Deuxième couleur du laser (bleu) : le rayon autour du cœur blanc et l'autre spirale. Les particules " +
+                 "laissées par le laser prennent les deux couleurs.")]
+        [ColorUsage(false, true)]
+        public Color laserSecondColor = new Color(0.12f, 0.45f, 1f);
+
+        [Tooltip("Sons du tir laser, joués ensemble (on peut superposer une décharge et un grondement).")]
+        public AudioClip[] laserClips = new AudioClip[0];
+
+        [Tooltip("Son du deuxième cercle qui part (la charge qui monte).")]
+        public AudioClip overchargeClip;
+
+        [Tooltip("Les flèches tirées normalement laissent une traînée d'étoiles, de la couleur du laser.")]
+        public bool starTrail;
+
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]
         public float ringDuration = 1.2f;

@@ -215,7 +215,7 @@ Sur l'objet **`Game`**, ajoute le composant **Build Manager** :
 1. Crée un objet vide `Build Sockets` à la racine de la scène, en (0, 0, 0). Ne le mets pas sous `Map`, et ne le coche pas *Static*.
 2. Pose dedans 12 instances de `Prefabs/Build Socket`, **4 par voie** :
    - **2 sur la voie** (*Slot* : *Lane*), au milieu de la voie. Tourne-les comme les barricades : l'axe Z (flèche bleue) **vers la forêt**, d'où viennent les ennemis. Une barricade construite s'y posera dans ce sens. Laisse au moins 6 m entre deux socles, et entre un socle et la barricade de départ (sa zone d'arrêt fait 5 m). Une bonne idée : un socle juste devant la barricade de départ, côté forêt. Des pièges posés là blessent les ennemis pendant qu'ils frappent la barricade ;
-   - **2 au bord de la voie** (*Slot* : *Roadside*), à côté de la voie sans empiéter dessus, à 4 à 6 m de son milieu : la tour de givre ne ralentit qu'à 8 m, et la baliste tire à 20 m. Tourne leur axe Z vers la voie.
+   - **2 au bord de la voie** (*Slot* : *Roadside*), à côté de la voie sans empiéter dessus, à 4 à 6 m de son milieu : la tour de givre ne ralentit qu'à 9 m au niveau 1, et la baliste tire à 20 m. Tourne leur axe Z vers la voie.
 3. Chaque socle a besoin d'un sol plat de 3 × 3 m. La boîte du gizmo (orange sur la voie, bleue au bord) montre la place prise, et un trait montre son avant.
 4. Donne-leur des noms clairs, par exemple `Socle Gauche Voie 1` ou `Socle Milieu Bord 2`. Pour un autre texte que « Sur la voie » dans le panneau, remplis *Display Name*.
 
@@ -267,7 +267,7 @@ Les bâtiments construits à l'étape 2 prennent vie : la barricade arrête les 
 |---|---|---|---|
 | **Barricade** (sur la voie) | Comme celles de départ : les ennemis au sol qui arrivent devant elle, côté forêt, s'arrêtent pour la frapper. 400 PV | 700 PV ; une planche et une traverse en plus | 1 000 PV ; des pieux tournés vers la forêt. Chaque coup reçu au corps à corps blesse l'ennemi qui frappe (10 dégâts) |
 | **Pièges à piques** (sur la voie) | Toutes les 0,8 s, les ennemis au sol sur le plateau perdent 12 PV. Les piques jaillissent à chaque coup | 18 PV toutes les 0,65 s, piques plus hautes | 27 PV toutes les 0,5 s, et les ennemis sur le piège sont ralentis de 20 % |
-| **Tour de givre** (au bord) | Ralentit de 30 % les ennemis à 8 m, volants compris. Un disque bleuté montre sa portée au sol | 40 % à 9 m ; cristaux plus grands, lumière plus forte | 50 % à 10 m |
+| **Tour de givre** (au bord) | Ralentit de 30 % les ennemis à 9 m, volants compris. Un disque bleuté montre sa portée au sol | 40 % à 13 m ; cristaux plus grands, lumière plus forte | 50 % à 17 m |
 | **Baliste** (au bord) | Pivote vers l'ennemi le plus proche à 20 m qu'elle voit, volants compris, et tire un carreau de 15 dégâts toutes les 2,4 s. Elle vise là où l'ennemi sera | 22 dégâts toutes les 1,6 s ; un fanion | 32 dégâts chaque seconde ; le carreau traverse 2 ennemis ; un drapeau |
 
 Quelques règles :
@@ -318,7 +318,7 @@ Tous les réglages sont sur le composant à la racine de chaque prefab de `Prefa
 | `Pieges` | *Damage Per Level*, *Interval Per Level* | 12 / 18 / 27, 0,8 / 0,65 / 0,5 s | Dégâts et rythme des coups (plus lents aux premiers niveaux depuis les tests du 12 octobre) |
 | | *Slow From Level*, *Slow Multiplier* | 3, 0,8 | Ralentissement (0,8 = 20 % plus lents) |
 | | *Size*, *Spike Height Per Level* | 2,6 × 2,6 m, 0,3 / 0,38 / 0,46 m | Zone piégée, hauteur des piques |
-| `Givre` | *Radius Per Level*, *Speed Per Level* | 8 / 9 / 10 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
+| `Givre` | *Radius Per Level*, *Speed Per Level* | 9 / 13 / 17 m, 0,7 / 0,6 / 0,5 | Portée, vitesse des ennemis ralentis |
 | | *Range Color*, *Crystal Scale Per Level*, *Light Intensity Per Level* | bleu, 1 / 1,15 / 1,3, 1,5 / 2,2 / 3 | Apparence |
 | `Baliste` | *Range*, *Damage Per Level*, *Interval Per Level* | 20 m, 10 / 14,67 / 21,33, 3 / 2 / 1,25 s | Portée, dégâts, cadence (plus lente aux premiers niveaux depuis les tests du 12 octobre) |
 | `Data/Difficulties` | *Structure Power* | 0,75 / 1 / 1,25 / 1,6 | Puissance des bâtiments selon la difficulté (Facile, Normal, Difficile, Impossible), en plus de la force des ennemis |

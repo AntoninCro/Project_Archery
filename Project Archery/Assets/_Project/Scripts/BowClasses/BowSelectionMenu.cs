@@ -409,6 +409,17 @@ namespace Archery.BowClasses
 
                 card.ProgressText = NewText(locked, "Value", "0 / 0", 20f, TextAlignmentOptions.Center);
                 Place(card.ProgressText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -top + 45f), new Vector2(m_CardWidth - 20f, 34f));
+
+                // Succès secret (l'arc cosmique) : seulement l'énigme, ni le nom du succès ni sa progression.
+                if (entry.unlockedBy.secret)
+                {
+                    achievementTitle.gameObject.SetActive(false);
+                    track.gameObject.SetActive(false);
+                    card.ProgressText.gameObject.SetActive(false);
+                    achievementText.fontStyle |= FontStyles.Italic;
+                    achievementText.fontSizeMax = 21f;
+                    Place(achievementText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -top + 115f), new Vector2(m_CardWidth - 26f, 130f));
+                }
             }
 
             return card;

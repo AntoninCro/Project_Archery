@@ -25,6 +25,9 @@ namespace Archery.BowClasses
 
         /// <summary>Meilleure vague terminée en une seule partie (ce n'est pas un cumul).</summary>
         WaveReached,
+
+        /// <summary>Épreuves des étoiles réussies (le portail des monolithes).</summary>
+        StarTrial,
     }
 
     /// <summary>
@@ -58,6 +61,10 @@ namespace Archery.BowClasses
 
         [Tooltip("Couleur du message quand le succès est débloqué.")]
         public Color color = new Color(1f, 0.82f, 0.35f);
+
+        [Tooltip("Secret : sur la carte de l'arc verrouillé, seule la phrase s'affiche (une énigme), sans le nom du succès " +
+                 "ni sa progression. Son nom apparaît quand il est débloqué.")]
+        public bool secret;
 
         public string Id => string.IsNullOrEmpty(m_Id) ? name : m_Id;
     }

@@ -77554,8 +77554,8 @@ MonoBehaviour:
   m_SecondBatch: 0
   m_MinTowerDistance: 15
   m_SpawnDelay: 3
-  m_BaseAmount: 50
-  m_AmountPerWave: 15
+  m_BaseAmount: 40
+  m_AmountPerWave: 12
   m_AppearClip: {fileID: 8300000, guid: 9ed0124783dc0d043a963c595bced157, type: 3}
   m_MessageColor: {r: 0.72, g: 0.55, b: 1, a: 1}
 --- !u!4 &268761014 stripped
@@ -185059,8 +185059,8 @@ MonoBehaviour:
   - {fileID: 112881188}
   m_DifficultyText: {fileID: 0}
   m_ClickClip: {fileID: 0}
-  m_TutorialScreenSide: 45
-  m_TutorialScreenReach: 2.5
+  m_TutorialScreenYaw: -45
+  m_TutorialScreenDistance: 2.5
   m_TutorialScreenSize: 2.4
 --- !u!114 &689442262
 MonoBehaviour:
@@ -595042,7 +595042,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8803598172865050417, guid: 2804ab415e3a3214ab609008fad2ecf0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.2
+      value: 4.95
       objectReference: {fileID: 0}
     - target: {fileID: 8803598172865050417, guid: 2804ab415e3a3214ab609008fad2ecf0, type: 3}
       propertyPath: m_LocalPosition.z

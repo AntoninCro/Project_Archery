@@ -30,6 +30,16 @@ namespace Archery.Bows
         static readonly List<Arrow> s_HeldArrows = new List<Arrow>();
         static readonly RaycastHit[] s_RaycastHits = new RaycastHit[16];
 
+        // Le laser : tout ce qu'il traverse, puis ce qu'il touche (une entrée par ennemi, sa zone la plus prioritaire).
+        static readonly RaycastHit[] s_LaserHits = new RaycastHit[256];
+        static readonly List<RaycastHit> s_LaserTargets = new List<RaycastHit>();
+        static readonly List<object> s_LaserKeys = new List<object>();
+        static readonly List<int> s_LaserPriorities = new List<int>();
+        static readonly IComparer<RaycastHit> s_ByDistance = Comparer<RaycastHit>.Create((a, b) => a.distance.CompareTo(b.distance));
+
+        // Vitesse donnée aux impacts du laser (les effets et les zones de touche s'en servent comme d'une flèche très rapide).
+        const float k_LaserSpeed = 150f;
+
         GameObject m_FireEffect;
         static Bow s_MeleeBow;
         Vector3 m_PreviousTip;
@@ -415,6 +425,93 @@ namespace Archery.Bows
                 m_FlightAudio.pitch = UnityEngine.Random.Range(0.9f, 1.1f);
                 m_FlightAudio.Play();
             }
+        }
+
+        /// <summary>
+        /// Arc cosmique, surcharge : au lieu de voler, la flèche devient un laser. Tout ce qui réagit aux flèches sur sa ligne
+        /// est touché d'un coup, du plus proche au plus loin, à travers les murs et le relief ; pour chaque ennemi, la zone
+        /// la plus prioritaire qu'il traverse (tête, gemme). Puis la flèche disparaît. Le score, le combo et les succès
+        /// comptent ce tir comme une flèche (deux ennemis tués d'un laser : « D'une pierre deux coups »), de cette qualité.
+        /// </summary>
+        public void FireLaser(Vector3 origin, Vector3 direction, float damage, float range, ShotGrade grade = ShotGrade.Perfect)
+        {
+            m_Bow = null;
+            m_State = State.Flying;
+            m_Damage = damage;
+            m_Grade = grade;
+            m_IsShot = true;
+            m_ShotPending = true;
+            IsExtra = false;
+            m_LaunchPosition = origin;
+            m_Pierced.Clear();
+            direction = direction.sqrMagnitude > 1e-6f ? direction.normalized : transform.forward;
+
+            var count = Physics.RaycastNonAlloc(origin, direction, s_LaserHits, Mathf.Max(0.1f, range), m_HitMask,
+                                                QueryTriggerInteraction.Ignore);
+            Array.Sort(s_LaserHits, 0, count, s_ByDistance);
+
+            s_LaserTargets.Clear();
+            s_LaserKeys.Clear();
+            s_LaserPriorities.Clear();
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_LaserHits[i];
+                if (hit.collider == null || ArrowIgnore.IsIgnored(hit.collider))
+                    continue;
+                var handler = hit.collider.GetComponentInParent<IArrowHitHandler>();
+                if (handler == null || handler is ILaserTransparent)
+                    continue;
+
+                var zone = hit.collider.GetComponentInParent<IArrowHitPriority>();
+                var key = zone != null && zone.HitGroup != null ? zone.HitGroup : (object)PierceKey(hit);
+                var priority = zone != null ? zone.HitPriority : int.MinValue;
+                var index = s_LaserKeys.IndexOf(key);
+                if (index < 0)
+                {
+                    s_LaserKeys.Add(key);
+                    s_LaserTargets.Add(hit);
+                    s_LaserPriorities.Add(priority);
+                }
+                else if (priority > s_LaserPriorities[index])
+                {
+                    s_LaserTargets[index] = hit;
+                    s_LaserPriorities[index] = priority;
+                }
+            }
+
+            var impacts = 0;
+            foreach (var target in s_LaserTargets)
+            {
+                if (LaserHit(target, direction) && impacts++ < 4)
+                    Sfx.Play(m_ImpactLiving, target.point, 0.7f, UnityEngine.Random.Range(0.85f, 1f));
+            }
+
+            s_LaserTargets.Clear();
+            EndShot();
+            Despawn();
+        }
+
+        // Un impact du laser, comme celui d'une flèche (zones de touche, effets d'impact) ; vrai s'il a touché du vivant.
+        bool LaserHit(RaycastHit raycastHit, Vector3 direction)
+        {
+            var hit = new ArrowHit
+            {
+                Arrow = this,
+                Collider = raycastHit.collider,
+                Point = raycastHit.point,
+                Normal = raycastHit.normal,
+                Direction = direction,
+                Speed = k_LaserSpeed,
+                Damage = m_Damage,
+                Grade = m_Grade,
+                TravelDistance = Vector3.Distance(m_LaunchPosition, raycastHit.point),
+                IsShot = true,
+            };
+
+            var handler = raycastHit.collider.GetComponentInParent<IArrowHitHandler>();
+            var living = handler != null && handler.OnArrowHit(hit);
+            AnyHit?.Invoke(hit);
+            return living;
         }
 
         /// <summary>Lâche la flèche sans la tirer (elle tombe, ou part dans la direction du geste).</summary>

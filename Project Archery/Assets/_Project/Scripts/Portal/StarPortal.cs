@@ -589,8 +589,34 @@ namespace Archery.Portal
             var points = 0;
             if (score != null)
                 points = score.AddPoints(m_ScoreBonus * score.DifficultyMultiplier);
-            HeadMessages.Show($"Épreuve des étoiles réussie !\n<size=60%>+{points} points · une étoile à côté de ton nom au classement</size>",
+
+            // L'arc cosmique : débloqué pour toujours (succès « Voyageur des étoiles », dans le menu des arcs), et en main
+            // tout de suite, pour le reste de la partie.
+            var achievements = AchievementManager.Instance;
+            if (achievements != null)
+                achievements.Report(AchievementType.StarTrial);
+            var cosmic = CosmicBow();
+            if (cosmic != null && m_Bow != null)
+                m_Bow.SetDefinition(cosmic);
+
+            var bowText = cosmic != null ? " · l'arc cosmique est à toi" : "";
+            HeadMessages.Show($"Épreuve des étoiles réussie !\n<size=60%>+{points} points · une étoile au classement{bowText}</size>",
                               new Color(1f, 0.85f, 0.35f), 6f, 1.3f);
+        }
+
+        // L'arc à surcharge de la liste des arcs (l'arc cosmique), ou null.
+        static BowDefinition CosmicBow()
+        {
+            var loadout = BowLoadout.Instance;
+            if (loadout == null)
+                return null;
+            foreach (var entry in loadout.Entries)
+            {
+                if (entry != null && entry.bow != null && entry.bow.overcharge)
+                    return entry.bow;
+            }
+
+            return null;
         }
 
         void SuspendUpgrades(bool suspend)

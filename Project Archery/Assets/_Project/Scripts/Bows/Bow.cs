@@ -179,6 +179,7 @@ namespace Archery.Bows
         readonly List<Renderer> m_StowedRenderers = new List<Renderer>();
         bool m_DesktopHeld;
         Transform m_DesktopRingAnchor;
+        AudioSource m_ChargeSource;
         readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
 
         public BowDefinition Definition
@@ -281,6 +282,7 @@ namespace Archery.Bows
             {
                 m_TimingRing.GoldEntered += OnGoldEntered;
                 m_TimingRing.HoldEntered += OnRingHeld;
+                m_TimingRing.OverchargeStarted += OnOverchargeStarted;
             }
 
             // Au lancement, l'arc vient directement se placer près du joueur.
@@ -294,6 +296,7 @@ namespace Archery.Bows
             {
                 m_TimingRing.GoldEntered -= OnGoldEntered;
                 m_TimingRing.HoldEntered -= OnRingHeld;
+                m_TimingRing.OverchargeStarted -= OnOverchargeStarted;
             }
 
             base.OnDestroy();
@@ -421,6 +424,7 @@ namespace Archery.Bows
             m_DrawRatio = 0f;
             m_DrawDistance = 0f;
             StopCreak();
+            StopCharge();
 
             var grade = m_TimingRing != null && m_TimingRing.IsRunning ? m_TimingRing.Release() : ShotGrade.None;
             if (ForcePerfect && grade != ShotGrade.None)
@@ -430,6 +434,13 @@ namespace Archery.Bows
                 if (m_TimingRing != null)
                     m_TimingRing.Cancel();
                 arrow.Drop(Vector3.zero);
+                return;
+            }
+
+            // Arc cosmique : lâché dans le doré du deuxième cercle (ou dans le vert clair, après), le tir devient un laser.
+            if (Def.overcharge && m_TimingRing != null && m_TimingRing.Overcharged)
+            {
+                FireLaser(arrow, ratio, drawHand, grade == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held);
                 return;
             }
 
@@ -450,8 +461,11 @@ namespace Archery.Bows
                 IsShot = true,
             });
 
+            if (Def.starTrail)
+                StarTrail.Track(arrow, Def.laserColor);
+
             if (m_TimingRing != null && grade != ShotGrade.None)
-                m_TimingRing.ShowResult(modifiers.color);
+                m_TimingRing.ShowResult(GradeColor(grade, modifiers.color));
 
             m_StringVibration = 1f;
             Haptics.Pulse(drawHand, 0.7f, 0.06f);
@@ -471,6 +485,47 @@ namespace Archery.Bows
                 Damage = damage,
                 Origin = origin,
                 Direction = m_AimDirection,
+            });
+        }
+
+        // Le laser de la surcharge : la flèche le tire et disparaît (Arrow.FireLaser), le rayon et sa traînée de particules
+        // s'affichent (LaserBeam). Lâché dans le doré, il compte comme un tir parfait ; dans le vert clair, comme un tir
+        // « très bon » (avec les réglages actuels, 80 % des dégâts).
+        void FireLaser(Arrow arrow, float ratio, IXRSelectInteractor drawHand, ShotGrade grade)
+        {
+            var def = Def;
+            var modifiers = Tuning.Get(grade);
+            var power = def.drawToPower.Evaluate(ratio);
+            var damage = def.damage * power * modifiers.damage * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier);
+            var direction = m_AimDirection;
+            var start = arrow.TipPosition;
+
+            arrow.FireLaser(start, direction, damage, def.laserRange, grade);
+            LaserBeam.Fire(start, start + direction * def.laserRange, def.laserColor, def.laserSecondColor);
+
+            if (m_TimingRing != null)
+                m_TimingRing.ShowResult(grade == ShotGrade.Perfect ? m_TimingRing.OverchargeColor : modifiers.color);
+
+            m_StringVibration = 1f;
+            Haptics.Pulse(drawHand, 1f, 0.25f);
+            Haptics.Pulse(m_BowHand, 1f, 0.35f);
+
+            var soundPosition = m_ArrowRest != null ? m_ArrowRest.position : transform.position;
+            if (def.laserClips != null)
+            {
+                foreach (var clip in def.laserClips)
+                    Sfx.Play(clip, soundPosition, 1f, UnityEngine.Random.Range(0.97f, 1.03f), 0.3f);
+            }
+
+            ShotFired?.Invoke(this, new ShotInfo
+            {
+                Arrow = null,
+                Grade = grade,
+                DrawRatio = ratio,
+                Speed = def.arrowSpeed * modifiers.speed * SpeedMultiplier,
+                Damage = damage,
+                Origin = start,
+                Direction = direction,
             });
         }
 
@@ -749,6 +804,7 @@ namespace Archery.Bows
             m_DrawRatio = 0f;
             m_DrawDistance = 0f;
             StopCreak();
+            StopCharge();
             if (m_TimingRing != null)
                 m_TimingRing.Cancel();
             arrow.OnUnnocked();
@@ -837,7 +893,10 @@ namespace Archery.Bows
                 if (!m_TimingRing.IsRunning && ratio >= m_FullDrawThreshold)
                     StartRing();
                 else if (m_TimingRing.IsRunning && ratio < m_RingCancelThreshold)
+                {
                     m_TimingRing.Cancel();
+                    StopCharge();
+                }
             }
         }
 
@@ -859,10 +918,12 @@ namespace Archery.Bows
             var def = Def;
             var widthScale = Mathf.Max(0.1f, BandWidthMultiplier);
             var goldScale = Mathf.Max(0.1f, GoldWidthMultiplier) * DifficultyManager.Current.goldBandWidth;
+            var speed = Mathf.Max(0.1f, RingSpeedMultiplier);
             m_TimingRing.Begin(
-                def.ringDuration / Mathf.Max(0.1f, RingSpeedMultiplier),
+                def.ringDuration / speed,
                 def.goldHalfWidth * widthScale * goldScale,
-                def.goodWidth * widthScale);
+                def.goodWidth * widthScale,
+                def.overcharge ? def.overchargeDuration / speed : 0f);
         }
 
         void UpdateReturn(float deltaTime)
@@ -992,10 +1053,22 @@ namespace Archery.Bows
 
             var modifiers = Tuning.Get(grade);
             var speed = Def.arrowSpeed * Def.drawToPower.Evaluate(drawRatio) * modifiers.speed * SpeedMultiplier;
-            var color = grade == ShotGrade.None ? Color.white : modifiers.color;
+            var color = grade == ShotGrade.None ? Color.white : GradeColor(grade, modifiers.color);
             var tip = m_Nocked.NockPosition + m_AimDirection * m_Nocked.Length;
+
+            // Arc cosmique en surcharge : lâché maintenant, c'est le laser, qui part tout droit et traverse tout.
+            if (Def.overcharge && m_TimingRing != null && m_TimingRing.WouldOvercharge)
+            {
+                m_AimGuide.ShowLaser(tip, m_AimDirection, color, Mathf.Lerp(0.35f, 1f, drawRatio), Def.laserRange);
+                return;
+            }
+
             m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio));
         }
+
+        // Avec un arc à surcharge, le parfait est doré, comme dans l'anneau.
+        Color GradeColor(ShotGrade grade, Color color) =>
+            Def.overcharge && grade == ShotGrade.Perfect && m_TimingRing != null ? m_TimingRing.OverchargeColor : color;
 
         // Côté extérieur de l'arc : à gauche pour un arc tenu de la main gauche, à droite sinon.
         float OutsideSign() =>
@@ -1029,6 +1102,39 @@ namespace Archery.Bows
                 Haptics.Pulse(m_Nocked.Hand, 0.6f, 0.05f);
             Haptics.Pulse(m_BowHand, 0.35f, 0.05f);
             Sfx.Play(m_GoldClip, m_TimingRing.transform.position, 0.5f);
+        }
+
+        // Arc cosmique : le deuxième cercle, doré, part du bord. La charge qui monte, dans les deux mains.
+        void OnOverchargeStarted()
+        {
+            if (m_Nocked != null)
+                Haptics.Pulse(m_Nocked.Hand, 0.5f, 0.15f);
+            Haptics.Pulse(m_BowHand, 0.5f, 0.15f);
+
+            // La charge qui monte, sur sa propre source : elle s'arrête net quand on lâche (le laser prend le relais).
+            var clip = Def.overchargeClip;
+            if (clip == null)
+                return;
+            if (m_ChargeSource == null)
+            {
+                m_ChargeSource = gameObject.AddComponent<AudioSource>();
+                m_ChargeSource.playOnAwake = false;
+                m_ChargeSource.spatialBlend = 0.3f;
+                m_ChargeSource.dopplerLevel = 0f;
+            }
+
+            m_ChargeSource.outputAudioMixerGroup = Sfx.Output;
+            m_ChargeSource.Stop();
+            m_ChargeSource.clip = clip;
+            m_ChargeSource.pitch = 1.25f;
+            m_ChargeSource.volume = 0.85f;
+            m_ChargeSource.Play();
+        }
+
+        void StopCharge()
+        {
+            if (m_ChargeSource != null && m_ChargeSource.isPlaying)
+                m_ChargeSource.Stop();
         }
 
         // Le vert est passé : le cercle finit sa course dans le vert pastel et y attend.

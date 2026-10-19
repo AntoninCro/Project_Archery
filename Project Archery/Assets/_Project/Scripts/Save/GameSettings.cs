@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Archery.Core;
+using Archery.Player;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit.Attachment;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
@@ -73,6 +77,14 @@ namespace Archery.Save
         readonly HashSet<string> m_MissingParameters = new HashSet<string>();
         bool m_Dirty;
         float m_SaveTimer;
+        float m_NextTurnCheck;
+        bool m_TurnRestoredLogged;
+
+        // Les actions de rotation de chaque manette, gardées privées par l'exemple d'XRI (voir KeepTurnAlive).
+        static readonly FieldInfo s_SnapTurnField =
+            typeof(ControllerInputActionManager).GetField("m_SnapTurn", BindingFlags.Instance | BindingFlags.NonPublic);
+        static readonly FieldInfo s_SmoothTurnField =
+            typeof(ControllerInputActionManager).GetField("m_Turn", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static GameSettings Instance { get; private set; }
 
@@ -175,6 +187,12 @@ namespace Archery.Save
 
         void Update()
         {
+            if (Time.unscaledTime >= m_NextTurnCheck)
+            {
+                m_NextTurnCheck = Time.unscaledTime + 0.5f;
+                KeepTurnAlive();
+            }
+
             if (!m_Dirty)
                 return;
 
@@ -260,6 +278,44 @@ namespace Archery.Save
 
             // Ce sont les gestionnaires d'entrées des manettes qui choisissent entre les crans et la rotation continue.
             m_InputManagers.AddRange(origin.GetComponentsInChildren<ControllerInputActionManager>(true));
+
+            // La rotation se coupait parfois : XRI réserve le joystick d'une main à d'autres usages, et y coupe la rotation.
+            // - Un objet saisi au rayon, de loin (l'arc, le marteau…), s'avance et se recule au joystick tant qu'on le tient :
+            //   on n'en a pas besoin, l'objet vient dans la main.
+            // - Viser un menu qui défile : aucun de nos menus ne défile.
+            foreach (var attach in origin.GetComponentsInChildren<InteractionAttachController>(true))
+                attach.useManipulationInput = false;
+            foreach (var manager in m_InputManagers)
+                manager.uiScrollingEnabled = false;
+        }
+
+        // Filet de sécurité : si la rotation choisie est coupée sur une manette qui tourne (la droite ; la gauche sert à
+        // marcher), on la rallume. Pas en jeu au clavier, qui met les déplacements d'XRI en pause.
+        void KeepTurnAlive()
+        {
+            if (!Data.snapTurn || (DesktopControls.Instance != null && DesktopControls.Instance.IsActive))
+                return;
+
+            var field = Data.smoothTurn ? s_SmoothTurnField : s_SnapTurnField;
+            if (field == null)
+                return;
+
+            foreach (var manager in m_InputManagers)
+            {
+                if (manager == null || !manager.isActiveAndEnabled || manager.smoothMotionEnabled)
+                    continue;
+
+                var action = (field.GetValue(manager) as InputActionReference)?.action;
+                if (action == null || action.enabled)
+                    continue;
+
+                action.Enable();
+                if (!m_TurnRestoredLogged)
+                {
+                    m_TurnRestoredLogged = true;
+                    Debug.Log($"GameSettings : la rotation au joystick était coupée ({manager.name}), elle est rallumée.", manager);
+                }
+            }
         }
 
         void AddTurnProvider(LocomotionProvider provider)

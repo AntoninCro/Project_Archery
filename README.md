@@ -93,6 +93,7 @@ Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archer
   - marteau de construction : *Stylized Mechanized Hammer* (AgeSoft) ; coffre animé : *Animated PBR Chest Demo* ; chevalier : *Toon RTS Units – Demo*.
 - **Kenney** (www.kenney.nl), licence CC0 : *Nature Kit*, *Castle Kit*, *Tower Defense Kit*, *UI Pack*, *UI Pack: RPG Extension*, *Fantasy UI Borders*, *Game Icons*, sons *Impact Sounds*, *Interface Sounds* et *RPG Audio*.
 - **Quaternius**, licence CC0 : le gant low-poly des mains, et la porte de l'antre (*Modular Dungeon*, coupée en double porte par le jeu).
+- **Arc cosmique** : le modèle *Enchanted Bow* de **Zsky** (https://poly.pizza/m/9j2Tcybxue), licence **CC-BY 3.0**, modifié (corde retirée, matériaux refaits) ; la nébuleuse *Purple Nebula 1* des *Seamless Space Backgrounds* de **Screaming Brain Studios**, CC0 ; les sons *Sci-fi Weapon Charging 01* de **Tim_Verberne** et *Ion Cannon* de **qubodup** (freesound.org), CC0, recoupés.
 - **Polices**, licence SIL Open Font License 1.1 : *Cinzel* et *Cinzel Decorative* (Natanael Gama) ; *Share Tech Mono* (Carrois Type Design, Ralph du Carrois), pour les panneaux d'erreur du portail des étoiles.
 - **Musiques du boss final et de la dimension des étoiles** : « Mama Mia Marchello » et « Sad Nostalgie », composées par un ami (crédit exact à confirmer).
 - **Autres sons, ambiances et musiques** : provisoires, générés par script pour le prototype.
