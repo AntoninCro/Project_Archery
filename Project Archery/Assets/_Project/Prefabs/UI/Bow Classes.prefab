@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5785907168297767303
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8803598172865050417}
+  - component: {fileID: 288188578278341229}
+  - component: {fileID: 3739709088050117480}
+  - component: {fileID: 8163886193041815275}
+  m_Layer: 0
+  m_Name: Bow Classes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8803598172865050417
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785907168297767303}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.09309784, y: 0.6949129, z: -0.09148699, w: 0.7071485}
+  m_LocalPosition: {x: 2.12, y: 5.2, z: 0.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 15, y: 89, z: 0}
+--- !u!114 &288188578278341229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785907168297767303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86045499c86db6642a6a04edfd3d6c33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.BowClasses.AchievementManager
+  m_Achievements:
+  - {fileID: 11400000, guid: 2a78677968c41e74e9dfe9f88feb4476, type: 2}
+  - {fileID: 11400000, guid: f2acfdec2e150eb4e98b82ca3cb62307, type: 2}
+  - {fileID: 11400000, guid: 7394413a6641ed840a77b091f0719dbf, type: 2}
+  m_UnlockClip: {fileID: 8300000, guid: e4606bf8871991840822a3ffccd6dd50, type: 3}
+--- !u!114 &3739709088050117480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785907168297767303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19a0891329fc15d4baf15e7ea9e0d0a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.BowClasses.BowLoadout
+  m_Entries:
+  - bow: {fileID: 11400000, guid: 9c6f1dda086f0454495bdee8563e4798, type: 2}
+    unlockedBy: {fileID: 0}
+    color: {r: 1, g: 0.81960785, b: 0.3529412, a: 0}
+    comingSoonName: 
+  - bow: {fileID: 11400000, guid: 1bb7d64baa0d47a42b1f1f9e19bca746, type: 2}
+    unlockedBy: {fileID: 11400000, guid: 2a78677968c41e74e9dfe9f88feb4476, type: 2}
+    color: {r: 0.4509804, g: 0.9019608, b: 0.4509804, a: 0}
+    comingSoonName: 
+  - bow: {fileID: 11400000, guid: ba406c8a1c97afa408cfa1532b9f4e1a, type: 2}
+    unlockedBy: {fileID: 11400000, guid: 7394413a6641ed840a77b091f0719dbf, type: 2}
+    color: {r: 1, g: 0.3019608, b: 0.2509804, a: 0}
+    comingSoonName: 
+  - bow: {fileID: 11400000, guid: 91623323d4850b74fb2a065898c55c74, type: 2}
+    unlockedBy: {fileID: 11400000, guid: f2acfdec2e150eb4e98b82ca3cb62307, type: 2}
+    color: {r: 0.34901962, g: 0.6509804, b: 1, a: 0}
+    comingSoonName: 
+  - bow: {fileID: 0}
+    unlockedBy: {fileID: 0}
+    color: {r: 0.7490196, g: 0.4509804, b: 1, a: 0}
+    comingSoonName: "Arc L\xE9gendaire"
+  - bow: {fileID: 0}
+    unlockedBy: {fileID: 0}
+    color: {r: 1, g: 0.6, b: 0.2, a: 0}
+    comingSoonName: "Arc l\xE9gendaire"
+  m_RemoveShopBowCard: 0
+  m_SelectClip: {fileID: 8300000, guid: 22f8911008f0208448f1f58c1feffa59, type: 3}
+  m_LockedClip: {fileID: 8300000, guid: 9cc4442316e9949418b890a27351cc3d, type: 3}
+--- !u!114 &8163886193041815275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785907168297767303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 099898048a91f23418755bf35ad364f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.BowClasses.BowSelectionMenu
+  m_Loadout: {fileID: 0}
+  m_Title: Choisis ton arc
+  m_Size: {x: 1700, y: 1000}
+  m_PixelSize: 0.001
+  m_CardWidth: 250
+  m_CardHeight: 760
+  m_CardSpacing: 20
+  m_PreviewHeight: 0.2
+  m_PreviewSpin: 30
+  m_LockedTint: {r: 0.08, g: 0.08, b: 0.1, a: 1}
