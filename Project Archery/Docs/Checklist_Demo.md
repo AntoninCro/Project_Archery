@@ -43,7 +43,8 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] Tour détruite : le gong descend au pied de la tour, et remonte à la reconstruction.
 - [ ] Barricades : les ennemis s'y arrêtent, les cassent, la réparation en boutique les relève.
 - [ ] Fin de vague : les survivants fuient, la boutique s'ouvre, les PV du joueur reviennent.
-- [ ] Boutique : améliorations, relance, arc suivant, tour, barricades ; les prix montent après chaque achat.
+- [ ] Boutique : améliorations, relance, tour, barricades (plus d'arcs à vendre depuis le 19 octobre) ; les prix montent après chaque achat.
+- [ ] Choix de l'arc avant la vague 1 : cartes avec jauges et pouvoir, arcs verrouillés par leur succès (U / J pour tester), l'arc choisi dans la main et dans la dimension du portail.
 - [ ] Coffre : chute et rebond à l'apparition, rayon de lumière, couvercle, ouverture animée, ralenti, 3 orbes avec leur nom, récompense ; il disparaît en fin de vague.
 - [ ] Brasero : flèche enflammée, l'ennemi brûle.
 - [ ] Tower defense : gisements de cristaux pendant la vague, récolte, matériaux sur la montre ; socle visé à la poignée, panneau, plan bleu, un marteau dans chaque main, 3 coups, l'arc revient ; amélioration d'un bâtiment.

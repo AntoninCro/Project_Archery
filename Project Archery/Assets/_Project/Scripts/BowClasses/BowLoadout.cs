@@ -99,6 +99,15 @@ namespace Archery.BowClasses
             if (Instance != null && Instance != this)
                 Debug.LogWarning("Il y a plusieurs Bow Loadout dans la scène.", this);
             Instance = this;
+
+            // Une couleur sans opacité (a = 0 : un élément de liste ajouté dans l'inspecteur) rendait les jauges, « Équipé »
+            // et les messages de l'arc invisibles : elle devient opaque.
+            foreach (var entry in m_Entries)
+            {
+                if (entry != null && entry.color.a < 0.01f)
+                    entry.color.a = 1f;
+            }
+
             if (m_Entries.Count == 0 || m_Entries[0].bow == null)
                 Debug.LogWarning("BowLoadout : le premier arc de la liste (l'arc par défaut) est vide.", this);
             else if (m_Entries[0].unlockedBy != null)

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1048b2048fc20de45a8bc9fbfb3a58cb, type: 3}
   m_Name: Bow_Court
   m_EditorClassIdentifier: Archery.Runtime::Archery.Bows.BowDefinition
-  displayName: Arc de chasse
+  displayName: Arc court
   description: "L\xE9ger et rapide \xE0 tirer, mais moins puissant et de courte port\xE9e."
   price: 0
   availableFromWave: 0

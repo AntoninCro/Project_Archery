@@ -1,4 +1,3 @@
-using Archery.Player;
 using Archery.UI;
 using TMPro;
 using UnityEngine;
@@ -11,9 +10,10 @@ namespace Archery.Menus
 {
     /// <summary>
     /// La page « Tutoriel » du menu principal (GDD, section 14), fabriquée en jeu dans le menu : la liste des
-    /// catégories (Tir, Déplacement, Vagues, Construction). Une catégorie s'ouvre sur un <b>grand écran</b>, à droite
-    /// du menu, un peu plus loin que lui : un titre, une grande vidéo qui tourne en boucle, quelques lignes, les flèches
-    /// pour passer d'une fenêtre à l'autre et « Fermer ». La liste reste dans le menu, pour passer à une autre catégorie.
+    /// catégories (Tir, Déplacement, Vagues, Construction). Une catégorie s'ouvre sur un <b>grand écran</b>, toujours à
+    /// la même place, à gauche du menu (à l'opposé du choix des arcs) : un titre, une grande vidéo qui tourne en boucle,
+    /// quelques lignes, les flèches pour passer d'une fenêtre à l'autre et « Fermer ». La liste reste dans le menu, pour
+    /// passer à une autre catégorie.
     /// </summary>
     /// <remarks>
     /// Le contenu vient de <see cref="TutorialContent"/> (<c>Resources/TutorialContent</c>). Les vidéos se branchent
@@ -56,8 +56,9 @@ namespace Archery.Menus
 
         /// <summary>
         /// Fabrique la page sous <paramref name="parent"/> (le contenu du menu), cachée, et le grand écran, caché, large
-        /// de <paramref name="width"/> m : vu du joueur, <paramref name="angle"/> degrés à droite du menu, à
-        /// <paramref name="distance"/> m de sa tête. Rend son composant.
+        /// de <paramref name="width"/> m, à une place fixe : autour de la place du joueur (2,1 m devant le menu), tourné de
+        /// <paramref name="angle"/> degrés depuis le menu (négatif : à gauche), à <paramref name="distance"/> m. Rend son
+        /// composant.
         /// </summary>
         public static TutorialMenu Create(Transform parent, MainMenuPanel menu, float angle, float distance, float width)
         {
@@ -182,21 +183,21 @@ namespace Archery.Menus
             m_Placeholder.enabled = clip == null;
         }
 
-        // À droite du menu, vu du joueur : sur un cercle autour de sa tête, tourné de m_ScreenAngle vers la droite depuis
-        // la direction du menu, à m_ScreenDistance de lui ; le bas de l'écran au niveau du bas du menu. Droit, face à lui.
+        // Toujours à la même place, quel que soit l'endroit où regarde le joueur : sur un cercle autour de sa place (au
+        // centre du haut de la tour, 2,1 m devant le menu), tourné de m_ScreenAngle depuis le menu (à gauche, à l'opposé
+        // du choix des arcs, qui est à droite), à m_ScreenDistance ; le bas de l'écran au niveau du bas du menu. Droit,
+        // tourné vers cette place.
+        const float k_ViewerDistance = 2.1f;
+
         void PlaceScreen()
         {
             var menu = m_Menu != null ? m_Menu.transform : transform;
-            var rig = PlayerRig.Instance;
-            var head = rig != null && rig.Head != null ? rig.Head.position : menu.position - menu.forward * 2f;
-            var toMenu = Vector3.ProjectOnPlane(menu.position - head, Vector3.up);
-            if (toMenu.sqrMagnitude < 1e-4f)
-                toMenu = Vector3.ProjectOnPlane(menu.forward, Vector3.up);
-            if (toMenu.sqrMagnitude < 1e-4f)
-                toMenu = Vector3.forward;
+            var forward = Vector3.ProjectOnPlane(menu.forward, Vector3.up);
+            forward = forward.sqrMagnitude > 1e-4f ? forward.normalized : Vector3.forward;
+            var viewer = menu.position - forward * k_ViewerDistance;
 
-            var direction = Quaternion.Euler(0f, m_ScreenAngle, 0f) * toMenu.normalized;
-            var center = head + direction * m_ScreenDistance;
+            var direction = Quaternion.Euler(0f, m_ScreenAngle, 0f) * forward;
+            var center = viewer + direction * m_ScreenDistance;
             center.y = MenuBottom(menu) + m_ScreenHeight * 0.5f;
             m_Screen.transform.SetPositionAndRotation(center, Quaternion.LookRotation(direction, Vector3.up));
         }
@@ -301,18 +302,14 @@ namespace Archery.Menus
             screen.AddComponent<GraphicRaycaster>();
             screen.AddComponent<TrackedDeviceGraphicRaycaster>();
 
-            // Un fond plein, opaque, sous le panneau du thème (peint à 94 %) : on ne voit plus rien à travers.
-            var backing = NewRect("Fond opaque", rect);
-            Stretch(backing, 12f);
-            var backingImage = backing.gameObject.AddComponent<Image>();
-            backingImage.color = new Color(0.07f, 0.05f, 0.15f, 1f);
-            backingImage.raycastTarget = false;
-            AddPanelFx(backing.gameObject);
-
             var content = NewRect("Content", rect);
             Stretch(content, 0f);
             var contentImage = content.gameObject.AddComponent<Image>();
             contentImage.color = new Color(0.08f, 0.07f, 0.12f, 1f);
+
+            // Un fond plein, opaque, derrière le panneau du thème (peint à 94 %), qui cache aussi ce qui serait dessiné
+            // après lui (OpaqueBacking) : on ne voit plus rien à travers.
+            var backingImage = OpaqueBacking.Create(content, new Color(0.07f, 0.05f, 0.15f, 1f), 12f).GetComponent<Image>();
 
             m_Title = NewText(content, "Title", "", 60f, TextAlignmentOptions.Center);
             Place(m_Title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -65f), new Vector2(1300f, 90f));

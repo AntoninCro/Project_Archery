@@ -40,14 +40,14 @@ namespace Archery.Menus
         AudioClip m_ClickClip;
 
         [Header("Grand écran du tutoriel")]
-        [Tooltip("Vu du joueur, de combien de degrés le grand écran est à droite du menu (centre à centre).")]
+        [Tooltip("Place fixe du grand écran, autour de la place du joueur (2,1 m devant le menu, au centre du haut de la " +
+                 "tour) : de combien de degrés il est tourné depuis le menu. Négatif : à gauche, à l'opposé du choix des arcs.")]
         [SerializeField]
-        float m_TutorialScreenSide = 45f;
+        float m_TutorialScreenYaw = -45f;
 
-        [Tooltip("Distance (m) du grand écran à la tête du joueur (le menu est à environ 2,1 m). Son bas est au niveau du " +
-                 "bas du menu.")]
+        [Tooltip("Distance (m) du grand écran à la place du joueur (le menu est à 2,1 m). Son bas est au niveau du bas du menu.")]
         [SerializeField]
-        float m_TutorialScreenReach = 2.5f;
+        float m_TutorialScreenDistance = 2.5f;
 
         [Tooltip("Largeur (m) du grand écran.")]
         [SerializeField]
@@ -67,8 +67,8 @@ namespace Archery.Menus
             MenuArrowTarget.AttachAll(m_Content);
         }
 
-        // Le menu opaque (paramètres, classement… : on ne voit plus le décor à travers). Le thème peint ses panneaux à 94 %,
-        // et le motif du fond laisse un fin liseré transparent près du bord : le panneau passe à 100 %, sur un fond plein.
+        // Le menu opaque (paramètres, classement… : on ne voit plus le décor à travers). Le thème peint ses panneaux à 94 % :
+        // le panneau passe à 100 %, devant un fond plein qui cache aussi ce qui serait dessiné après lui (OpaqueBacking).
         void MakeOpaque()
         {
             if (m_Content == null || !m_Content.TryGetComponent<Image>(out var panel))
@@ -79,23 +79,8 @@ namespace Archery.Menus
             panel.color = color;
 
             var content = (RectTransform)m_Content.transform;
-            if (content.parent == null)
-                return;
-
-            m_Backing = new GameObject("Fond opaque", typeof(RectTransform));
-            m_Backing.layer = m_Content.layer;
-            var rect = (RectTransform)m_Backing.transform;
-            rect.SetParent(content.parent, false);
-            rect.SetSiblingIndex(content.GetSiblingIndex());
-            rect.anchorMin = content.anchorMin;
-            rect.anchorMax = content.anchorMax;
-            rect.pivot = content.pivot;
-            rect.anchoredPosition = content.anchoredPosition;
-            rect.sizeDelta = content.sizeDelta - new Vector2(20f, 20f);
-            var image = m_Backing.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
-            m_Backing.SetActive(m_Content.activeSelf);
+            if (content.parent != null)
+                m_Backing = OpaqueBacking.Create(content, color, 10f);
         }
 
         // La page du tutoriel, ajoutée aux autres pages.
@@ -104,7 +89,7 @@ namespace Archery.Menus
             if (m_Content == null || m_TutorialPage >= 0)
                 return;
 
-            var tutorial = TutorialMenu.Create(m_Content.transform, this, m_TutorialScreenSide, m_TutorialScreenReach,
+            var tutorial = TutorialMenu.Create(m_Content.transform, this, m_TutorialScreenYaw, m_TutorialScreenDistance,
                                                m_TutorialScreenSize);
             var pages = new GameObject[m_Pages.Length + 1];
             m_Pages.CopyTo(pages, 0);

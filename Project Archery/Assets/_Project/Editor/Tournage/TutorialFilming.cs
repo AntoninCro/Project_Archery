@@ -41,7 +41,8 @@ namespace Archery.EditorTools
             "Raccourcis de test (clavier, en mode Play) :\n" +
             "N : lance la vague ; pendant le chrono, fait venir le boss ; pendant le boss, le tue\n" +
             "V : un gisement de cristaux 3 m devant toi   ·   B : +50 matériaux   ·   H : finit la construction\n" +
-            "C : un coffre   ·   1 à 4 : la difficulté   ·   K : le joueur meurt";
+            "C : un coffre   ·   1 à 4 : la difficulté   ·   K : le joueur meurt\n" +
+            "5 à 9 : équipe un arc   ·   U : débloque tous les arcs   ·   J : reverrouille les arcs";
 
         struct Clip
         {

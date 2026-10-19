@@ -15,6 +15,11 @@ namespace Archery.Bows
         [TextArea]
         public string description = "Équilibré.";
 
+        [Tooltip("Pouvoir spécial, affiché sous l'arc dans le menu de choix des arcs. Vide : déduit de ses réglages (flèches " +
+                 "qui traversent des ennemis) ; rien si l'arc n'en a pas.")]
+        [TextArea(1, 3)]
+        public string specialPower;
+
         public int price;
 
         [Tooltip("Première vague où l'arc peut apparaître en boutique.")]
@@ -46,6 +51,19 @@ namespace Archery.Bows
 
         [Tooltip("Nombre d'ennemis qu'une flèche peut traverser.")]
         public int pierceCount;
+
+        /// <summary>Le pouvoir spécial de l'arc, en une phrase ; vide s'il n'en a pas.</summary>
+        public string SpecialPowerText
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(specialPower))
+                    return specialPower.Trim();
+                if (pierceCount > 0)
+                    return $"Ses flèches traversent {pierceCount} ennemi{(pierceCount > 1 ? "s" : "")}";
+                return "";
+            }
+        }
 
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]

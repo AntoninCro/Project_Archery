@@ -63,6 +63,9 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **V** | Un gisement de cristaux devant le joueur |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
+| **5 à 9** | Équipe le 1er au 5e arc de la liste, s'il est débloqué (avant la première vague) |
+| **U** | Débloque tous les succès, donc tous les arcs |
+| **J** | Efface tous les succès : les arcs se reverrouillent (l'arc équipé redevient l'arc par défaut avant la première vague) |
 | **I / T** | Après la victoire contre MK : mode infini / terminer la partie |
 
 ## 5. Ce que voit le public

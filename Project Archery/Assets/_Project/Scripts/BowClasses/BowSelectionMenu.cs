@@ -34,7 +34,7 @@ namespace Archery.BowClasses
 
         [Tooltip("Taille du menu en unités du Canvas (1 unité = 1 mm avec la taille de pixel par défaut).")]
         [SerializeField]
-        Vector2 m_Size = new Vector2(1700f, 1000f);
+        Vector2 m_Size = new Vector2(1700f, 960f);
 
         [Tooltip("Taille d'une unité du Canvas, en mètres.")]
         [SerializeField]
@@ -46,7 +46,7 @@ namespace Archery.BowClasses
 
         [Tooltip("Hauteur d'une carte (unités du Canvas).")]
         [SerializeField]
-        float m_CardHeight = 760f;
+        float m_CardHeight = 720f;
 
         [SerializeField]
         float m_CardSpacing = 20f;
@@ -85,6 +85,7 @@ namespace Archery.BowClasses
 
         readonly List<Card> m_Cards = new List<Card>();
         GameObject m_Content;
+        GameObject m_Backing;
         UiTheme m_Theme;
         MaterialPropertyBlock m_Block;
         int m_Layer;
@@ -128,6 +129,8 @@ namespace Archery.BowClasses
             if (m_Content.activeSelf != visible)
             {
                 m_Content.SetActive(visible);
+                if (m_Backing != null)
+                    m_Backing.SetActive(visible);
                 if (visible)
                     Refresh();
             }
@@ -279,6 +282,7 @@ namespace Archery.BowClasses
             // Le thème : fond, titre et polices. Les cartes sont habillées à part (ci-dessous), après lui.
             if (m_Theme != null)
                 UiThemer.Apply(canvasObject, m_Theme);
+            MakeOpaque(background);
             foreach (var card in m_Cards)
             {
                 StyleCard(card);
@@ -289,6 +293,16 @@ namespace Archery.BowClasses
 
             // Les cartes se déclenchent aussi d'une flèche.
             MenuArrowTarget.AttachAll(content.gameObject);
+        }
+
+        // Opaque, comme le menu principal et le grand écran du tutoriel : le thème peint ses panneaux à 94 % ; le fond passe
+        // à 100 %, devant un fond plein qui cache aussi ce qui serait dessiné après lui (les panneaux de difficulté).
+        void MakeOpaque(Image background)
+        {
+            var color = background.color;
+            color.a = 1f;
+            background.color = color;
+            m_Backing = OpaqueBacking.Create(background.rectTransform, color, 10f);
         }
 
         Card BuildCard(RectTransform parent, BowLoadout.Entry entry, Vector2 position)
@@ -334,19 +348,22 @@ namespace Archery.BowClasses
             }
             else
             {
-                // Caractéristiques : des jauges remplies d'après le meilleur arc de la liste.
+                // Caractéristiques : des jauges remplies d'après le meilleur arc de la liste. Pas de texte de description
+                // (retiré le 19 octobre) ; dessous, son pouvoir spécial s'il en a un.
                 AddStat(root, "Dégâts", 0, entry.color, top);
                 AddStat(root, "Portée", 1, entry.color, top);
                 AddStat(root, "Cadence", 2, entry.color, top);
 
-                var text = bow.description;
-                if (bow.pierceCount > 0)
-                    text += $"\nTraverse {bow.pierceCount} ennemi{(bow.pierceCount > 1 ? "s" : "")}.";
-                var description = NewText(root, "Description", text, 19f, TextAlignmentOptions.Center);
-                description.enableAutoSizing = true;
-                description.fontSizeMin = 14f;
-                description.fontSizeMax = 19f;
-                Place(description.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, top - 475f), new Vector2(m_CardWidth - 26f, 80f));
+                var power = bow.SpecialPowerText;
+                if (!string.IsNullOrEmpty(power))
+                {
+                    var powerText = NewText(root, "Subtitle", "Pouvoir : " + power, 22f, TextAlignmentOptions.Center);
+                    powerText.enableAutoSizing = true;
+                    powerText.fontSizeMin = 15f;
+                    powerText.fontSizeMax = 22f;
+                    powerText.color = entry.color;
+                    Place(powerText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, top - 465f), new Vector2(m_CardWidth - 24f, 46f));
+                }
             }
 
             // Bas de la carte : « Équipé », « Choisir » ou « Bientôt ».

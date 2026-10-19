@@ -51,3 +51,4 @@ Raccourcis de test (clavier, en mode Play) :
   V   pose un gisement de cristaux 3 m devant toi
   B   +50 matériaux        H   finit la construction en cours
   C   un coffre            1 à 4   la difficulté        K   le joueur meurt
+  5 à 9   équipe un arc    U   débloque tous les arcs   J   reverrouille les arcs
