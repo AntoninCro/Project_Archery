@@ -185037,7 +185037,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 15, y: -41, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.14142, y: 5.2}
+  m_AnchoredPosition: {x: 0.14142, y: 4.95}
   m_SizeDelta: {x: 1000, y: 800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &689442261
@@ -185059,6 +185059,9 @@ MonoBehaviour:
   - {fileID: 112881188}
   m_DifficultyText: {fileID: 0}
   m_ClickClip: {fileID: 0}
+  m_TutorialScreenSide: 45
+  m_TutorialScreenReach: 2.5
+  m_TutorialScreenSize: 2.4
 --- !u!114 &689442262
 MonoBehaviour:
   m_ObjectHideFlags: 0
