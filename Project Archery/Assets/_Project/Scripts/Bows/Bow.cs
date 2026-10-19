@@ -239,6 +239,11 @@ namespace Archery.Bows
         ShotTuning Tuning => m_ShotTuning != null ? m_ShotTuning : ShotTuning.Fallback;
         float MaxDraw => Mathf.Max(0.05f, Def.maxDrawDistance);
 
+        // Jusqu'où la corde suit la main : la tension maximale, puis un peu plus (sans plus de puissance), la pointe de la
+        // flèche restant devant le repose-flèche.
+        float PullLimit(Arrow arrow) =>
+            Mathf.Max(MaxDraw, Mathf.Min(MaxDraw + Mathf.Max(0f, Def.overdrawDistance), arrow.Length - m_BraceHeight - 0.05f));
+
         /// <summary>
         /// Dégâts d'un coup de flèche au corps à corps (GDD, section 4.5) : ceux d'un tir de cette qualité
         /// à pleine tension, bonus de dégâts compris.
@@ -789,7 +794,7 @@ namespace Archery.Bows
                 draw = Vector3.Dot(direction, toRest) - m_BraceHeight;
             }
 
-            draw = Mathf.Clamp(draw, 0f, MaxDraw);
+            draw = Mathf.Clamp(draw, 0f, PullLimit(m_Nocked));
 
             // Le modèle s'aligne sur la flèche ; le haut de l'arc reste du côté du haut de la main.
             var targetRotation = Quaternion.Inverse(root.rotation) * Quaternion.LookRotation(direction, root.up);
@@ -812,7 +817,9 @@ namespace Archery.Bows
             if (!gameplay)
                 return;
 
-            var ratio = draw / MaxDraw;
+            // Au-delà de la tension maximale, la corde suit la main sans rien changer d'autre : puissance, anneau, vibration et
+            // grincement restent ceux de la tension maximale.
+            var ratio = Mathf.Min(1f, draw / MaxDraw);
             var drawSpeed = deltaTime > 0f ? Mathf.Abs(ratio - m_DrawRatio) / deltaTime : 0f;
             m_DrawRatio = ratio;
 
@@ -836,7 +843,7 @@ namespace Archery.Bows
 
         bool ShouldUnnock(Transform root, Vector3 toRest, float distance)
         {
-            if (distance > m_BraceHeight + MaxDraw + m_UnnockSlack)
+            if (distance > m_BraceHeight + PullLimit(m_Nocked) + m_UnnockSlack)
                 return true;
 
             // Main passée devant l'arc.
@@ -906,7 +913,7 @@ namespace Archery.Bows
             }
 
             // Les branches plient avec la tension : par le rig du modèle importé, ou en tournant les branches.
-            var drawRatio = m_Nocked != null ? m_DrawDistance / MaxDraw : 0f;
+            var drawRatio = m_Nocked != null ? Mathf.Min(1f, m_DrawDistance / MaxDraw) : 0f;
             if (m_Visual != null)
                 m_Visual.SetDraw(drawRatio);
 

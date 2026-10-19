@@ -22,8 +22,11 @@ namespace Archery.Portal
     /// <b>Il ne bouge que quand on ne le regarde pas</b> : dans l'axe du regard (25°) et sans pilier entre lui et le
     /// joueur, il se fige, comme une statue. Le regard détourné, il avance par saccades, comme une vidéo qui saute des
     /// images, figé dans une pose qui change à chaque saut, toujours tourné vers le joueur. On le voit bouger du coin de
-    /// l'œil ; quand on le regarde, il est déjà plus près. Caché, il penche parfois la tête hors du pilier. Il grésille de
-    /// temps en temps : on l'entend avant de le voir.
+    /// l'œil ; quand on le regarde, il est déjà plus près. Caché, il penche parfois la tête hors du pilier.
+    /// <para>On l'entend venir, surtout dans son dos : un grésillement continu, de plus en plus fort à mesure qu'il approche
+    /// (doux caché, fort quand il avance, à fond quand il fonce, presque éteint quand on le regarde), un pas lourd à chaque
+    /// saut, et un grondement quand il fonce. Les sons baissent avec la distance bien plus vite qu'avant (atténuation
+    /// logarithmique) : loin, un murmure ; tout près, très fort.</para>
     /// </remarks>
     public class CorruptedMonster : MonoBehaviour, IArrowHitHandler, IArrowAbsorber
     {
@@ -69,6 +72,8 @@ namespace Archery.Portal
         bool m_PoseReady;
         int m_PoseState;
         AudioSource m_Audio;
+        AudioSource m_Steps;
+        AudioSource m_Static;
         Collider m_Collider;
         Transform m_HeadBone;
         Transform m_Eyes;
@@ -112,13 +117,19 @@ namespace Archery.Portal
             collider.radius = k_Radius;
             monster.m_Collider = collider;
 
-            monster.m_Audio = go.AddComponent<AudioSource>();
-            monster.m_Audio.spatialBlend = 1f;
-            monster.m_Audio.minDistance = 2f;
-            monster.m_Audio.maxDistance = 40f;
-            monster.m_Audio.rolloffMode = AudioRolloffMode.Linear;
-            monster.m_Audio.playOnAwake = false;
-            monster.m_Audio.outputAudioMixerGroup = Sfx.Output;
+            monster.m_Audio = monster.AddSource(3f);
+            monster.m_Steps = monster.AddSource(3f);
+            monster.m_Static = monster.AddSource(2f);
+            var staticClip = dimension.StaticClip;
+            if (staticClip != null)
+            {
+                monster.m_Static.clip = staticClip;
+                monster.m_Static.loop = true;
+                monster.m_Static.volume = 0f;
+                monster.m_Static.pitch = Random.Range(0.85f, 1.15f);
+                monster.m_Static.time = Random.Range(0f, staticClip.length * 0.9f);
+                monster.m_Static.Play();
+            }
 
             monster.m_Post = post;
             dimension.Claim(post);
@@ -169,6 +180,7 @@ namespace Archery.Portal
             EnsurePose();
             m_Watched = IsSeen();
             UpdateGlitch();
+            UpdateStatic(deltaTime);
             switch (m_State)
             {
                 case State.Hiding:
@@ -227,7 +239,7 @@ namespace Archery.Portal
             if (m_CrackleTimer <= 0f)
             {
                 m_CrackleTimer = Random.Range(0.6f, 1.2f);
-                Crackle(0.5f);
+                Crackle(0.5f, Random.Range(0.6f, 1f));
             }
 
             if (m_Watched)
@@ -319,6 +331,7 @@ namespace Archery.Portal
             FacePlayer();
             RandomPose();
             SetVisual(Quaternion.Euler(Random.Range(-4f, 4f), Random.Range(-6f, 6f), Random.Range(-4f, 4f)));
+            StepSound();
             return arrived;
         }
 
@@ -333,6 +346,9 @@ namespace Archery.Portal
             m_LeanSide = Random.value < 0.5f ? -1f : 1f;
             if (state == State.Hiding)
                 SetVisual(Quaternion.identity);
+            // Il fonce : un grondement grave et fort, pour qu'on sache qu'il arrive.
+            else if (state == State.Lunging)
+                Crackle(1f, 0.45f);
         }
 
         // Le bug du corps : léger caché, plus fort quand il avance ou fonce, presque calme quand on le regarde (une statue).
@@ -347,13 +363,61 @@ namespace Archery.Portal
                 material.SetFloat(k_GlitchId, glitch);
         }
 
-        void Crackle(float volume)
+        void Crackle(float volume, float pitch)
         {
             var clip = m_Dimension.RandomGlitchClip();
             if (clip == null || m_Audio == null)
                 return;
-            m_Audio.pitch = Random.Range(0.6f, 1f);
+            m_Audio.pitch = pitch;
             m_Audio.PlayOneShot(clip, volume);
+        }
+
+        // ---------------------------------------------------------------- les sons
+
+        // Une source de son sur le monstre. Atténuation logarithmique : pleine jusqu'à minDistance, puis moitié moins à
+        // chaque fois que la distance double (3 m : 1, 6 m : 0,5, 12 m : 0,25, 24 m : 0,13) ; on sent bien qu'il approche.
+        // Pas d'effet Doppler : il saute d'un coup, ce qui ferait siffler le son.
+        AudioSource AddSource(float minDistance)
+        {
+            var source = gameObject.AddComponent<AudioSource>();
+            source.spatialBlend = 1f;
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
+            source.minDistance = minDistance;
+            source.maxDistance = 60f;
+            source.dopplerLevel = 0f;
+            source.priority = 40;
+            source.playOnAwake = false;
+            source.outputAudioMixerGroup = Sfx.Output;
+            return source;
+        }
+
+        // Le grésillement continu : doux caché, fort quand il avance, à fond quand il fonce ; regardé, il retient son
+        // souffle (presque plus rien). Coupé vite, rallumé un peu moins vite.
+        void UpdateStatic(float deltaTime)
+        {
+            if (m_Static == null)
+                return;
+
+            var target = m_State == State.Dead ? 0f
+                       : m_Watched ? 0.05f
+                       : m_State == State.Hiding ? 0.35f
+                       : m_State == State.Lunging ? 1f : 0.8f;
+            var speed = target < m_Static.volume ? 6f : 3f;
+            m_Static.volume = Mathf.MoveTowards(m_Static.volume, target, deltaTime * speed);
+        }
+
+        // Un pas lourd à chaque saut, plus grave que nature. Chaque pas coupe le précédent : un piétinement haché, comme
+        // une vidéo qui saute des images.
+        void StepSound()
+        {
+            var clip = m_Dimension.RandomStepClip();
+            if (clip == null || m_Steps == null)
+                return;
+            m_Steps.Stop();
+            m_Steps.clip = clip;
+            m_Steps.pitch = Random.Range(0.55f, 0.75f);
+            m_Steps.volume = Random.Range(0.8f, 1f);
+            m_Steps.Play();
         }
 
         public bool OnArrowHit(in ArrowHit hit)

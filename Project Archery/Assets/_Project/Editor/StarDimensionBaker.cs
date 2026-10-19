@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Archery.Portal;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -29,6 +31,15 @@ namespace Archery.EditorTools
         const string k_ScenePath = "Assets/_Project/Scenes/Dimension_Etoiles.unity";
         const string k_Folder = "Assets/_Project/Art/Dimension";
         const string k_MirrorGuid = "ef437f4ac7214f9fba08ad150881280e";
+
+        // La musique de la dimension (composée par un ami, sa montée est à 12 s) et l'ancienne, générée pour le prototype.
+        const string k_Music = "Assets/_Project/Audio/Music/Sad_Nostalgie_40_Tempo_KLICKAUD.mp3";
+        const string k_OldMusicGuid = "0f73399bad1bfdb48a3a2ba0fd0c5bbd";
+        const float k_MusicRise = 12f;
+        const string k_Mixer = "Assets/_Project/Audio/MainMixer.mixer";
+
+        // Les pas des monstres : les pas sur béton de Kenney (000 à 004).
+        const string k_StepClips = "Assets/kenney_impact-sounds/Audio/footstep_concrete_";
 
         // Un torii à l'échelle 1 : demi-écart des piliers, hauteur (10 m jusqu'au 18 octobre), rayon d'un pilier.
         const float k_HalfSpan = 2.8f;
@@ -76,6 +87,10 @@ namespace Archery.EditorTools
             var loaded = SceneManager.GetSceneByPath(k_ScenePath).isLoaded;
             if (loaded || Regex.IsMatch(text, @"m_SurviveTime: 30\s"))
                 LengthenTrial();
+            if (loaded || text.Contains(k_OldMusicGuid))
+                UseNewMusic();
+            if (loaded || !text.Contains("m_StepClips:"))
+                AddMonsterSteps();
             if (loaded || HasTiltedTorii(text))
                 StraightenTorii(false);
             if (ToriiCount(text) > k_ThinAbove)
@@ -101,6 +116,84 @@ namespace Archery.EditorTools
                 settings.ApplyModifiedProperties();
                 return "l'épreuve dure maintenant 1 minute (Survive Time : 60 s)";
             });
+        }
+
+        // La musique de l'ami remplace celle du prototype (jusqu'au 18 octobre), une fois : à sa hauteur (pitch 1, l'ancienne
+        // était ralentie), par le groupe Music du mixer, et la découverte dure jusqu'à sa montée (12 s ; 10 s avant). Une
+        // autre musique, choisie à la main, est gardée.
+        static void UseNewMusic()
+        {
+            var music = AssetDatabase.LoadAssetAtPath<AudioClip>(k_Music);
+            if (music == null)
+                return;
+
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var settings = new SerializedObject(dimension);
+                var clip = settings.FindProperty("m_Music");
+                var old = clip.objectReferenceValue;
+                if (old != null && AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(old)) != k_OldMusicGuid)
+                    return null;
+
+                clip.objectReferenceValue = music;
+                var intro = settings.FindProperty("m_IntroTime");
+                if (Mathf.Approximately(intro.floatValue, 10f))
+                    intro.floatValue = k_MusicRise;
+                var source = settings.FindProperty("m_MusicSource").objectReferenceValue as AudioSource;
+                settings.ApplyModifiedProperties();
+                if (source != null)
+                    SetUpMusicSource(source, music);
+                return $"musique « Sad Nostalgie » de ton ami, l'épreuve part sur sa montée (Intro Time : {intro.floatValue:0.#} s)";
+            });
+        }
+
+        // Les pas des monstres (depuis le 18 octobre, pour bien les entendre approcher), si la liste est vide.
+        static void AddMonsterSteps()
+        {
+            var clips = Enumerable.Range(0, 5).Select(i => AssetDatabase.LoadAssetAtPath<AudioClip>($"{k_StepClips}{i:000}.ogg"))
+                .Where(clip => clip != null).ToArray();
+            if (clips.Length == 0)
+                return;
+
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var settings = new SerializedObject(dimension);
+                var list = settings.FindProperty("m_StepClips");
+                if (list == null || list.arraySize > 0)
+                    return null;
+
+                list.arraySize = clips.Length;
+                for (var i = 0; i < clips.Length; i++)
+                    list.GetArrayElementAtIndex(i).objectReferenceValue = clips[i];
+                settings.ApplyModifiedProperties();
+                return $"les monstres ont des pas (Step Clips : {clips.Length} pas sur béton de Kenney)";
+            });
+        }
+
+        static void SetUpMusicSource(AudioSource source, AudioClip music)
+        {
+            source.clip = music;
+            source.loop = true;
+            source.playOnAwake = false;
+            source.spatialBlend = 0f;
+            source.pitch = 1f;
+            source.volume = 0f;
+            source.outputAudioMixerGroup = AssetDatabase.LoadAllAssetsAtPath(k_Mixer).OfType<AudioMixerGroup>()
+                .FirstOrDefault(group => group.name == "Music");
+            var lowPass = source.GetComponent<AudioLowPassFilter>();
+            if (lowPass == null)
+                lowPass = source.gameObject.AddComponent<AudioLowPassFilter>();
+            lowPass.cutoffFrequency = 22000f;
+            EditorUtility.SetDirty(source);
+            EditorUtility.SetDirty(lowPass);
         }
 
         [MenuItem("Archery/Portail des étoiles/Éclaircir les torii")]
@@ -764,13 +857,10 @@ namespace Archery.EditorTools
             var settings = new SerializedObject(dimension);
             var music = Child(root, "Musique");
             var source = music.AddComponent<AudioSource>();
-            source.clip = settings.FindProperty("m_Music").objectReferenceValue as AudioClip;
-            source.loop = true;
-            source.playOnAwake = false;
-            source.spatialBlend = 0f;
-            source.pitch = 0.9f;
-            source.volume = 0f;
-            music.AddComponent<AudioLowPassFilter>().cutoffFrequency = 500f;
+            var clip = settings.FindProperty("m_Music");
+            if (clip.objectReferenceValue == null)
+                clip.objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(k_Music);
+            SetUpMusicSource(source, clip.objectReferenceValue as AudioClip);
 
             // Le reflet : nébuleuses, galaxies et torii, retournés sous le sol.
             var mirror = Child(root, "Reflet").AddComponent<DimensionMirror>();

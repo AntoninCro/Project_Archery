@@ -3,10 +3,10 @@
 Ce guide ajoute le téléporteur du GDD (section 9) à la scène `Prototype_Tir` :
 
 - **une bande tout autour du pied de la tour** : reste debout dessus 1 seconde, de n'importe quel côté, et tu arrives en haut, tourné vers les ennemis ;
-- pour redescendre, il suffit de marcher dans le vide. En retombant sur la bande, tu ne remontes pas tout de suite : il faut d'abord en sortir. Un **cercle au sommet** est possible mais optionnel ;
+- pour redescendre, il suffit de marcher dans le vide (ou de prendre l'escalier). En arrivant sur la bande, tu ne remontes pas tout de suite : il faut d'abord t'en éloigner d'au moins 1 m (depuis le 19 octobre ; avant, il suffisait d'en sortir, et un escalier le long du mur la réarmait en passant au-dessus). Un **cercle au sommet** est possible mais optionnel ;
 - pendant la pause entre deux vagues, le bouton **« Retour à la tour »** de la boutique te ramène en haut directement.
 
-Le voyage se fait avec un fondu au noir. Après une téléportation, il faut sortir de la bande avant de pouvoir repartir.
+Le voyage se fait avec un fondu au noir. Après une téléportation, il faut s'éloigner d'au moins 1 m de la bande avant de pouvoir repartir.
 
 Tant que la tour est détruite, la bande s'éteint (grise) et le bouton de la boutique se grise. Si la tour s'effondre pendant que tu es en haut, tu es renvoyé au sol, juste à côté de la bande, de ton côté (option *Evacuate On Collapse*, cochée par défaut).
 

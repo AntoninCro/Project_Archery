@@ -16,6 +16,8 @@ namespace Archery.EditorTools
     /// « Difficulté » sont retirés (on choisit la difficulté en tirant sur un panneau, et on lance la partie avec le
     /// gong), une phrase le rappelle en haut, et un bouton « Tutoriel » est ajouté sous « Paramètres ». La scène est
     /// marquée comme modifiée : il suffit de l'enregistrer.
+    /// Le 18 octobre, le menu, trop haut, est baissé de 25 cm, une fois (s'il est encore à son ancienne hauteur, centre à
+    /// 5,2 m ; une autre hauteur, choisie à la main, est gardée).
     /// Crée aussi l'asset <c>Resources/TutorialContent</c> (les textes du tutoriel, avec les icônes des catégories).
     /// </summary>
     [InitializeOnLoad]
@@ -24,6 +26,10 @@ namespace Archery.EditorTools
         const string k_ContentPath = "Assets/_Project/Resources/TutorialContent.asset";
         const string k_IconFolder = "Assets/_Project/UI/Icones/";
         const string k_Hint = "Tire sur un panneau pour choisir ta difficulté, puis frappe le gong pour commencer.";
+
+        // La hauteur du centre du menu jusqu'au 18 octobre, et de combien il descend.
+        const float k_OldHeight = 5.2f;
+        const float k_Lower = 0.25f;
 
         static MainMenuBaker()
         {
@@ -74,6 +80,13 @@ namespace Archery.EditorTools
             {
                 foreach (var menu in root.GetComponentsInChildren<MainMenuPanel>(true))
                 {
+                    if (Lower(menu))
+                    {
+                        EditorSceneManager.MarkSceneDirty(scene);
+                        Debug.Log($"Menu principal baissé de {k_Lower * 100f:0} cm (centre à {menu.transform.position.y:0.##} m), " +
+                                  $"dans la scène « {scene.name} ». Enregistre-la (Ctrl+S).", menu);
+                    }
+
                     var home = menu.transform.Find("Content/Home");
                     if (home == null || !UpdateHome(menu, home))
                         continue;
@@ -83,6 +96,18 @@ namespace Archery.EditorTools
                               "Enregistre-la (Ctrl+S).", menu);
                 }
             }
+        }
+
+        static bool Lower(MainMenuPanel menu)
+        {
+            var transform = menu.transform;
+            if (Mathf.Abs(transform.position.y - k_OldHeight) > 0.005f)
+                return false;
+
+            Undo.RecordObject(transform, "Baisser le menu principal");
+            transform.position += Vector3.down * k_Lower;
+            EditorUtility.SetDirty(transform);
+            return true;
         }
 
         static bool UpdateHome(MainMenuPanel menu, Transform home)

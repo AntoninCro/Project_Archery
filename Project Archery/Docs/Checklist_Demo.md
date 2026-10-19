@@ -11,7 +11,7 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] Les menus se visent à l'arc : une flèche dans un bouton le presse, dans un curseur le règle ; « Quitter » demande deux flèches en 3 s. Les paramètres se règlent aussi à l'arc.
 - [ ] Les panneaux de difficulté se choisissent au rayon de la manette (ils grossissent au survol).
 - [ ] Tutoriel : 4 rubriques (Tir, Déplacement, Vagues, Construction) avec leur icône ; dans chaque fenêtre, le titre, le cadre de la vidéo, le texte, « < » et « > », le compteur et « Retour ».
-- [ ] Les 13 vidéos du tutoriel enregistrées et déposées dans `Assets/_Project/Resources/Tutoriel` (noms dans `LISEZMOI.txt`). Sans vidéo, le cadre affiche « Vidéo à venir ».
+- [x] Les 13 vidéos du tutoriel enregistrées et déposées dans `Assets/_Project/Resources/Tutoriel` (noms dans `LISEZMOI.txt`). Faites le 19 octobre, dans le casque, avec l'outil `Archery > Tutoriel > Tournage des vidéos`. Vérifier en jeu que chacune passe sur le grand écran du tutoriel.
 - [ ] Facile très simple : vagues deux fois plus courtes, deux fois moins d'ennemis après l'accalmie, boss (et MK) deux fois moins résistants, balistes deux fois plus lentes.
 - [ ] Construction : un marteau dans chaque main, sans rien saisir ; la main se ferme dessus.
 - [ ] Boss : barre de PV plus haute, avec le nom dedans ; point faible en gemme sertie d'or, de la couleur du boss, qui bat comme un cœur ; la gemme de Nolan et celle de Francine se voient, et on ne les traverse plus.

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Archery.Bows;
 using Archery.Core;
 using Archery.Defense;
@@ -108,6 +109,11 @@ namespace Archery.Enemies
 
         static readonly RaycastHit[] s_Hits = new RaycastHit[16];
 
+        // Ce que chaque collider touché est (ennemi, flèche, projectile : on passe à travers), cherché une fois pour toutes :
+        // ces recherches dans la hiérarchie, pour chaque contact et à chaque image, pesaient avec 8 volants. Vidé de temps
+        // en temps (flèches et projectiles détruits).
+        static readonly Dictionary<Collider, bool> s_Passable = new Dictionary<Collider, bool>();
+
         Phase m_Phase = Phase.Circling;
         Vector3 m_Velocity;
         float m_Angle;
@@ -119,6 +125,9 @@ namespace Archery.Enemies
         float m_Bank;
         Vector3 m_FleePoint;
         Vector3 m_FleeStart;
+        Vector3 m_DiveTarget;
+        float m_GroundCheckTimer;
+        float m_LastGround = float.MinValue;
 
         public override Vector3 Velocity => m_Velocity;
         public override Vector3 SpawnOffset => Vector3.up * m_SpawnHeight;
@@ -215,6 +224,7 @@ namespace Archery.Enemies
         // Piqué vers la tête du joueur, en corrigeant lentement la trajectoire : un pas de côté suffit pour l'esquiver.
         void UpdateDive(PlayerHealth player, Vector3 headPosition, float speed, float deltaTime)
         {
+            m_DiveTarget = headPosition;
             Steer(headPosition, speed * m_DiveSpeedMultiplier, m_DiveTurnRate, deltaTime);
 
             var toHead = headPosition - transform.position;
@@ -291,6 +301,15 @@ namespace Archery.Enemies
 
             var direction = m_Velocity / speed;
             var lookAhead = speed * deltaTime + 1.5f;
+
+            // En piqué, seul ce qui est avant la tête du joueur compte : le sol juste derrière lui passait pour un mur, et
+            // le volant remontait au dernier moment, sans toucher.
+            if (m_Phase == Phase.Diving)
+            {
+                lookAhead = Mathf.Min(lookAhead, Vector3.Distance(transform.position, m_DiveTarget) - m_HitRadius);
+                if (lookAhead <= 0.05f)
+                    return;
+            }
             var count = Physics.SphereCastNonAlloc(transform.position, m_AvoidRadius, direction, s_Hits, lookAhead,
                                                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
             var nearest = float.MaxValue;
@@ -317,9 +336,21 @@ namespace Archery.Enemies
         // Jamais sous le sol qui est juste sous lui (colline, falaise, toit) : s'il y passe, il est remis dessus.
         void StayAboveTerrain()
         {
+            // Bien au-dessus du dernier sol trouvé : vérifié 6 à 7 fois par seconde au lieu de chaque image (les murs et
+            // les pentes devant lui restent surveillés à chaque image par AvoidObstacles).
             var position = transform.position;
-            if (!TryGetGroundBelow(position, out var ground))
+            m_GroundCheckTimer -= Time.deltaTime;
+            if (position.y > m_LastGround + m_GroundClearance + 3f && m_GroundCheckTimer > 0f)
                 return;
+
+            m_GroundCheckTimer = 0.15f;
+            if (!TryGetGroundBelow(position, out var ground))
+            {
+                m_LastGround = float.MinValue;
+                return;
+            }
+
+            m_LastGround = ground;
 
             var minimum = ground + m_GroundClearance;
             if (position.y >= minimum)
@@ -352,10 +383,25 @@ namespace Archery.Enemies
         }
 
         // Un vrai obstacle : pas un autre ennemi, ni le joueur, ni une flèche, ni ce que les flèches traversent.
-        static bool IsObstacle(Collider collider) =>
-            collider != null && !(collider is CharacterController) && !ArrowIgnore.IsIgnored(collider) &&
-            collider.GetComponentInParent<Enemy>() == null && collider.GetComponentInParent<Arrow>() == null &&
-            collider.GetComponentInParent<EnemyProjectile>() == null;
+        static bool IsObstacle(Collider collider)
+        {
+            if (collider == null || collider is CharacterController || ArrowIgnore.IsIgnored(collider))
+                return false;
+
+            if (!s_Passable.TryGetValue(collider, out var passable))
+            {
+                if (s_Passable.Count > 1024)
+                    s_Passable.Clear();
+                passable = collider.GetComponentInParent<Enemy>() != null || collider.GetComponentInParent<Arrow>() != null ||
+                           collider.GetComponentInParent<EnemyProjectile>() != null;
+                s_Passable[collider] = passable;
+            }
+
+            return !passable;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => s_Passable.Clear();
 
         void Face(Vector3 direction, float deltaTime)
         {

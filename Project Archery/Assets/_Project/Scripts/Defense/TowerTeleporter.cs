@@ -21,7 +21,8 @@ namespace Archery.Defense
     /// <remarks>
     /// Tant que la tour est détruite, la zone s'éteint. Quand elle s'effondre, la zone du pied de la tour
     /// fait descendre le joueur qui était en haut (« Evacuate On Collapse »).
-    /// Après une téléportation, ou un saut depuis le haut de la tour, il faut sortir de la zone avant de pouvoir repartir.
+    /// Après une téléportation, ou une descente depuis le haut de la tour (en sautant, ou par un escalier le long du mur),
+    /// il faut s'éloigner d'au moins 1 m de la zone avant de pouvoir repartir.
     /// La boutique peut aussi envoyer le joueur au point d'arrivée (<see cref="SendPlayer"/>).
     /// </remarks>
     [DisallowMultipleComponent]
@@ -31,6 +32,9 @@ namespace Archery.Defense
 
         // Points par coin arrondi du contour de la bande.
         const int k_CornerSegments = 8;
+
+        // Distance (m) au-delà de la zone où il faut aller pour la réarmer.
+        const float k_RearmMargin = 1f;
 
         [Tooltip("Point d'arrivée, aux pieds du joueur. Son axe Z (flèche bleue) donne la direction du regard à l'arrivée.")]
         [SerializeField]
@@ -176,10 +180,12 @@ namespace Archery.Defense
             var feet = rig != null ? rig.BodyPosition : transform.position;
             var onPad = rig != null && IsOnPad(feet);
 
-            // En haut de la tour, la zone du pied se désarme : en sautant, on retombe dessus sans remonter aussitôt.
+            // En haut de la tour, la zone du pied se désarme : en sautant, on retombe dessus sans remonter aussitôt. Elle ne
+            // se réarme qu'à 1 m au-delà d'elle : en descendant un escalier le long du mur, on passe au-dessus de la bande,
+            // trop haut pour être « dessus » ; elle se réarmait là et renvoyait en haut au pied des marches.
             if (rig != null && feet.y - transform.position.y > 1.5f)
                 m_Armed = false;
-            else if (!onPad)
+            else if (rig != null && IsAwayFromPad(feet))
                 m_Armed = true;
 
             var charging = IsUsable && onPad && m_Armed && teleport != null && !teleport.IsTeleporting;
@@ -210,6 +216,18 @@ namespace Archery.Defense
             return offset.sqrMagnitude <= m_Radius * m_Radius;
         }
 
+        // Assez loin de la zone (à plat) pour la réarmer.
+        bool IsAwayFromPad(Vector3 feet)
+        {
+            var offset = feet - transform.position;
+            if (m_Shape == TeleporterShape.AroundTower)
+                return DistanceFromTower(offset) > m_BandWidth + k_RearmMargin;
+
+            offset.y = 0f;
+            var distance = m_Radius + k_RearmMargin;
+            return offset.sqrMagnitude > distance * distance;
+        }
+
         bool Go(PlayerTeleport teleport)
         {
             if (teleport == null || m_Destination == null)
@@ -219,7 +237,7 @@ namespace Archery.Defense
             return teleport.TryTeleport(m_Destination.position, yaw);
         }
 
-        // Après n'importe quelle téléportation, il faut sortir de la zone avant de repartir.
+        // Après n'importe quelle téléportation, il faut s'éloigner de la zone avant de repartir.
         void OnPlayerTeleported()
         {
             m_Armed = false;

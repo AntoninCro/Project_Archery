@@ -176,9 +176,10 @@ MonoBehaviour:
   m_PostRange: 45
   m_Walls: {fileID: 1809138106}
   m_MusicSource: {fileID: 1298671907}
+  m_MusicVolume: 0.8
   m_GlowMaterial: {fileID: 2100000, guid: cfc60ced9df00434d97d6ddff9797e6e, type: 2}
   m_GlitchShader: {fileID: 4800000, guid: b26cfdf2d31b49bfba1553b8b7e79a7b, type: 3}
-  m_IntroTime: 10
+  m_IntroTime: 12
   m_SurviveTime: 60
   m_MonsterModels:
   - {fileID: 8749963051817122311, guid: 2543ef630d804481b944961c47d67873, type: 3}
@@ -192,6 +193,7 @@ MonoBehaviour:
   - {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
   - {fileID: 917082875553773785, guid: bcd61f3afae64539a56232959aa3a16a, type: 3}
   - {fileID: 8554819755699478647, guid: cece032379a54658b82a408909e76a18, type: 3}
+  m_MonsterCount: 3
   m_RespawnDelay: 1.2
   m_FakeErrors:
   - "THUNK.exe ne r\xE9pond pas"
@@ -212,12 +214,18 @@ MonoBehaviour:
   - 'Ne relance pas
 
     la partie'
-  m_Music: {fileID: 8300000, guid: 0f73399bad1bfdb48a3a2ba0fd0c5bbd, type: 3}
+  m_Music: {fileID: 8300000, guid: 92587e0e3c184dbb90a0e8dedd4a0a08, type: 3}
   m_GlitchClips:
   - {fileID: 8300000, guid: 21e670930b9c6d94991ff42ab19c3a2e, type: 3}
   - {fileID: 8300000, guid: 77ec04eb129dbb04686b3eb9787cf541, type: 3}
   - {fileID: 8300000, guid: 4848b29dfd6f04d4fb2b704d868cbb2f, type: 3}
   - {fileID: 8300000, guid: aa6e83848954210498e72d8613047f3c, type: 3}
+  m_StepClips:
+  - {fileID: 8300000, guid: a2b84d9fcdf750346a0b8194e8dcc6d6, type: 3}
+  - {fileID: 8300000, guid: 536ad1a7634e33f4286a875c0d5d0833, type: 3}
+  - {fileID: 8300000, guid: e01d0443397fb104baae8ee3b4b39eb0, type: 3}
+  - {fileID: 8300000, guid: 73af8604fb3d1894eb6179f5301f446e, type: 3}
+  - {fileID: 8300000, guid: cc2a9dbde58e0ea4c9afbd74cda2392b, type: 3}
   m_PanelOpenClip: {fileID: 8300000, guid: f898fb9f4c2a8784fbaf4df1960404b1, type: 3}
   m_PanelCloseClip: {fileID: 8300000, guid: 69927a8b4380dfc4f9c7dd33cbd5f592, type: 3}
   m_KillClip: {fileID: 8300000, guid: 020bc297033921e42a2c6824eb7e1ab0, type: 3}
@@ -7848,12 +7856,12 @@ AudioSource:
   m_GameObject: {fileID: 1298671906}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -3530445712461842658, guid: d6e0c2f1242d7604db851b37a499f437, type: 2}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 0f73399bad1bfdb48a3a2ba0fd0c5bbd, type: 3}
+  m_Resource: {fileID: 8300000, guid: 92587e0e3c184dbb90a0e8dedd4a0a08, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0
-  m_Pitch: 0.9
+  m_Pitch: 1
   Loop: 1
   Mute: 0
   Spatialize: 0
@@ -7951,7 +7959,7 @@ AudioLowPassFilter:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.022282856
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

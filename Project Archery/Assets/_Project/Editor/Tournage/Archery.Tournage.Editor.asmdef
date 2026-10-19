@@ -1,0 +1,27 @@
+{
+    "name": "Archery.Tournage.Editor",
+    "rootNamespace": "Archery",
+    "references": [
+        "Archery.Runtime",
+        "Unity.Recorder",
+        "Unity.Recorder.Base",
+        "Unity.Recorder.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.recorder",
+            "expression": "5.0.0",
+            "define": "ARCHERY_RECORDER"
+        }
+    ],
+    "noEngineReferences": false
+}

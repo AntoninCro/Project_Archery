@@ -461,6 +461,51 @@ namespace Archery.Portal
             m_Busy = false;
         }
 
+        static readonly Collider[] s_Overlaps = new Collider[16];
+
+        // Le point d'arrivée au retour : 3 m devant l'anneau, ou, si un ennemi (figé) ou un obstacle y est, la première
+        // place libre un peu plus loin ou sur le côté (jusqu'à 6 m et 70°). Sans place libre, le point de départ.
+        Vector3 FreeArrival(Vector3 outward)
+        {
+            var flat = new Vector3(outward.x, 0f, outward.z);
+            flat = flat.sqrMagnitude > 1e-4f ? flat.normalized : Vector3.forward;
+            Vector3? first = null;
+            foreach (var distance in new[] { 3f, 4.5f, 6f })
+            {
+                foreach (var angle in new[] { 0f, 35f, -35f, 70f, -70f })
+                {
+                    var point = m_Center + Quaternion.Euler(0f, angle, 0f) * flat * distance;
+                    point.y = m_Bottom;
+                    if (Physics.Raycast(point + Vector3.up * (m_Top - m_Bottom + 2f), Vector3.down, out var ground, m_Top - m_Bottom + 6f,
+                                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        point.y = ground.point.y;
+                    if (first == null)
+                        first = point;
+
+                    if (IsFree(point))
+                        return point;
+                }
+            }
+
+            return first ?? m_Center + flat * 3f;
+        }
+
+        // Rien à la place d'un joueur debout (ennemi, rocher, mur), au-dessus du sol : le terrain et ce que les flèches
+        // traversent (barricades…) ne comptent pas.
+        static bool IsFree(Vector3 feet)
+        {
+            var count = Physics.OverlapCapsuleNonAlloc(feet + Vector3.up * 0.7f, feet + Vector3.up * 1.7f, 0.45f, s_Overlaps,
+                                                       Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                var collider = s_Overlaps[i];
+                if (collider != null && !(collider is TerrainCollider) && !ArrowIgnore.IsIgnored(collider))
+                    return false;
+            }
+
+            return true;
+        }
+
         AsyncOperation LoadDimension()
         {
 #if UNITY_EDITOR
@@ -497,14 +542,13 @@ namespace Archery.Portal
                 SceneManager.SetActiveScene(m_MainScene);
             RestoreMapLighting();
 
-            // Devant le portail, du côté d'où il était venu, tourné vers l'anneau, sur le sol.
+            // Devant le portail, du côté d'où il était venu, tourné vers l'anneau, sur le sol, à une place libre (pas sur
+            // un ennemi figé devant l'anneau, ni dans un rocher).
             var outward = m_Normal * m_EntrySide;
-            var arrival = m_Center + outward * 3f;
-            arrival.y = m_Bottom;
-            if (Physics.Raycast(arrival + Vector3.up * (m_Top - m_Bottom + 2f), Vector3.down, out var ground, m_Top - m_Bottom + 6f,
-                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                arrival.y = ground.point.y;
-            var yaw = Quaternion.LookRotation(-new Vector3(outward.x, 0f, outward.z)).eulerAngles.y;
+            var arrival = FreeArrival(outward);
+            var toRing = m_Center - arrival;
+            toRing.y = 0f;
+            var yaw = Quaternion.LookRotation(toRing.sqrMagnitude > 0.01f ? toRing : -new Vector3(outward.x, 0f, outward.z)).eulerAngles.y;
             var teleport = PlayerTeleport.Instance;
             if (teleport != null)
                 yield return teleport.TeleportWhileHidden(arrival, yaw);

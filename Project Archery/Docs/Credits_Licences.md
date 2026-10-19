@@ -5,7 +5,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 ## ⚠️ À régler avant le rendu
 
 1. **Le dépôt GitHub est public, et il contient les packs de l'Asset Store** (Dungeon Mason, Dimasjk Studio, Easy Weapons, AgeSoft, coffre animé, Toon RTS). Le contrat de l'Asset Store (EULA standard) permet de les mettre dans un jeu, mais pas de redistribuer leurs fichiers sources, gratuits compris. Or un dépôt public les met à disposition de n'importe qui. Le plus simple : **rendre le dépôt privé** (GitHub > *Settings* > *General* > *Danger Zone* > *Change visibility*) et inviter le professeur et les coéquipiers comme collaborateurs. Ou demander au professeur ce qu'il attend.
-2. **Musique du boss final** : le nom exact de l'ami qui l'a composée (ou son pseudo), et son accord pour l'utiliser dans le jeu.
+2. **Musiques de l'ami** (boss final et dimension des étoiles) : son nom exact (ou son pseudo), et son accord pour les utiliser dans le jeu.
 3. **Les packs « à confirmer »** : vérifier l'auteur dans Unity, *Window > Package Manager > My Assets*.
 
 ## Les licences, en bref
@@ -30,7 +30,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | UI Pack: RPG Extension | Kenney | `UIpack_RPG` | Interface |
 | Fantasy UI Borders (1.0) | Kenney | `kenney_fantasy-ui-borders` | Cadres des menus, barres de vie, plaques |
 | Game Icons | Kenney | `kenney_game-icons` | Icônes |
-| Impact Sounds (1.0) | Kenney | `kenney_impact-sounds` | Sons d'impact |
+| Impact Sounds (1.0) | Kenney | `kenney_impact-sounds` | Sons d'impact, pas des monstres de la dimension |
 | Interface Sounds (1.0) | Kenney | `kenney_interfaceSounds` | Sons des menus et du portail des étoiles |
 | RPG Audio | Kenney | `kenney_rpg-audio` | Portes de l'antre, sons divers |
 | Glove (gant low-poly) | Quaternius | `Glove by Quaternius - l1zv4LaA4I` | Les mains gantées du joueur (squelette ajouté par le jeu) |
@@ -66,13 +66,15 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Exemples de XR Interaction Toolkit 3.5.1 (*Starter Assets*, *Hands Interaction Demo*, *Spatial Keyboard*) et de XR Hands 1.8.1 (*HandVisualizer*) | `Samples`, `XRI` | Le joueur en VR (XR Origin, manettes) |
 | Modèle de projet VR | `VRTemplateAssets` | Éléments repris du modèle VR de Unity |
 | TextMesh Pro | `TextMesh Pro` | Les textes |
+| Unity Recorder 5.1.7 (paquet, éditeur seulement : rien dans le jeu) | `Packages` | Le tournage des vidéos du tutoriel |
 
 ### Musiques et sons
 
 | Son | Origine | Licence |
 |---|---|---|
-| Musique du boss final, « Mama Mia Marchello » (`music_final_boss.mp3`) | Composée par un ami (publiée sur Klickaud) | **À confirmer** : son nom et son accord |
-| Musiques de vague, de boss et de boutique, ambiances jour et nuit (`Audio/Music/*.wav`) | Générées par script pour le prototype | Faites pour le projet |
+| Musique du boss final, « Mama Mia Marchello » (`music_final_boss.mp3`) | Composée par un ami (fichier récupéré avec Klickaud, un site qui télécharge les morceaux de SoundCloud) | **À confirmer** : son nom et son accord |
+| Musique de la dimension des étoiles, « Sad Nostalgie » (`Sad_Nostalgie_40_Tempo_KLICKAUD.mp3`) | Composée par le même ami (récupérée de la même façon) | **À confirmer** : son nom et son accord |
+| Musiques de vague, de boss et de boutique, ambiances jour et nuit (`Audio/Music/*.wav`) | Générées par script pour le prototype (`music_boss` servait aussi à la dimension jusqu'au 18 octobre) | Faites pour le projet |
 | Sons provisoires (`Audio/Placeholder`) | Générés par script pour le prototype | Faits pour le projet |
 | Sons Kenney | Voir CC0 ci-dessus | CC0 |
 

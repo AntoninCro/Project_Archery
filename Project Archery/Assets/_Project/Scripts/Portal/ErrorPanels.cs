@@ -78,7 +78,6 @@ namespace Archery.Portal
         float m_Timer;
         float m_LastTimerPanel;
         float m_Clock;
-        float m_IntroClock;
         float m_LastOpenSound = -1f;
         readonly List<float> m_SurgeTimes = new List<float>();
         int m_NextSurge;
@@ -93,7 +92,6 @@ namespace Archery.Portal
         public void StartIntro(float duration)
         {
             Intro = true;
-            m_IntroClock = 0f;
             m_NextSurge = 0;
             m_SurgeTimes.Clear();
             var start = Mathf.Min(k_SurgeStart, duration * 0.5f);
@@ -165,9 +163,8 @@ namespace Archery.Portal
             {
                 if (Intro)
                 {
-                    // La montée : les panneaux prévus pour ce moment de la découverte.
-                    m_IntroClock += deltaTime;
-                    while (m_NextSurge < m_SurgeTimes.Count && m_IntroClock >= m_SurgeTimes[m_NextSurge])
+                    // La montée : les panneaux prévus pour ce moment de la découverte (le temps de la musique).
+                    while (m_NextSurge < m_SurgeTimes.Count && m_Dimension.Elapsed >= m_SurgeTimes[m_NextSurge])
                     {
                         m_NextSurge++;
                         Spawn(true);

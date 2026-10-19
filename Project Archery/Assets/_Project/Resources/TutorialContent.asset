@@ -68,7 +68,7 @@ MonoBehaviour:
       text: "Pendant les vagues, des gisements de cristaux poussent dans la jungle.
         Vise-les et appuie sur la g\xE2chette de prise : ils \xE9clatent en mat\xE9riaux."
     - title: "Choisir un b\xE2timent"
-      text: "Vise un socle de pierre et appuie sur la g\xE2chette de prise : choisis
+      text: "Vise un cercle bleu au sol et appuie sur la g\xE2chette de prise : choisis
         un b\xE2timent et paie-le en mat\xE9riaux. Barricade et pi\xE8ges sur la
         voie, baliste et tour de givre au bord."
     - title: Construire

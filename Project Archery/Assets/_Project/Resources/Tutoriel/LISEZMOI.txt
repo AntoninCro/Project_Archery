@@ -21,3 +21,33 @@ Elles tournent en boucle, sans le son. Rien d'autre à faire : chaque fenêtre t
 Sans vidéo, le cadre affiche « Vidéo à venir ».
 
 Les textes et les titres se changent dans l'asset Resources/TutorialContent.
+
+
+Filmer les vidéos (dans le casque, avec Unity Recorder)
+
+Les 13 vidéos ont été tournées le 19 octobre (1280 x 720, 76 s en tout), puis allégées : 224 Mo -> 49 Mo
+(H.264, 30 images/s, 5 Mbit/s). Les originaux sont dans « projet archery/Tutoriel_originaux », hors de Git.
+Après avoir refait une vidéo, allège-la (Unity Recorder les écrit environ 4 fois plus lourdes) :
+  powershell -ExecutionPolicy Bypass -File Toolslleger_videos_tutoriel.ps1 -Name Tir_1
+(depuis le dossier « Project Archery » ; sans -Name, toutes les vidéos trop lourdes).
+
+1. Menu Archery > Tutoriel > Tournage des vidéos : la fenêtre s'ouvre et le tournage est prêt.
+   Il ne marche que tant que la fenêtre est ouverte : ferme-la après le tournage (sinon, les deux
+   joysticks enfoncés en jouant referaient une vidéo).
+   Choisis la vidéo à filmer dans la liste (une coche = déjà faite).
+2. Lance le mode Play et mets le casque. Une caméra de tournage suit ta tête en lissant les petits
+   mouvements (pas de tremblement, horizon droit). Elle n'apparaît pas dans le casque.
+3. Enfonce les deux joysticks en même temps (ou F8 au clavier) : ça enregistre (une vibration).
+   Fais le geste. Enfonce-les encore : c'est fini (une longue vibration, un message devant toi).
+   La vidéo est écrite ici sous le bon nom, et la suivante de la liste est choisie toute seule.
+4. Refaire une vidéo : choisis-la dans la liste et recommence, l'ancienne est remplacée.
+
+Conseils : 5 à 10 s, un seul geste par vidéo, la tête lente, regarde ce que tu montres, finis dans
+la pose du début (la vidéo tourne en boucle). En plein jour, en Facile, le menu fermé.
+Si les vidéos sortent à l'envers : coche « Retourner l'image » dans la fenêtre.
+
+Raccourcis de test (clavier, en mode Play) :
+  N   lance la vague ; pendant le chrono, fait venir le boss ; pendant le boss, le tue
+  V   pose un gisement de cristaux 3 m devant toi
+  B   +50 matériaux        H   finit la construction en cours
+  C   un coffre            1 à 4   la difficulté        K   le joueur meurt

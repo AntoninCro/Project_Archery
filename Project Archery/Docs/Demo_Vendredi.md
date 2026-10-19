@@ -10,7 +10,7 @@ Complète `Checklist_Demo.md` : la checklist dit **quoi tester**, ce document di
 |---|---|
 | **Dim. 18** | Ouvrir Unity, **Ctrl+S** sur `Prototype_Tir` (le portail replacé). |
 | **Lun. 19** | Une partie complète en casque (checklist, partie 1 : d'abord les nouveautés, le portail et la dimension). Noter chaque bug avec la vague et ce que tu faisais. |
-| **Mar. 20** | Corrections. Enregistrer les 13 vidéos du tutoriel. |
+| **Mar. 20** | Corrections. ~~Enregistrer les 13 vidéos du tutoriel~~ (faites le 19 octobre). |
 | **Mer. 21** | **Gel des nouveautés le soir** : après, seulement des corrections. Faire le build Windows, en *Development Build* (les raccourcis de démo y marchent, voir partie 4), et y jouer une partie entière. |
 | **Jeu. 22** | Deux répétitions chronométrées, dont une devant quelqu'un qui ne connaît pas le jeu. Enregistrer une **vidéo de secours** (2 à 3 minutes de partie). Préparer et charger le matériel (partie 8). Commit et push. |
 | **Ven. 23** | Arriver tôt : installation **30 minutes avant** (partie 9). |

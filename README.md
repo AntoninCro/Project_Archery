@@ -94,7 +94,7 @@ Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archer
 - **Kenney** (www.kenney.nl), licence CC0 : *Nature Kit*, *Castle Kit*, *Tower Defense Kit*, *UI Pack*, *UI Pack: RPG Extension*, *Fantasy UI Borders*, *Game Icons*, sons *Impact Sounds*, *Interface Sounds* et *RPG Audio*.
 - **Quaternius**, licence CC0 : le gant low-poly des mains, et la porte de l'antre (*Modular Dungeon*, coupée en double porte par le jeu).
 - **Polices**, licence SIL Open Font License 1.1 : *Cinzel* et *Cinzel Decorative* (Natanael Gama) ; *Share Tech Mono* (Carrois Type Design, Ralph du Carrois), pour les panneaux d'erreur du portail des étoiles.
-- **Musique du boss final** : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
+- **Musiques du boss final et de la dimension des étoiles** : « Mama Mia Marchello » et « Sad Nostalgie », composées par un ami (crédit exact à confirmer).
 - **Autres sons, ambiances et musiques** : provisoires, générés par script pour le prototype.
 - **Unity** : XR Interaction Toolkit et ses exemples, XR Hands, TextMesh Pro.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.

@@ -33,6 +33,10 @@ namespace Archery.Bows
         [Tooltip("Distance de tirage maximale (m), mesurée depuis la position de repos de la corde.")]
         public float maxDrawDistance = 0.2625f;
 
+        [Tooltip("Distance (m) dont on peut encore tirer la corde au-delà de la tension maximale : la corde suit la main, " +
+                 "sans plus de puissance, et l'anneau de timing apparaît toujours à la tension maximale.")]
+        public float overdrawDistance = 0.15f;
+
         [Tooltip("Puissance selon la tension (0 = corde au repos, 1 = tension maximale).")]
         public AnimationCurve drawToPower = new AnimationCurve(new Keyframe(0f, 0.1f), new Keyframe(1f, 1f));
 
