@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Archery.BowClasses;
 using Archery.Bows;
 using Archery.Core;
 using Archery.Economy;
@@ -605,9 +606,12 @@ namespace Archery.Portal
 
             if (suspend)
             {
+                // L'arc de sa classe, choisi au début de la partie (sans bonus) ; sans classes d'arc, celui du début.
                 m_SavedBow = m_Bow.Definition;
-                if (m_Bow.StartingDefinition != null)
-                    m_Bow.SetDefinition(m_Bow.StartingDefinition);
+                var loadout = BowLoadout.Instance;
+                var start = loadout != null && loadout.Selected != null ? loadout.Selected : m_Bow.StartingDefinition;
+                if (start != null)
+                    m_Bow.SetDefinition(start);
             }
             else if (m_SavedBow != null)
             {
