@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: Bow_Runique
   m_EditorClassIdentifier: Archery.Runtime::Archery.Bows.BowDefinition
   displayName: Arc runique
-  description: "Grav\xE9 de runes bleues. Compromis entre la puissance et la lenteur
-    de l'arc puissant et l'aspect \xE9quilibr\xE9 de l'arc normale. Permet aussi
-    de transpercer un enemi d\xE8s la premi\xE8re vague."
+  description: "Compromis entre la puissance et la lenteur de l'arc puissant et l'aspect
+    \xE9quilibr\xE9 de l'arc normale."
   price: 0
   availableFromWave: 0
   visualPrefab: {fileID: 2965173842215296009, guid: e9f6101cc7dd4484e8825fba47000596, type: 3}
