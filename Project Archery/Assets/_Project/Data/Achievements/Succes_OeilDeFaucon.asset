@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0163cf60a0abbf946b12239e82be4386, type: 3}
+  m_Name: Succes_OeilDeFaucon
+  m_EditorClassIdentifier: Archery.Runtime::Archery.BowClasses.AchievementDefinition
+  m_Id: 
+  title: Chasseur
+  description: Tuer 100 ennemis.
+  type: 0
+  target: 100
+  multiKillSize: 2
+  color: {r: 1, g: 0.82, b: 0.35, a: 1}
