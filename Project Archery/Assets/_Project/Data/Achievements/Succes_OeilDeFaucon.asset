@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Succes_OeilDeFaucon
   m_EditorClassIdentifier: Archery.Runtime::Archery.BowClasses.AchievementDefinition
   m_Id: 
-  title: Chasseur
-  description: Tuer 100 ennemis.
-  type: 0
-  target: 100
+  title: "\u0152il de faucon"
+  description: "R\xE9ussir 10 tirs parfaits \xE0 la t\xEAte."
+  type: 2
+  target: 10
   multiKillSize: 2
-  color: {r: 1, g: 0.82, b: 0.35, a: 1}
+  color: {r: 0.34901962, g: 0.6509804, b: 1, a: 1}

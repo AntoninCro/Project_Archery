@@ -18,4 +18,4 @@ MonoBehaviour:
   type: 0
   target: 100
   multiKillSize: 2
-  color: {r: 1, g: 0.82, b: 0.35, a: 1}
+  color: {r: 0.4509804, g: 0.9019608, b: 0.4509804, a: 1}
