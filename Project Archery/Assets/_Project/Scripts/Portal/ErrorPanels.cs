@@ -15,8 +15,9 @@ namespace Archery.Portal
     /// </summary>
     /// <remarks>
     /// Ce ne sont que des décors : pas de collision (les flèches les traversent), et jamais devant le monstre. Ils restent
-    /// dans le monde, entre 2,2 et 6 m du joueur, et s'ouvrent en s'étirant (pas de clignotement). Les textes sont
-    /// modifiables dans l'Inspector de la <see cref="StarDimension"/>.
+    /// dans le monde, entre 2,2 et 6 m du joueur, et s'ouvrent en s'étirant (pas de clignotement). Les fausses erreurs
+    /// sont modifiables dans l'Inspector de chaque dimension (<see cref="IGlitchDimension"/>), les titres par
+    /// <see cref="SetWords"/>.
     /// </remarks>
     public class ErrorPanels : MonoBehaviour
     {
@@ -59,16 +60,21 @@ namespace Archery.Portal
             public bool Centered;
         }
 
-        // La montée de la découverte : le premier panneau à 5 s, puis de plus en plus vite, jusqu'à 40 panneaux ouverts au
-        // moment où le monstre arrive.
+        // La montée de la découverte : le premier panneau à 5 s, puis de plus en plus vite, jusqu'à 150 panneaux ouverts au
+        // moment où le monstre arrive (40 jusqu'au 20 octobre).
         const float k_SurgeStart = 5f;
-        const int k_SurgeCount = 40;
+        const int k_SurgeCount = 150;
 
         // La police futuriste, fabriquée une seule fois pour toutes les épreuves (une police dynamique a sa propre texture).
         static TMP_FontAsset s_Font;
 
         readonly List<Panel> m_Panels = new List<Panel>();
-        StarDimension m_Dimension;
+        readonly List<Vector3> m_Threats = new List<Vector3>();
+        IGlitchDimension m_Dimension;
+        string m_IntroTitle = "THUNK.exe";
+        string m_UnleashTitle = "ALERTE";
+        string m_UnleashBody = "SURVIVEZ";
+        string m_TimerTitle = "TEMPS RESTANT";
         Material m_Material;
         TMP_FontAsset m_Font;
         Mesh m_Frame;
@@ -120,11 +126,12 @@ namespace Archery.Portal
 
             Sfx.Play(m_Dimension.RandomGlitchClip(), head.position, 1f, 0.8f, 0f);
             Sfx.Play(m_CloseClip, head.position, 0.6f, 0.7f, 0f);
-            ShowCentered("ALERTE", "SURVIVEZ", 1.8f, 2.3f, true);
+            // Environ 3 m de large à 2,6 m (60° de la vue) ; 2,3 jusqu'au 20 octobre.
+            ShowCentered(m_UnleashTitle, m_UnleashBody, 1.8f, 3.4f, true);
             m_Timer = 1.6f;
         }
 
-        public void Configure(StarDimension dimension, Material material, AudioClip open, AudioClip close, string[] fakeErrors)
+        public void Configure(IGlitchDimension dimension, Material material, AudioClip open, AudioClip close, string[] fakeErrors)
         {
             m_Dimension = dimension;
             m_Material = material;
@@ -134,6 +141,18 @@ namespace Archery.Portal
             m_Font = LoadFont();
             m_Frame = BuildFrame();
             m_Timer = 0.5f;
+        }
+
+        /// <summary>
+        /// Les mots de cette dimension : le titre des panneaux de la découverte (« THUNK.exe »), le grand panneau du départ
+        /// (« ALERTE », « SURVIVEZ ») et le titre du compte à rebours (« TEMPS RESTANT »).
+        /// </summary>
+        public void SetWords(string introTitle, string unleashTitle, string unleashBody, string timerTitle)
+        {
+            m_IntroTitle = introTitle;
+            m_UnleashTitle = unleashTitle;
+            m_UnleashBody = unleashBody;
+            m_TimerTitle = timerTitle;
         }
 
         void OnDestroy()
@@ -266,11 +285,11 @@ namespace Archery.Portal
         bool HidesAMonster(Panel panel, Vector3 viewer)
         {
             var toPanel = panel.Root.position - viewer;
-            foreach (var monster in m_Dimension.Monsters)
+            m_Threats.Clear();
+            m_Dimension.GetThreats(m_Threats);
+            foreach (var point in m_Threats)
             {
-                if (monster == null || !monster.IsAlive)
-                    continue;
-                var toMonster = monster.Point - viewer;
+                var toMonster = point - viewer;
                 if (toPanel.sqrMagnitude < toMonster.sqrMagnitude && Vector3.Angle(toPanel, toMonster) < 12f)
                     return true;
             }
@@ -281,9 +300,11 @@ namespace Archery.Portal
         // Cette place, vue du joueur, est à moins de 16° d'un monstre : on n'y ouvre pas de panneau.
         bool NearAMonster(Vector3 viewer, Vector3 position)
         {
-            foreach (var monster in m_Dimension.Monsters)
+            m_Threats.Clear();
+            m_Dimension.GetThreats(m_Threats);
+            foreach (var point in m_Threats)
             {
-                if (monster != null && monster.IsAlive && Vector3.Angle(position - viewer, monster.Point - viewer) < 16f)
+                if (Vector3.Angle(position - viewer, point - viewer) < 16f)
                     return true;
             }
 
@@ -315,7 +336,7 @@ namespace Archery.Portal
             {
                 case Kind.Timer:
                     m_LastTimerPanel = m_Clock;
-                    Open(Kind.Timer, "TEMPS RESTANT", TimerText(), position, head.position, Random.Range(2.5f, 3.5f), 1f);
+                    Open(Kind.Timer, m_TimerTitle, TimerText(), position, head.position, Random.Range(2.5f, 3.5f), 1f);
                     break;
                 case Kind.Error:
                     Open(Kind.Error, "ERREUR", $"ERREUR\n<size=45%>0x{Random.Range(0, 0xFFFFFF):X6}</size>", position, head.position,
@@ -324,7 +345,7 @@ namespace Archery.Portal
                 default:
                     var fake = m_FakeErrors != null && m_FakeErrors.Length > 0
                         ? m_FakeErrors[Random.Range(0, m_FakeErrors.Length)] : "Erreur inconnue";
-                    Open(Kind.Fake, Intro ? "THUNK.exe" : RandomTitle(), fake, position, head.position,
+                    Open(Kind.Fake, Intro ? m_IntroTitle : RandomTitle(), fake, position, head.position,
                          surge ? 999f : Random.Range(3f, 4.5f), 1f);
                     break;
             }
@@ -350,9 +371,9 @@ namespace Archery.Portal
             {
                 var yaw = Random.value < (surge ? 0.7f : 0.6f) ? Random.Range(surge ? -75f : -55f, surge ? 75f : 55f) : Random.Range(-170f, 170f);
                 var direction = Quaternion.Euler(0f, yaw, 0f) * forward;
-                var distance = Random.Range(2.2f, surge ? 7f : 6f);
-                position = head.position + direction * distance + Vector3.up * Random.Range(-0.5f, surge ? 2.2f : 1.6f);
-                position.y = Mathf.Max(position.y, m_Dimension.transform.position.y + 0.6f);
+                var distance = Random.Range(2.2f, surge ? 8.5f : 6f);
+                position = head.position + direction * distance + Vector3.up * Random.Range(-0.5f, surge ? 3f : 1.6f);
+                position.y = Mathf.Max(position.y, m_Dimension.FloorY + 0.6f);
 
                 if (NearAMonster(head.position, position))
                     continue;

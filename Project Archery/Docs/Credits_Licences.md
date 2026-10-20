@@ -34,14 +34,17 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Impact Sounds (1.0) | Kenney | `kenney_impact-sounds` | Sons d'impact, pas des monstres de la dimension |
 | Interface Sounds (1.0) | Kenney | `kenney_interfaceSounds` | Sons des menus et du portail des étoiles |
 | RPG Audio | Kenney | `kenney_rpg-audio` | Portes de l'antre, sons divers |
+| City Kit (Commercial) (2.1) | Kenney | `kenney_city-kit-commercial` | Toit cyberpunk : les immeubles de la ville |
 | Glove (gant low-poly) | Quaternius | `Glove by Quaternius - l1zv4LaA4I` | Les mains gantées du joueur (squelette ajouté par le jeu) |
 | Modular Dungeon (porte en arche) | Quaternius | `_Project/Resources/Lair` | La porte de l'antre (coupée en double porte par le jeu) |
+| Cyberpunk Game Kit (via Poly Pizza, version FBX) | Quaternius | `Quaternius_Cyberpunk-Game-Kit` | Toit cyberpunk : objets des toits (climatiseurs, antennes, câbles, enseignes, écrans) |
 | Seamless Space Backgrounds (*Purple Nebula 1*) | Screaming Brain Studios (screamingbrainstudios.itch.io/seamless-space-backgrounds, aussi sur OpenGameArt) | `_Project/Art/Bows/Cosmique/Nebuleuse_Violette.png` | La nébuleuse vue à travers le corps de l'arc cosmique |
 
 ### Licences CC-BY 3.0 et 4.0 (créditer l'auteur : c'est fait dans le README et ici)
 
 | Asset | Auteur | Dossier | Utilisé pour |
 |---|---|---|---|
+| *Sci fi crossbow* (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), **CC-BY 4.0** | **oarfish** (Sketchfab, https://sketchfab.com/oarfish54) | `_Project/Art/Cyber/Arbalete.obj` | Les arbalètes jumelles du toit cyberpunk. **Modifié** : converti de glTF en OBJ, recentré sur la poignée, tourné et réduit (55 cm) ; matériau refait (silhouette sombre au contour néon) |
 | *Bowblade – DAE WeaponCraft – WoW Styled Bow* (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), **CC-BY 4.0** | **Tijmen Matthys** (Sketchfab, https://sketchfab.com/tijmenmatthys) | `_Project/Art/Bows/Legendaire/` | Le modèle de l'arc légendaire, avec sa texture peinte à la main. **Modifié** : converti de FBX en OBJ, corde retirée (le jeu dessine la sienne), recentré sur la poignée et mis à l'échelle ; la texture sert aussi de lueur |
 | *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
 

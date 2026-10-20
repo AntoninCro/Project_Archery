@@ -19,7 +19,7 @@ MonoBehaviour:
   availableFromWave: 0
   visualPrefab: {fileID: 2496679602738098701, guid: 1ebc33a59a511c94fbdb6174ee13fb12, type: 3}
   arrowSpeed: 42
-  damage: 15
+  damage: 8.4
   arrowGravity: 8
   maxDrawDistance: 0.28
   overdrawDistance: 0.15

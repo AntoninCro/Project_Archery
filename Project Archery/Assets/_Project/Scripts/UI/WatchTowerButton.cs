@@ -97,9 +97,10 @@ namespace Archery.UI
             if (m_CooldownLeft > 0f)
                 m_CooldownLeft = Mathf.Max(0f, m_CooldownLeft - deltaTime);
 
-            // Caché aussi dans l'arène du boss final (on n'en ressort qu'en battant le dragon) et dans la dimension du portail.
+            // Caché aussi dans l'arène du boss final (on n'en ressort qu'en battant le dragon), dans la dimension du portail et
+            // sur le toit cyberpunk.
             var visible = m_Teleporter != null && !m_Teleporter.IsPlayerAtDestination && !FinalBoss.FinalBossDirector.PlayerInArena &&
-                          !Portal.StarPortal.PlayerInDimension;
+                          !Portal.StarPortal.PlayerInDimension && !Cyber.CyberPassage.PlayerInDimension;
             if (m_Visual != null && m_Visual.activeSelf != visible)
                 m_Visual.SetActive(visible);
             if (!visible)

@@ -23,7 +23,7 @@ namespace Archery.BowClasses
     /// <remarks>
     /// Les arcs ne s'achètent plus : au lancement, la carte « Arc » de la boutique est retirée (sans toucher au script
     /// de la boutique ni à la scène). Raccourcis de test (éditeur et builds Development) : <b>5 à 9</b> choisissent
-    /// le 1er au 5e arc de la liste, s'il est débloqué.
+    /// le 1er au 5e arc de la liste, s'il est débloqué ; <b>0</b> le 6e, les deux touches à droite du 0 (<b>)</b> et <b>=</b> en AZERTY) le 7e et le 8e.
     /// </remarks>
     [DisallowMultipleComponent]
     public class BowLoadout : MonoBehaviour
@@ -173,6 +173,10 @@ namespace Archery.BowClasses
                 SelectIndex(4);
             else if (keyboard.digit0Key.wasPressedThisFrame)
                 SelectIndex(5);
+            else if (keyboard.minusKey.wasPressedThisFrame)
+                SelectIndex(6);
+            else if (keyboard.equalsKey.wasPressedThisFrame)
+                SelectIndex(7);
         }
 #endif
 

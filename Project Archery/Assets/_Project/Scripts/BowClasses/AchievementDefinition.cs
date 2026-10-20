@@ -31,6 +31,9 @@ namespace Archery.BowClasses
 
         /// <summary>Fragments de l'arc légendaire trouvés dans les coffres (<see cref="Archery.Chests.LegendaryBow"/>).</summary>
         LegendaryFragment,
+
+        /// <summary>Épreuves du toit cyberpunk réussies (la porte glitchée de l'antre).</summary>
+        CyberTrial,
     }
 
     /// <summary>

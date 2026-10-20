@@ -240,6 +240,14 @@ namespace Archery.BowClasses
 
         void Build()
         {
+            // Plus de cartes que n'en tient la largeur du menu (7 avec les Akimbow) : le menu s'élargit, les cartes gardent
+            // leur taille.
+            if (m_Loadout != null)
+            {
+                var cards = m_Loadout.Entries.Count;
+                m_Size.x = Mathf.Max(m_Size.x, cards * m_CardWidth + Mathf.Max(0, cards - 1) * m_CardSpacing + 100f);
+            }
+
             // Le Canvas, en 3D dans le monde : le rayon des mains (et la touche E sans casque) clique ses boutons.
             var canvasObject = new GameObject("Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler),
                                               typeof(GraphicRaycaster), typeof(TrackedDeviceGraphicRaycaster));

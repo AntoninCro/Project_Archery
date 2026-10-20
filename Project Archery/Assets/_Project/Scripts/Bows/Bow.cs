@@ -183,6 +183,11 @@ namespace Archery.Bows
         Transform m_DesktopRingAnchor;
         AudioSource m_ChargeSource;
         readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
+        Akimbow m_Akimbow;
+        Archery.Combat.KatanaShield m_Katana;
+        bool m_ReplacedHidden;
+        readonly List<Renderer> m_ReplacedRenderers = new List<Renderer>();
+        readonly List<Collider> m_ReplacedColliders = new List<Collider>();
 
         public BowDefinition Definition
         {
@@ -214,6 +219,27 @@ namespace Archery.Bows
 
         /// <summary>Milieu de la poignée du modèle importé, s'il le donne ; sinon null.</summary>
         public Transform Grip => m_Visual != null ? m_Visual.Grip : null;
+
+        /// <summary>
+        /// L'arme est une paire d'Akimbow (<see cref="BowDefinition.akimbo"/>) : l'arc est caché et ne se prend plus, une
+        /// arbalète est dans chaque main.
+        /// </summary>
+        public bool IsAkimbo => m_Akimbow != null;
+
+        /// <summary>L'arme est le katana et le bouclier (<see cref="BowDefinition.katana"/>) : l'arc est caché et ne se prend plus.</summary>
+        public bool IsKatana => m_Katana != null;
+
+        /// <summary>Une autre arme remplace l'arc (Akimbow, katana et bouclier) : il est caché et ne se prend plus.</summary>
+        public bool IsReplaced => m_Akimbow != null || m_Katana != null;
+
+        /// <summary>L'anneau de timing de l'arc : les Akimbow en prennent une copie chacune.</summary>
+        public TimingRing TimingRingTemplate => m_TimingRing;
+
+        /// <summary>Les réglages des qualités de tir (vitesse, dégâts, couleur selon l'anneau).</summary>
+        public ShotTuning ShotTuning => Tuning;
+
+        /// <summary>Le son d'un tir parfait.</summary>
+        public AudioClip PerfectClip => m_PerfectClip;
 
         // Multiplicateurs donnés par les améliorations et les coffres. Celui de la difficulté
         // (largeur du vert) s'y ajoute au lancement de l'anneau.
@@ -293,6 +319,10 @@ namespace Archery.Bows
 
         protected override void OnDestroy()
         {
+            if (m_Akimbow != null)
+                Destroy(m_Akimbow.gameObject);
+            if (m_Katana != null)
+                Destroy(m_Katana.gameObject);
             ArrowIgnore.Unregister(m_OwnColliders);
             if (m_TimingRing != null)
             {
@@ -306,9 +336,10 @@ namespace Archery.Bows
 
         // Une seule main tient l'arc : l'autre ne peut pas le lui « voler » en approchant pour encocher.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            base.IsSelectableBy(interactor) && !m_Stowed && !m_DesktopHeld && (!isSelected || IsSelected(interactor));
+            base.IsSelectableBy(interactor) && !m_Stowed && !m_DesktopHeld && !IsReplaced && (!isSelected || IsSelected(interactor));
 
-        public override bool IsHoverableBy(IXRHoverInteractor interactor) => base.IsHoverableBy(interactor) && !m_Stowed && !m_DesktopHeld;
+        public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
+            base.IsHoverableBy(interactor) && !m_Stowed && !m_DesktopHeld && !IsReplaced;
 
         /// <summary>
         /// Range l'arc (construction au marteau) : la main le lâche, il disparaît à sa place près du joueur.
@@ -636,7 +667,8 @@ namespace Archery.Bows
             if (!m_DesktopHeld || m_Nocked == null)
                 return;
 
-            if (m_DrawRatio < Def.minDrawToFire)
+            // En pause, la flèche ne part pas : elle retourne dans le carquois.
+            if (m_DrawRatio < Def.minDrawToFire || SlowMotion.IsPaused)
                 Unnock();
             else
                 OnNockedArrowReleased(m_Nocked, null, true);
@@ -653,8 +685,11 @@ namespace Archery.Bows
 
             Unnock();
             m_Definition = definition;
+            SetAkimbo(definition.akimbo);
+            SetKatana(definition.katana);
 
-            if (definition.visualPrefab != null && m_Model != null)
+            // Le modèle des Akimbow ou du katana (leur aperçu dans le menu des armes) ne remplace pas celui de l'arc.
+            if (!definition.akimbo && !definition.katana && definition.visualPrefab != null && m_Model != null)
             {
                 if (m_Visual != null)
                 {
@@ -672,6 +707,109 @@ namespace Archery.Bows
             CacheGeometry();
             m_RecacheTimer = 0.25f;
         }
+
+        // Akimbow : les arbalètes remplacent l'arc (créées ici, détruites au retour à un arc).
+        void SetAkimbo(bool akimbo)
+        {
+            if (akimbo == (m_Akimbow != null))
+                return;
+
+            if (akimbo)
+            {
+                m_Akimbow = Akimbow.Create(this, m_Definition);
+            }
+            else
+            {
+                Destroy(m_Akimbow.gameObject);
+                m_Akimbow = null;
+            }
+
+            ApplyReplaced();
+        }
+
+        // Le katana et le bouclier remplacent l'arc (créés ici, détruits au retour à un arc).
+        void SetKatana(bool katana)
+        {
+            if (katana == (m_Katana != null))
+                return;
+
+            if (katana)
+            {
+                m_Katana = Archery.Combat.KatanaShield.Create(this, m_Definition);
+            }
+            else
+            {
+                Destroy(m_Katana.gameObject);
+                m_Katana = null;
+            }
+
+            ApplyReplaced();
+        }
+
+        // Remplacé (Akimbow, katana et bouclier) : l'arc se cache (ses rendus et ses colliders) et ne se prend plus. Il revient quand
+        // plus rien ne le remplace (sauf s'il est rangé pour une construction : il réapparaîtra avec).
+        void ApplyReplaced()
+        {
+            var hide = IsReplaced;
+            if (hide == m_ReplacedHidden)
+                return;
+
+            m_ReplacedHidden = hide;
+            if (hide)
+            {
+                if (isSelected && interactionManager != null)
+                    interactionManager.CancelInteractableSelection((IXRSelectInteractable)this);
+                Unnock();
+                if (m_AimGuide != null)
+                    m_AimGuide.Hide();
+
+                m_ReplacedRenderers.Clear();
+                foreach (var renderer in GetComponentsInChildren<Renderer>())
+                {
+                    if (!renderer.enabled)
+                        continue;
+                    renderer.enabled = false;
+                    m_ReplacedRenderers.Add(renderer);
+                }
+
+                m_ReplacedColliders.Clear();
+                foreach (var collider in m_OwnColliders)
+                {
+                    if (collider == null || !collider.enabled)
+                        continue;
+                    collider.enabled = false;
+                    m_ReplacedColliders.Add(collider);
+                }
+
+                return;
+            }
+
+            foreach (var renderer in m_ReplacedRenderers)
+            {
+                if (renderer == null)
+                    continue;
+                if (m_Stowed)
+                    m_StowedRenderers.Add(renderer);
+                else
+                    renderer.enabled = true;
+            }
+
+            m_ReplacedRenderers.Clear();
+            foreach (var collider in m_ReplacedColliders)
+            {
+                if (collider != null)
+                    collider.enabled = true;
+            }
+
+            m_ReplacedColliders.Clear();
+            m_Holstered = true;
+        }
+
+        /// <summary>
+        /// Un tir des Akimbow (ou une déchirure du katana lancée) : prévient le score, les succès et les améliorations de
+        /// flèches, comme un tir de l'arc.
+        /// </summary>
+        internal void ReportShot(ShotInfo shot) => ShotFired?.Invoke(this, shot);
 
         // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde un peu après.
         void UpdateRecache(float deltaTime)
@@ -738,7 +876,8 @@ namespace Archery.Bows
 
         void TryNock()
         {
-            if (m_Nocked != null || m_Model == null)
+            // En pause (menu ouvert en cours de partie), on n'encoche pas.
+            if (m_Nocked != null || m_Model == null || SlowMotion.IsPaused)
                 return;
 
             var root = transform;
@@ -800,6 +939,16 @@ namespace Archery.Bows
 
             var closestOnShaft = arrow.NockPosition + forward * along;
             return (restPoint - closestOnShaft).sqrMagnitude < m_RestCatchRadius * m_RestCatchRadius;
+        }
+
+        /// <summary>
+        /// La main lâche la flèche encochée pendant la pause : pas de tir, la corde se détend et la flèche retourne dans le
+        /// carquois (elle resterait sinon figée en l'air jusqu'à la fin de la pause).
+        /// </summary>
+        internal void CancelNock(Arrow arrow)
+        {
+            if (arrow == m_Nocked)
+                Unnock();
         }
 
         void Unnock()
@@ -921,13 +1070,20 @@ namespace Archery.Bows
             return distance > m_BraceHeight && Vector3.Angle(root.forward, toRest) > m_MaxPullAngle;
         }
 
-        void StartRing()
+        void StartRing() => BeginRing(m_TimingRing, Def);
+
+        /// <summary>
+        /// Lance un anneau avec les réglages de <paramref name="def"/>, les améliorations et la difficulté (largeur du vert) :
+        /// celui de l'arc, ou celui d'une arbalète des Akimbow.
+        /// </summary>
+        public void BeginRing(TimingRing ring, BowDefinition def)
         {
-            var def = Def;
+            if (ring == null || def == null)
+                return;
             var widthScale = Mathf.Max(0.1f, BandWidthMultiplier);
             var goldScale = Mathf.Max(0.1f, GoldWidthMultiplier) * DifficultyManager.Current.goldBandWidth;
             var speed = Mathf.Max(0.1f, RingSpeedMultiplier);
-            m_TimingRing.Begin(
+            ring.Begin(
                 def.ringDuration / speed,
                 def.goldHalfWidth * widthScale * goldScale,
                 def.goodWidth * widthScale,
@@ -1032,7 +1188,7 @@ namespace Archery.Bows
             {
                 if (m_DesktopRingAnchor != null)
                 {
-                    // Sans casque : autour du viseur, au centre de l'écran.
+                    // Sans casque : près du viseur, là où le place le DesktopArcher.
                     m_TimingRing.transform.position = m_DesktopRingAnchor.position;
                 }
                 else

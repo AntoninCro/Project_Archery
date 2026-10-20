@@ -131,6 +131,65 @@ namespace Archery.Bows
         [Tooltip("Son en boucle de la zone au sol.")]
         public AudioClip rainZoneClip;
 
+        [Header("Akimbow (arbalètes jumelles)")]
+        [Tooltip("Une arbalète dans chaque main à la place de l'arc (Akimbow) : la gâchette de chaque main tire, et l'anneau de " +
+                 "chaque arbalète repart tout seul après chaque tir (Ring Duration, plus court qu'un arc). Dégâts, vitesse, " +
+                 "gravité et perçage : ceux de cette définition, à pleine puissance. Visual Prefab ne sert qu'à l'aperçu du menu.")]
+        public bool akimbo;
+
+        [Tooltip("Modèle d'une arbalète : la poignée à l'origine, le canon vers +Z.")]
+        public GameObject akimboModel;
+
+        [Tooltip("Matériau du corps de l'arbalète de la main gauche (Archery/Akimbow : métal en plaques et néons, stable ; " +
+                 "il se brouille pendant les bugs).")]
+        public Material akimboMaterial;
+
+        [Tooltip("Matériau du corps de l'arbalète de la main droite : une autre arme (couleurs, plaques). Vide : comme la gauche.")]
+        public Material akimboMaterialRight;
+
+        [Tooltip("Néons posés sur l'arbalète de gauche (rail, branches, avant, flancs) : deux couleurs.")]
+        public Material[] akimboNeon = new Material[0];
+
+        [Tooltip("Néons de l'arbalète de droite. Vide : comme la gauche.")]
+        public Material[] akimboNeonRight = new Material[0];
+
+        [Tooltip("Pointe d'une arbalète, d'où partent les flèches, dans le repère du modèle.")]
+        public Vector3 akimboTip = new Vector3(0f, 0.096f, 0.285f);
+
+        [Tooltip("Taille des arbalètes, en multiple du modèle.")]
+        public float akimboScale = 0.7f;
+
+        [Tooltip("Son d'un tir d'arbalète.")]
+        public AudioClip akimboFireClip;
+
+        [Header("Katana et bouclier")]
+        [Tooltip("Un katana et un bouclier à la place de l'arc : le katana frappe au corps à corps (Katana Damage) et laisse " +
+                 "dans l'air une déchirure qui reste un instant ; frappée avec le bouclier, elle fonce vers l'avant comme une " +
+                 "flèche (Damage, Arrow Speed, Arrow Gravity, Pierce Count, qualité selon sa fraîcheur). Le bouclier tenu arrête " +
+                 "les coups et les projectiles. Visual Prefab ne sert qu'à l'aperçu du menu.")]
+        public bool katana;
+
+        [Tooltip("Modèle du katana : le milieu de la poignée à l'origine, la lame vers +Y, le tranchant vers +Z.")]
+        public GameObject katanaModel;
+
+        [Tooltip("Modèle du bouclier : le milieu de la poignée (au dos) à l'origine, la face vers +Z, la poignée le long de Y.")]
+        public GameObject shieldModel;
+
+        [Tooltip("Dégâts d'un coup de katana (pointe à 2,5 m/s ; jusqu'à ×1,6 à 7 m/s ; tête ×2).")]
+        public float katanaDamage = 30f;
+
+        [Tooltip("Matériau de la déchirure laissée par le katana (shader Archery/MatrixTear).")]
+        public Material katanaTearMaterial;
+
+        [Tooltip("Son d'un coup de katana qui touche.")]
+        public AudioClip katanaHitClip;
+
+        [Tooltip("Son de la déchirure lancée par le bouclier.")]
+        public AudioClip katanaLaunchClip;
+
+        [Tooltip("Son d'un coup ou d'un projectile arrêté par le bouclier.")]
+        public AudioClip shieldBlockClip;
+
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]
         public float ringDuration = 1.2f;

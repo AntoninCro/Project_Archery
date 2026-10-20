@@ -27,7 +27,7 @@ namespace Archery.Portal
     /// cachettes au monstre ; le miroir est <see cref="DimensionMirror"/>.
     /// </remarks>
     [DisallowMultipleComponent]
-    public class StarDimension : MonoBehaviour
+    public class StarDimension : MonoBehaviour, IGlitchDimension
     {
         static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
         static readonly int k_EmissionMapId = Shader.PropertyToID("_EmissionMap");
@@ -642,6 +642,16 @@ namespace Archery.Portal
         }
 
         static float FlatDistance(Vector3 a, Vector3 b) => Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
+
+        /// <summary>Les monstres en vie : les panneaux ne les cachent pas.</summary>
+        public void GetThreats(List<Vector3> points)
+        {
+            foreach (var monster in m_Monsters)
+            {
+                if (monster != null && monster.IsAlive)
+                    points.Add(monster.Point);
+            }
+        }
 
         public AudioClip RandomGlitchClip() =>
             m_GlitchClips != null && m_GlitchClips.Length > 0 ? m_GlitchClips[Random.Range(0, m_GlitchClips.Length)] : null;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Archery.Core;
 using Archery.Player;
+using Archery.UI;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -79,6 +80,10 @@ namespace Archery.Save
         float m_SaveTimer;
         float m_NextTurnCheck;
         bool m_TurnRestoredLogged;
+
+        // Le joystick droit, lu directement : la rotation coupée dans les paramètres, on le rappelle au joueur qui le pousse.
+        InputAction m_TurnProbe;
+        float m_NextTurnHint;
 
         // Les actions de rotation de chaque manette, gardées privées par l'exemple d'XRI (voir KeepTurnAlive).
         static readonly FieldInfo s_SnapTurnField =
@@ -183,6 +188,8 @@ namespace Archery.Save
             CollectTurnProviders();
             ApplyAudio();
             ApplyTurn();
+            m_TurnProbe = new InputAction("Rotation coupée (rappel)", InputActionType.Value, "<XRController>{RightHand}/{Primary2DAxis}");
+            m_TurnProbe.Enable();
         }
 
         void Update()
@@ -193,6 +200,7 @@ namespace Archery.Save
                 KeepTurnAlive();
             }
 
+            HintTurnDisabled();
             if (!m_Dirty)
                 return;
 
@@ -201,8 +209,11 @@ namespace Archery.Save
                 SaveNow();
         }
 
+        void OnEnable() => m_TurnProbe?.Enable();
+
         void OnDisable()
         {
+            m_TurnProbe?.Disable();
             if (m_Dirty)
                 SaveNow();
         }
@@ -211,6 +222,22 @@ namespace Archery.Save
         {
             if (Instance == this)
                 Instance = null;
+            m_TurnProbe?.Dispose();
+        }
+
+        // La rotation coupée dans les paramètres (« Rotation au joystick : non ») : le joystick droit poussé sur le côté
+        // ne fait rien. On le dit au joueur, au plus une fois toutes les 30 s, avec l'endroit où la rallumer.
+        void HintTurnDisabled()
+        {
+            if (Data.snapTurn || m_TurnProbe == null || Time.unscaledTime < m_NextTurnHint ||
+                (DesktopControls.Instance != null && DesktopControls.Instance.IsActive))
+                return;
+            if (Mathf.Abs(m_TurnProbe.ReadValue<Vector2>().x) < 0.8f)
+                return;
+
+            m_NextTurnHint = Time.unscaledTime + 30f;
+            HeadMessages.Show("Rotation au joystick coupée\n<size=60%>Paramètres > Rotation au joystick</size>",
+                              new Color(1f, 0.85f, 0.35f), 3.5f, 0.9f);
         }
 
         void SetVolume(ref float field, float value)

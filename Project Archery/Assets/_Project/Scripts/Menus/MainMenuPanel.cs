@@ -1,10 +1,12 @@
 using System;
 using Archery.Core;
 using Archery.Difficulty;
+using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Archery.Menus
@@ -12,7 +14,8 @@ namespace Archery.Menus
     /// <summary>
     /// Menu principal (GDD, section 14), en haut de la tour avant la première vague : paramètres, tutoriel, classement,
     /// quitter. On choisit la difficulté en tirant sur un panneau (ou en le cliquant), et on lance la partie avec le gong.
-    /// Il disparaît dès que la partie commence.
+    /// Il disparaît dès que la partie commence ; ensuite, le bouton menu de la manette gauche (Tab sans casque) l'ouvre
+    /// devant le joueur, le jeu en pause, et le referme.
     /// </summary>
     /// <remarks>
     /// Chaque page est un objet enfant (accueil, paramètres, classement…) ; la page du tutoriel est fabriquée en jeu
@@ -55,6 +58,38 @@ namespace Archery.Menus
 
         int m_TutorialPage = -1;
         GameObject m_Backing;
+
+        // En cours de partie : le bouton menu de la manette gauche (ou Tab) ouvre le menu devant le joueur, le jeu en pause.
+        // Il est à la même distance que devant la place du joueur en haut de la tour (le grand écran du tutoriel se place
+        // d'après lui), un peu sous les yeux.
+        const float k_InGameDistance = 2.1f;
+        const float k_InGameDrop = 0.15f;
+
+        // Ouvert en cours de partie, il suit le joueur sans gêner la visée de ses boutons : il ne bouge pas tant qu'il
+        // reste à moins de 30° du regard et à sa distance (à 40 cm près), puis revient en douceur devant lui.
+        const float k_FollowAngle = 30f;
+        const float k_FollowSlack = 0.4f;
+        const float k_FollowSpeed = 5f;
+        bool m_Recentering;
+
+        InputAction m_MenuButton;
+        bool m_OpenInGame;
+        Vector3 m_HomePosition;
+        Quaternion m_HomeRotation;
+        GameObject m_ResumeHint;
+
+        void Awake()
+        {
+            m_MenuButton = new InputAction("Menu en partie", InputActionType.Button);
+            m_MenuButton.AddBinding("<XRController>{LeftHand}/{MenuButton}");
+            m_MenuButton.AddBinding("<Keyboard>/tab");
+        }
+
+        void OnDestroy()
+        {
+            SlowMotion.End(this);
+            m_MenuButton?.Dispose();
+        }
 
         void Start()
         {
@@ -105,20 +140,144 @@ namespace Archery.Menus
                 ShowPage(m_TutorialPage);
         }
 
-        void OnEnable() => DifficultyManager.Changed += RefreshDifficulty;
+        void OnEnable()
+        {
+            DifficultyManager.Changed += RefreshDifficulty;
+            m_MenuButton?.Enable();
+        }
 
-        void OnDisable() => DifficultyManager.Changed -= RefreshDifficulty;
+        void OnDisable()
+        {
+            DifficultyManager.Changed -= RefreshDifficulty;
+            m_MenuButton?.Disable();
+            SetOpenInGame(false);
+        }
 
         void Update()
         {
             var waves = WaveManager.Instance;
-            var visible = waves == null || waves.Phase == WavePhase.Ready;
+            var ready = waves == null || waves.Phase == WavePhase.Ready;
+
+            // Après le début de la partie : le bouton menu ouvre ou ferme le menu (pas une fois la partie finie).
+            var playing = !ready && waves.Phase != WavePhase.GameOver;
+            if (playing && m_MenuButton != null && m_MenuButton.WasPressedThisFrame())
+                SetOpenInGame(!m_OpenInGame);
+            else if (!playing && m_OpenInGame)
+                SetOpenInGame(false);
+
+            var visible = ready || m_OpenInGame;
             if (m_Content != null && m_Content.activeSelf != visible)
             {
                 m_Content.SetActive(visible);
                 if (m_Backing != null)
                     m_Backing.SetActive(visible);
             }
+
+            if (m_OpenInGame)
+                FollowPlayer(Time.unscaledDeltaTime);
+        }
+
+        // Le jeu est en pause : le menu se déplace en temps réel.
+        void FollowPlayer(float deltaTime)
+        {
+            if (!TryInFrontOfPlayer(out var target, out var head))
+                return;
+
+            var toMenu = Vector3.ProjectOnPlane(transform.position - head, Vector3.up);
+            var toTarget = Vector3.ProjectOnPlane(target.position - head, Vector3.up);
+            var off = Vector3.Angle(toMenu, toTarget) > k_FollowAngle || Mathf.Abs(toMenu.magnitude - toTarget.magnitude) > k_FollowSlack ||
+                      Mathf.Abs(transform.position.y - target.position.y) > k_FollowSlack;
+            if (off)
+                m_Recentering = true;
+            if (!m_Recentering)
+                return;
+
+            var blend = 1f - Mathf.Exp(-k_FollowSpeed * deltaTime);
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, target.position, blend),
+                                             Quaternion.Slerp(transform.rotation, target.rotation, blend));
+            if ((transform.position - target.position).sqrMagnitude < 0.0025f && Quaternion.Angle(transform.rotation, target.rotation) < 2f)
+                m_Recentering = false;
+        }
+
+        // Ouvert en cours de partie : devant le joueur, à l'accueil, le jeu en pause, avec un rappel pour le refermer.
+        // Refermé : il retourne à sa place en haut de la tour, et le temps repart en douceur.
+        void SetOpenInGame(bool open)
+        {
+            if (open == m_OpenInGame)
+                return;
+
+            m_OpenInGame = open;
+            if (open)
+            {
+                m_HomePosition = transform.position;
+                m_HomeRotation = transform.rotation;
+                PlaceInFrontOfPlayer();
+                SetPage(0);
+                ShowResumeHint(true);
+                SlowMotion.Pause(this);
+            }
+            else
+            {
+                SetPage(0);
+                transform.SetPositionAndRotation(m_HomePosition, m_HomeRotation);
+                ShowResumeHint(false);
+                SlowMotion.End(this);
+            }
+
+            Click();
+        }
+
+        void PlaceInFrontOfPlayer()
+        {
+            m_Recentering = false;
+            if (TryInFrontOfPlayer(out var target, out _))
+                transform.SetPositionAndRotation(target.position, target.rotation);
+        }
+
+        // Devant le joueur, dans la direction de son regard (à l'horizontale), un peu sous ses yeux, tourné vers lui.
+        static bool TryInFrontOfPlayer(out Pose pose, out Vector3 headPosition)
+        {
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            if (head == null)
+            {
+                pose = default;
+                headPosition = default;
+                return false;
+            }
+
+            headPosition = head.position;
+            var forward = rig.HeadYaw * Vector3.forward;
+            pose = new Pose(headPosition + forward * k_InGameDistance + Vector3.down * k_InGameDrop, Quaternion.LookRotation(forward, Vector3.up));
+            return true;
+        }
+
+        // « Bouton menu : reprendre la partie », en bas du menu, seulement quand il est ouvert en cours de partie.
+        void ShowResumeHint(bool show)
+        {
+            if (m_ResumeHint == null && show && m_Content != null)
+            {
+                m_ResumeHint = new GameObject("Rappel : reprendre", typeof(RectTransform));
+                var rect = (RectTransform)m_ResumeHint.transform;
+                rect.SetParent(m_Content.transform, false);
+                rect.anchorMin = new Vector2(0f, 0f);
+                rect.anchorMax = new Vector2(1f, 0f);
+                rect.pivot = new Vector2(0.5f, 0f);
+                rect.anchoredPosition = new Vector2(0f, 12f);
+                rect.sizeDelta = new Vector2(-40f, 44f);
+                var text = m_ResumeHint.AddComponent<TextMeshProUGUI>();
+                text.text = "Jeu en pause · bouton menu de la manette gauche : reprendre la partie";
+                text.fontSize = 26f;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 14f;
+                text.fontSizeMax = 26f;
+                text.alignment = TextAlignmentOptions.Center;
+                text.color = new Color(1f, 0.85f, 0.45f);
+                text.raycastTarget = false;
+            }
+
+            if (m_ResumeHint != null)
+                m_ResumeHint.SetActive(show);
         }
 
         /// <summary>Affiche une page (0 = accueil) et cache les autres.</summary>

@@ -34,6 +34,11 @@ namespace Archery.Portal
         static readonly int k_SilhouetteId = Shader.PropertyToID("_Silhouette");
         static readonly int k_BaseMapId = Shader.PropertyToID("_BaseMap");
         static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int k_ShadowColorId = Shader.PropertyToID("_ShadowColor");
+        static readonly int k_RimColorId = Shader.PropertyToID("_RimColor");
+        static readonly int k_RimColorAltId = Shader.PropertyToID("_RimColorAlt");
+        static readonly int k_RimPowerId = Shader.PropertyToID("_RimPower");
+        static readonly int k_TintId = Shader.PropertyToID("_Tint");
         static readonly int k_SpeedId = Animator.StringToHash("Speed");
         static readonly RaycastHit[] s_Hits = new RaycastHit[16];
 
@@ -352,9 +357,10 @@ namespace Archery.Portal
         }
 
         // Le bug du corps : léger caché, plus fort quand il avance ou fonce, presque calme quand on le regarde (une statue).
+        // Moins fort depuis le 20 octobre (avant : 0,25 / 0,4 / 1 / 0,8).
         void UpdateGlitch()
         {
-            var glitch = m_Watched ? 0.25f : m_State == State.Hiding ? 0.4f : m_State == State.Lunging ? 1f : 0.8f;
+            var glitch = m_Watched ? 0.15f : m_State == State.Hiding ? 0.25f : m_State == State.Lunging ? 0.6f : 0.5f;
             if (Mathf.Approximately(glitch, m_GlitchShown))
                 return;
 
@@ -598,7 +604,14 @@ namespace Archery.Portal
                         material.SetColor(k_BaseColorId, color);
                     }
 
+                    // Beaucoup plus sombre (20 octobre) : un noir presque pur, un contour fin et faible, des bandes de bug
+                    // sourdes. Seuls les yeux brillent vraiment.
                     material.SetFloat(k_SilhouetteId, 1f);
+                    material.SetColor(k_ShadowColorId, new Color(0.004f, 0.003f, 0.006f, 1f));
+                    material.SetColor(k_RimColorId, new Color(0.7f, 0.03f, 0.05f, 1f));
+                    material.SetColor(k_RimColorAltId, new Color(0.04f, 0.5f, 0.7f, 1f));
+                    material.SetFloat(k_RimPowerId, 4.5f);
+                    material.SetColor(k_TintId, new Color(0.25f, 0.02f, 0.06f, 1f));
                     materials[i] = material;
                     m_Materials.Add(material);
                 }

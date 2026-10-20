@@ -35,14 +35,26 @@ namespace Archery.UI
                 ? (bowHand == InteractorHandedness.Left ? InteractorHandedness.Right : InteractorHandedness.Left)
                 : bowHand;
 
-            if (!rig.TryGetHand(handedness, out var hand) || hand.transform == m_CurrentHand)
+            if (!rig.TryGetHand(handedness, out var hand))
                 return;
 
             // On devient enfant de la manette : on la suit sans aucun retard.
-            m_CurrentHand = hand.transform;
-            transform.SetParent(m_CurrentHand, false);
+            if (hand.transform != m_CurrentHand)
+            {
+                m_CurrentHand = hand.transform;
+                transform.SetParent(m_CurrentHand, false);
+            }
 
-            var position = m_LocalPosition;
+            // La main tient une arbalète des Akimbow (un objet à poignée) : la montre passe au-dessus de son fût.
+            var lift = 0f;
+            var selected = hand.interactablesSelected;
+            for (var i = 0; i < selected.Count; i++)
+            {
+                if (selected[i] is Component component && component.TryGetComponent(out HandGrip grip))
+                    lift = Mathf.Max(lift, grip.WatchLift);
+            }
+
+            var position = m_LocalPosition + Vector3.up * lift;
             var euler = m_LocalEulerAngles;
             if (handedness == InteractorHandedness.Left)
             {

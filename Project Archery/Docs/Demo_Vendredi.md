@@ -62,8 +62,10 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **C** | Un coffre devant le joueur |
 | **V** | Un gisement de cristaux devant le joueur |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
+| **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
-| **5 à 9, 0** | Équipe le 1er au 6e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire (après U) |
+| **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana et le bouclier (après U) |
+| **O** | Équipe tout de suite le katana et le bouclier (même verrouillés, même pendant une vague) ; **O** encore : l'arme d'avant |
 | **L** | Un fragment d'arc légendaire (au 3e, l'arc est débloqué et arrive en main) |
 | **U** | Débloque tous les succès, donc tous les arcs |
 | **J** | Efface tous les succès : les arcs se reverrouillent (l'arc équipé redevient l'arc par défaut avant la première vague) |

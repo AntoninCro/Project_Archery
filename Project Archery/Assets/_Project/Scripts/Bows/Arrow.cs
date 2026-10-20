@@ -249,6 +249,21 @@ namespace Archery.Bows
             if (m_Stabbing)
                 return;
 
+            // En pause (menu ouvert en cours de partie) : pas de tir, et une flèche lâchée ne reste pas figée en l'air,
+            // elle retourne dans le carquois.
+            if (SlowMotion.IsPaused && (m_State == State.Held || m_State == State.Nocked))
+            {
+                if (m_State == State.Nocked && m_Bow != null)
+                {
+                    m_Bow.CancelNock(this);
+                    return;
+                }
+
+                m_State = State.Pooled;
+                Despawn();
+                return;
+            }
+
             if (m_State == State.Nocked && m_Bow != null)
                 m_Bow.OnNockedArrowReleased(this, hand, !args.isCanceled);
             else if (m_State == State.Held || m_State == State.Nocked)
