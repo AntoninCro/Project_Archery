@@ -86,7 +86,7 @@ namespace Archery.Menus
                      "Regarde ton poignet : tes PV, la vague, le chrono, tes matériaux et tes bonus en cours.")),
                 NewSection("Construction", "Construction",
                     ("Récolter les cristaux",
-                     "Pendant les vagues, des gisements de cristaux poussent dans la jungle. Vise-les et appuie sur la gâchette de prise : " +
+                     "Pendant les vagues, des gisements de cristaux poussent dans la jungle. Vise-les et appuie sur la gâchette (ou la gâchette de prise) : " +
                      "ils éclatent en matériaux."),
                     ("Choisir un bâtiment",
                      "Vise un cercle bleu au sol et appuie sur la gâchette de prise : choisis un bâtiment et paie-le en matériaux. " +

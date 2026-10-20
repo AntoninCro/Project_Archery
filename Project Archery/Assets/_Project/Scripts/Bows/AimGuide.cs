@@ -13,7 +13,8 @@ namespace Archery.Bows
     /// <item>Impossible : rien.</item>
     /// </list>
     /// Arc cosmique en surcharge (lâché maintenant, ce serait le laser) : une ligne droite sur toute la portée du laser, qui
-    /// traverse les obstacles comme lui (sauf en Impossible : rien).
+    /// traverse les obstacles comme lui (sauf en Impossible : rien). Arc à pluie (légendaire) : la trajectoire et le cercle
+    /// où tombera la pluie, même en Difficile (sauf en Impossible : rien).
     /// Sa couleur est celle de l'anneau de timing à cet instant. Le <see cref="Bow"/> la crée tout seul s'il n'en trouve pas.
     /// </summary>
     [DisallowMultipleComponent]
@@ -152,7 +153,10 @@ namespace Archery.Bows
         /// <param name="speed">Vitesse (m/s) qu'aurait la flèche lâchée maintenant.</param>
         /// <param name="color">Couleur de l'anneau à cet instant (blanc avant la tension maximale).</param>
         /// <param name="strength">Opacité de 0 à 1 (augmente avec la tension).</param>
-        public void Show(Vector3 origin, Vector3 direction, float speed, Color color, float strength)
+        /// <param name="impactRadius">Arc à pluie : rayon (m) du cercle au point d'arrivée, trajectoire même en Difficile.</param>
+        /// <param name="gravityScale">Gravité des flèches de l'arc, en multiple de la normale.</param>
+        public void Show(Vector3 origin, Vector3 direction, float speed, Color color, float strength, float impactRadius = 0f,
+                         float gravityScale = 1f)
         {
             var mode = DifficultyManager.Current.aimGuideMode;
             if (mode == AimGuideMode.None || strength <= 0f)
@@ -162,8 +166,8 @@ namespace Archery.Bows
             }
 
             color.a = m_Opacity * Mathf.Clamp01(strength);
-            if (mode == AimGuideMode.Trajectory && speed > 0.1f)
-                ShowTrajectory(origin, direction * speed, color);
+            if ((mode == AimGuideMode.Trajectory || impactRadius > 0f) && speed > 0.1f)
+                ShowTrajectory(origin, direction * speed, color, impactRadius, gravityScale);
             else
                 ShowLine(origin, direction, color);
         }
@@ -218,9 +222,9 @@ namespace Archery.Bows
         }
 
         // Trajectoire de la flèche (gravité, pas de frottement : comme son Rigidbody), jusqu'au premier obstacle.
-        void ShowTrajectory(Vector3 origin, Vector3 velocity, Color color)
+        void ShowTrajectory(Vector3 origin, Vector3 velocity, Color color, float impactRadius, float gravityScale)
         {
-            var gravity = Physics.gravity;
+            var gravity = Physics.gravity * (gravityScale > 0f ? gravityScale : 1f);
             var step = Mathf.Max(0.005f, m_TimeStep);
             var maxSteps = Mathf.CeilToInt(Mathf.Max(step, m_MaxFlightTime) / step);
             if (m_Points.Length < maxSteps + 1)
@@ -271,7 +275,7 @@ namespace Archery.Bows
 
             var markerTransform = m_Marker.transform;
             markerTransform.SetPositionAndRotation(impact.point + impact.normal * 0.02f, Quaternion.FromToRotation(Vector3.up, impact.normal));
-            markerTransform.localScale = Vector3.one * (m_MarkerRadius * (1f + travelled / 40f));
+            markerTransform.localScale = Vector3.one * (impactRadius > 0f ? impactRadius : m_MarkerRadius * (1f + travelled / 40f));
             m_Marker.GetPropertyBlock(m_MarkerBlock);
             m_MarkerBlock.SetColor(k_BaseColorId, new Color(color.r, color.g, color.b, Mathf.Min(1f, color.a * 1.3f)));
             m_Marker.SetPropertyBlock(m_MarkerBlock);

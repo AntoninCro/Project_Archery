@@ -110,6 +110,8 @@ namespace Archery.Chests
         public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
             base.ProcessInteractable(updatePhase);
+            if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+                TriggerPick.Process(this);
             if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic || m_Hinge == null || m_Animated || !IsOpen)
                 return;
 

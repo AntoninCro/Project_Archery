@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 288188578278341229}
   - component: {fileID: 3739709088050117480}
   - component: {fileID: 8163886193041815275}
+  - component: {fileID: 4127530968846013771}
   m_Layer: 0
   m_Name: Bow Classes
   m_TagString: Untagged
@@ -51,6 +52,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f2acfdec2e150eb4e98b82ca3cb62307, type: 2}
   - {fileID: 11400000, guid: 7394413a6641ed840a77b091f0719dbf, type: 2}
   - {fileID: 11400000, guid: d3ab72ff6bb74c42b1363d1f2cf8b63e, type: 2}
+  - {fileID: 11400000, guid: cb8b41a4ee44474c83cd970abc1c8c36, type: 2}
   m_UnlockClip: {fileID: 8300000, guid: e4606bf8871991840822a3ffccd6dd50, type: 3}
 --- !u!114 &3739709088050117480
 MonoBehaviour:
@@ -85,8 +87,8 @@ MonoBehaviour:
     unlockedBy: {fileID: 11400000, guid: d3ab72ff6bb74c42b1363d1f2cf8b63e, type: 2}
     color: {r: 0.7490196, g: 0.4509804, b: 1, a: 1}
     comingSoonName: "Arc l\xE9gendaire"
-  - bow: {fileID: 0}
-    unlockedBy: {fileID: 0}
+  - bow: {fileID: 11400000, guid: 217d9884871c4af8babb4f6debea3ff9, type: 2}
+    unlockedBy: {fileID: 11400000, guid: cb8b41a4ee44474c83cd970abc1c8c36, type: 2}
     color: {r: 1, g: 0.6, b: 0.2, a: 1}
     comingSoonName: "Arc l\xE9gendaire"
   m_RemoveShopBowCard: 1
@@ -114,3 +116,19 @@ MonoBehaviour:
   m_PreviewHeight: 0.2
   m_PreviewSpin: 30
   m_LockedTint: {r: 0.08, g: 0.08, b: 0.1, a: 1}
+--- !u!114 &4127530968846013771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785907168297767303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6c4be50f42e3da4d860db62d6ee3ea8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Chests.LegendaryBow
+  m_PartChance: 0.1
+  m_Color: {r: 1, g: 0.6, b: 0.2, a: 1}
+  m_PartClip: {fileID: 8300000, guid: e4606bf8871991840822a3ffccd6dd50, type: 3}
+  m_AssembledClip: {fileID: 8300000, guid: c82d9515e85f5af4db9131bfdd27289b, type: 3}

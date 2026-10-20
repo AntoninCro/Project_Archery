@@ -171,6 +171,8 @@ namespace Archery.BowClasses
                 SelectIndex(3);
             else if (keyboard.digit9Key.wasPressedThisFrame)
                 SelectIndex(4);
+            else if (keyboard.digit0Key.wasPressedThisFrame)
+                SelectIndex(5);
         }
 #endif
 

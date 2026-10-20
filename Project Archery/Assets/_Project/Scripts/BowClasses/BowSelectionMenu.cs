@@ -180,7 +180,8 @@ namespace Archery.BowClasses
                     var progress = achievements != null ? achievements.ProgressOf(entry.unlockedBy) : 0;
                     var target = entry.unlockedBy != null ? entry.unlockedBy.target : 1;
                     SetFill(card.Progress, target > 0 ? progress / (float)target : 0f);
-                    card.ProgressText.text = progress + " / " + target;
+                    var label = entry.unlockedBy != null ? entry.unlockedBy.progressLabel : null;
+                    card.ProgressText.text = (string.IsNullOrEmpty(label) ? "" : label + " ") + progress + " / " + target;
                 }
                 else if (selected)
                 {

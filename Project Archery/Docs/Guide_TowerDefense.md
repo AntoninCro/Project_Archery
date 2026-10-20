@@ -23,7 +23,7 @@ Sons (Kenney Impact Sounds) : une cloche (`impactBell_heavy_000`) à l'apparitio
 ### En jeu
 
 1. Trois secondes après le début d'une vague, 3 gisements apparaissent (un de plus toutes les 2 vagues, 6 au plus), puis une deuxième série au début de la montée (refonte des vagues du 12 octobre, GDD section 3 bis). Une cloche et le message « 3 gisements de cristaux sont apparus ! » les annoncent. Ils sortent du sol et leur lueur pulse.
-2. Vise un gisement avec la main libre, à 5 m au plus, et appuie sur la gâchette de prise : il éclate en éclats violets et donne ses matériaux (20 à la vague 1, +6 par vague depuis la refonte des vagues). Le message indique combien il en reste.
+2. Vise un gisement avec la main libre, à 5 m au plus, et appuie sur la gâchette de prise ou sur la grosse gâchette : il éclate en éclats violets et donne ses matériaux (20 à la vague 1, +6 par vague depuis la refonte des vagues). Le message indique combien il en reste.
 3. À la fin de la vague, les gisements non récoltés rétrécissent et disparaissent.
 4. Les matériaux s'affichent après l'or sur la montre. Ils ne servent pas encore : la construction arrive à l'étape 2.
 

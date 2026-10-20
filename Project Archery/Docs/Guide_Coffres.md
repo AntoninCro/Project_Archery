@@ -5,7 +5,7 @@ Ce guide ajoute les coffres du GDD (section 13) à la scène `Prototype_Tir`, av
 - pendant chaque vague, **1 ou 2 coffres** apparaissent loin de la tour, à 15–30 m, avec le message « Un coffre est apparu ! ». Ils **tombent du ciel**, rebondissent, puis sautillent sur place ;
 - un **rayon de lumière** doré les signale, visible depuis la tour ;
 - ils sont **gratuits**, mais il faut descendre et courir pour aller les ouvrir. **Ils disparaissent à la fin de la vague**, ouverts ou non ;
-- on **vise le coffre et on appuie sur la gâchette de prise**, à 5 m au plus (ou on l'attrape de près) : le **temps ralentit**, le couvercle s'ouvre d'un coup avec un rebond, une lueur dorée sort du coffre et **3 orbes** montent (simplifié le 11 octobre : avant, il fallait soulever le couvercle à la main) ;
+- on **vise le coffre et on appuie sur la gâchette de prise ou sur la grosse gâchette** (les deux marchent, aussi pour les orbes), à 5 m au plus (ou on l'attrape de près) : le **temps ralentit**, le couvercle s'ouvre d'un coup avec un rebond, une lueur dorée sort du coffre et **3 orbes** montent (simplifié le 11 octobre : avant, il fallait soulever le couvercle à la main) ;
 - on **prend une orbe** de la même façon, en la visant à 6 m au plus, ou à la main : les deux autres disparaissent. Les trois orbes sont toujours, de gauche à droite :
   - deux **améliorations permanentes**, différentes, tirées comme en boutique ;
   - un **bonus temporaire** : 30 s de dégâts ×2, de tirs parfaits ou d'anneau rapide.

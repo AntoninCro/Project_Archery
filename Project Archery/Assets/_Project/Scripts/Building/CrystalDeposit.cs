@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 namespace Archery.Building
 {
     /// <summary>
-    /// Un gisement de cristaux (GDD, section 9). On le vise et on appuie sur la gâchette de prise, à quelques mètres
+    /// Un gisement de cristaux (GDD, section 9). On le vise et on appuie sur la gâchette ou la gâchette de prise, à quelques mètres
     /// au plus, comme un coffre : il éclate et donne ses matériaux.
     /// </summary>
     /// <remarks>
@@ -216,6 +216,14 @@ namespace Archery.Building
             }
 
             return false;
+        }
+
+        // La grosse gâchette récolte aussi, comme la gâchette de prise.
+        public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+        {
+            base.ProcessInteractable(updatePhase);
+            if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+                TriggerPick.Process(this);
         }
 
         protected override void OnSelectEntered(SelectEnterEventArgs args)

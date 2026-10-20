@@ -125,6 +125,7 @@ namespace Archery.Bows
 
         float m_Damage;
         ShotGrade m_Grade;
+        float m_GravityScale = 1f;
         int m_PierceLeft;
         bool m_IsShot;
         bool m_ShotPending;
@@ -160,6 +161,9 @@ namespace Archery.Bows
         public bool IsOnFire { get; private set; }
 
         /// <summary>Position de la pointe.</summary>
+        /// <summary>Gravité de la flèche en vol, en multiple de la normale (voir <see cref="ArrowLaunch.GravityScale"/>).</summary>
+        public float GravityScale => m_GravityScale;
+
         public Vector3 TipPosition => m_Tip != null ? m_Tip.position : transform.position + transform.forward * m_Length;
 
         public Color TrailColor { get; private set; }
@@ -397,6 +401,7 @@ namespace Archery.Bows
             m_IsShot = launch.IsShot;
             m_ShotPending = launch.IsShot;
             IsExtra = launch.IsExtra;
+            m_GravityScale = launch.GravityScale > 0f ? launch.GravityScale : 1f;
             m_LaunchPosition = transform.position;
             m_FlightTime = 0f;
             m_Pierced.Clear();
@@ -586,6 +591,10 @@ namespace Archery.Bows
 
             var deltaTime = Time.fixedDeltaTime;
             m_FlightTime += deltaTime;
+
+            // Une flèche plus lourde (arc légendaire) : la gravité du Rigidbody, plus ce qui manque.
+            if (!Mathf.Approximately(m_GravityScale, 1f))
+                m_Body.AddForce(Physics.gravity * (m_GravityScale - 1f), ForceMode.Acceleration);
 
             var velocity = m_Body.linearVelocity;
             var speed = velocity.magnitude;
@@ -806,6 +815,7 @@ namespace Archery.Bows
             m_ShotPending = false;
             m_DeflectPending = false;
             IsExtra = false;
+            m_GravityScale = 1f;
             Extinguish();
 
             if (m_Body != null)

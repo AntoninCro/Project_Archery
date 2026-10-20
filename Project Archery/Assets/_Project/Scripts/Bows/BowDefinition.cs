@@ -35,6 +35,10 @@ namespace Archery.Bows
 
         public float damage = 10f;
 
+        [Tooltip("Gravité des flèches, en multiple de la normale : au-dessus de 1, elles tombent plus vite et vont moins loin " +
+                 "(à 2, deux fois moins loin). L'aide à la visée suit.")]
+        public float arrowGravity = 1f;
+
         [Tooltip("Distance de tirage maximale (m), mesurée depuis la position de repos de la corde.")]
         public float maxDrawDistance = 0.2625f;
 
@@ -97,6 +101,35 @@ namespace Archery.Bows
 
         [Tooltip("Les flèches tirées normalement laissent une traînée d'étoiles, de la couleur du laser.")]
         public bool starTrail;
+
+        [Header("Pluie de flèches (arc légendaire)")]
+        [Tooltip("Au sommet de sa course, la flèche se divise : des flèches retombent en pluie autour de son point " +
+                 "d'arrivée, et laissent au sol une zone qui brûle les ennemis. Plantée avant (tir tendu), la pluie tombe là.")]
+        public bool arrowRain;
+
+        [Tooltip("Nombre de flèches de la pluie, en plus de la flèche tirée (qui tombe au centre).")]
+        public int rainArrows = 10;
+
+        [Tooltip("Rayon (m) de la pluie et de la zone au sol (aussi le cercle de l'aide à la visée).")]
+        public float rainRadius = 3.5f;
+
+        [Tooltip("Dégâts d'une flèche de la pluie, en part de ceux du tir (qualité comprise).")]
+        public float rainDamage = 0.5f;
+
+        [Tooltip("Durée (s) de la zone au sol. 0 : pas de zone.")]
+        public float rainZoneDuration = 3f;
+
+        [Tooltip("Dégâts par seconde de la zone, à chaque ennemi au sol dedans, en part de ceux du tir.")]
+        public float rainZoneDamage = 0.3f;
+
+        [Tooltip("Couleur des traînées de la pluie et de la zone au sol.")]
+        public Color rainColor = new Color(1f, 0.6f, 0.2f);
+
+        [Tooltip("Son de la division (la pluie part).")]
+        public AudioClip rainSplitClip;
+
+        [Tooltip("Son en boucle de la zone au sol.")]
+        public AudioClip rainZoneClip;
 
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]

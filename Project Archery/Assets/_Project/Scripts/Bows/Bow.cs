@@ -170,6 +170,8 @@ namespace Archery.Bows
         float m_StringVibration;
         float m_TimeSinceRelease;
         bool m_Holstered;
+        Pose m_LastHolsterPose;
+        bool m_FollowingHolster;
         float m_RecacheTimer;
         Transform m_DefaultArrowRest;
         Transform m_DefaultStringTop;
@@ -403,9 +405,12 @@ namespace Archery.Bows
                     break;
 
                 case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
-                    // Recalcule la pose avec le suivi le plus récent, sans effet de jeu.
+                    // Recalcule la pose avec le suivi le plus récent, sans effet de jeu. L'arc rangé suit aussi la tête
+                    // après les déplacements de l'image : pas une image de retard quand on court.
                     if (isSelected)
                         UpdateDraw(0f, false);
+                    else if (!m_DesktopHeld && m_FollowingHolster)
+                        UpdateReturn(0f);
                     UpdateVisuals(0f);
                     break;
             }
@@ -459,10 +464,13 @@ namespace Archery.Bows
                 Pierce = Def.pierceCount + BonusPierce,
                 TrailColor = trailColor,
                 IsShot = true,
+                GravityScale = Def.arrowGravity,
             });
 
             if (Def.starTrail)
                 StarTrail.Track(arrow, Def.laserColor);
+            if (Def.arrowRain)
+                ArrowRain.Track(arrow, Def, damage, grade);
 
             if (m_TimingRing != null && grade != ShotGrade.None)
                 m_TimingRing.ShowResult(GradeColor(grade, modifiers.color));
@@ -934,7 +942,10 @@ namespace Archery.Bows
 
             m_TimeSinceRelease += deltaTime;
             if (!m_Holstered && m_TimeSinceRelease < m_ReturnDelay)
+            {
+                m_FollowingHolster = false;
                 return;
+            }
 
             if (!rig.TryGetBowHolsterPose(out var target))
                 return;
@@ -942,11 +953,26 @@ namespace Archery.Bows
             if (m_Body != null && !m_Body.isKinematic)
                 m_Body.isKinematic = true;
 
+            // L'arc revient dans le repère du joueur : il suit tous ses déplacements (course, glissade, rotation,
+            // téléporteur) sans traîner derrière, et ne fait que le chemin qui reste jusqu'à sa place.
+            if (m_FollowingHolster)
+            {
+                var turn = target.rotation * Quaternion.Inverse(m_LastHolsterPose.rotation);
+                transform.SetPositionAndRotation(target.position + turn * (transform.position - m_LastHolsterPose.position),
+                                                 turn * transform.rotation);
+            }
+
+            m_LastHolsterPose = target;
+            m_FollowingHolster = true;
+
             if (m_Holstered)
             {
                 transform.SetPositionAndRotation(target.position, target.rotation);
                 return;
             }
+
+            if (deltaTime <= 0f)
+                return;
 
             var blend = 1f - Mathf.Exp(-m_ReturnSpeed * deltaTime);
             transform.SetPositionAndRotation(
@@ -1063,7 +1089,9 @@ namespace Archery.Bows
                 return;
             }
 
-            m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio));
+            // Arc à pluie (légendaire) : la courbe et le cercle où tombera la pluie.
+            m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio), Def.arrowRain ? Def.rainRadius : 0f,
+                            Def.arrowGravity);
         }
 
         // Avec un arc à surcharge, le parfait est doré, comme dans l'anneau.

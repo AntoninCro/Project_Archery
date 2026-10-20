@@ -574,7 +574,7 @@ MonoBehaviour:
   m_RingCancelThreshold: 0.85
   m_LimbFlexAngle: 7
   m_ReturnDelay: 1.5
-  m_ReturnSpeed: 6
+  m_ReturnSpeed: 10
   m_ShowAimGuide: 1
   m_AimGuide: {fileID: 0}
   m_CreakSource: {fileID: 3097435357235126167}

@@ -28,6 +28,9 @@ namespace Archery.BowClasses
 
         /// <summary>Épreuves des étoiles réussies (le portail des monolithes).</summary>
         StarTrial,
+
+        /// <summary>Fragments de l'arc légendaire trouvés dans les coffres (<see cref="Archery.Chests.LegendaryBow"/>).</summary>
+        LegendaryFragment,
     }
 
     /// <summary>
@@ -65,6 +68,9 @@ namespace Archery.BowClasses
         [Tooltip("Secret : sur la carte de l'arc verrouillé, seule la phrase s'affiche (une énigme), sans le nom du succès " +
                  "ni sa progression. Son nom apparaît quand il est débloqué.")]
         public bool secret;
+
+        [Tooltip("Optionnel : mot devant la progression sur la carte de l'arc verrouillé (« Fragment » : « Fragment 1 / 3 »).")]
+        public string progressLabel;
 
         public string Id => string.IsNullOrEmpty(m_Id) ? name : m_Id;
     }

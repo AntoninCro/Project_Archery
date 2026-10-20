@@ -16,6 +16,9 @@ namespace Archery.Bows
 
         /// <summary>Flèche ajoutée par le multitir ou le déluge : si elle rate, le combo n'est pas cassé.</summary>
         public bool IsExtra;
+
+        /// <summary>Gravité de la flèche, en multiple de la normale (arc légendaire : elle tombe plus vite). 0 : normale.</summary>
+        public float GravityScale;
     }
 
     /// <summary>

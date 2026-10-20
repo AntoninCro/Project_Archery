@@ -11,7 +11,7 @@ Tout le code des étapes ci-dessous est écrit et compile. Il reste à les monte
 | 5 | `Guide_Effets.md` | Particules d'impact et de mort | — | 45 min |
 | 6 | `Guide_Ambiance.md` | Ambiance jour et nuit, musiques | — | 20 min |
 | 7 | — | Grenade de flèches en bas du dos : confiée à un coéquipier le 12 octobre, sur sa branche (GDD, section 4.6) | — | — |
-| 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 morceaux | coffres (1) | 30 min |
+| 8 | `Guide_ArcLegendaire.md` | Arc légendaire en 3 fragments, pluie de flèches (rien à monter depuis le 20 octobre) | coffres (1) | 10 min |
 | 9 | — | Arcs choisis au menu, débloqués par des succès : confiés à un coéquipier le 12 octobre, sur sa branche (GDD, section 23) | — | — |
 | 10 | `Guide_Carte.md` | Carte cubique à trois voies (blocs sur une grille, jungle en terrasses, rampes, rivière qui ralentit, montagnes, antre fermé), NavMesh, emplacements | barricades (3), coffres (1) | deux à trois journées |
 | 11 | `Guide_TowerDefense.md` | Tower defense (GDD, section 9) : cristaux et matériaux (étape 1, montée le 11 octobre), socles, panneau, plan bleu et marteau (étape 2, montée par Claude le 11 octobre), les quatre bâtiments et leurs niveaux (étape 3) et l'équilibrage (étape 4), montés par Claude le 12 octobre ; testé | carte (10) | fait |

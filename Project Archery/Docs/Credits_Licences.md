@@ -13,7 +13,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Licence | Ce qu'elle permet | Ce qu'elle demande |
 |---|---|---|
 | **CC0** (domaine public) | Tout : utiliser, modifier, redistribuer | Rien (créditer est apprécié) |
-| **CC-BY 3.0** (Creative Commons Attribution) | Tout : utiliser, modifier, redistribuer, même dans un jeu vendu | **Créditer l'auteur** (son nom, le titre, le lien, la licence) et dire si on l'a modifié |
+| **CC-BY 3.0 et 4.0** (Creative Commons Attribution) | Tout : utiliser, modifier, redistribuer, même dans un jeu vendu | **Créditer l'auteur** (son nom, le titre, le lien, la licence) et dire si on l'a modifié |
 | **SIL Open Font License 1.1** (polices) | Utiliser la police dans le jeu, la redistribuer | Garder le fichier de licence avec la police ; ne pas la vendre seule ; ne pas réutiliser son nom pour une version modifiée |
 | **EULA standard de l'Asset Store** | Utiliser les assets dans ses jeux | Ne pas redistribuer les fichiers eux-mêmes (dépôt public, partage du pack) |
 | **Unity Companion License** (paquets de Unity) | Utiliser ces fichiers avec Unity | Rien de plus pour un projet Unity |
@@ -38,11 +38,12 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Modular Dungeon (porte en arche) | Quaternius | `_Project/Resources/Lair` | La porte de l'antre (coupée en double porte par le jeu) |
 | Seamless Space Backgrounds (*Purple Nebula 1*) | Screaming Brain Studios (screamingbrainstudios.itch.io/seamless-space-backgrounds, aussi sur OpenGameArt) | `_Project/Art/Bows/Cosmique/Nebuleuse_Violette.png` | La nébuleuse vue à travers le corps de l'arc cosmique |
 
-### Licence CC-BY 3.0 (créditer l'auteur : c'est fait dans le README et ici)
+### Licences CC-BY 3.0 et 4.0 (créditer l'auteur : c'est fait dans le README et ici)
 
 | Asset | Auteur | Dossier | Utilisé pour |
 |---|---|---|---|
-| *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue) | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
+| *Bowblade – DAE WeaponCraft – WoW Styled Bow* (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), **CC-BY 4.0** | **Tijmen Matthys** (Sketchfab, https://sketchfab.com/tijmenmatthys) | `_Project/Art/Bows/Legendaire/` | Le modèle de l'arc légendaire, avec sa texture peinte à la main. **Modifié** : converti de FBX en OBJ, corde retirée (le jeu dessine la sienne), recentré sur la poignée et mis à l'échelle ; la texture sert aussi de lueur |
+| *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
 
 ### Polices (SIL Open Font License 1.1)
 
