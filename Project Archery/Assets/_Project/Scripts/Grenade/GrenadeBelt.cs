@@ -205,8 +205,11 @@ namespace Archery.Grenades
             if (head == null)
                 return;
 
+            // Quaternion.LookRotation renvoie un quaternion dont la longueur peut valoir 0,999981
+            // a cause des arrondis. Matrix4x4.TRS le refuse et remplit la console d'erreurs :
+            // on le renormalise avant de le lui donner.
             Gizmos.color = new Color(0.2f, 0.9f, 0.4f, 0.5f);
-            Gizmos.matrix = Matrix4x4.TRS(head.position, rig.HeadYaw, Vector3.one);
+            Gizmos.matrix = Matrix4x4.TRS(head.position, rig.HeadYaw.normalized, Vector3.one);
             Gizmos.DrawWireCube((m_GrabZoneMin + m_GrabZoneMax) * 0.5f, m_GrabZoneMax - m_GrabZoneMin);
         }
     }
