@@ -1,3 +1,4 @@
+using Archery.Core;
 using Archery.Player;
 using Archery.UI;
 using TMPro;
@@ -213,6 +214,14 @@ namespace Archery.Chests
             }
 
             return false;
+        }
+
+        // La grosse gâchette prend aussi l'orbe, comme la gâchette de prise.
+        public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+        {
+            base.ProcessInteractable(updatePhase);
+            if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+                TriggerPick.Process(this);
         }
 
         protected override void OnSelectEntered(SelectEnterEventArgs args)

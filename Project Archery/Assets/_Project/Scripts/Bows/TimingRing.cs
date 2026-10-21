@@ -9,6 +9,10 @@ namespace Archery.Bows
     /// bout de l'anneau, dans le vert pastel, il s'arrête et attend le tir. La bande sous le cercle au moment du lâcher
     /// donne la qualité du tir : rouge = raté, orange = bon, vert = parfait, vert pastel = très bon.
     /// Le rendu est fait par le shader « Archery/TimingRing ».
+    /// <para>Arc à surcharge (arc cosmique) : le vert devient doré, et quand le cercle a fini sa course, un deuxième
+    /// cercle doré part du bord, plus vite. Lâché dans le doré de ce deuxième cercle, ou après, dans le vert pastel où il
+    /// finit sa course : <see cref="Overcharged"/> (le laser, plus fort dans le doré) ; avant le doré, un tir « très bon »,
+    /// comme si on avait lâché à la fin du premier.</para>
     /// </summary>
     [DisallowMultipleComponent]
     public class TimingRing : MonoBehaviour
@@ -21,6 +25,8 @@ namespace Archery.Bows
         static readonly int k_ApproachThicknessId = Shader.PropertyToID("_ApproachThickness");
         static readonly int k_AlphaId = Shader.PropertyToID("_Alpha");
         static readonly int k_FlashColorId = Shader.PropertyToID("_FlashColor");
+        static readonly int k_PerfectColorId = Shader.PropertyToID("_PerfectColor");
+        static readonly int k_ApproachColorId = Shader.PropertyToID("_ApproachColor");
 
         // Le bord extérieur de l'anneau : les bandes s'arrêtent juste avant.
         const float k_OuterEdge = 0.98f;
@@ -56,11 +62,23 @@ namespace Archery.Bows
         [SerializeField]
         bool m_FaceCamera = true;
 
+        [Header("Surcharge (arc cosmique)")]
+        [Tooltip("Couleur du parfait, et du deuxième cercle, avec un arc à surcharge.")]
+        [SerializeField]
+        Color m_OverchargeColor = new Color(1f, 0.78f, 0.22f, 1f);
+
+        [Tooltip("Pause (s) entre la fin du premier cercle et le départ du deuxième.")]
+        [SerializeField]
+        float m_OverchargeDelay = 0.2f;
+
         /// <summary>Le cercle d'approche vient d'entrer dans la bande verte (parfait).</summary>
         public event Action GoldEntered;
 
         /// <summary>Le cercle vient de quitter le vert : il finit sa course dans le vert pastel et y attend le tir.</summary>
         public event Action HoldEntered;
+
+        /// <summary>Arc à surcharge : le deuxième cercle, doré, vient de partir du bord.</summary>
+        public event Action OverchargeStarted;
 
         float m_Duration = 1.2f;
         float m_PerfectInner = 0.44f;
@@ -74,14 +92,44 @@ namespace Archery.Bows
         Color m_FlashColor = Color.clear;
         MaterialPropertyBlock m_PropertyBlock;
         Camera m_Camera;
+        bool m_Overcharge;
+        float m_OverchargeDuration = 1f;
+        bool m_SecondPass;
+        float m_SecondPassTimer = -1f;
+        Color m_DefaultPerfectColor = new Color(0.3f, 0.92f, 0.35f, 1f);
+        Color m_DefaultApproachColor = Color.white;
 
         public bool IsRunning { get; private set; }
+
+        /// <summary>
+        /// Le dernier tir a été lâché dans le doré ou le vert pastel du deuxième cercle (arc à surcharge) : c'est le laser.
+        /// <see cref="Release"/> a rendu Parfait pour le doré, Très bon pour le vert pastel (un peu moins de dégâts).
+        /// </summary>
+        public bool Overcharged { get; private set; }
+
+        /// <summary>Couleur dorée de la surcharge.</summary>
+        public Color OverchargeColor => m_OverchargeColor;
 
         /// <summary>Rayon actuel du cercle d'approche (1 = bord extérieur).</summary>
         public float Approach => m_Approach;
 
         /// <summary>Qualité qu'aurait un tir lâché maintenant (None si l'anneau ne tourne pas).</summary>
-        public ShotGrade CurrentGrade => IsRunning ? GradeAt(m_Approach) : ShotGrade.None;
+        public ShotGrade CurrentGrade => !IsRunning ? ShotGrade.None : m_SecondPass ? SecondPassGrade() : GradeAt(m_Approach);
+
+        /// <summary>Arc à surcharge : lâché maintenant, le tir serait le laser (deuxième cercle, dans le doré ou le vert pastel).</summary>
+        public bool WouldOvercharge
+        {
+            get
+            {
+                if (!IsRunning || !m_SecondPass)
+                    return false;
+                var band = GradeAt(m_Approach);
+                return band == ShotGrade.Perfect || band == ShotGrade.Held;
+            }
+        }
+
+        // Deuxième cercle : le doré est un tir parfait ; ailleurs (avant le doré, ou le vert pastel après), « très bon ».
+        ShotGrade SecondPassGrade() => GradeAt(m_Approach) == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held;
 
         // Le cercle s'arrête au bord intérieur de l'anneau, sans en sortir.
         float HoldRadius => m_InnerRadius + m_ApproachThickness * 0.5f;
@@ -92,7 +140,14 @@ namespace Archery.Bows
                 m_Renderer = GetComponent<Renderer>();
             m_PropertyBlock = new MaterialPropertyBlock();
             if (m_Renderer != null)
+            {
                 m_Renderer.enabled = false;
+                var material = m_Renderer.sharedMaterial;
+                if (material != null && material.HasProperty(k_PerfectColorId))
+                    m_DefaultPerfectColor = material.GetColor(k_PerfectColorId);
+                if (material != null && material.HasProperty(k_ApproachColorId))
+                    m_DefaultApproachColor = material.GetColor(k_ApproachColorId);
+            }
         }
 
         /// <summary>
@@ -100,7 +155,8 @@ namespace Archery.Bows
         /// l'orange (bon), au-dessus du vert. Sous le vert, jusqu'au bord intérieur, c'est le vert pastel.
         /// Les bandes trop larges sont coupées aux bords de l'anneau.
         /// </summary>
-        public void Begin(float duration, float goldHalfWidth, float goodWidth)
+        /// <param name="overchargeDuration">Arc à surcharge : durée (s) du deuxième cercle ; 0 : pas de surcharge.</param>
+        public void Begin(float duration, float goldHalfWidth, float goodWidth, float overchargeDuration = 0f)
         {
             m_Duration = Mathf.Max(0.1f, duration);
             goldHalfWidth = Mathf.Max(0f, goldHalfWidth);
@@ -112,6 +168,11 @@ namespace Archery.Bows
             m_WasInGold = false;
             m_WasHeld = false;
             m_FlashColor = Color.clear;
+            m_Overcharge = overchargeDuration > 0f;
+            m_OverchargeDuration = Mathf.Max(0.1f, overchargeDuration);
+            m_SecondPass = false;
+            m_SecondPassTimer = -1f;
+            Overcharged = false;
             IsRunning = true;
         }
 
@@ -129,6 +190,14 @@ namespace Archery.Bows
 
             IsRunning = false;
             m_VisibleUntil = Time.time + m_ResultDisplayTime;
+            if (m_SecondPass)
+            {
+                var band = GradeAt(m_Approach);
+                Overcharged = band == ShotGrade.Perfect || band == ShotGrade.Held;
+                return SecondPassGrade();
+            }
+
+            Overcharged = false;
             return GradeAt(m_Approach);
         }
 
@@ -155,8 +224,9 @@ namespace Archery.Bows
             var deltaTime = Time.deltaTime;
             if (IsRunning)
             {
-                // Le cercle rétrécit à vitesse constante, puis attend au bout de l'anneau : il ne recommence plus.
-                m_Approach = Mathf.Max(HoldRadius, m_Approach - deltaTime / m_Duration);
+                // Le cercle rétrécit à vitesse constante, puis attend au bout de l'anneau : il ne recommence plus (sauf la
+                // surcharge : un deuxième cercle, plus rapide).
+                m_Approach = Mathf.Max(HoldRadius, m_Approach - deltaTime / (m_SecondPass ? m_OverchargeDuration : m_Duration));
 
                 var grade = GradeAt(m_Approach);
                 var inGold = grade == ShotGrade.Perfect;
@@ -168,6 +238,15 @@ namespace Archery.Bows
                 if (held && !m_WasHeld)
                     HoldEntered?.Invoke();
                 m_WasHeld = held;
+
+                // Surcharge : le premier cercle a fini sa course ; un instant plus tard, le deuxième part du bord.
+                if (m_Overcharge && !m_SecondPass && held)
+                {
+                    if (m_SecondPassTimer < 0f)
+                        m_SecondPassTimer = m_OverchargeDelay;
+                    else if ((m_SecondPassTimer -= deltaTime) <= 0f)
+                        StartSecondPass();
+                }
             }
 
             var visible = IsRunning || Time.time < m_VisibleUntil;
@@ -192,7 +271,18 @@ namespace Archery.Bows
             m_PropertyBlock.SetFloat(k_ApproachThicknessId, m_ApproachThickness);
             m_PropertyBlock.SetFloat(k_AlphaId, m_Alpha);
             m_PropertyBlock.SetColor(k_FlashColorId, m_FlashColor);
+            m_PropertyBlock.SetColor(k_PerfectColorId, m_Overcharge ? m_OverchargeColor : m_DefaultPerfectColor);
+            m_PropertyBlock.SetColor(k_ApproachColorId, m_Overcharge && m_SecondPass ? m_OverchargeColor : m_DefaultApproachColor);
             m_Renderer.SetPropertyBlock(m_PropertyBlock);
+        }
+
+        void StartSecondPass()
+        {
+            m_SecondPass = true;
+            m_Approach = 1f;
+            m_WasInGold = false;
+            m_WasHeld = false;
+            OverchargeStarted?.Invoke();
         }
 
         void FaceCamera()

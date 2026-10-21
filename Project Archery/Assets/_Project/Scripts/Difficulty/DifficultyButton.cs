@@ -21,7 +21,7 @@ namespace Archery.Difficulty
     /// <see cref="Select"/> peut aussi être branché sur un bouton d'interface.
     /// </remarks>
     [DisallowMultipleComponent]
-    public class DifficultyButton : MonoBehaviour, IArrowHitHandler
+    public class DifficultyButton : MonoBehaviour, IArrowHitHandler, ILaserTransparent
     {
         static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
 

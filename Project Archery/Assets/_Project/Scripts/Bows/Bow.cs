@@ -170,6 +170,8 @@ namespace Archery.Bows
         float m_StringVibration;
         float m_TimeSinceRelease;
         bool m_Holstered;
+        Pose m_LastHolsterPose;
+        bool m_FollowingHolster;
         float m_RecacheTimer;
         Transform m_DefaultArrowRest;
         Transform m_DefaultStringTop;
@@ -179,7 +181,13 @@ namespace Archery.Bows
         readonly List<Renderer> m_StowedRenderers = new List<Renderer>();
         bool m_DesktopHeld;
         Transform m_DesktopRingAnchor;
+        AudioSource m_ChargeSource;
         readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
+        Akimbow m_Akimbow;
+        Archery.Combat.KatanaShield m_Katana;
+        bool m_ReplacedHidden;
+        readonly List<Renderer> m_ReplacedRenderers = new List<Renderer>();
+        readonly List<Collider> m_ReplacedColliders = new List<Collider>();
 
         public BowDefinition Definition
         {
@@ -212,6 +220,27 @@ namespace Archery.Bows
         /// <summary>Milieu de la poignée du modèle importé, s'il le donne ; sinon null.</summary>
         public Transform Grip => m_Visual != null ? m_Visual.Grip : null;
 
+        /// <summary>
+        /// L'arme est une paire d'Akimbow (<see cref="BowDefinition.akimbo"/>) : l'arc est caché et ne se prend plus, une
+        /// arbalète est dans chaque main.
+        /// </summary>
+        public bool IsAkimbo => m_Akimbow != null;
+
+        /// <summary>L'arme est le katana et le bouclier (<see cref="BowDefinition.katana"/>) : l'arc est caché et ne se prend plus.</summary>
+        public bool IsKatana => m_Katana != null;
+
+        /// <summary>Une autre arme remplace l'arc (Akimbow, katana et bouclier) : il est caché et ne se prend plus.</summary>
+        public bool IsReplaced => m_Akimbow != null || m_Katana != null;
+
+        /// <summary>L'anneau de timing de l'arc : les Akimbow en prennent une copie chacune.</summary>
+        public TimingRing TimingRingTemplate => m_TimingRing;
+
+        /// <summary>Les réglages des qualités de tir (vitesse, dégâts, couleur selon l'anneau).</summary>
+        public ShotTuning ShotTuning => Tuning;
+
+        /// <summary>Le son d'un tir parfait.</summary>
+        public AudioClip PerfectClip => m_PerfectClip;
+
         // Multiplicateurs donnés par les améliorations et les coffres. Celui de la difficulté
         // (largeur du vert) s'y ajoute au lancement de l'anneau.
         public float SpeedMultiplier { get; set; } = 1f;
@@ -238,6 +267,11 @@ namespace Archery.Bows
 
         ShotTuning Tuning => m_ShotTuning != null ? m_ShotTuning : ShotTuning.Fallback;
         float MaxDraw => Mathf.Max(0.05f, Def.maxDrawDistance);
+
+        // Jusqu'où la corde suit la main : la tension maximale, puis un peu plus (sans plus de puissance), la pointe de la
+        // flèche restant devant le repose-flèche.
+        float PullLimit(Arrow arrow) =>
+            Mathf.Max(MaxDraw, Mathf.Min(MaxDraw + Mathf.Max(0f, Def.overdrawDistance), arrow.Length - m_BraceHeight - 0.05f));
 
         /// <summary>
         /// Dégâts d'un coup de flèche au corps à corps (GDD, section 4.5) : ceux d'un tir de cette qualité
@@ -276,6 +310,7 @@ namespace Archery.Bows
             {
                 m_TimingRing.GoldEntered += OnGoldEntered;
                 m_TimingRing.HoldEntered += OnRingHeld;
+                m_TimingRing.OverchargeStarted += OnOverchargeStarted;
             }
 
             // Au lancement, l'arc vient directement se placer près du joueur.
@@ -284,11 +319,16 @@ namespace Archery.Bows
 
         protected override void OnDestroy()
         {
+            if (m_Akimbow != null)
+                Destroy(m_Akimbow.gameObject);
+            if (m_Katana != null)
+                Destroy(m_Katana.gameObject);
             ArrowIgnore.Unregister(m_OwnColliders);
             if (m_TimingRing != null)
             {
                 m_TimingRing.GoldEntered -= OnGoldEntered;
                 m_TimingRing.HoldEntered -= OnRingHeld;
+                m_TimingRing.OverchargeStarted -= OnOverchargeStarted;
             }
 
             base.OnDestroy();
@@ -296,9 +336,10 @@ namespace Archery.Bows
 
         // Une seule main tient l'arc : l'autre ne peut pas le lui « voler » en approchant pour encocher.
         public override bool IsSelectableBy(IXRSelectInteractor interactor) =>
-            base.IsSelectableBy(interactor) && !m_Stowed && !m_DesktopHeld && (!isSelected || IsSelected(interactor));
+            base.IsSelectableBy(interactor) && !m_Stowed && !m_DesktopHeld && !IsReplaced && (!isSelected || IsSelected(interactor));
 
-        public override bool IsHoverableBy(IXRHoverInteractor interactor) => base.IsHoverableBy(interactor) && !m_Stowed && !m_DesktopHeld;
+        public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
+            base.IsHoverableBy(interactor) && !m_Stowed && !m_DesktopHeld && !IsReplaced;
 
         /// <summary>
         /// Range l'arc (construction au marteau) : la main le lâche, il disparaît à sa place près du joueur.
@@ -395,9 +436,12 @@ namespace Archery.Bows
                     break;
 
                 case XRInteractionUpdateOrder.UpdatePhase.OnBeforeRender:
-                    // Recalcule la pose avec le suivi le plus récent, sans effet de jeu.
+                    // Recalcule la pose avec le suivi le plus récent, sans effet de jeu. L'arc rangé suit aussi la tête
+                    // après les déplacements de l'image : pas une image de retard quand on court.
                     if (isSelected)
                         UpdateDraw(0f, false);
+                    else if (!m_DesktopHeld && m_FollowingHolster)
+                        UpdateReturn(0f);
                     UpdateVisuals(0f);
                     break;
             }
@@ -416,6 +460,7 @@ namespace Archery.Bows
             m_DrawRatio = 0f;
             m_DrawDistance = 0f;
             StopCreak();
+            StopCharge();
 
             var grade = m_TimingRing != null && m_TimingRing.IsRunning ? m_TimingRing.Release() : ShotGrade.None;
             if (ForcePerfect && grade != ShotGrade.None)
@@ -425,6 +470,13 @@ namespace Archery.Bows
                 if (m_TimingRing != null)
                     m_TimingRing.Cancel();
                 arrow.Drop(Vector3.zero);
+                return;
+            }
+
+            // Arc cosmique : lâché dans le doré du deuxième cercle (ou dans le vert clair, après), le tir devient un laser.
+            if (Def.overcharge && m_TimingRing != null && m_TimingRing.Overcharged)
+            {
+                FireLaser(arrow, ratio, drawHand, grade == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held);
                 return;
             }
 
@@ -443,10 +495,16 @@ namespace Archery.Bows
                 Pierce = Def.pierceCount + BonusPierce,
                 TrailColor = trailColor,
                 IsShot = true,
+                GravityScale = Def.arrowGravity,
             });
 
+            if (Def.starTrail)
+                StarTrail.Track(arrow, Def.laserColor);
+            if (Def.arrowRain)
+                ArrowRain.Track(arrow, Def, damage, grade);
+
             if (m_TimingRing != null && grade != ShotGrade.None)
-                m_TimingRing.ShowResult(modifiers.color);
+                m_TimingRing.ShowResult(GradeColor(grade, modifiers.color));
 
             m_StringVibration = 1f;
             Haptics.Pulse(drawHand, 0.7f, 0.06f);
@@ -466,6 +524,47 @@ namespace Archery.Bows
                 Damage = damage,
                 Origin = origin,
                 Direction = m_AimDirection,
+            });
+        }
+
+        // Le laser de la surcharge : la flèche le tire et disparaît (Arrow.FireLaser), le rayon et sa traînée de particules
+        // s'affichent (LaserBeam). Lâché dans le doré, il compte comme un tir parfait ; dans le vert clair, comme un tir
+        // « très bon » (avec les réglages actuels, 80 % des dégâts).
+        void FireLaser(Arrow arrow, float ratio, IXRSelectInteractor drawHand, ShotGrade grade)
+        {
+            var def = Def;
+            var modifiers = Tuning.Get(grade);
+            var power = def.drawToPower.Evaluate(ratio);
+            var damage = def.damage * power * modifiers.damage * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier);
+            var direction = m_AimDirection;
+            var start = arrow.TipPosition;
+
+            arrow.FireLaser(start, direction, damage, def.laserRange, grade);
+            LaserBeam.Fire(start, start + direction * def.laserRange, def.laserColor, def.laserSecondColor);
+
+            if (m_TimingRing != null)
+                m_TimingRing.ShowResult(grade == ShotGrade.Perfect ? m_TimingRing.OverchargeColor : modifiers.color);
+
+            m_StringVibration = 1f;
+            Haptics.Pulse(drawHand, 1f, 0.25f);
+            Haptics.Pulse(m_BowHand, 1f, 0.35f);
+
+            var soundPosition = m_ArrowRest != null ? m_ArrowRest.position : transform.position;
+            if (def.laserClips != null)
+            {
+                foreach (var clip in def.laserClips)
+                    Sfx.Play(clip, soundPosition, 1f, UnityEngine.Random.Range(0.97f, 1.03f), 0.3f);
+            }
+
+            ShotFired?.Invoke(this, new ShotInfo
+            {
+                Arrow = null,
+                Grade = grade,
+                DrawRatio = ratio,
+                Speed = def.arrowSpeed * modifiers.speed * SpeedMultiplier,
+                Damage = damage,
+                Origin = start,
+                Direction = direction,
             });
         }
 
@@ -568,7 +667,8 @@ namespace Archery.Bows
             if (!m_DesktopHeld || m_Nocked == null)
                 return;
 
-            if (m_DrawRatio < Def.minDrawToFire)
+            // En pause, la flèche ne part pas : elle retourne dans le carquois.
+            if (m_DrawRatio < Def.minDrawToFire || SlowMotion.IsPaused)
                 Unnock();
             else
                 OnNockedArrowReleased(m_Nocked, null, true);
@@ -585,8 +685,11 @@ namespace Archery.Bows
 
             Unnock();
             m_Definition = definition;
+            SetAkimbo(definition.akimbo);
+            SetKatana(definition.katana);
 
-            if (definition.visualPrefab != null && m_Model != null)
+            // Le modèle des Akimbow ou du katana (leur aperçu dans le menu des armes) ne remplace pas celui de l'arc.
+            if (!definition.akimbo && !definition.katana && definition.visualPrefab != null && m_Model != null)
             {
                 if (m_Visual != null)
                 {
@@ -604,6 +707,109 @@ namespace Archery.Bows
             CacheGeometry();
             m_RecacheTimer = 0.25f;
         }
+
+        // Akimbow : les arbalètes remplacent l'arc (créées ici, détruites au retour à un arc).
+        void SetAkimbo(bool akimbo)
+        {
+            if (akimbo == (m_Akimbow != null))
+                return;
+
+            if (akimbo)
+            {
+                m_Akimbow = Akimbow.Create(this, m_Definition);
+            }
+            else
+            {
+                Destroy(m_Akimbow.gameObject);
+                m_Akimbow = null;
+            }
+
+            ApplyReplaced();
+        }
+
+        // Le katana et le bouclier remplacent l'arc (créés ici, détruits au retour à un arc).
+        void SetKatana(bool katana)
+        {
+            if (katana == (m_Katana != null))
+                return;
+
+            if (katana)
+            {
+                m_Katana = Archery.Combat.KatanaShield.Create(this, m_Definition);
+            }
+            else
+            {
+                Destroy(m_Katana.gameObject);
+                m_Katana = null;
+            }
+
+            ApplyReplaced();
+        }
+
+        // Remplacé (Akimbow, katana et bouclier) : l'arc se cache (ses rendus et ses colliders) et ne se prend plus. Il revient quand
+        // plus rien ne le remplace (sauf s'il est rangé pour une construction : il réapparaîtra avec).
+        void ApplyReplaced()
+        {
+            var hide = IsReplaced;
+            if (hide == m_ReplacedHidden)
+                return;
+
+            m_ReplacedHidden = hide;
+            if (hide)
+            {
+                if (isSelected && interactionManager != null)
+                    interactionManager.CancelInteractableSelection((IXRSelectInteractable)this);
+                Unnock();
+                if (m_AimGuide != null)
+                    m_AimGuide.Hide();
+
+                m_ReplacedRenderers.Clear();
+                foreach (var renderer in GetComponentsInChildren<Renderer>())
+                {
+                    if (!renderer.enabled)
+                        continue;
+                    renderer.enabled = false;
+                    m_ReplacedRenderers.Add(renderer);
+                }
+
+                m_ReplacedColliders.Clear();
+                foreach (var collider in m_OwnColliders)
+                {
+                    if (collider == null || !collider.enabled)
+                        continue;
+                    collider.enabled = false;
+                    m_ReplacedColliders.Add(collider);
+                }
+
+                return;
+            }
+
+            foreach (var renderer in m_ReplacedRenderers)
+            {
+                if (renderer == null)
+                    continue;
+                if (m_Stowed)
+                    m_StowedRenderers.Add(renderer);
+                else
+                    renderer.enabled = true;
+            }
+
+            m_ReplacedRenderers.Clear();
+            foreach (var collider in m_ReplacedColliders)
+            {
+                if (collider != null)
+                    collider.enabled = true;
+            }
+
+            m_ReplacedColliders.Clear();
+            m_Holstered = true;
+        }
+
+        /// <summary>
+        /// Un tir des Akimbow (ou une déchirure du katana lancée) : prévient le score, les succès et les améliorations de
+        /// flèches, comme un tir de l'arc.
+        /// </summary>
+        internal void ReportShot(ShotInfo shot) => ShotFired?.Invoke(this, shot);
 
         // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde un peu après.
         void UpdateRecache(float deltaTime)
@@ -670,7 +876,8 @@ namespace Archery.Bows
 
         void TryNock()
         {
-            if (m_Nocked != null || m_Model == null)
+            // En pause (menu ouvert en cours de partie), on n'encoche pas.
+            if (m_Nocked != null || m_Model == null || SlowMotion.IsPaused)
                 return;
 
             var root = transform;
@@ -734,6 +941,16 @@ namespace Archery.Bows
             return (restPoint - closestOnShaft).sqrMagnitude < m_RestCatchRadius * m_RestCatchRadius;
         }
 
+        /// <summary>
+        /// La main lâche la flèche encochée pendant la pause : pas de tir, la corde se détend et la flèche retourne dans le
+        /// carquois (elle resterait sinon figée en l'air jusqu'à la fin de la pause).
+        /// </summary>
+        internal void CancelNock(Arrow arrow)
+        {
+            if (arrow == m_Nocked)
+                Unnock();
+        }
+
         void Unnock()
         {
             if (m_Nocked == null)
@@ -744,6 +961,7 @@ namespace Archery.Bows
             m_DrawRatio = 0f;
             m_DrawDistance = 0f;
             StopCreak();
+            StopCharge();
             if (m_TimingRing != null)
                 m_TimingRing.Cancel();
             arrow.OnUnnocked();
@@ -789,7 +1007,7 @@ namespace Archery.Bows
                 draw = Vector3.Dot(direction, toRest) - m_BraceHeight;
             }
 
-            draw = Mathf.Clamp(draw, 0f, MaxDraw);
+            draw = Mathf.Clamp(draw, 0f, PullLimit(m_Nocked));
 
             // Le modèle s'aligne sur la flèche ; le haut de l'arc reste du côté du haut de la main.
             var targetRotation = Quaternion.Inverse(root.rotation) * Quaternion.LookRotation(direction, root.up);
@@ -812,7 +1030,9 @@ namespace Archery.Bows
             if (!gameplay)
                 return;
 
-            var ratio = draw / MaxDraw;
+            // Au-delà de la tension maximale, la corde suit la main sans rien changer d'autre : puissance, anneau, vibration et
+            // grincement restent ceux de la tension maximale.
+            var ratio = Mathf.Min(1f, draw / MaxDraw);
             var drawSpeed = deltaTime > 0f ? Mathf.Abs(ratio - m_DrawRatio) / deltaTime : 0f;
             m_DrawRatio = ratio;
 
@@ -830,13 +1050,16 @@ namespace Archery.Bows
                 if (!m_TimingRing.IsRunning && ratio >= m_FullDrawThreshold)
                     StartRing();
                 else if (m_TimingRing.IsRunning && ratio < m_RingCancelThreshold)
+                {
                     m_TimingRing.Cancel();
+                    StopCharge();
+                }
             }
         }
 
         bool ShouldUnnock(Transform root, Vector3 toRest, float distance)
         {
-            if (distance > m_BraceHeight + MaxDraw + m_UnnockSlack)
+            if (distance > m_BraceHeight + PullLimit(m_Nocked) + m_UnnockSlack)
                 return true;
 
             // Main passée devant l'arc.
@@ -847,15 +1070,24 @@ namespace Archery.Bows
             return distance > m_BraceHeight && Vector3.Angle(root.forward, toRest) > m_MaxPullAngle;
         }
 
-        void StartRing()
+        void StartRing() => BeginRing(m_TimingRing, Def);
+
+        /// <summary>
+        /// Lance un anneau avec les réglages de <paramref name="def"/>, les améliorations et la difficulté (largeur du vert) :
+        /// celui de l'arc, ou celui d'une arbalète des Akimbow.
+        /// </summary>
+        public void BeginRing(TimingRing ring, BowDefinition def)
         {
-            var def = Def;
+            if (ring == null || def == null)
+                return;
             var widthScale = Mathf.Max(0.1f, BandWidthMultiplier);
             var goldScale = Mathf.Max(0.1f, GoldWidthMultiplier) * DifficultyManager.Current.goldBandWidth;
-            m_TimingRing.Begin(
-                def.ringDuration / Mathf.Max(0.1f, RingSpeedMultiplier),
+            var speed = Mathf.Max(0.1f, RingSpeedMultiplier);
+            ring.Begin(
+                def.ringDuration / speed,
                 def.goldHalfWidth * widthScale * goldScale,
-                def.goodWidth * widthScale);
+                def.goodWidth * widthScale,
+                def.overcharge ? def.overchargeDuration / speed : 0f);
         }
 
         void UpdateReturn(float deltaTime)
@@ -866,7 +1098,10 @@ namespace Archery.Bows
 
             m_TimeSinceRelease += deltaTime;
             if (!m_Holstered && m_TimeSinceRelease < m_ReturnDelay)
+            {
+                m_FollowingHolster = false;
                 return;
+            }
 
             if (!rig.TryGetBowHolsterPose(out var target))
                 return;
@@ -874,11 +1109,26 @@ namespace Archery.Bows
             if (m_Body != null && !m_Body.isKinematic)
                 m_Body.isKinematic = true;
 
+            // L'arc revient dans le repère du joueur : il suit tous ses déplacements (course, glissade, rotation,
+            // téléporteur) sans traîner derrière, et ne fait que le chemin qui reste jusqu'à sa place.
+            if (m_FollowingHolster)
+            {
+                var turn = target.rotation * Quaternion.Inverse(m_LastHolsterPose.rotation);
+                transform.SetPositionAndRotation(target.position + turn * (transform.position - m_LastHolsterPose.position),
+                                                 turn * transform.rotation);
+            }
+
+            m_LastHolsterPose = target;
+            m_FollowingHolster = true;
+
             if (m_Holstered)
             {
                 transform.SetPositionAndRotation(target.position, target.rotation);
                 return;
             }
+
+            if (deltaTime <= 0f)
+                return;
 
             var blend = 1f - Mathf.Exp(-m_ReturnSpeed * deltaTime);
             transform.SetPositionAndRotation(
@@ -906,7 +1156,7 @@ namespace Archery.Bows
             }
 
             // Les branches plient avec la tension : par le rig du modèle importé, ou en tournant les branches.
-            var drawRatio = m_Nocked != null ? m_DrawDistance / MaxDraw : 0f;
+            var drawRatio = m_Nocked != null ? Mathf.Min(1f, m_DrawDistance / MaxDraw) : 0f;
             if (m_Visual != null)
                 m_Visual.SetDraw(drawRatio);
 
@@ -938,7 +1188,7 @@ namespace Archery.Bows
             {
                 if (m_DesktopRingAnchor != null)
                 {
-                    // Sans casque : autour du viseur, au centre de l'écran.
+                    // Sans casque : près du viseur, là où le place le DesktopArcher.
                     m_TimingRing.transform.position = m_DesktopRingAnchor.position;
                 }
                 else
@@ -985,10 +1235,24 @@ namespace Archery.Bows
 
             var modifiers = Tuning.Get(grade);
             var speed = Def.arrowSpeed * Def.drawToPower.Evaluate(drawRatio) * modifiers.speed * SpeedMultiplier;
-            var color = grade == ShotGrade.None ? Color.white : modifiers.color;
+            var color = grade == ShotGrade.None ? Color.white : GradeColor(grade, modifiers.color);
             var tip = m_Nocked.NockPosition + m_AimDirection * m_Nocked.Length;
-            m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio));
+
+            // Arc cosmique en surcharge : lâché maintenant, c'est le laser, qui part tout droit et traverse tout.
+            if (Def.overcharge && m_TimingRing != null && m_TimingRing.WouldOvercharge)
+            {
+                m_AimGuide.ShowLaser(tip, m_AimDirection, color, Mathf.Lerp(0.35f, 1f, drawRatio), Def.laserRange);
+                return;
+            }
+
+            // Arc à pluie (légendaire) : la courbe et le cercle où tombera la pluie.
+            m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio), Def.arrowRain ? Def.rainRadius : 0f,
+                            Def.arrowGravity);
         }
+
+        // Avec un arc à surcharge, le parfait est doré, comme dans l'anneau.
+        Color GradeColor(ShotGrade grade, Color color) =>
+            Def.overcharge && grade == ShotGrade.Perfect && m_TimingRing != null ? m_TimingRing.OverchargeColor : color;
 
         // Côté extérieur de l'arc : à gauche pour un arc tenu de la main gauche, à droite sinon.
         float OutsideSign() =>
@@ -1022,6 +1286,39 @@ namespace Archery.Bows
                 Haptics.Pulse(m_Nocked.Hand, 0.6f, 0.05f);
             Haptics.Pulse(m_BowHand, 0.35f, 0.05f);
             Sfx.Play(m_GoldClip, m_TimingRing.transform.position, 0.5f);
+        }
+
+        // Arc cosmique : le deuxième cercle, doré, part du bord. La charge qui monte, dans les deux mains.
+        void OnOverchargeStarted()
+        {
+            if (m_Nocked != null)
+                Haptics.Pulse(m_Nocked.Hand, 0.5f, 0.15f);
+            Haptics.Pulse(m_BowHand, 0.5f, 0.15f);
+
+            // La charge qui monte, sur sa propre source : elle s'arrête net quand on lâche (le laser prend le relais).
+            var clip = Def.overchargeClip;
+            if (clip == null)
+                return;
+            if (m_ChargeSource == null)
+            {
+                m_ChargeSource = gameObject.AddComponent<AudioSource>();
+                m_ChargeSource.playOnAwake = false;
+                m_ChargeSource.spatialBlend = 0.3f;
+                m_ChargeSource.dopplerLevel = 0f;
+            }
+
+            m_ChargeSource.outputAudioMixerGroup = Sfx.Output;
+            m_ChargeSource.Stop();
+            m_ChargeSource.clip = clip;
+            m_ChargeSource.pitch = 1.25f;
+            m_ChargeSource.volume = 0.85f;
+            m_ChargeSource.Play();
+        }
+
+        void StopCharge()
+        {
+            if (m_ChargeSource != null && m_ChargeSource.isPlaying)
+                m_ChargeSource.Stop();
         }
 
         // Le vert est passé : le cercle finit sa course dans le vert pastel et y attend.

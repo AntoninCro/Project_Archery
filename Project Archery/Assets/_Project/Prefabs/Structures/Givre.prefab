@@ -50,9 +50,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Building.FrostTower
   m_LevelParts: []
   m_RadiusPerLevel:
-  - 8
   - 9
-  - 10
+  - 13
+  - 17
   m_SpeedPerLevel:
   - 0.7
   - 0.6

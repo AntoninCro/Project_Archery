@@ -48,6 +48,12 @@ namespace Archery.Combat
         /// </summary>
         public bool Frozen { get; set; }
 
+        /// <summary>
+        /// Optionnel : les dégâts qui restent d'une attaque, avant qu'ils comptent (0 : rien). Le bouclier du joueur
+        /// (<see cref="KatanaShield"/>) bloque ainsi les coups et les projectiles qu'il intercepte.
+        /// </summary>
+        public Func<DamageInfo, float> DamageFilter { get; set; }
+
         void OnEnable() => m_Current = m_MaxHealth;
 
         public void ResetHealth(float max)
@@ -80,13 +86,21 @@ namespace Archery.Combat
             if (!IsAlive || info.Amount <= 0f || Frozen)
                 return;
 
+            var received = info;
+            if (DamageFilter != null)
+            {
+                received.Amount = DamageFilter(info);
+                if (received.Amount <= 0f)
+                    return;
+            }
+
             m_LastDamageTime = Time.time;
-            m_Current = m_Invulnerable ? Mathf.Max(1f, m_Current - info.Amount) : Mathf.Max(0f, m_Current - info.Amount);
-            Damaged?.Invoke(this, info);
+            m_Current = m_Invulnerable ? Mathf.Max(1f, m_Current - received.Amount) : Mathf.Max(0f, m_Current - received.Amount);
+            Damaged?.Invoke(this, received);
 
             if (m_Current <= 0f)
             {
-                Died?.Invoke(this, info);
+                Died?.Invoke(this, received);
                 m_OnDeath.Invoke();
             }
         }

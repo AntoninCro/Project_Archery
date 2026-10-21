@@ -15,8 +15,9 @@ namespace Archery.Portal
     /// </summary>
     /// <remarks>
     /// Ce ne sont que des décors : pas de collision (les flèches les traversent), et jamais devant le monstre. Ils restent
-    /// dans le monde, entre 2,2 et 6 m du joueur, et s'ouvrent en s'étirant (pas de clignotement). Les textes sont
-    /// modifiables dans l'Inspector de la <see cref="StarDimension"/>.
+    /// dans le monde, entre 2,2 et 6 m du joueur, et s'ouvrent en s'étirant (pas de clignotement). Les fausses erreurs
+    /// sont modifiables dans l'Inspector de chaque dimension (<see cref="IGlitchDimension"/>), les titres par
+    /// <see cref="SetWords"/>.
     /// </remarks>
     public class ErrorPanels : MonoBehaviour
     {
@@ -24,7 +25,7 @@ namespace Archery.Portal
         const float k_Height = 0.62f;
         const float k_Cut = 0.07f;
         const float k_BaseDistance = 3.5f;
-        const int k_MaxPanels = 8;
+        const int k_MaxPanels = 20;
         const float k_OpenTime = 0.14f;
         const float k_CloseTime = 0.1f;
 
@@ -51,13 +52,29 @@ namespace Archery.Portal
 
             /// <summary>Dixièmes de seconde affichés (panneau du temps restant) : le texte ne change qu'avec eux.</summary>
             public int ShownTenths = -1;
+
+            /// <summary>Se ferme sans son (la fermeture en masse à l'arrivée du monstre a un seul son pour tous).</summary>
+            public bool Silent;
+
+            /// <summary>Panneau au centre de la vue (« SURVIVEZ », fin) : il ne se ferme pas quand le monstre passe derrière.</summary>
+            public bool Centered;
         }
+
+        // La montée de la découverte : le premier panneau à 5 s, puis de plus en plus vite, jusqu'à 150 panneaux ouverts au
+        // moment où le monstre arrive (40 jusqu'au 20 octobre).
+        const float k_SurgeStart = 5f;
+        const int k_SurgeCount = 150;
 
         // La police futuriste, fabriquée une seule fois pour toutes les épreuves (une police dynamique a sa propre texture).
         static TMP_FontAsset s_Font;
 
         readonly List<Panel> m_Panels = new List<Panel>();
-        StarDimension m_Dimension;
+        readonly List<Vector3> m_Threats = new List<Vector3>();
+        IGlitchDimension m_Dimension;
+        string m_IntroTitle = "THUNK.exe";
+        string m_UnleashTitle = "ALERTE";
+        string m_UnleashBody = "SURVIVEZ";
+        string m_TimerTitle = "TEMPS RESTANT";
         Material m_Material;
         TMP_FontAsset m_Font;
         Mesh m_Frame;
@@ -67,11 +84,54 @@ namespace Archery.Portal
         float m_Timer;
         float m_LastTimerPanel;
         float m_Clock;
+        float m_LastOpenSound = -1f;
+        readonly List<float> m_SurgeTimes = new List<float>();
+        int m_NextSurge;
 
-        /// <summary>Pendant l'intro : moins de panneaux, et pas encore de compte à rebours.</summary>
-        public bool Intro { get; set; } = true;
+        /// <summary>Pendant la découverte : la montée des panneaux, et pas encore de compte à rebours.</summary>
+        public bool Intro { get; private set; } = true;
 
-        public void Configure(StarDimension dimension, Material material, AudioClip open, AudioClip close, string[] fakeErrors)
+        /// <summary>
+        /// La découverte commence : rien pendant 5 s, puis un panneau, un autre, et de plus en plus vite jusqu'à l'arrivée
+        /// du monstre, au bout de <paramref name="duration"/> s (le dernier part juste avant). Ils restent tous ouverts.
+        /// </summary>
+        public void StartIntro(float duration)
+        {
+            Intro = true;
+            m_NextSurge = 0;
+            m_SurgeTimes.Clear();
+            var start = Mathf.Min(k_SurgeStart, duration * 0.5f);
+            for (var i = 0; i < k_SurgeCount; i++)
+                m_SurgeTimes.Add(start + (duration - start) * Mathf.Pow(i / (float)k_SurgeCount, 1f / 3f));
+        }
+
+        /// <summary>
+        /// Le monstre arrive : un très grand « SURVIVEZ » s'ouvre, et tous les autres panneaux se ferment presque d'un coup.
+        /// Puis le rythme de l'épreuve reprend.
+        /// </summary>
+        public void Unleash()
+        {
+            Intro = false;
+            foreach (var panel in m_Panels)
+            {
+                if (panel.Closing)
+                    continue;
+                panel.Life = Mathf.Min(panel.Life, panel.Age + Random.Range(0.05f, 0.3f));
+                panel.Silent = true;
+            }
+
+            var head = m_Dimension != null ? m_Dimension.Head : null;
+            if (head == null)
+                return;
+
+            Sfx.Play(m_Dimension.RandomGlitchClip(), head.position, 1f, 0.8f, 0f);
+            Sfx.Play(m_CloseClip, head.position, 0.6f, 0.7f, 0f);
+            // Environ 3 m de large à 2,6 m (60° de la vue) ; 2,3 jusqu'au 20 octobre.
+            ShowCentered(m_UnleashTitle, m_UnleashBody, 1.8f, 3.4f, true);
+            m_Timer = 1.6f;
+        }
+
+        public void Configure(IGlitchDimension dimension, Material material, AudioClip open, AudioClip close, string[] fakeErrors)
         {
             m_Dimension = dimension;
             m_Material = material;
@@ -81,6 +141,18 @@ namespace Archery.Portal
             m_Font = LoadFont();
             m_Frame = BuildFrame();
             m_Timer = 0.5f;
+        }
+
+        /// <summary>
+        /// Les mots de cette dimension : le titre des panneaux de la découverte (« THUNK.exe »), le grand panneau du départ
+        /// (« ALERTE », « SURVIVEZ ») et le titre du compte à rebours (« TEMPS RESTANT »).
+        /// </summary>
+        public void SetWords(string introTitle, string unleashTitle, string unleashBody, string timerTitle)
+        {
+            m_IntroTitle = introTitle;
+            m_UnleashTitle = unleashTitle;
+            m_UnleashBody = unleashBody;
+            m_TimerTitle = timerTitle;
         }
 
         void OnDestroy()
@@ -106,17 +178,38 @@ namespace Archery.Portal
         {
             var deltaTime = Time.deltaTime;
             m_Clock += deltaTime;
-            m_Timer -= deltaTime;
-            if (m_Timer <= 0f && m_Dimension != null && m_Dimension.Running)
+            if (m_Dimension != null && m_Dimension.Running)
             {
-                m_Timer = Intro ? Random.Range(1.8f, 2.6f) : Random.Range(0.75f, 1.15f);
-                Spawn();
+                if (Intro)
+                {
+                    // La montée : les panneaux prévus pour ce moment de la découverte (le temps de la musique).
+                    while (m_NextSurge < m_SurgeTimes.Count && m_Dimension.Elapsed >= m_SurgeTimes[m_NextSurge])
+                    {
+                        m_NextSurge++;
+                        Spawn(true);
+                    }
+                }
+                else
+                {
+                    // Pendant l'épreuve : 2 à 3 panneaux par seconde, qui restent 2,5 à 4,5 s (une dizaine ouverts à la fois).
+                    m_Timer -= deltaTime;
+                    if (m_Timer <= 0f)
+                    {
+                        m_Timer = Random.Range(0.3f, 0.5f);
+                        Spawn(false);
+                    }
+                }
             }
 
+            // Un panneau qui se retrouve devant le monstre (il court d'un pilier à l'autre) se ferme aussitôt : on doit
+            // toujours pouvoir le viser.
+            var viewer = m_Dimension != null ? m_Dimension.Head : null;
             for (var i = m_Panels.Count - 1; i >= 0; i--)
             {
                 var panel = m_Panels[i];
                 panel.Age += deltaTime;
+                if (!panel.Closing && !panel.Centered && viewer != null && HidesAMonster(panel, viewer.position))
+                    panel.Life = Mathf.Min(panel.Life, panel.Age);
                 if (panel.Kind == Kind.Timer)
                 {
                     // Le texte n'est refait (et remis en page) que quand le dixième de seconde affiché change.
@@ -156,7 +249,8 @@ namespace Archery.Portal
                 if (!panel.Closing && panel.Age > panel.Life)
                 {
                     panel.Closing = true;
-                    Sfx.Play(m_CloseClip, panel.Root.position, 0.25f, Random.Range(0.9f, 1.2f));
+                    if (!panel.Silent)
+                        Sfx.Play(m_CloseClip, panel.Root.position, 0.25f, Random.Range(0.9f, 1.2f));
                 }
             }
         }
@@ -169,53 +263,90 @@ namespace Archery.Portal
             var tenths = TimerTenths();
             if (tenths < 0)
                 return "--:--.-";
-            return $"00:{tenths / 10:00}.{tenths % 10}";
+            return $"{tenths / 600:00}:{tenths / 10 % 60:00}.{tenths % 10}";
         }
 
-        /// <summary>Ouvre un grand panneau au centre de la vue (fin de l'épreuve), qui reste <paramref name="life"/> s.</summary>
-        public void ShowCentered(string title, string body, float life)
+        /// <summary>
+        /// Ouvre un grand panneau au centre de la vue (« SURVIVEZ », fin de l'épreuve), qui reste <paramref name="life"/> s.
+        /// <paramref name="bigText"/> : le message en très grandes lettres.
+        /// </summary>
+        public void ShowCentered(string title, string body, float life, float size = 1.3f, bool bigText = false)
         {
             var head = m_Dimension != null ? m_Dimension.Head : null;
             if (head == null)
                 return;
             var forward = Flat(head.forward);
             var position = head.position + forward * 2.6f + Vector3.up * 0.1f;
-            Open(Kind.Fake, title, body, position, head.position, life, 1.3f);
+            Open(bigText ? Kind.Error : Kind.Fake, title, body, position, head.position, life, size);
+            m_Panels[m_Panels.Count - 1].Centered = true;
         }
 
-        void Spawn()
+        // Le panneau est entre le joueur et un monstre, et le cache (à 12° près).
+        bool HidesAMonster(Panel panel, Vector3 viewer)
         {
-            if (m_Panels.Count >= k_MaxPanels)
+            var toPanel = panel.Root.position - viewer;
+            m_Threats.Clear();
+            m_Dimension.GetThreats(m_Threats);
+            foreach (var point in m_Threats)
+            {
+                var toMonster = point - viewer;
+                if (toPanel.sqrMagnitude < toMonster.sqrMagnitude && Vector3.Angle(toPanel, toMonster) < 12f)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // Cette place, vue du joueur, est à moins de 16° d'un monstre : on n'y ouvre pas de panneau.
+        bool NearAMonster(Vector3 viewer, Vector3 position)
+        {
+            m_Threats.Clear();
+            m_Dimension.GetThreats(m_Threats);
+            foreach (var point in m_Threats)
+            {
+                if (Vector3.Angle(position - viewer, point - viewer) < 16f)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // Un panneau au hasard. Pendant la montée de la découverte (surge), il reste ouvert jusqu'à l'arrivée du monstre,
+        // et il peut y en avoir des dizaines.
+        void Spawn(bool surge)
+        {
+            if (m_Panels.Count >= (surge ? k_SurgeCount + 4 : k_MaxPanels))
                 return;
 
             var head = m_Dimension.Head;
             if (head == null)
                 return;
 
-            // Le compte à rebours revient au moins toutes les 2,5 s ; sinon, un panneau « ERREUR » ou une fausse erreur.
+            // Le compte à rebours revient au moins toutes les 2 s ; sinon, un panneau « ERREUR » ou une fausse erreur.
             Kind kind;
-            if (!Intro && (m_Clock - m_LastTimerPanel > 2.5f || Random.value < 0.4f))
+            if (!Intro && (m_Clock - m_LastTimerPanel > 2f || Random.value < 0.25f))
                 kind = Kind.Timer;
             else
                 kind = Random.value < 0.5f ? Kind.Error : Kind.Fake;
 
-            if (!TryPlace(head, out var position))
+            if (!TryPlace(head, surge, out var position))
                 return;
 
             switch (kind)
             {
                 case Kind.Timer:
                     m_LastTimerPanel = m_Clock;
-                    Open(Kind.Timer, "TEMPS RESTANT", TimerText(), position, head.position, Random.Range(1.2f, 1.8f), 1f);
+                    Open(Kind.Timer, m_TimerTitle, TimerText(), position, head.position, Random.Range(2.5f, 3.5f), 1f);
                     break;
                 case Kind.Error:
                     Open(Kind.Error, "ERREUR", $"ERREUR\n<size=45%>0x{Random.Range(0, 0xFFFFFF):X6}</size>", position, head.position,
-                         Random.Range(0.9f, 1.5f), 1f);
+                         surge ? 999f : Random.Range(2.5f, 4f), 1f);
                     break;
                 default:
                     var fake = m_FakeErrors != null && m_FakeErrors.Length > 0
                         ? m_FakeErrors[Random.Range(0, m_FakeErrors.Length)] : "Erreur inconnue";
-                    Open(Kind.Fake, Intro ? "THUNK.exe" : RandomTitle(), fake, position, head.position, Random.Range(1f, 1.7f), 1f);
+                    Open(Kind.Fake, Intro ? m_IntroTitle : RandomTitle(), fake, position, head.position,
+                         surge ? 999f : Random.Range(3f, 4.5f), 1f);
                     break;
             }
         }
@@ -231,20 +362,20 @@ namespace Archery.Portal
             }
         }
 
-        // Autour du joueur, surtout devant : jamais trop près, jamais devant le monstre.
-        bool TryPlace(Transform head, out Vector3 position)
+        // Autour du joueur, surtout devant : jamais trop près, jamais devant le monstre. Pendant la montée, un peu plus
+        // dispersés (devant, sur les côtés, en hauteur) pour qu'ils l'entourent.
+        bool TryPlace(Transform head, bool surge, out Vector3 position)
         {
             var forward = Flat(head.forward);
-            var monster = m_Dimension.MonsterPoint;
             for (var attempt = 0; attempt < 6; attempt++)
             {
-                var yaw = Random.value < 0.6f ? Random.Range(-55f, 55f) : Random.Range(-170f, 170f);
+                var yaw = Random.value < (surge ? 0.7f : 0.6f) ? Random.Range(surge ? -75f : -55f, surge ? 75f : 55f) : Random.Range(-170f, 170f);
                 var direction = Quaternion.Euler(0f, yaw, 0f) * forward;
-                var distance = Random.Range(2.2f, 6f);
-                position = head.position + direction * distance + Vector3.up * Random.Range(-0.5f, 1.6f);
-                position.y = Mathf.Max(position.y, m_Dimension.transform.position.y + 0.6f);
+                var distance = Random.Range(2.2f, surge ? 8.5f : 6f);
+                position = head.position + direction * distance + Vector3.up * Random.Range(-0.5f, surge ? 3f : 1.6f);
+                position.y = Mathf.Max(position.y, m_Dimension.FloorY + 0.6f);
 
-                if (monster.HasValue && Vector3.Angle(position - head.position, monster.Value - head.position) < 16f)
+                if (NearAMonster(head.position, position))
                     continue;
                 return true;
             }
@@ -278,8 +409,12 @@ namespace Archery.Portal
                 Root = root, Title = titleText, Body = bodyText, Kind = kind, Life = life, Scale = scale,
             });
 
-            if (m_OpenClip != null)
+            // Pas plus d'un son d'ouverture toutes les 0,06 s : à la fin de la montée, une vingtaine s'ouvrent par seconde.
+            if (m_OpenClip != null && m_Clock - m_LastOpenSound > 0.06f)
+            {
+                m_LastOpenSound = m_Clock;
                 Sfx.Play(m_OpenClip, position, 0.35f, Random.Range(0.9f, 1.15f));
+            }
         }
 
         TextMeshPro AddText(Transform parent, string objectName, string text, Vector2 size, Vector2 offset, TextAlignmentOptions alignment,

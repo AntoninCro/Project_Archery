@@ -45,11 +45,22 @@ namespace Archery.Bows
 
         void Awake() => m_Rig = GetComponent<PlayerRig>();
 
+        Bow m_Bow;
+
+        bool BowReplaced()
+        {
+            if (m_Bow == null)
+                m_Bow = FindAnyObjectByType<Bow>();
+            return m_Bow != null && m_Bow.IsReplaced;
+        }
+
         void Update()
         {
             var head = m_Rig.Head;
             var pool = ArrowPool.Instance;
-            if (head == null || pool == null)
+            // Une autre arme que l'arc en main (Akimbow, katana et bouclier), ou le jeu en pause : pas de flèche à prendre
+            // dans le dos.
+            if (head == null || pool == null || BowReplaced() || SlowMotion.IsPaused)
                 return;
 
             var toHeadSpace = Quaternion.Inverse(m_Rig.HeadYaw);

@@ -1,9 +1,13 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Archery.Portal;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -28,12 +32,30 @@ namespace Archery.EditorTools
         const string k_Folder = "Assets/_Project/Art/Dimension";
         const string k_MirrorGuid = "ef437f4ac7214f9fba08ad150881280e";
 
-        // Un torii à l'échelle 1 : demi-écart des piliers, hauteur, rayon d'un pilier.
+        // La musique de la dimension (composée par un ami, sa montée est à 12 s) et l'ancienne, générée pour le prototype.
+        const string k_Music = "Assets/_Project/Audio/Music/Sad_Nostalgie_40_Tempo_KLICKAUD.mp3";
+        const string k_OldMusicGuid = "0f73399bad1bfdb48a3a2ba0fd0c5bbd";
+        const float k_MusicRise = 12f;
+        const string k_Mixer = "Assets/_Project/Audio/MainMixer.mixer";
+
+        // Les pas des monstres : les pas sur béton de Kenney (000 à 004).
+        const string k_StepClips = "Assets/kenney_impact-sounds/Audio/footstep_concrete_";
+
+        // Un torii à l'échelle 1 : demi-écart des piliers, hauteur (10 m jusqu'au 18 octobre), rayon d'un pilier.
         const float k_HalfSpan = 2.8f;
-        const float k_Height = 10f;
+        const float k_Height = 7f;
         const float k_PillarRadius = 0.55f;
 
         const float k_ArenaRadius = 23f;
+        const string k_ArenaGroup = "Torii de l'épreuve";
+        const string k_FarGroup = "Torii lointains";
+
+        // Au-dessus de ce nombre de torii dans la scène (la version trop dense du 18 octobre, 230), ils sont éclaircis.
+        const int k_ThinAbove = 180;
+
+        // Version de la forme des torii (hauteur), notée dans le .meta du préfab : maillages et collisions refaits une fois.
+        const string k_ToriiShape = "torii-forme-7m";
+
         const float k_SkyRadius = 420f;
         const float k_NebulaRadius = 380f;
         const float k_GalaxyDistance = 330f;
@@ -51,10 +73,444 @@ namespace Archery.EditorTools
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || BuildPipeline.isBuildingPlayer || !File.Exists(k_ScenePath))
                 return;
-            if (File.ReadAllText(k_ScenePath).Contains(k_MirrorGuid))
+
+            var text = File.ReadAllText(k_ScenePath);
+            if (!text.Contains(k_MirrorGuid))
+            {
+                Build();
+                return;
+            }
+
+            // Les retouches des versions suivantes du décor, une fois chacune.
+            UpdateToriiLook(false);
+            UpdateToriiShape(false);
+            var loaded = SceneManager.GetSceneByPath(k_ScenePath).isLoaded;
+            if (loaded || Regex.IsMatch(text, @"m_SurviveTime: 30\s"))
+                LengthenTrial();
+            if (loaded || text.Contains(k_OldMusicGuid))
+                UseNewMusic();
+            if (loaded || !text.Contains("m_StepClips:"))
+                AddMonsterSteps();
+            if (loaded || HasTiltedTorii(text))
+                StraightenTorii(false);
+            if (ToriiCount(text) > k_ThinAbove)
+                ThinTorii(false);
+        }
+
+        // L'épreuve dure 1 minute (30 s jusqu'au 18 octobre) : l'ancienne valeur de la scène est remplacée. Une autre valeur,
+        // choisie à la main, est gardée.
+        static void LengthenTrial()
+        {
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var settings = new SerializedObject(dimension);
+                var survive = settings.FindProperty("m_SurviveTime");
+                if (survive == null || !Mathf.Approximately(survive.floatValue, 30f))
+                    return null;
+
+                survive.floatValue = 60f;
+                settings.ApplyModifiedProperties();
+                return "l'épreuve dure maintenant 1 minute (Survive Time : 60 s)";
+            });
+        }
+
+        // La musique de l'ami remplace celle du prototype (jusqu'au 18 octobre), une fois : à sa hauteur (pitch 1, l'ancienne
+        // était ralentie), par le groupe Music du mixer, et la découverte dure jusqu'à sa montée (12 s ; 10 s avant). Une
+        // autre musique, choisie à la main, est gardée.
+        static void UseNewMusic()
+        {
+            var music = AssetDatabase.LoadAssetAtPath<AudioClip>(k_Music);
+            if (music == null)
                 return;
 
-            Build();
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var settings = new SerializedObject(dimension);
+                var clip = settings.FindProperty("m_Music");
+                var old = clip.objectReferenceValue;
+                if (old != null && AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(old)) != k_OldMusicGuid)
+                    return null;
+
+                clip.objectReferenceValue = music;
+                var intro = settings.FindProperty("m_IntroTime");
+                if (Mathf.Approximately(intro.floatValue, 10f))
+                    intro.floatValue = k_MusicRise;
+                var source = settings.FindProperty("m_MusicSource").objectReferenceValue as AudioSource;
+                settings.ApplyModifiedProperties();
+                if (source != null)
+                    SetUpMusicSource(source, music);
+                return $"musique « Sad Nostalgie » de ton ami, l'épreuve part sur sa montée (Intro Time : {intro.floatValue:0.#} s)";
+            });
+        }
+
+        // Les pas des monstres (depuis le 18 octobre, pour bien les entendre approcher), si la liste est vide.
+        static void AddMonsterSteps()
+        {
+            var clips = Enumerable.Range(0, 5).Select(i => AssetDatabase.LoadAssetAtPath<AudioClip>($"{k_StepClips}{i:000}.ogg"))
+                .Where(clip => clip != null).ToArray();
+            if (clips.Length == 0)
+                return;
+
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var settings = new SerializedObject(dimension);
+                var list = settings.FindProperty("m_StepClips");
+                if (list == null || list.arraySize > 0)
+                    return null;
+
+                list.arraySize = clips.Length;
+                for (var i = 0; i < clips.Length; i++)
+                    list.GetArrayElementAtIndex(i).objectReferenceValue = clips[i];
+                settings.ApplyModifiedProperties();
+                return $"les monstres ont des pas (Step Clips : {clips.Length} pas sur béton de Kenney)";
+            });
+        }
+
+        static void SetUpMusicSource(AudioSource source, AudioClip music)
+        {
+            source.clip = music;
+            source.loop = true;
+            source.playOnAwake = false;
+            source.spatialBlend = 0f;
+            source.pitch = 1f;
+            source.volume = 0f;
+            source.outputAudioMixerGroup = AssetDatabase.LoadAllAssetsAtPath(k_Mixer).OfType<AudioMixerGroup>()
+                .FirstOrDefault(group => group.name == "Music");
+            var lowPass = source.GetComponent<AudioLowPassFilter>();
+            if (lowPass == null)
+                lowPass = source.gameObject.AddComponent<AudioLowPassFilter>();
+            lowPass.cutoffFrequency = 22000f;
+            EditorUtility.SetDirty(source);
+            EditorUtility.SetDirty(lowPass);
+        }
+
+        [MenuItem("Archery/Portail des étoiles/Éclaircir les torii")]
+        static void ThinFromMenu() => ThinTorii(true);
+
+        // Retire les torii trop serrés pour les écarts actuels (ceux de ScatterArena et ScatterFar). Les plus anciens sont
+        // gardés en priorité (les premiers numéros de chaque groupe, ceux de l'épreuve d'abord).
+        static void ThinTorii(bool fromMenu)
+        {
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var root = dimension.transform;
+                var gates = new List<Transform>();
+                foreach (var post in root.GetComponentsInChildren<CapsuleCollider>(true))
+                {
+                    var gate = post.transform.parent;
+                    if (gate != null && !gates.Contains(gate))
+                        gates.Add(gate);
+                }
+
+                int Order(Transform gate) => (gate.parent != null && gate.parent.name == k_ArenaGroup ? 0 : 100000) + Number(gate.name);
+                gates.Sort((a, b) => Order(a).CompareTo(Order(b)));
+
+                var kept = new List<Vector2>();
+                var removed = 0;
+                foreach (var gate in gates)
+                {
+                    var local = root.InverseTransformPoint(gate.position);
+                    var point = new Vector2(local.x, local.z);
+                    var radius = point.magnitude;
+                    if (Free(kept, point, radius < k_ArenaRadius ? k_ArenaGap : FarGap(radius)))
+                    {
+                        kept.Add(point);
+                        continue;
+                    }
+
+                    Undo.DestroyObjectImmediate(gate.gameObject);
+                    removed++;
+                }
+
+                if (removed == 0)
+                    return fromMenu ? "" : null;
+                return $"{removed} torii retirés, {kept.Count} gardés";
+            });
+        }
+
+        static int Number(string name)
+        {
+            var match = Regex.Match(name, @"\d+");
+            return match.Success ? int.Parse(match.Value, CultureInfo.InvariantCulture) : 0;
+        }
+
+        // Les maillages et les collisions des piliers, refaits à la hauteur actuelle (k_Height), une fois par version.
+        static void UpdateToriiShape(bool force)
+        {
+            var path = $"{k_Folder}/Torii.prefab";
+            var importer = AssetImporter.GetAtPath(path);
+            if (importer == null || (!force && importer.userData == k_ToriiShape))
+                return;
+
+            SaveMesh(ToriiPillars(), "Torii_Piliers");
+            SaveMesh(ToriiBeam(), "Torii_Traverse");
+            SaveMesh(ToriiLintel(), "Torii_Linteau");
+            SaveMesh(ToriiRoof(), "Torii_Toit");
+            AssetDatabase.SaveAssets();
+
+            var contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                foreach (var capsule in contents.GetComponentsInChildren<CapsuleCollider>(true))
+                {
+                    capsule.center = new Vector3(0f, k_Height * 0.5f, 0f);
+                    capsule.height = k_Height;
+                }
+
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+
+            importer = AssetImporter.GetAtPath(path);
+            importer.userData = k_ToriiShape;
+            importer.SaveAndReimport();
+            Debug.Log($"Dimension des étoiles : torii de {k_Height} m de haut (maillages et collisions du préfab Torii refaits).");
+        }
+
+        // Le nombre de torii : dans la scène ouverte, ses piliers ; sinon, les instances du préfab dans le fichier.
+        static int ToriiCount(string sceneText)
+        {
+            var scene = SceneManager.GetSceneByPath(k_ScenePath);
+            if (scene.isLoaded)
+            {
+                var posts = 0;
+                foreach (var root in scene.GetRootGameObjects())
+                    posts += root.GetComponentsInChildren<CapsuleCollider>(true).Length;
+                return posts / 2;
+            }
+
+            var guid = AssetDatabase.AssetPathToGUID($"{k_Folder}/Torii.prefab");
+            return string.IsNullOrEmpty(guid) ? 0 : Regex.Matches(sceneText, "m_SourcePrefab: \\{fileID: \\d+, guid: " + guid).Count;
+        }
+
+        [MenuItem("Archery/Portail des étoiles/Ajouter des torii dans les trous")]
+        static void AddToriiFromMenu() => AddTorii(true);
+
+        // Plante des torii là où il reste de la place, sans toucher à ceux qui existent (même déplacés à la main).
+        static void AddTorii(bool fromMenu)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{k_Folder}/Torii.prefab");
+            if (prefab == null)
+                return;
+
+            EditDimension(scene =>
+            {
+                var dimension = FindDimension(scene);
+                if (dimension == null)
+                    return null;
+
+                var root = dimension.transform;
+                var toriiRoot = new SerializedObject(dimension).FindProperty("m_Torii").objectReferenceValue as Transform;
+                if (toriiRoot == null)
+                    toriiRoot = root.Find("Torii");
+                if (toriiRoot == null)
+                    return null;
+
+                var arena = toriiRoot.Find(k_ArenaGroup);
+                if (arena == null)
+                    arena = Child(toriiRoot, k_ArenaGroup).transform;
+                var far = toriiRoot.Find(k_FarGroup);
+                if (far == null)
+                    far = Child(toriiRoot, k_FarGroup).transform;
+
+                // Les places prises : les centres des torii et leurs piliers.
+                var centers = new List<Vector2>();
+                var pillars = new List<Vector2>();
+                var gates = new HashSet<Transform>();
+                foreach (var post in toriiRoot.GetComponentsInChildren<CapsuleCollider>(true))
+                {
+                    var local = root.InverseTransformPoint(post.transform.position);
+                    pillars.Add(new Vector2(local.x, local.z));
+                    var gate = post.transform.parent;
+                    if (gate != null && gates.Add(gate))
+                    {
+                        var center = root.InverseTransformPoint(gate.position);
+                        centers.Add(new Vector2(center.x, center.z));
+                    }
+                }
+
+                var addedArena = ScatterArena(prefab, arena, centers, pillars, new System.Random(15), arena.childCount + 1);
+                var addedFar = ScatterFar(prefab, far, centers, pillars, new System.Random(16), far.childCount + 1);
+                if (addedArena + addedFar == 0)
+                    return fromMenu ? "" : null;
+                return $"{addedArena + addedFar} torii ajoutés ({addedArena} dans la zone de l'épreuve, {addedFar} au loin), " +
+                       $"{gates.Count + addedArena + addedFar} en tout";
+            });
+        }
+
+        static StarDimension FindDimension(Scene scene)
+        {
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                var dimension = root.GetComponentInChildren<StarDimension>(true);
+                if (dimension != null)
+                    return dimension;
+            }
+
+            return null;
+        }
+
+        // Une retouche de la scène de la dimension. Ouverte dans l'éditeur, la retouche s'y fait (à enregistrer) ; sinon,
+        // la scène est ouverte, retouchée, enregistrée et refermée. La retouche rend ce qu'elle a fait (null : rien changé ;
+        // vide : rien changé, mais le dire).
+        static void EditDimension(System.Func<Scene, string> edit)
+        {
+            var scene = SceneManager.GetSceneByPath(k_ScenePath);
+            var opened = false;
+            if (!scene.isLoaded)
+            {
+                scene = EditorSceneManager.OpenScene(k_ScenePath, OpenSceneMode.Additive);
+                opened = true;
+            }
+
+            try
+            {
+                var done = edit(scene);
+                if (done == "")
+                    Debug.Log("Dimension des étoiles : rien à changer.");
+                if (string.IsNullOrEmpty(done))
+                    return;
+
+                EditorSceneManager.MarkSceneDirty(scene);
+                if (opened)
+                {
+                    EditorSceneManager.SaveScene(scene);
+                    Debug.Log($"Dimension des étoiles : {done}. Scène enregistrée.");
+                }
+                else
+                {
+                    Debug.Log($"Dimension des étoiles : {done}, dans la scène ouverte. Enregistre-la (Ctrl+S).");
+                }
+            }
+            finally
+            {
+                if (opened)
+                    EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
+        // Un torii penché dans le fichier de la scène : une rotation de préfab qui n'est pas qu'autour de la verticale
+        // (les torii sont les seules instances de préfab de la dimension).
+        static bool HasTiltedTorii(string sceneText)
+        {
+            foreach (Match match in Regex.Matches(sceneText, @"propertyPath: m_LocalRotation\.[xz]\s*\r?\n\s*value: (\S+)"))
+            {
+                if (float.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) &&
+                    Mathf.Abs(value) > 1e-4f)
+                    return true;
+            }
+
+            return false;
+        }
+
+        [MenuItem("Archery/Portail des étoiles/Redresser les torii")]
+        static void StraightenFromMenu() => StraightenTorii(true);
+
+        // Remet tous les torii droits, en gardant leur orientation autour de la verticale.
+        static void StraightenTorii(bool fromMenu)
+        {
+            EditDimension(scene =>
+            {
+                var count = 0;
+                var gates = new HashSet<Transform>();
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    foreach (var post in root.GetComponentsInChildren<CapsuleCollider>(true))
+                    {
+                        var gate = post.transform.parent;
+                        if (gate == null || !gates.Add(gate) || Vector3.Angle(gate.up, Vector3.up) < 0.01f)
+                            continue;
+
+                        var forward = Vector3.ProjectOnPlane(gate.forward, Vector3.up);
+                        if (forward.sqrMagnitude < 1e-6f)
+                            forward = Vector3.ProjectOnPlane(gate.up, Vector3.up);
+                        Undo.RecordObject(gate, "Redresser les torii");
+                        gate.rotation = Quaternion.LookRotation(forward.normalized, Vector3.up);
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(gate);
+                        count++;
+                    }
+                }
+
+                if (count == 0)
+                    return fromMenu ? "" : null;
+                return $"{count} torii penchés redressés";
+            });
+        }
+
+        // ---------------------------------------------------------------- l'aspect des torii
+
+        // Version de l'aspect des torii, notée dans le .meta du matériau rouge : l'aspect n'est appliqué tout seul qu'une
+        // fois par version (les retouches faites ensuite à la main sur le matériau sont gardées).
+        const string k_ToriiLook = "torii-laque-unie-metal-1";
+
+        [MenuItem("Archery/Portail des étoiles/Refaire l'aspect des torii")]
+        static void LookFromMenu() => UpdateToriiLook(true);
+
+        // Une laque rouge unie, un peu métallique : elle accroche la lumière et reflète légèrement le ciel, sans briller en
+        // rouge vif. Le dessus (visible seulement dans le reflet) en laque noire, un peu plus métallique.
+        static void UpdateToriiLook(bool force)
+        {
+            var redPath = $"{k_Folder}/Torii_Vermillon.mat";
+            var red = AssetDatabase.LoadAssetAtPath<Material>(redPath);
+            var importer = AssetImporter.GetAtPath(redPath);
+            if (red == null || importer == null || (!force && importer.userData == k_ToriiLook))
+                return;
+
+            ApplyLacquer(red, new Color(0.55f, 0.14f, 0.1f), 0.35f, 0.6f, new Color(0.08f, 0.02f, 0.015f));
+            var black = AssetDatabase.LoadAssetAtPath<Material>($"{k_Folder}/Torii_Noir.mat");
+            if (black != null)
+                ApplyLacquer(black, new Color(0.05f, 0.045f, 0.05f), 0.5f, 0.7f, Color.black);
+
+            AssetDatabase.SaveAssets();
+            importer.userData = k_ToriiLook;
+            importer.SaveAndReimport();
+            Debug.Log("Dimension des étoiles : torii en laque rouge unie, légèrement métallique (Torii_Vermillon, Torii_Noir).");
+        }
+
+        // Une couleur unie (sans texture ni relief), un peu de métal et de brillant, et une faible lueur pour qu'on devine
+        // les torii dans l'obscurité.
+        static void ApplyLacquer(Material material, Color color, float metallic, float smoothness, Color emission)
+        {
+            material.SetColor("_BaseColor", color);
+            material.SetTexture("_BaseMap", null);
+            material.SetTextureScale("_BaseMap", Vector2.one);
+            material.SetTexture("_BumpMap", null);
+            material.DisableKeyword("_NORMALMAP");
+            material.SetTexture("_EmissionMap", null);
+            material.SetFloat("_Metallic", metallic);
+            material.SetFloat("_Smoothness", smoothness);
+            if (emission.maxColorComponent > 0f)
+            {
+                material.EnableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", emission);
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
+            else
+            {
+                material.DisableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", Color.black);
+            }
+
+            EditorUtility.SetDirty(material);
         }
 
         [MenuItem("Archery/Portail des étoiles/Reconstruire le décor de la dimension")]
@@ -110,6 +566,7 @@ namespace Archery.EditorTools
                 SceneManager.SetActiveScene(scene);
                 EnsureFolder(k_Folder);
                 var materials = BuildMaterials(starShader, unlitShader, skyShader, litShader);
+                UpdateToriiLook(false);
                 var torii = BuildToriiPrefab(materials);
                 var light = BuildScene(dimension, materials, torii);
                 ApplyEnvironment(materials.Sky, light);
@@ -162,20 +619,9 @@ namespace Archery.EditorTools
         {
             return new Materials
             {
-                // Vermillon un peu lumineux (il brille aussi dans le reflet) ; noir pour le dessus des torii.
-                Red = SaveMaterial("Torii_Vermillon", lit, m =>
-                {
-                    m.SetColor("_BaseColor", new Color(0.85f, 0.16f, 0.06f));
-                    m.SetFloat("_Smoothness", 0.45f);
-                    m.EnableKeyword("_EMISSION");
-                    m.SetColor("_EmissionColor", new Color(0.55f, 0.07f, 0.02f));
-                    m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
-                }),
-                Black = SaveMaterial("Torii_Noir", lit, m =>
-                {
-                    m.SetColor("_BaseColor", new Color(0.04f, 0.03f, 0.035f));
-                    m.SetFloat("_Smoothness", 0.6f);
-                }),
+                // Laque rouge pour les torii, noire pour leur dessus : l'aspect est posé juste après (UpdateToriiLook).
+                Red = SaveMaterial("Torii_Vermillon", lit, _ => { }),
+                Black = SaveMaterial("Torii_Noir", lit, _ => { }),
                 Glow = SaveMaterial("Ciel_Lueurs", star, m => m.SetFloat("_Intensity", 1f)),
                 Sky = SaveMaterial("Ciel_Dimension", sky, m =>
                 {
@@ -382,13 +828,12 @@ namespace Archery.EditorTools
 
             // Les torii, en désordre : ceux de l'épreuve (le monstre se cache derrière leurs piliers), puis jusqu'à l'horizon.
             var toriiRoot = Child(root, "Torii");
-            var arena = Child(toriiRoot.transform, "Torii de l'épreuve");
-            var far = Child(toriiRoot.transform, "Torii lointains");
-            var placed = new List<Vector2>();
-            var arenaCount = Scatter(torii, arena.transform, placed, new System.Random(5), 5f, 20.5f, 4000, _ => 8.5f,
-                                     _ => 1.1f);
-            var farCount = Scatter(torii, far.transform, placed, new System.Random(6), 27f, 100f, 8000, r => 9f + 0.15f * r,
-                                   r => Mathf.Lerp(1.1f, 2.4f, (r - 27f) / 73f));
+            var arena = Child(toriiRoot.transform, k_ArenaGroup);
+            var far = Child(toriiRoot.transform, k_FarGroup);
+            var centers = new List<Vector2>();
+            var pillars = new List<Vector2>();
+            var arenaCount = ScatterArena(torii, arena.transform, centers, pillars, new System.Random(5), 1);
+            var farCount = ScatterFar(torii, far.transform, centers, pillars, new System.Random(6), 1);
 
             // Les murs invisibles, en cercle : on ne sort pas de l'épreuve en marchant (les flèches les traversent).
             var walls = Child(root, "Murs invisibles");
@@ -412,13 +857,10 @@ namespace Archery.EditorTools
             var settings = new SerializedObject(dimension);
             var music = Child(root, "Musique");
             var source = music.AddComponent<AudioSource>();
-            source.clip = settings.FindProperty("m_Music").objectReferenceValue as AudioClip;
-            source.loop = true;
-            source.playOnAwake = false;
-            source.spatialBlend = 0f;
-            source.pitch = 0.9f;
-            source.volume = 0f;
-            music.AddComponent<AudioLowPassFilter>().cutoffFrequency = 500f;
+            var clip = settings.FindProperty("m_Music");
+            if (clip.objectReferenceValue == null)
+                clip.objectReferenceValue = AssetDatabase.LoadAssetAtPath<AudioClip>(k_Music);
+            SetUpMusicSource(source, clip.objectReferenceValue as AudioClip);
 
             // Le reflet : nébuleuses, galaxies et torii, retournés sous le sol.
             var mirror = Child(root, "Reflet").AddComponent<DimensionMirror>();
@@ -440,10 +882,29 @@ namespace Archery.EditorTools
             return light;
         }
 
-        // Des torii semés au hasard dans un anneau (tirages successifs, écartés d'au moins minimumGap(r) les uns des
-        // autres), tournés n'importe comment, de tailles variées, certains penchés.
-        static int Scatter(GameObject prefab, Transform parent, List<Vector2> placed, System.Random random, float inner, float outer,
-                           int attempts, System.Func<float, float> minimumGap, System.Func<float, float> scaleAt)
+        // Les écarts entre les centres des torii : 7 m dans la zone de l'épreuve, de plus en plus au loin (environ 125 torii
+        // en tout ; 6 m et 6 + 0,08 r donnaient 230 torii, trop serrés).
+        const float k_ArenaGap = 7f;
+        static float FarGap(float radius) => 7f + 0.09f * radius;
+
+        // Les torii de l'épreuve : entre 5 m (la place du joueur à l'arrivée) et 20,5 m (les murs sont à 23 m).
+        static int ScatterArena(GameObject prefab, Transform parent, List<Vector2> centers, List<Vector2> pillars, System.Random random,
+                                int firstNumber) =>
+            Scatter(prefab, parent, centers, pillars, random, 5f, 20.5f, 8000, _ => k_ArenaGap, _ => 1.1f, firstNumber);
+
+        // Les torii lointains, jusqu'à 120 m : de plus en plus grands et espacés.
+        static int ScatterFar(GameObject prefab, Transform parent, List<Vector2> centers, List<Vector2> pillars, System.Random random,
+                              int firstNumber) =>
+            Scatter(prefab, parent, centers, pillars, random, 27f, 120f, 30000, FarGap,
+                    r => Mathf.Lerp(1.1f, 2.4f, (r - 27f) / 93f), firstNumber);
+
+        // Des torii semés au hasard dans un anneau (tirages successifs) : leurs centres écartés d'au moins minimumGap(r),
+        // leurs piliers d'au moins 2,4 m (à l'échelle du plus grand), tournés n'importe comment autour de la verticale, de
+        // tailles variées. Tous droits : penchés, leur reflet dans le sol miroir faisait un V peu joli. Les positions
+        // (plan XZ, par rapport à la dimension) de ceux qui existent déjà sont dans centers et pillars.
+        static int Scatter(GameObject prefab, Transform parent, List<Vector2> centers, List<Vector2> pillars, System.Random random,
+                           float inner, float outer, int attempts, System.Func<float, float> minimumGap,
+                           System.Func<float, float> scaleAt, int firstNumber)
         {
             var count = 0;
             for (var attempt = 0; attempt < attempts; attempt++)
@@ -451,34 +912,40 @@ namespace Archery.EditorTools
                 var angle = Range(random, 0f, Mathf.PI * 2f);
                 var radius = Mathf.Sqrt(Range(random, inner * inner, outer * outer));
                 var point = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                var gap = minimumGap(radius);
-                var free = true;
-                foreach (var other in placed)
-                {
-                    if ((other - point).sqrMagnitude < gap * gap)
-                    {
-                        free = false;
-                        break;
-                    }
-                }
-
-                if (!free)
+                var yaw = Range(random, 0f, 360f);
+                var scale = scaleAt(radius) * Range(random, 0.8f, 1.2f);
+                var right = Quaternion.Euler(0f, yaw, 0f) * Vector3.right * (k_HalfSpan * scale);
+                var left = point - new Vector2(right.x, right.z);
+                var rightPillar = point + new Vector2(right.x, right.z);
+                if (!Free(centers, point, minimumGap(radius)) || !Free(pillars, left, 2.4f * Mathf.Max(1f, scale)) ||
+                    !Free(pillars, rightPillar, 2.4f * Mathf.Max(1f, scale)) || left.magnitude < inner - 1.5f ||
+                    rightPillar.magnitude < inner - 1.5f)
                     continue;
 
-                placed.Add(point);
-                count++;
+                centers.Add(point);
+                pillars.Add(left);
+                pillars.Add(rightPillar);
                 var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent.gameObject.scene);
                 instance.transform.SetParent(parent, false);
-                instance.name = $"Torii {count}";
+                instance.name = $"Torii {firstNumber + count}";
                 instance.transform.localPosition = new Vector3(point.x, 0f, point.y);
-                var tilt = random.NextDouble() < 0.3
-                    ? Quaternion.Euler(Range(random, -9f, 9f), 0f, Range(random, -9f, 9f))
-                    : Quaternion.identity;
-                instance.transform.localRotation = tilt * Quaternion.Euler(0f, Range(random, 0f, 360f), 0f);
-                instance.transform.localScale = Vector3.one * (scaleAt(radius) * Range(random, 0.8f, 1.2f));
+                instance.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+                instance.transform.localScale = Vector3.one * scale;
+                count++;
             }
 
             return count;
+        }
+
+        static bool Free(List<Vector2> placed, Vector2 point, float gap)
+        {
+            foreach (var other in placed)
+            {
+                if ((other - point).sqrMagnitude < gap * gap)
+                    return false;
+            }
+
+            return true;
         }
 
         static void ApplyEnvironment(Material sky, Light sun)
@@ -851,6 +1318,7 @@ namespace Archery.EditorTools
                 mesh.SetNormals(m_Normals);
                 mesh.SetUVs(0, m_Uvs);
                 mesh.SetTriangles(m_Triangles, 0);
+                mesh.RecalculateTangents();
                 mesh.RecalculateBounds();
                 return mesh;
             }

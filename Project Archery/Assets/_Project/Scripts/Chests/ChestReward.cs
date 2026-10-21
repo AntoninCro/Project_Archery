@@ -55,8 +55,8 @@ namespace Archery.Chests
                         return Title;
                     legendary.AddPart();
                     return legendary.IsAssembled
-                        ? "Le dernier morceau !"
-                        : $"Morceau d'arc légendaire : {legendary.Parts} / {legendary.PartsNeeded}";
+                        ? "Le dernier fragment !"
+                        : $"Fragment d'arc légendaire : {legendary.Parts} / {legendary.PartsNeeded}";
             }
         }
     }
@@ -69,7 +69,7 @@ namespace Archery.Chests
 
         /// <summary>
         /// Les récompenses d'un coffre, toujours dans cet ordre : deux améliorations permanentes différentes, tirées
-        /// comme en boutique (raretés et Chance comprises), puis un bonus temporaire. Un morceau de l'arc légendaire
+        /// comme en boutique (raretés et Chance comprises), puis un bonus temporaire. Un fragment de l'arc légendaire
         /// peut remplacer la deuxième amélioration.
         /// </summary>
         public static List<ChestReward> Roll(float buffDuration, ChestColors colors)
@@ -87,7 +87,7 @@ namespace Archery.Chests
                 var part = new ChestReward
                 {
                     Kind = ChestRewardKind.BowPart,
-                    Title = "Morceau d'arc légendaire",
+                    Title = "Fragment d'arc légendaire",
                     Subtitle = $"{legendaryBow.Parts + 1} / {legendaryBow.PartsNeeded}",
                     Color = legendaryBow.Color,
                 };

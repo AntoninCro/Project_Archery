@@ -10,7 +10,8 @@ namespace Archery.Player
     /// <summary>
     /// Une main gantée, créée par <see cref="GlovedHands"/> à partir du gant low-poly de Quaternius (Art/Hands).
     /// Elle plie les doigts (repos, poing, crochet sur la corde, index tendu vers un menu) et se place
-    /// sur la manette, sur la poignée de l'arc tenu ou sur l'encoche de la flèche tirée.
+    /// sur la manette, sur la poignée de l'arc tenu, sur celle d'un objet qui en donne une (<see cref="HandGrip"/> : les
+    /// arbalètes des Akimbow) ou sur l'encoche de la flèche tirée.
     /// </summary>
     /// <remarks>
     /// Le modèle d'origine n'a pas de squelette : « Glove Rig.json » lui en donne un (articulations placées dans
@@ -31,6 +32,7 @@ namespace Archery.Player
             Bow,
             Draw,
             Point,
+            Grip,
         }
 
         sealed class Joint
@@ -108,6 +110,7 @@ namespace Archery.Player
         Mode m_Mode;
         Bow m_Bow;
         Arrow m_Arrow;
+        HandGrip m_Grip;
 
         // Pose de la main dans le repère de la manette, et fondu au changement de prise.
         bool m_Placed;
@@ -244,6 +247,7 @@ namespace Archery.Player
         {
             Bow bow = null;
             Arrow arrow = null;
+            HandGrip grip = null;
             var holding = false;
             var selected = m_Interactor.interactablesSelected;
             for (var i = 0; i < selected.Count; i++)
@@ -252,6 +256,8 @@ namespace Archery.Player
                     bow = heldBow;
                 else if (selected[i] is Arrow heldArrow)
                     arrow = heldArrow;
+                else if (selected[i] is Component component && component.TryGetComponent(out HandGrip heldGrip) && heldGrip.Point != null)
+                    grip = heldGrip;
                 holding = true;
             }
 
@@ -264,6 +270,8 @@ namespace Archery.Player
                 mode = Mode.Bow;
             else if (arrow != null && arrow.CurrentState == Arrow.State.Nocked)
                 mode = Mode.Draw;
+            else if (grip != null)
+                mode = Mode.Grip;
             else if (holding)
                 mode = Mode.Fist;
             else if (m_NearFar != null && m_NearFar.TryGetCurrentUIRaycastResult(out _))
@@ -273,6 +281,7 @@ namespace Archery.Player
 
             m_Bow = bow;
             m_Arrow = arrow;
+            m_Grip = grip;
             if (mode == m_Mode)
                 return;
 
@@ -288,6 +297,7 @@ namespace Archery.Player
             {
                 case Mode.Bow:
                 case Mode.Fist:
+                case Mode.Grip:
                     k_Fist.CopyTo(m_Targets, 0);
                     break;
                 case Mode.Draw:
@@ -346,6 +356,14 @@ namespace Archery.Player
                     targetRotation = Quaternion.LookRotation(model.up, model.right * side) * m_InverseHandBasis;
                     var bowGrip = m_Bow.Grip;
                     targetPoint = bowGrip != null ? bowGrip.position : m_Bow.ArrowRest.position - model.up * m_Owner.BowGripDrop;
+                    localPoint = m_GripCenter;
+                    break;
+                case Mode.Grip when m_Grip != null && m_Grip.Point != null:
+                    // Une poignée d'objet (arbalète des Akimbow) : le poing la serre en son centre, l'axe du poing le long
+                    // de la poignée, paume vers l'intérieur.
+                    var point = m_Grip.Point;
+                    targetRotation = Quaternion.LookRotation(point.up, point.right * side) * m_InverseHandBasis;
+                    targetPoint = point.position;
                     localPoint = m_GripCenter;
                     break;
                 case Mode.Draw when m_Arrow != null:

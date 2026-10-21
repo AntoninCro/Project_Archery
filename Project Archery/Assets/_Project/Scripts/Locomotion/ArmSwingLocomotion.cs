@@ -33,6 +33,18 @@ namespace Archery.Locomotion
     [AddComponentMenu("Archery/Arm Swing Locomotion")]
     public class ArmSwingLocomotion : LocomotionProvider, ITunnelingVignetteProvider
     {
+        // Le suivi des manettes qui démarre ou revient (lancement du jeu, casque remis, manette retrouvée) : les mains
+        // sautent d'un coup à leur vraie place, ce qui ressemblait au geste du saut. Pas de saut pendant les premières
+        // secondes, ni juste après un déplacement de main impossible pour un vrai geste (plus de 25 cm en une image).
+        const float k_StartupGrace = 2f;
+        const float k_TrackingJump = 0.25f;
+        const float k_TrackingGrace = 0.5f;
+
+        // Une main qui part vers l'arrière (m/s, dans le sens du regard) ou qui est déjà derrière la tête (m) : elle va
+        // chercher une flèche au-dessus de l'épaule, souvent en levant l'arc de l'autre main. Ce n'est pas un saut.
+        const float k_ReachBackSpeed = 1f;
+        const float k_BehindHead = 0.1f;
+
         [Header("Marche")]
         [Tooltip("Joystick de déplacement. Lu directement sur la manette ; la liaison se change ici.")]
         [SerializeField]
@@ -182,6 +194,9 @@ namespace Archery.Locomotion
         float m_HandSpeed;
         float m_LeftRise;
         float m_RightRise;
+        float m_LeftBack;
+        float m_RightBack;
+        bool m_HandBehind;
         float m_JumpCooldownTimer;
         JumpProvider m_Jump;
         Bow m_Bow;
@@ -223,6 +238,9 @@ namespace Archery.Locomotion
             m_RightSlideInput.EnableDirectActionIfModeUsed();
             m_HasPrevious = false;
             m_HasYaw = false;
+            m_LeftRise = m_RightRise = 0f;
+            m_LeftBack = m_RightBack = 0f;
+            m_JumpCooldownTimer = Mathf.Max(m_JumpCooldownTimer, k_TrackingGrace);
             ReplaceJoystickMove();
         }
 
@@ -260,6 +278,7 @@ namespace Archery.Locomotion
             if (mediator != null)
                 m_Jump = mediator.GetComponentInChildren<JumpProvider>(true);
             SetupArmJump();
+            m_JumpCooldownTimer = k_StartupGrace;
         }
 
         void Update()
@@ -349,6 +368,7 @@ namespace Archery.Locomotion
             {
                 m_HandSpeed = 0f;
                 m_LeftRise = m_RightRise = 0f;
+                m_LeftBack = m_RightBack = 0f;
                 m_HasPrevious = false;
                 return;
             }
@@ -356,7 +376,15 @@ namespace Archery.Locomotion
             var headLocal = space.InverseTransformPoint(head.position);
             var leftLocal = space.InverseTransformPoint(left.position) - headLocal;
             var rightLocal = space.InverseTransformPoint(right.position) - headLocal;
-            if (m_HasPrevious)
+            if (m_HasPrevious && ((leftLocal - m_LeftPrevious).sqrMagnitude > k_TrackingJump * k_TrackingJump ||
+                                  (rightLocal - m_RightPrevious).sqrMagnitude > k_TrackingJump * k_TrackingJump))
+            {
+                // Saut du suivi, pas un geste : on repart de la nouvelle place des mains.
+                m_LeftRise = m_RightRise = 0f;
+                m_LeftBack = m_RightBack = 0f;
+                m_JumpCooldownTimer = Mathf.Max(m_JumpCooldownTimer, k_TrackingGrace);
+            }
+            else if (m_HasPrevious)
             {
                 var speed = Mathf.Min((leftLocal - m_LeftPrevious).magnitude, (rightLocal - m_RightPrevious).magnitude) / deltaTime;
 
@@ -367,6 +395,12 @@ namespace Archery.Locomotion
                 var rise = 1f - Mathf.Exp(-deltaTime / 0.05f);
                 m_LeftRise = Mathf.Lerp(m_LeftRise, (leftLocal.y - m_LeftPrevious.y) / deltaTime, rise);
                 m_RightRise = Mathf.Lerp(m_RightRise, (rightLocal.y - m_RightPrevious.y) / deltaTime, rise);
+
+                // Vitesse vers l'arrière, dans le sens du regard : une main qui part chercher une flèche.
+                var back = space.InverseTransformDirection(m_Rig.HeadYaw * Vector3.back);
+                m_LeftBack = Mathf.Lerp(m_LeftBack, Vector3.Dot(leftLocal - m_LeftPrevious, back) / deltaTime, rise);
+                m_RightBack = Mathf.Lerp(m_RightBack, Vector3.Dot(rightLocal - m_RightPrevious, back) / deltaTime, rise);
+                m_HandBehind = Vector3.Dot(leftLocal, back) > k_BehindHead || Vector3.Dot(rightLocal, back) > k_BehindHead;
             }
 
             m_LeftPrevious = leftLocal;
@@ -411,6 +445,11 @@ namespace Archery.Locomotion
                 return;
 
             if (Mathf.Min(m_LeftRise, m_RightRise) < m_JumpHandSpeed || !m_Jump.CanJump())
+                return;
+
+            // Une main part vers l'arrière, ou est déjà derrière la tête : elle va chercher une flèche (l'autre lève
+            // souvent l'arc en même temps, et les deux mains montent ensemble). Ce n'est pas un saut.
+            if (m_HandBehind || Mathf.Max(m_LeftBack, m_RightBack) > k_ReachBackSpeed)
                 return;
 
             var moving = Speed >= m_JumpMinimumSpeed || ReadStick().sqrMagnitude > 0f;

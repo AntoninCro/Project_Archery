@@ -10,7 +10,7 @@ Complète `Checklist_Demo.md` : la checklist dit **quoi tester**, ce document di
 |---|---|
 | **Dim. 18** | Ouvrir Unity, **Ctrl+S** sur `Prototype_Tir` (le portail replacé). |
 | **Lun. 19** | Une partie complète en casque (checklist, partie 1 : d'abord les nouveautés, le portail et la dimension). Noter chaque bug avec la vague et ce que tu faisais. |
-| **Mar. 20** | Corrections. Enregistrer les 13 vidéos du tutoriel. |
+| **Mar. 20** | Corrections. ~~Enregistrer les 13 vidéos du tutoriel~~ (faites le 19 octobre). |
 | **Mer. 21** | **Gel des nouveautés le soir** : après, seulement des corrections. Faire le build Windows, en *Development Build* (les raccourcis de démo y marchent, voir partie 4), et y jouer une partie entière. |
 | **Jeu. 22** | Deux répétitions chronométrées, dont une devant quelqu'un qui ne connaît pas le jeu. Enregistrer une **vidéo de secours** (2 à 3 minutes de partie). Préparer et charger le matériel (partie 8). Commit et push. |
 | **Ven. 23** | Arriver tôt : installation **30 minutes avant** (partie 9). |
@@ -62,7 +62,13 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **C** | Un coffre devant le joueur |
 | **V** | Un gisement de cristaux devant le joueur |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
+| **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
+| **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana et le bouclier (après U) |
+| **O** | Équipe tout de suite le katana et le bouclier (même verrouillés, même pendant une vague) ; **O** encore : l'arme d'avant |
+| **L** | Un fragment d'arc légendaire (au 3e, l'arc est débloqué et arrive en main) |
+| **U** | Débloque tous les succès, donc tous les arcs |
+| **J** | Efface tous les succès : les arcs se reverrouillent (l'arc équipé redevient l'arc par défaut avant la première vague) |
 | **I / T** | Après la victoire contre MK : mode infini / terminer la partie |
 
 ## 5. Ce que voit le public

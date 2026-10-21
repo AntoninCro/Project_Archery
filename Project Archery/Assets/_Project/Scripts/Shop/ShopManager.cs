@@ -305,7 +305,7 @@ namespace Archery.Shop
             var next = index + 1 < bows.Count ? bows[index + 1] : null;
 
             var legendary = LegendaryBow.Instance;
-            if (legendary != null && legendary.IsAssembled)
+            if (legendary != null && current != null && current == legendary.Definition)
             {
                 m_BowOffer = ShopOffer.Info("Arc légendaire", "Aucun arc ne le vaut", legendary.Color, m_Catalog.bowIcon);
                 return;

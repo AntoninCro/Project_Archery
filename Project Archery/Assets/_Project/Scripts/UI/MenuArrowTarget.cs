@@ -17,7 +17,7 @@ namespace Archery.UI
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
-    public class MenuArrowTarget : MonoBehaviour, IArrowHitHandler, IArrowAbsorber
+    public class MenuArrowTarget : MonoBehaviour, IArrowHitHandler, IArrowAbsorber, ILaserTransparent
     {
         const float k_Depth = 0.04f;     // épaisseur du collider (m)
         const float k_Behind = 0.004f;   // recul derrière l'interface (m)

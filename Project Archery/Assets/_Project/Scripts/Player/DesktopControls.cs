@@ -68,7 +68,7 @@ namespace Archery.Player
         float m_Pitch;
         float m_VerticalSpeed;
         float m_NextCheck;
-        float m_StartTime;
+        float m_StartTime = -1f;
         int m_RefocusFrame = -1;
 
         public static DesktopControls Instance { get; private set; }
@@ -90,7 +90,6 @@ namespace Archery.Player
             if (Instance != null && Instance != this)
                 Debug.LogWarning("Il y a plusieurs Desktop Controls dans la scène.", this);
             Instance = this;
-            m_StartTime = Time.unscaledTime;
         }
 
         void OnDestroy()
@@ -101,6 +100,10 @@ namespace Archery.Player
 
         void Update()
         {
+            // Le délai du casque part de la première image, pas d'Awake : le chargement de la scène peut prendre plus
+            // longtemps que le délai lui-même (11 s le 20 octobre), et le jeu passait au clavier, casque sur la tête.
+            if (m_StartTime < 0f)
+                m_StartTime = Time.unscaledTime;
             if (Time.unscaledTime >= m_NextCheck)
             {
                 m_NextCheck = Time.unscaledTime + k_CheckInterval;

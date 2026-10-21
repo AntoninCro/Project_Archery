@@ -4,7 +4,8 @@ using UnityEngine;
 namespace Archery.Core
 {
     /// <summary>
-    /// Ralenti du temps (GDD, section 13 : ouverture d'un coffre). Plusieurs demandes peuvent se superposer :
+    /// Ralenti du temps (GDD, section 13 : ouverture d'un coffre), et pause (<see cref="Pause"/> : le menu ouvert en cours de
+    /// partie). Plusieurs demandes peuvent se superposer :
     /// la plus lente gagne. Le temps passe en douceur d'une vitesse à l'autre, et revient à la normale quand plus
     /// personne ne le demande, ou quand la scène se décharge.
     /// </summary>
@@ -26,6 +27,21 @@ namespace Archery.Core
         /// <summary>Le temps est ralenti, ou en train de revenir à la normale.</summary>
         public static bool IsActive => s_Instance != null;
 
+        /// <summary>Le jeu est en pause (<see cref="Pause"/>) : on ne tire pas, on n'encoche pas.</summary>
+        public static bool IsPaused
+        {
+            get
+            {
+                foreach (var scale in s_Requests.Values)
+                {
+                    if (scale <= 0f)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
         /// <summary>Demande un ralenti (0,3 = trois fois plus lent). Un nouvel appel du même demandeur remplace le précédent.</summary>
         public static void Begin(object owner, float timeScale)
         {
@@ -35,6 +51,20 @@ namespace Archery.Core
             s_Requests[owner] = Mathf.Clamp(timeScale, 0.05f, 1f);
             if (s_Instance == null)
                 new GameObject("[Slow Motion]").AddComponent<SlowMotion>();
+        }
+
+        /// <summary>
+        /// Met le jeu en pause (le menu ouvert en cours de partie) : le temps s'arrête tout de suite, et repart en douceur
+        /// quand le demandeur appelle <see cref="End"/>.
+        /// </summary>
+        public static void Pause(object owner)
+        {
+            if (owner == null)
+                return;
+            s_Requests[owner] = 0f;
+            if (s_Instance == null)
+                new GameObject("[Slow Motion]").AddComponent<SlowMotion>();
+            Time.timeScale = 0f;
         }
 
         /// <summary>Retire la demande de ce demandeur.</summary>
@@ -65,8 +95,9 @@ namespace Archery.Core
         void Update()
         {
             var target = TargetScale;
-            Time.timeScale = Mathf.MoveTowards(Time.timeScale, target, k_TransitionSpeed * Time.unscaledDeltaTime);
-            Time.fixedDeltaTime = s_NormalFixedDeltaTime * Time.timeScale;
+            Time.timeScale = target <= 0f ? 0f : Mathf.MoveTowards(Time.timeScale, target, k_TransitionSpeed * Time.unscaledDeltaTime);
+            // En pause, la physique ne fait plus de pas : son pas garde une valeur valable.
+            Time.fixedDeltaTime = s_NormalFixedDeltaTime * Mathf.Max(Time.timeScale, 0.01f);
 
             if (s_Requests.Count == 0 && Time.timeScale >= 1f)
                 Destroy(gameObject);

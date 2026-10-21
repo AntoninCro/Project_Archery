@@ -188,6 +188,7 @@ namespace Archery.Menus
                 kills = score != null ? score.Kills : 0,
                 date = LeaderboardEntry.Now(),
                 stars = Portal.StarPortal.TrialCompleted,
+                glitch = Cyber.CyberPassage.TrialCompleted,
             });
 
             if (m_NameSection != null)

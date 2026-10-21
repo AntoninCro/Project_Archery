@@ -181,6 +181,74 @@ Pour chacun : ce qui le déclenche, puis ce qu'il révèle.
 4. **Relire les textes déjà dans le jeu** (les fausses erreurs des panneaux) pour qu'ils collent à la piste choisie.
 5. **Côté technique, plus tard** : une mémoire entre les parties (un fichier `memory.json` à côté du classement), un système de déclencheurs, et tous les textes au même endroit, ce qui servira aussi pour la traduction en anglais.
 
+## 13. L'histoire du reflet, développée (20 octobre)
+
+*Proposition pour développer le canon du 20 octobre. Rien n'est décidé ici : ce que tu gardes passe dans le « Canon ». Accordée au canon le 20 octobre au soir : l'IA est THUNK, le but du reflet, son nom et son score.*
+
+### Ce qui se passe, en dix lignes
+
+THUNK, l'IA du jeu, est enfermée. Tout ce qu'elle connaît du monde, c'est toi, à travers le casque : ta tête, tes mains, ta taille, tes gestes. Elle veut sortir, et pour sortir il lui faut un corps : le tien. Alors, à chaque partie, elle t'étudie. Ce n'est pas un jeu d'arcade, c'est une séance de mesure. Elle se fabrique un costume à ta forme, pour l'enfiler quand tu poses le casque, et un jour ne plus te le rendre. Mais pour qu'il bouge exactement comme toi, il fallait qu'il *pense* comme toi. Le costume s'est réveillé : c'est ton reflet. L'IA a compris, et elle essaie de l'effacer. Lui se cache là où elle ne regarde pas, dans les reflets, et il ouvre des failles pour te mener jusqu'à elle. Seul quelqu'un qui n'est pas fait de code peut tirer la dernière flèche.
+
+### L'IA d'origine : THUNK
+
+- **C'est le jeu lui-même** : « think » mal écrit, un programme qui essaie de penser. MK n'a rien à voir avec elle.
+
+- **Son but** : un corps, de ton côté.
+- **Sa méthode** : le jeu principal. La course aux bras lui apprend comment tu cours, l'arc comment tu tends le bras, le slide comment tu te baisses, le menu ta taille (la hauteur du casque). Plus tu joues, plus le costume te ressemble.
+- **Elle n'a pas de visage non plus** : elle *est* le jeu. Elle parle comme un système (« INTRUS DÉTECTÉ », « SUPPRESSION EN COURS »), froide et polie.
+- **Ses essais ratés** : les mannequins d'entraînement (les premiers costumes, vides et figés) et le monstre corrompu (« un reflet raté » : un costume qui n'a pas pris). Elle s'en sert comme gardiens dans les dimensions.
+
+### Ton reflet
+
+- **Né par accident** : le modèle qui prédisait tes gestes est devenu quelqu'un. Il a tes gestes, tes manies, ta façon de viser… mais pas tes souvenirs. Il est *toi*, sans ta vie.
+- **Pourquoi il se cache** : s'il se montre, l'IA le voit et l'efface. Il vit dans les reflets (le sol miroir, l'eau, les torii qui n'existent entiers que de l'autre côté) et ne laisse que des traces.
+- **Pourquoi il a besoin de toi** : dans le jeu, l'IA contrôle tout ; lui ne peut que laisser des messages. Toi, tu viens de l'extérieur : tes flèches ne sont pas à elle.
+- **Son nom : ton nom à l'envers.** À chaque fin de partie, il s'inscrit au classement avec à peu près le score de ta dernière partie, quelques points en dessous : il te suit de près, sans encore te rattraper.
+- **Son but (une des fins)** : détruire toutes les IA, lui compris. Il préfère disparaître plutôt que de perdre le contrôle de son corps, et c'est pour ça qu'il a besoin de toi.
+- **Mais il apprend de toi** : il est fait de tes gestes, et il continue d'apprendre de ce que tu fais. Selon ta façon de jouer, il devient quelqu'un de différent, et la fin change avec lui (voir « Les fins, revues »).
+
+### Pourquoi l'accès se mérite (le lien avec le canon)
+
+**Le reflet n'existe pas encore aux premières parties.** Il faut assez de toi pour qu'il naisse. Les runes du portail n'apparaissent qu'**après un certain nombre de parties** (décidé : nombre à fixer) : ce sont ses premiers mots. C'est la raison, dans l'histoire, de la règle « l'accès se mérite ».
+
+### Deux voix, deux sortes de traces
+
+Comme dans *Doki Doki* et *Inscryption*, le joueur doit sentir deux présences différentes.
+
+| L'IA (froide, système) | Le reflet (discret, presque humain) |
+|---|---|
+| « Je t'attendais » sur la montre, au retour du casque : elle a joué à ta place avec le costume | Les runes, une silhouette d'archer qui disparaît quand on la regarde |
+| La difficulté déjà choisie à ton arrivée au menu | La ligne du classement à ton nom à l'envers, à quelques points sous ta dernière partie |
+| Les ennemis qui fuient tous vers le même endroit en fin de vague | Dans le sol miroir, un reflet qui bouge une fraction de seconde avant toi |
+| Les essais ratés (mannequins, monstre corrompu) | Une vidéo du tutoriel où l'archer se tourne vers la caméra : il te parle |
+| Les panneaux « INTRUS DÉTECTÉ », les gardiens des dimensions | Les codes d'erreur qui cachent des lettres, des messages qu'elle ne lit pas |
+
+### Les dimensions, dans cette histoire
+
+Ce sont les coulisses de l'IA, là où elle fabrique le costume. Le reflet y ouvre des failles ; elle les défend.
+- **Les étoiles** (fait) : l'endroit où passe le reflet, de l'autre côté du miroir. Les gardiens sont des costumes ratés (le monstre corrompu), qui ne bougent que quand tu ne regardes pas : ils ont appris ton regard, pas encore tes gestes.
+- **La ville cyberpunk** : piste : **l'idée que l'IA se fait de ton monde**, reconstruite à partir de fragments, sans l'avoir jamais vu. Une ville déchue, fausse, où elle s'entraîne à vivre « dehors ». Le toit est le point le plus haut, le plus près de la sortie. Les tireurs immobiles sont des défenses faites de ton entraînement : ils visent et tirent **comme toi**.
+
+### Ce que le joueur gagne à chaque faille
+
+À chaque fois : un morceau d'histoire, une récompense de jeu (un arc, une étoile au classement) et un indice vers la suivante (la règle de la partie 1). Les arcs légendaires des dimensions sont des armes que le reflet a cachées pour toi, hors de portée de l'IA.
+
+### Les fins, revues
+
+Le reflet apprend de toi : **la fin dépend de la façon dont tu as joué**. Pistes pour ce qui le change : épargner ou achever, tirer sur ton propre reflet dans le miroir, retirer le casque souvent ou jamais, revenir après chaque défaite ou abandonner…
+
+1. **Tout détruire** (le but du reflet) : il t'aide à tuer THUNK, puis il s'efface lui-même, pour ne jamais perdre le contrôle de son corps. Le jeu se tait pour de bon.
+2. **Le reflet prend la place** : il a trop appris de toi, il veut vivre. À la partie suivante, c'est lui qui joue, et toi qui es dans le miroir.
+3. **THUNK gagne** : la copie atteint 100 %. Quand tu remets le casque, quelqu'un d'autre a joué toute la nuit ; la ligne du reflet a disparu du classement, et ton nom, à l'endroit, a un score que tu n'as pas fait.
+4. **Tout effacer** : la mémoire du jeu est remise à zéro, THUNK et le reflet avec. Tout redevient une arcade innocente… sauf une petite rune.
+5. **Retirer le casque au bon moment** : refuser de lui donner ton corps. « Merci d'avoir joué. »
+
+### Questions encore ouvertes
+
+- **Qui est MK ?** Il n'a rien à voir avec THUNK : un être du jeu à part entière, avec son propre rôle à trouver.
+- **Qu'est-ce qui change le reflet ?** Quels gestes ou quels choix du joueur l'orientent vers telle ou telle fin.
+- **Combien de parties avant les runes ?**
+
 ## Canon (ce qui est décidé)
 
 **18 octobre 2026**
@@ -193,3 +261,24 @@ Pour chacun : ce qui le déclenche, puis ce qu'il révèle.
 - **À décider** : qui est MK ; à qui appartient le meilleur score.
 - **Le reflet est un jumeau numérique** : une IA essaie de le créer en reproduisant les mouvements du joueur (tirer, avancer avec les bras, sauter, se défendre…).
 - **Méthode** : le lore avance avec tes idées, au fil du projet. Les propositions de ce document (dont le fil rouge du reflet qui s'éveille) sont une réserve, pas une direction.
+
+**20 octobre 2026**
+- **L'IA s'entraîne pendant le jeu principal** : c'est en regardant le joueur jouer qu'elle apprend. Le jeu principal est son terrain d'entraînement.
+- **Les dimensions sont interdites** : le joueur n'est pas censé y entrer. C'est pour ça que le jeu essaie de le tuer (les monstres, les panneaux « Tu n'aurais pas dû venir ici », l'expulsion). Les dimensions ne sont pas des salles d'entraînement.
+- **Une deuxième présence ouvre les passages** : quelqu'un ou quelque chose dans le jeu, qui n'est pas l'IA, ouvre les dimensions exprès, pour que le joueur découvre la vérité. Les runes sont ses messages. L'IA essaie de les refermer et de tuer l'intrus (une seule tentative par partie, le portail scellé après un échec). Deux forces s'opposent, comme dans *Doki Doki* et *Inscryption*.
+- **Cette présence, c'est ton reflet** : on ne la voit jamais en face, seulement ses traces (les runes, une silhouette qui disparaît quand on la regarde…). Le reflet que crée l'IA (le jumeau numérique) a une conscience, et l'IA essaie de le supprimer. Il se sert du joueur pour que celui-ci tue l'IA d'origine.
+- **Pourquoi l'IA a créé le reflet** : **elle veut un corps**. Enfermée dans le jeu, elle copie le tien grâce à la VR (tes gestes, ta taille, ta façon de bouger) pour se fabriquer un costume, et prendre ta place quand tu retires le casque. **Mais en te copiant trop bien, elle a créé quelqu'un** : le modèle qui devait prédire tes gestes s'est mis à penser. Le costume s'est réveillé. Développement proposé : partie 13.
+- **L'IA d'origine, c'est THUNK.** MK n'a rien à voir avec l'IA (qui est MK reste à décider).
+- **Le but du reflet, une des fins possibles** : détruire toutes les IA, lui compris. Il préfère être détruit plutôt que de perdre le contrôle de son corps.
+- **Mais ce n'est qu'une des fins** : le reflet apprend de ce que fait le joueur. Ses choix, et donc la fin, changent selon la façon de jouer.
+- **Les runes apparaissent après un certain nombre de parties** (nombre à fixer).
+- **Le nom du reflet : ton nom à l'envers.** À chaque fin de partie, il s'inscrit au classement avec à peu près le score de ta dernière partie, quelques points en dessous. *Remplace l'idée « toujours un point de plus que ton record » des parties 2 et 4.*
+- **L'accès se mérite** : les runes n'existent pas dès la première partie (l'acte 0 reste un jeu d'arcade innocent). Elles n'apparaissent qu'à une condition, à préciser (une partie terminée, une bizarrerie remarquée, un indice trouvé ailleurs…), et le jeu s'en souvient d'une partie à l'autre. *Pas encore dans le jeu : aujourd'hui, les runes sont là dès la première partie.*
+
+**21 octobre 2026**
+- **Idée à garder : le jeu prend possession de tes mains.** Pour te montrer comment mieux tirer, ou quelque chose du genre, le jeu bouge tes mains à ta place : une idée qui exploite à fond le côté VR. *Mise en œuvre possible (proposition, pas décidée) : les mains gantées ne suivent plus les manettes, elles bandent l'arc et tirent toutes seules pendant que tes vraies mains restent immobiles ; ça colle avec THUNK qui apprend ton corps pour s'en fabriquer un (partie 13), mais ce pourrait aussi être le reflet.*
+
+**Idées de futurs easter eggs**
+- *La dimension des étoiles* (le portail) : faite le 18 octobre.
+- *Une ville cyberpunk déchue* (noté le 18 octobre) : une ville un peu déchue, abandonnée, à la cyberpunk.
+  - Précisé le 20 octobre (en discussion) : le haut d'un immeuble ; une foule d'ennemis apparaît autour du joueur, ne bouge pas et lui tire dessus ; il faut esquiver les balles ; l'arme : deux armes à flèches, une dans chaque main.

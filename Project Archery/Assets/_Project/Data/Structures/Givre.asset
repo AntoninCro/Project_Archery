@@ -20,8 +20,8 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
   levels:
   - cost: 40
-    description: "Ralentit de 30 % les ennemis \xE0 8 m, volants compris."
+    description: "Ralentit de 30 % les ennemis \xE0 9 m, volants compris."
   - cost: 50
-    description: "Ralentit de 40 % \xE0 9 m."
+    description: "Ralentit de 40 % \xE0 13 m."
   - cost: 70
-    description: "Ralentit de 50 % \xE0 10 m."
+    description: "Ralentit de 50 % \xE0 17 m."

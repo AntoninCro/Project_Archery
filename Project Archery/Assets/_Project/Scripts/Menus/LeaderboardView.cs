@@ -80,6 +80,8 @@ namespace Archery.Menus
             m_Builder.Append(rank + 1).Append("<pos=8%>");
             if (entry.stars)
                 m_Builder.Append("<color=#FFD45A>").Append(StarMark()).Append("</color> ");
+            if (entry.glitch)
+                m_Builder.Append("<color=#4DF2FF>").Append(GlitchMark()).Append("</color> ");
             m_Builder.Append(entry.name)
                 .Append("<pos=46%>").Append(entry.score.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', ' '))
                 .Append("<pos=64%>").Append(entry.difficulty)
@@ -103,5 +105,19 @@ namespace Archery.Menus
         }
 
         string m_StarMark;
+
+        // Le losange du toit cyberpunk : ◆ si la police l'a, sinon un dièse.
+        string GlitchMark()
+        {
+            if (m_GlitchMark == null)
+            {
+                var font = m_Table != null ? m_Table.font : null;
+                m_GlitchMark = font != null && font.HasCharacter('◆', true, true) ? "◆" : "#";
+            }
+
+            return m_GlitchMark;
+        }
+
+        string m_GlitchMark;
     }
 }

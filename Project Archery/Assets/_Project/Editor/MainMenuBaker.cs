@@ -1,3 +1,4 @@
+using Archery.BowClasses;
 using Archery.Menus;
 using Archery.UI;
 using TMPro;
@@ -16,6 +17,9 @@ namespace Archery.EditorTools
     /// « Difficulté » sont retirés (on choisit la difficulté en tirant sur un panneau, et on lance la partie avec le
     /// gong), une phrase le rappelle en haut, et un bouton « Tutoriel » est ajouté sous « Paramètres ». La scène est
     /// marquée comme modifiée : il suffit de l'enregistrer.
+    /// Le 18 octobre, le menu, trop haut, est baissé de 25 cm, une fois (s'il est encore à son ancienne hauteur, centre à
+    /// 5,2 m ; une autre hauteur, choisie à la main, est gardée). Le 19 octobre, le menu de choix de l'arc (posé à 5,2 m
+    /// par la branche des classes) est mis à la même hauteur que le menu, une fois aussi.
     /// Crée aussi l'asset <c>Resources/TutorialContent</c> (les textes du tutoriel, avec les icônes des catégories).
     /// </summary>
     [InitializeOnLoad]
@@ -24,6 +28,10 @@ namespace Archery.EditorTools
         const string k_ContentPath = "Assets/_Project/Resources/TutorialContent.asset";
         const string k_IconFolder = "Assets/_Project/UI/Icones/";
         const string k_Hint = "Tire sur un panneau pour choisir ta difficulté, puis frappe le gong pour commencer.";
+
+        // La hauteur du centre du menu jusqu'au 18 octobre, et de combien il descend.
+        const float k_OldHeight = 5.2f;
+        const float k_Lower = 0.25f;
 
         static MainMenuBaker()
         {
@@ -74,6 +82,25 @@ namespace Archery.EditorTools
             {
                 foreach (var menu in root.GetComponentsInChildren<MainMenuPanel>(true))
                 {
+                    if (Lower(menu))
+                    {
+                        EditorSceneManager.MarkSceneDirty(scene);
+                        Debug.Log($"Menu principal baissé de {k_Lower * 100f:0} cm (centre à {menu.transform.position.y:0.##} m), " +
+                                  $"dans la scène « {scene.name} ». Enregistre-la (Ctrl+S).", menu);
+                    }
+
+                    foreach (var bowMenu in scene.GetRootGameObjects())
+                    {
+                        foreach (var selection in bowMenu.GetComponentsInChildren<BowSelectionMenu>(true))
+                        {
+                            if (!AlignWithMenu(selection.transform, menu.transform))
+                                continue;
+                            EditorSceneManager.MarkSceneDirty(scene);
+                            Debug.Log($"Menu de choix de l'arc mis à la hauteur du menu principal ({selection.transform.position.y:0.##} m), " +
+                                      $"dans la scène « {scene.name} ». Enregistre-la (Ctrl+S).", selection);
+                        }
+                    }
+
                     var home = menu.transform.Find("Content/Home");
                     if (home == null || !UpdateHome(menu, home))
                         continue;
@@ -83,6 +110,31 @@ namespace Archery.EditorTools
                               "Enregistre-la (Ctrl+S).", menu);
                 }
             }
+        }
+
+        static bool Lower(MainMenuPanel menu)
+        {
+            var transform = menu.transform;
+            if (Mathf.Abs(transform.position.y - k_OldHeight) > 0.005f)
+                return false;
+
+            Undo.RecordObject(transform, "Baisser le menu principal");
+            transform.position += Vector3.down * k_Lower;
+            EditorUtility.SetDirty(transform);
+            return true;
+        }
+
+        // Le menu de choix de l'arc, encore à l'ancienne hauteur du menu (5,2 m) : à la hauteur actuelle du menu.
+        static bool AlignWithMenu(Transform bowMenu, Transform menu)
+        {
+            var position = bowMenu.position;
+            if (Mathf.Abs(position.y - k_OldHeight) > 0.005f || Mathf.Abs(menu.position.y - k_OldHeight) < 0.005f)
+                return false;
+
+            Undo.RecordObject(bowMenu, "Aligner le menu de choix de l'arc");
+            bowMenu.position = new Vector3(position.x, menu.position.y, position.z);
+            EditorUtility.SetDirty(bowMenu);
+            return true;
         }
 
         static bool UpdateHome(MainMenuPanel menu, Transform home)

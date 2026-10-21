@@ -79,6 +79,23 @@ namespace Archery.EditorTools
                       "Enregistre-la (Ctrl+S).", portal);
         }
 
+        [MenuItem("Archery/Portail des étoiles/Replacer les runes")]
+        static void PlaceRunesAgain()
+        {
+            foreach (var portal in Object.FindObjectsByType<StarPortal>(FindObjectsInactive.Include))
+                PlaceRunes(portal);
+        }
+
+        // Les runes seules, posées au milieu des faces des obélisques ; l'ouverture (peut-être ajustée à la main) est gardée.
+        static void PlaceRunes(StarPortal portal)
+        {
+            portal.PlaceRunes();
+            EditorUtility.SetDirty(portal);
+            EditorSceneManager.MarkSceneDirty(portal.gameObject.scene);
+            Debug.Log($"Portail des étoiles : runes reposées au milieu des faces des obélisques, dans la scène « {portal.gameObject.scene.name} ». " +
+                      "Enregistre-la (Ctrl+S).", portal);
+        }
+
         static void SetUp(Scene scene)
         {
             Transform ring = null;
@@ -89,8 +106,11 @@ namespace Archery.EditorTools
                 if (existing != null)
                 {
                     // Portail d'avant le 18 octobre (runes et voile fabriqués en jeu) : on pose l'ouverture et les runes.
+                    // Runes d'une version de placement plus ancienne (près des arêtes, elles débordaient) : on les repose.
                     if (new SerializedObject(existing).FindProperty("m_Opening").objectReferenceValue == null)
                         PlaceOnStones(existing);
+                    else if (existing.RuneLayout < StarPortal.RuneLayoutVersion)
+                        PlaceRunes(existing);
                     return;
                 }
 

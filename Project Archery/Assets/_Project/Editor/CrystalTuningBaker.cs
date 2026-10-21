@@ -7,18 +7,21 @@ using UnityEngine.SceneManagement;
 namespace Archery.EditorTools
 {
     /// <summary>
-    /// Réglage des cristaux demandé après les tests (17 octobre) : plus de deuxième série de gisements au milieu de la vague,
-    /// mais chaque gisement donne 2,5 fois plus de matériaux (en tout, un quart de plus par vague). Le Crystal Spawner est
-    /// dans la scène : à l'ouverture, s'il a encore les anciennes valeurs (20 + 6 par vague), elles sont changées et la
-    /// scène est marquée comme modifiée ; il suffit de l'enregistrer (Ctrl+S).
+    /// Réglages des cristaux demandés après les tests. Le 17 octobre : plus de deuxième série de gisements au milieu de la
+    /// vague, mais chaque gisement donne 2,5 fois plus de matériaux (en tout, un quart de plus par vague) : 50 + 15 par vague
+    /// au lieu de 20 + 6. Le 20 octobre : 20 % de matériaux en moins, 40 + 12 par vague. Le Crystal Spawner est dans la
+    /// scène : à l'ouverture, s'il a encore d'anciennes valeurs, elles sont changées et la scène est marquée comme
+    /// modifiée ; il suffit de l'enregistrer (Ctrl+S).
     /// </summary>
     [InitializeOnLoad]
     static class CrystalTuningBaker
     {
         const int k_OldBaseAmount = 20;
         const int k_OldAmountPerWave = 6;
-        const int k_BaseAmount = 50;
-        const int k_AmountPerWave = 15;
+        const int k_SeventeenthBaseAmount = 50;
+        const int k_SeventeenthAmountPerWave = 15;
+        const int k_BaseAmount = 40;
+        const int k_AmountPerWave = 12;
 
         static CrystalTuningBaker()
         {
@@ -57,18 +60,22 @@ namespace Archery.EditorTools
             var baseAmount = settings.FindProperty("m_BaseAmount");
             var amountPerWave = settings.FindProperty("m_AmountPerWave");
             var secondBatch = settings.FindProperty("m_SecondBatch");
-            if (baseAmount == null || amountPerWave == null || secondBatch == null ||
-                baseAmount.intValue != k_OldBaseAmount || amountPerWave.intValue != k_OldAmountPerWave)
+            if (baseAmount == null || amountPerWave == null || secondBatch == null)
+                return;
+
+            var oldBase = baseAmount.intValue;
+            var oldPerWave = amountPerWave.intValue;
+            if (oldBase == k_OldBaseAmount && oldPerWave == k_OldAmountPerWave)
+                secondBatch.boolValue = false;
+            else if (oldBase != k_SeventeenthBaseAmount || oldPerWave != k_SeventeenthAmountPerWave)
                 return;
 
             baseAmount.intValue = k_BaseAmount;
             amountPerWave.intValue = k_AmountPerWave;
-            secondBatch.boolValue = false;
             settings.ApplyModifiedProperties();
             EditorSceneManager.MarkSceneDirty(scene);
-            Debug.Log($"Cristaux : plus de deuxième série au milieu de la vague, et {k_BaseAmount} matériaux par gisement à la vague 1 " +
-                      $"(+{k_AmountPerWave} par vague) au lieu de {k_OldBaseAmount} (+{k_OldAmountPerWave}). Enregistre la scène (Ctrl+S).",
-                      spawner);
+            Debug.Log($"Cristaux : {k_BaseAmount} matériaux par gisement à la vague 1 (+{k_AmountPerWave} par vague) au lieu de " +
+                      $"{oldBase} (+{oldPerWave}). Enregistre la scène (Ctrl+S).", spawner);
         }
     }
 }

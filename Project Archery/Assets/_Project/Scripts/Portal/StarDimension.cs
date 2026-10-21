@@ -14,8 +14,9 @@ namespace Archery.Portal
     /// La dimension du portail des étoiles (GDD, section 23) : un ciel noir criblé d'étoiles, des nébuleuses et des
     /// galaxies lumineuses, un sol miroir, et des piliers vermillon plantés en désordre, qui ne sont des torii complets
     /// que dans leur reflet ; par-dessus, un monde qui bugue (piliers qui sautent, panneaux d'erreur rouges,
-    /// <see cref="ErrorPanels"/>). L'épreuve : 10 s pour découvrir le décor pendant que la musique monte, puis survivre
-    /// 30 s au monstre corrompu (<see cref="CorruptedMonster"/>). Le temps restant n'est affiché que sur les panneaux.
+    /// <see cref="ErrorPanels"/>). L'épreuve : le temps de découvrir le décor jusqu'à la montée de la musique (12 s), puis
+    /// survivre 1 minute aux monstres corrompus (<see cref="CorruptedMonster"/>), plusieurs à la fois : ils ne bougent que quand on ne
+    /// les regarde pas. Le temps restant n'est affiché que sur les panneaux.
     /// </summary>
     /// <remarks>
     /// Scène à part (<c>Dimension_Etoiles</c>), chargée par le <see cref="StarPortal"/> de la carte, placée à 3 km de la
@@ -26,11 +27,12 @@ namespace Archery.Portal
     /// cachettes au monstre ; le miroir est <see cref="DimensionMirror"/>.
     /// </remarks>
     [DisallowMultipleComponent]
-    public class StarDimension : MonoBehaviour
+    public class StarDimension : MonoBehaviour, IGlitchDimension
     {
         static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
+        static readonly int k_EmissionMapId = Shader.PropertyToID("_EmissionMap");
 
-        // Le champ de vision du joueur pour le monstre (demi-angle, en degrés) : d'abord serré, puis élargi.
+        // Le champ de vision du joueur (demi-angle, en degrés) où les monstres apparaissent : d'abord serré, puis élargi.
         const float k_ViewCone = 50f;
         const float k_WideCone = 70f;
 
@@ -52,9 +54,15 @@ namespace Archery.Portal
         [SerializeField]
         Transform m_Walls;
 
-        [Tooltip("La musique (elle monte pendant la découverte).")]
+        [Tooltip("La musique : elle part du début à l'arrivée du joueur, et sa montée donne le départ de l'épreuve " +
+                 "(Intro Time). Son groupe de mixer : Music, réglé par le volume de la musique.")]
         [SerializeField]
         AudioSource m_MusicSource;
+
+        [Tooltip("Volume de la musique.")]
+        [SerializeField]
+        [Range(0f, 1f)]
+        float m_MusicVolume = 0.8f;
 
         [Header("Effets")]
         [Tooltip("Matériau des panneaux et des effets (couleurs des sommets, transparent : Effects).")]
@@ -66,19 +74,26 @@ namespace Archery.Portal
         Shader m_GlitchShader;
 
         [Header("Épreuve")]
-        [Tooltip("Durée (s) de la découverte, avant le compte à rebours.")]
+        [Tooltip("Durée (s) de la découverte, avant le compte à rebours : le moment de la montée dans la musique (12 s " +
+                 "dans « Sad Nostalgie »). La découverte suit la musique elle-même : les monstres et « SURVIVEZ » tombent " +
+                 "pile sur la montée.")]
         [SerializeField]
-        float m_IntroTime = 10f;
+        float m_IntroTime = 12f;
 
         [Tooltip("Durée (s) à tenir.")]
         [SerializeField]
-        float m_SurviveTime = 30f;
+        float m_SurviveTime = 60f;
 
-        [Tooltip("Les apparences du monstre, dans l'ordre : il change à chaque mort (ennemis du jeu).")]
+        [Tooltip("Les apparences des monstres, dans l'ordre : chaque nouveau monstre prend la suivante (ennemis du jeu).")]
         [SerializeField]
         Enemy[] m_MonsterModels = new Enemy[0];
 
-        [Tooltip("Délai (s) avant que le monstre suivant apparaisse.")]
+        [Tooltip("Nombre de monstres en même temps, en Normal (selon le nombre d'ennemis de la difficulté : moins en Facile, " +
+                 "plus en Difficile et Impossible). Seul, on le figerait en le regardant.")]
+        [SerializeField]
+        int m_MonsterCount = 3;
+
+        [Tooltip("Délai (s) avant qu'un monstre tué soit remplacé.")]
         [SerializeField]
         float m_RespawnDelay = 1.2f;
 
@@ -109,6 +124,10 @@ namespace Archery.Portal
 
         [SerializeField]
         AudioClip[] m_GlitchClips = new AudioClip[0];
+
+        [Tooltip("Pas des monstres : un à chaque saut, plus grave que nature (Kenney, footstep_concrete).")]
+        [SerializeField]
+        AudioClip[] m_StepClips = new AudioClip[0];
 
         [SerializeField]
         AudioClip m_PanelOpenClip;
@@ -146,17 +165,19 @@ namespace Archery.Portal
         readonly List<Collider> m_WallColliders = new List<Collider>();
         StarPortal m_Portal;
         ErrorPanels m_Panels;
-        CorruptedMonster m_Monster;
+        readonly List<CorruptedMonster> m_Monsters = new List<CorruptedMonster>();
+        readonly List<float> m_RespawnTimers = new List<float>();
+        readonly HashSet<Transform> m_Claimed = new HashSet<Transform>();
         AudioLowPassFilter m_LowPass;
         MaterialPropertyBlock m_Block;
         Phase m_Phase;
         float m_Time;
-        float m_RespawnTimer = -1f;
         float m_GateGlitchTimer = 1f;
         float m_EndTimer = -1f;
         bool m_Success;
         int m_ModelIndex;
         Gate m_GlitchedGate;
+        AudioClip m_StaticClip;
 
         public static StarDimension Instance { get; private set; }
 
@@ -170,10 +191,19 @@ namespace Archery.Portal
         public float TimeLeft => m_Phase == Phase.Survive ? Mathf.Max(0f, m_SurviveTime - (m_Time - m_IntroTime))
                               : m_Phase == Phase.Over ? 0f : m_SurviveTime;
 
+        /// <summary>Secondes depuis l'arrivée du joueur (pendant la découverte : la position dans la musique).</summary>
+        public float Elapsed => m_Time;
+
         public Transform Head => PlayerRig.Instance != null ? PlayerRig.Instance.Head : null;
 
-        /// <summary>Le monstre, pour ne pas mettre de panneau devant lui.</summary>
-        public Vector3? MonsterPoint => m_Monster != null && m_Monster.IsAlive ? m_Monster.Point : (Vector3?)null;
+        /// <summary>Les monstres en vie, pour ne pas mettre de panneau devant eux.</summary>
+        public IReadOnlyList<CorruptedMonster> Monsters => m_Monsters;
+
+        /// <summary>Matériau des effets (couleurs des sommets, transparent) : panneaux, pixels, yeux des monstres.</summary>
+        public Material GlowMaterial => m_GlowMaterial;
+
+        /// <summary>Le grésillement continu des monstres (parasites numériques en boucle, fabriqués au lancement).</summary>
+        public AudioClip StaticClip => m_StaticClip;
 
         /// <summary>La hauteur du sol.</summary>
         public float FloorY => transform.position.y;
@@ -189,6 +219,7 @@ namespace Archery.Portal
             }
 
             SetUpMusic();
+            m_StaticClip = BuildStaticClip();
             m_Panels = gameObject.AddComponent<ErrorPanels>();
             m_Panels.Configure(this, m_GlowMaterial, m_PanelOpenClip, m_PanelCloseClip, m_FakeErrors);
         }
@@ -198,6 +229,8 @@ namespace Archery.Portal
             if (Instance == this)
                 Instance = null;
             ArrowIgnore.Unregister(m_WallColliders);
+            if (m_StaticClip != null)
+                Destroy(m_StaticClip);
         }
 
         // Les cachettes du monstre : les piliers des torii (Capsule Collider) à portée ; les torii qui les portent bugent.
@@ -246,7 +279,7 @@ namespace Archery.Portal
             m_LowPass = m_MusicSource.GetComponent<AudioLowPassFilter>();
             if (m_LowPass == null)
                 m_LowPass = m_MusicSource.gameObject.AddComponent<AudioLowPassFilter>();
-            m_LowPass.cutoffFrequency = 500f;
+            m_LowPass.cutoffFrequency = 22000f;
         }
 
         /// <summary>Le joueur vient d'arriver : la découverte commence, puis le compte à rebours.</summary>
@@ -258,11 +291,12 @@ namespace Archery.Portal
             DynamicGI.UpdateEnvironment();
             m_Phase = Phase.Intro;
             m_Time = 0f;
-            m_Panels.Intro = true;
-            m_Panels.ShowCentered("THUNK.exe", "ANOMALIE\nDÉTECTÉE", 3f);
+            // Les panneaux d'erreur montent pendant la découverte : le premier à 5 s, puis de plus en plus vite.
+            m_Panels.StartIntro(m_IntroTime);
             if (m_MusicSource != null && m_MusicSource.clip != null)
             {
-                m_MusicSource.volume = 0f;
+                m_MusicSource.volume = m_MusicVolume;
+                m_MusicSource.timeSamples = 0;
                 m_MusicSource.Play();
             }
         }
@@ -275,6 +309,10 @@ namespace Archery.Portal
                 return;
 
             m_Time += deltaTime;
+            // Pendant la découverte, le temps est celui de la musique : l'épreuve part sur sa montée, même après une
+            // saccade (le chargement de la scène) ou si le son a démarré un peu en retard.
+            if (m_Phase == Phase.Intro && MusicPlaying)
+                m_Time = m_MusicSource.timeSamples / (float)m_MusicSource.clip.frequency;
             UpdateMusic();
 
             switch (m_Phase)
@@ -283,18 +321,23 @@ namespace Archery.Portal
                     if (m_Time >= m_IntroTime)
                     {
                         m_Phase = Phase.Survive;
-                        m_Panels.Intro = false;
-                        SpawnMonster();
+                        // « SURVIVEZ », et les dizaines de panneaux se ferment presque d'un coup.
+                        m_Panels.Unleash();
+                        var count = MonsterCount();
+                        for (var i = 0; i < count; i++)
+                            SpawnMonster();
                     }
 
                     break;
 
                 case Phase.Survive:
-                    if (m_RespawnTimer >= 0f)
+                    for (var i = m_RespawnTimers.Count - 1; i >= 0; i--)
                     {
-                        m_RespawnTimer -= deltaTime;
-                        if (m_RespawnTimer < 0f)
-                            SpawnMonster();
+                        m_RespawnTimers[i] -= deltaTime;
+                        if (m_RespawnTimers[i] > 0f)
+                            continue;
+                        m_RespawnTimers.RemoveAt(i);
+                        SpawnMonster();
                     }
 
                     if (TimeLeft <= 0f)
@@ -316,45 +359,138 @@ namespace Archery.Portal
             }
         }
 
-        // La musique monte pendant la découverte : plus fort, et de moins en moins étouffée.
+        bool MusicPlaying => m_MusicSource != null && m_MusicSource.clip != null && m_MusicSource.isPlaying;
+
+        // La musique joue telle quelle (sa montée est dans le morceau) ; à la fin de l'épreuve, elle s'étouffe et s'éteint.
         void UpdateMusic()
         {
             if (m_MusicSource == null)
                 return;
 
-            var rise = Mathf.Clamp01(m_Time / Mathf.Max(0.1f, m_IntroTime));
             if (m_Phase == Phase.Over)
-                m_MusicSource.volume = Mathf.MoveTowards(m_MusicSource.volume, 0f, Time.deltaTime * 0.5f);
+            {
+                var deltaTime = Time.deltaTime;
+                m_MusicSource.volume = Mathf.MoveTowards(m_MusicSource.volume, 0f, deltaTime * 0.6f);
+                if (m_LowPass != null)
+                    m_LowPass.cutoffFrequency = Mathf.MoveTowards(m_LowPass.cutoffFrequency, 600f, deltaTime * 15000f);
+            }
             else
-                m_MusicSource.volume = Mathf.Lerp(0.15f, 0.6f, rise);
-            if (m_LowPass != null)
-                m_LowPass.cutoffFrequency = Mathf.Lerp(500f, 22000f, rise * rise);
+            {
+                // Un monstre tout près : la musique baisse (jusqu'à moitié moins), pour bien l'entendre arriver.
+                var duck = Mathf.Lerp(0.45f, 1f, Mathf.InverseLerp(3f, 15f, NearestMonsterDistance()));
+                m_MusicSource.volume = Mathf.MoveTowards(m_MusicSource.volume, m_MusicVolume * duck, Time.deltaTime * 0.8f);
+            }
+        }
+
+        float NearestMonsterDistance()
+        {
+            var head = Head;
+            var nearest = float.MaxValue;
+            if (head == null)
+                return nearest;
+
+            foreach (var monster in m_Monsters)
+            {
+                if (monster != null && monster.IsAlive)
+                    nearest = Mathf.Min(nearest, FlatDistance(monster.transform.position, head.position));
+            }
+
+            return nearest;
+        }
+
+        // Le grésillement des monstres : 2 s de parasites numériques en boucle. Des paquets de 10 à 80 ms, chacun avec son
+        // volume, sa « résolution » (échantillons répétés, comme un son écrasé) et son grain, parfois un silence, et quelques
+        // craquements secs ; la fin se fond dans le début, pour boucler sans couture.
+        static AudioClip BuildStaticClip()
+        {
+            const int rate = 44100;
+            const int length = rate * 2;
+            const int fade = rate / 20;
+            var samples = new float[length + fade];
+            var random = new System.Random(23);
+            var index = 0;
+            var smoothed = 0f;
+            var peak = 0.001f;
+            while (index < samples.Length)
+            {
+                var count = random.Next(rate / 100, rate * 8 / 100);
+                var amplitude = random.NextDouble() < 0.15 ? 0f : (float)(0.2 + 0.8 * random.NextDouble());
+                var hold = random.Next(1, 12);
+                var grain = (float)(0.08 + 0.6 * random.NextDouble());
+                var value = 0f;
+                for (var k = 0; k < count && index < samples.Length; k++, index++)
+                {
+                    if (k % hold == 0)
+                        value = (float)(random.NextDouble() * 2.0 - 1.0);
+                    smoothed += (value - smoothed) * grain;
+                    samples[index] = smoothed * amplitude;
+                    peak = Mathf.Max(peak, Mathf.Abs(samples[index]));
+                }
+            }
+
+            var data = new float[length];
+            for (var k = 0; k < length; k++)
+            {
+                var sample = samples[k];
+                if (k < fade)
+                {
+                    var t = k / (float)fade;
+                    sample = sample * t + samples[length + k] * (1f - t);
+                }
+
+                data[k] = sample * (0.8f / peak);
+            }
+
+            for (var k = 0; k < 40; k++)
+                data[random.Next(length)] = random.NextDouble() < 0.5 ? 0.9f : -0.9f;
+
+            var clip = AudioClip.Create("Grésillement des monstres", length, 1, rate, false);
+            clip.SetData(data, 0);
+            return clip;
         }
 
         // ---------------------------------------------------------------- le monstre
 
+        // Plusieurs monstres : un seul se figerait dès qu'on le regarde. Selon la difficulté (2 en Facile, 3 en Normal…).
+        int MonsterCount()
+        {
+            var factor = DifficultyManager.Current != null ? DifficultyManager.Current.enemyCount : 1f;
+            return Mathf.Clamp(Mathf.RoundToInt(m_MonsterCount * factor), 1, 6);
+        }
+
         void SpawnMonster()
         {
-            m_RespawnTimer = -1f;
             if (m_MonsterModels == null || m_MonsterModels.Length == 0 || m_Posts.Count == 0)
                 return;
 
             var model = m_MonsterModels[m_ModelIndex % m_MonsterModels.Length];
             m_ModelIndex++;
             var speed = DifficultyManager.Current != null ? DifficultyManager.Current.enemySpeed : 1f;
-            m_Monster = CorruptedMonster.Spawn(this, model, SpawnPost(), m_GlitchShader, speed);
+            m_Monsters.Add(CorruptedMonster.Spawn(this, model, SpawnPost(), m_GlitchShader, speed));
         }
 
-        /// <summary>Un monstre vient d'être tué : il éclate en pixels, et le suivant viendra plus loin.</summary>
+        /// <summary>Un monstre vient d'être tué : il éclate en pixels, et un autre le remplace, plus loin.</summary>
         public void MonsterKilled(CorruptedMonster monster)
         {
             Pixels(monster.Point, 40, 1.4f);
             Sfx.Play(m_KillClip, monster.Point, 1f, Random.Range(0.85f, 1.1f));
+            m_Monsters.Remove(monster);
             Destroy(monster.gameObject);
-            if (m_Monster == monster)
-                m_Monster = null;
             if (m_Phase == Phase.Survive)
-                m_RespawnTimer = m_RespawnDelay;
+                m_RespawnTimers.Add(m_RespawnDelay);
+        }
+
+        /// <summary>Ce pilier est pris par un monstre (caché derrière, ou en route) : les autres ne le choisissent pas.</summary>
+        public void Claim(Transform post)
+        {
+            if (post != null)
+                m_Claimed.Add(post);
+        }
+
+        public void Release(Transform post)
+        {
+            if (post != null)
+                m_Claimed.Remove(post);
         }
 
         /// <summary>Le monstre a touché le joueur : expulsé.</summary>
@@ -369,12 +505,16 @@ namespace Archery.Portal
             m_Phase = Phase.Over;
             m_Success = success;
             m_EndTimer = success ? 2.5f : 1.8f;
-            if (m_Monster != null)
+            foreach (var monster in m_Monsters)
             {
-                Pixels(m_Monster.Point, 40, 1.4f);
-                Destroy(m_Monster.gameObject);
-                m_Monster = null;
+                if (monster == null)
+                    continue;
+                Pixels(monster.Point, 40, 1.4f);
+                Destroy(monster.gameObject);
             }
+
+            m_Monsters.Clear();
+            m_RespawnTimers.Clear();
 
             var head = Head;
             Sfx.Play(success ? m_SuccessClip : m_FailClip, head != null ? head.position : transform.position, 1f, 1f, 0f);
@@ -412,9 +552,10 @@ namespace Archery.Portal
         }
 
         /// <summary>
-        /// Le pilier suivant : dans le champ de vision du joueur, et plus près de lui (de 1,5 à 8 m) sans être collé à lui ;
-        /// si le monstre est hors de vue (le joueur s'est tourné), un pilier en vue qui n'est pas plus loin.
-        /// <paramref name="wide"/> : le champ de vision est élargi jusqu'à ses bords. Null s'il n'y en a pas.
+        /// Le pilier suivant : plus près du joueur (de 1,5 à 8 m) sans être collé à lui, libre, et <b>hors de son champ de
+        /// vision</b> (à plus de 70° de son regard : sur les côtés, dans son dos). Les monstres le contournent au lieu de
+        /// venir se figer sous ses yeux : il doit se retourner pour les surveiller. <paramref name="wide"/> : faute de mieux,
+        /// un pilier qu'il voit du coin de l'œil (à plus de 30° de son regard). Null s'il n'y en a pas.
         /// </summary>
         public Transform NextPost(Transform current, float distance, bool wide = false)
         {
@@ -422,19 +563,19 @@ namespace Archery.Portal
             if (head == null)
                 return null;
 
-            var farthest = current != null && InView(current.position) ? distance - 1.5f : distance + 1f;
+            var farthest = distance - 1.5f;
             var nearest = Mathf.Max(3.2f, distance - 8f);
             var target = distance - 4f;
             var candidates = new List<Transform>();
-            foreach (var cone in wide ? new[] { k_ViewCone, k_WideCone, 95f } : new[] { k_ViewCone, k_WideCone })
+            foreach (var minimumAngle in wide ? new[] { 70f, 30f } : new[] { 70f })
             {
                 candidates.Clear();
                 foreach (var post in m_Posts)
                 {
-                    if (post == current)
+                    if (post == current || m_Claimed.Contains(post))
                         continue;
                     var d = FlatDistance(post.position, head.position);
-                    if (d <= farthest && d >= nearest && InView(post.position, cone))
+                    if (d <= farthest && d >= nearest && !InView(post.position, minimumAngle))
                         candidates.Add(post);
                 }
 
@@ -448,24 +589,29 @@ namespace Archery.Portal
             return null;
         }
 
-        // Loin du joueur, dans son champ de vision : jamais dans son dos.
+        // Loin du joueur, dans son champ de vision (jamais dans son dos), sur un pilier libre, et si possible écarté des
+        // autres monstres (au moins 20° vus du joueur) : il ne peut pas tous les regarder à la fois.
         Transform SpawnPost()
         {
             var head = Head;
             if (head == null)
                 return m_Posts[Random.Range(0, m_Posts.Count)];
 
-            foreach (var (cone, minimum) in new[] { (40f, 16f), (k_ViewCone, 11f), (k_WideCone, 8f) })
+            foreach (var spread in new[] { 20f, 0f })
             {
-                var candidates = new List<Transform>();
-                foreach (var post in m_Posts)
+                foreach (var (cone, minimum) in new[] { (40f, 16f), (k_ViewCone, 11f), (k_WideCone, 8f) })
                 {
-                    if (FlatDistance(post.position, head.position) >= minimum && InView(post.position, cone))
-                        candidates.Add(post);
-                }
+                    var candidates = new List<Transform>();
+                    foreach (var post in m_Posts)
+                    {
+                        if (!m_Claimed.Contains(post) && FlatDistance(post.position, head.position) >= minimum &&
+                            InView(post.position, cone) && ApartFromMonsters(head.position, post.position, spread))
+                            candidates.Add(post);
+                    }
 
-                if (candidates.Count > 0)
-                    return candidates[Random.Range(0, candidates.Count)];
+                    if (candidates.Count > 0)
+                        return candidates[Random.Range(0, candidates.Count)];
+                }
             }
 
             var farthest = m_Posts[0];
@@ -478,10 +624,40 @@ namespace Archery.Portal
             return farthest;
         }
 
+        bool ApartFromMonsters(Vector3 viewer, Vector3 point, float angle)
+        {
+            var direction = point - viewer;
+            direction.y = 0f;
+            foreach (var monster in m_Monsters)
+            {
+                if (monster == null)
+                    continue;
+                var other = monster.transform.position - viewer;
+                other.y = 0f;
+                if (Vector3.Angle(direction, other) < angle)
+                    return false;
+            }
+
+            return true;
+        }
+
         static float FlatDistance(Vector3 a, Vector3 b) => Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
+
+        /// <summary>Les monstres en vie : les panneaux ne les cachent pas.</summary>
+        public void GetThreats(List<Vector3> points)
+        {
+            foreach (var monster in m_Monsters)
+            {
+                if (monster != null && monster.IsAlive)
+                    points.Add(monster.Point);
+            }
+        }
 
         public AudioClip RandomGlitchClip() =>
             m_GlitchClips != null && m_GlitchClips.Length > 0 ? m_GlitchClips[Random.Range(0, m_GlitchClips.Length)] : null;
+
+        public AudioClip RandomStepClip() =>
+            m_StepClips != null && m_StepClips.Length > 0 ? m_StepClips[Random.Range(0, m_StepClips.Length)] : null;
 
         // ---------------------------------------------------------------- effets
 
@@ -527,33 +703,6 @@ namespace Archery.Portal
             particles.Play();
         }
 
-        /// <summary>Une traînée de blocs entre deux points (le monstre qui saute des images), qui s'efface vite.</summary>
-        public void Streak(Vector3 from, Vector3 to)
-        {
-            if (m_GlowMaterial == null)
-                return;
-
-            var builder = new MeshBuilder();
-            var steps = Mathf.Clamp(Mathf.RoundToInt(Vector3.Distance(from, to) / 0.3f), 2, 30);
-            for (var i = 0; i <= steps; i++)
-            {
-                var center = Vector3.Lerp(from, to, i / (float)steps) + Random.insideUnitSphere * 0.25f;
-                var color = Random.value < 0.5f ? new Color(2.5f, 0.1f, 0.15f, 0.9f) : new Color(0.15f, 2f, 2.5f, 0.9f);
-                builder.Box(center, new Vector3(Random.Range(0.05f, 0.25f), Random.Range(0.03f, 0.12f), Random.Range(0.05f, 0.2f)),
-                            Quaternion.identity, color);
-            }
-
-            var go = new GameObject("Traînée");
-            go.transform.SetParent(transform, true);
-            var mesh = builder.ToMesh("Traînée");
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var renderer = go.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial = m_GlowMaterial;
-            renderer.shadowCastingMode = ShadowCastingMode.Off;
-            Destroy(mesh, 0.3f);
-            Destroy(go, 0.25f);
-        }
-
         // De temps en temps (au plus 2 fois par seconde), un torii saute de côté et vire au cyan, un instant (son reflet
         // suit : DimensionMirror recopie sa place et sa couleur).
         void UpdateGateGlitch(float deltaTime)
@@ -585,8 +734,10 @@ namespace Archery.Portal
                 return;
 
             gate.Root.position = gate.Home + offset;
+            // Le flash cyan remplace la lueur de la laque : la texture de lueur est remplacée par du blanc.
             m_Block.Clear();
             m_Block.SetColor(k_EmissionColorId, new Color(0.2f, 1.6f, 2f));
+            m_Block.SetTexture(k_EmissionMapId, Texture2D.whiteTexture);
             foreach (var renderer in gate.Renderers)
             {
                 if (renderer != null)

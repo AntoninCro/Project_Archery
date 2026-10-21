@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Archery.BowClasses;
 using Archery.Bows;
 using Archery.Core;
 using Archery.Economy;
@@ -67,6 +68,10 @@ namespace Archery.Portal
         [Tooltip("Les runes posées sur les obélisques (objets « Rune 1 » à « Rune 5 »), qu'on peut déplacer à la main.")]
         [SerializeField]
         Transform[] m_RuneObjects = new Transform[0];
+
+        [SerializeField]
+        [HideInInspector]
+        int m_RuneLayout;
 
         [Header("Dimension")]
         [Tooltip("Nom de la scène de la dimension (elle doit être dans File > Build Profiles > Scene List).")]
@@ -457,6 +462,51 @@ namespace Archery.Portal
             m_Busy = false;
         }
 
+        static readonly Collider[] s_Overlaps = new Collider[16];
+
+        // Le point d'arrivée au retour : 3 m devant l'anneau, ou, si un ennemi (figé) ou un obstacle y est, la première
+        // place libre un peu plus loin ou sur le côté (jusqu'à 6 m et 70°). Sans place libre, le point de départ.
+        Vector3 FreeArrival(Vector3 outward)
+        {
+            var flat = new Vector3(outward.x, 0f, outward.z);
+            flat = flat.sqrMagnitude > 1e-4f ? flat.normalized : Vector3.forward;
+            Vector3? first = null;
+            foreach (var distance in new[] { 3f, 4.5f, 6f })
+            {
+                foreach (var angle in new[] { 0f, 35f, -35f, 70f, -70f })
+                {
+                    var point = m_Center + Quaternion.Euler(0f, angle, 0f) * flat * distance;
+                    point.y = m_Bottom;
+                    if (Physics.Raycast(point + Vector3.up * (m_Top - m_Bottom + 2f), Vector3.down, out var ground, m_Top - m_Bottom + 6f,
+                                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        point.y = ground.point.y;
+                    if (first == null)
+                        first = point;
+
+                    if (IsFree(point))
+                        return point;
+                }
+            }
+
+            return first ?? m_Center + flat * 3f;
+        }
+
+        // Rien à la place d'un joueur debout (ennemi, rocher, mur), au-dessus du sol : le terrain et ce que les flèches
+        // traversent (barricades…) ne comptent pas.
+        static bool IsFree(Vector3 feet)
+        {
+            var count = Physics.OverlapCapsuleNonAlloc(feet + Vector3.up * 0.7f, feet + Vector3.up * 1.7f, 0.45f, s_Overlaps,
+                                                       Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                var collider = s_Overlaps[i];
+                if (collider != null && !(collider is TerrainCollider) && !ArrowIgnore.IsIgnored(collider))
+                    return false;
+            }
+
+            return true;
+        }
+
         AsyncOperation LoadDimension()
         {
 #if UNITY_EDITOR
@@ -493,14 +543,13 @@ namespace Archery.Portal
                 SceneManager.SetActiveScene(m_MainScene);
             RestoreMapLighting();
 
-            // Devant le portail, du côté d'où il était venu, tourné vers l'anneau, sur le sol.
+            // Devant le portail, du côté d'où il était venu, tourné vers l'anneau, sur le sol, à une place libre (pas sur
+            // un ennemi figé devant l'anneau, ni dans un rocher).
             var outward = m_Normal * m_EntrySide;
-            var arrival = m_Center + outward * 3f;
-            arrival.y = m_Bottom;
-            if (Physics.Raycast(arrival + Vector3.up * (m_Top - m_Bottom + 2f), Vector3.down, out var ground, m_Top - m_Bottom + 6f,
-                                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-                arrival.y = ground.point.y;
-            var yaw = Quaternion.LookRotation(-new Vector3(outward.x, 0f, outward.z)).eulerAngles.y;
+            var arrival = FreeArrival(outward);
+            var toRing = m_Center - arrival;
+            toRing.y = 0f;
+            var yaw = Quaternion.LookRotation(toRing.sqrMagnitude > 0.01f ? toRing : -new Vector3(outward.x, 0f, outward.z)).eulerAngles.y;
             var teleport = PlayerTeleport.Instance;
             if (teleport != null)
                 yield return teleport.TeleportWhileHidden(arrival, yaw);
@@ -540,8 +589,34 @@ namespace Archery.Portal
             var points = 0;
             if (score != null)
                 points = score.AddPoints(m_ScoreBonus * score.DifficultyMultiplier);
-            HeadMessages.Show($"Épreuve des étoiles réussie !\n<size=60%>+{points} points · une étoile à côté de ton nom au classement</size>",
+
+            // L'arc cosmique : débloqué pour toujours (succès « Voyageur des étoiles », dans le menu des arcs), et en main
+            // tout de suite, pour le reste de la partie.
+            var achievements = AchievementManager.Instance;
+            if (achievements != null)
+                achievements.Report(AchievementType.StarTrial);
+            var cosmic = CosmicBow();
+            if (cosmic != null && m_Bow != null)
+                m_Bow.SetDefinition(cosmic);
+
+            var bowText = cosmic != null ? " · l'arc cosmique est à toi" : "";
+            HeadMessages.Show($"Épreuve des étoiles réussie !\n<size=60%>+{points} points · une étoile au classement{bowText}</size>",
                               new Color(1f, 0.85f, 0.35f), 6f, 1.3f);
+        }
+
+        // L'arc à surcharge de la liste des arcs (l'arc cosmique), ou null.
+        static BowDefinition CosmicBow()
+        {
+            var loadout = BowLoadout.Instance;
+            if (loadout == null)
+                return null;
+            foreach (var entry in loadout.Entries)
+            {
+                if (entry != null && entry.bow != null && entry.bow.overcharge)
+                    return entry.bow;
+            }
+
+            return null;
         }
 
         void SuspendUpgrades(bool suspend)
@@ -557,9 +632,12 @@ namespace Archery.Portal
 
             if (suspend)
             {
+                // L'arc de sa classe, choisi au début de la partie (sans bonus) ; sans classes d'arc, celui du début.
                 m_SavedBow = m_Bow.Definition;
-                if (m_Bow.StartingDefinition != null)
-                    m_Bow.SetDefinition(m_Bow.StartingDefinition);
+                var loadout = BowLoadout.Instance;
+                var start = loadout != null && loadout.Selected != null ? loadout.Selected : m_Bow.StartingDefinition;
+                if (start != null)
+                    m_Bow.SetDefinition(start);
             }
             else if (m_SavedBow != null)
             {
@@ -641,11 +719,6 @@ namespace Archery.Portal
         {
             if (m_Opening != null)
                 DestroyImmediate(m_Opening.gameObject);
-            foreach (var runeObject in m_RuneObjects)
-            {
-                if (runeObject != null)
-                    DestroyImmediate(runeObject.gameObject);
-            }
 
             MeasureRing();
             var opening = new GameObject("Ouverture du portail").transform;
@@ -654,6 +727,24 @@ namespace Archery.Portal
             var parentScale = transform.lossyScale.x;
             opening.localScale = Vector3.one * (m_Radius / Mathf.Max(0.01f, parentScale));
             m_Opening = opening;
+            PlaceRunes();
+        }
+
+        /// <summary>Version du placement des runes (2 : au milieu des faces des obélisques, plus près des arêtes).</summary>
+        public const int RuneLayoutVersion = 2;
+
+        /// <summary>La version du placement des runes posées dans la scène.</summary>
+        public int RuneLayout => m_RuneLayout;
+
+        /// <summary>Pose de nouveau les 5 runes sur les obélisques (dans l'éditeur), sans toucher à l'ouverture.</summary>
+        [ContextMenu("Replacer les runes")]
+        public void PlaceRunes()
+        {
+            foreach (var runeObject in m_RuneObjects)
+            {
+                if (runeObject != null)
+                    DestroyImmediate(runeObject.gameObject);
+            }
 
             m_Runes.Clear();
             BuildRunes();
@@ -661,6 +752,7 @@ namespace Archery.Portal
             for (var i = 0; i < m_Runes.Count; i++)
                 m_RuneObjects[i] = m_Runes[i].Transform;
             m_Runes.Clear();
+            m_RuneLayout = RuneLayoutVersion;
         }
 
         void OnDrawGizmosSelected()
@@ -818,6 +910,14 @@ namespace Archery.Portal
             var filter = obelisk.GetComponentInChildren<MeshFilter>();
             if (filter != null && TryCastMesh(filter, axis + outward * 20f, -outward, out var hit, out var normal))
             {
+                // Puis au milieu de cette face, face à l'axe de l'obélisque : vu de l'anneau, le rayon tombe souvent près
+                // d'une arête, et la rune débordait dans le vide.
+                if (TryCastMesh(filter, axis + normal * 20f, -normal, out var centered, out var centeredNormal))
+                {
+                    hit = centered;
+                    normal = centeredNormal;
+                }
+
                 facing = normal;
                 position = hit + normal * 0.02f;
             }

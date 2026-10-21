@@ -8,7 +8,7 @@ namespace Archery.Building
 {
     /// <summary>
     /// Tour de givre sur un socle au bord de la voie (GDD, section 9) : elle ralentit les ennemis autour d'elle,
-    /// volants compris (30 / 40 / 50 % dans un rayon de 8 / 9 / 10 m). Un disque bleuté montre sa portée au sol,
+    /// volants compris (30 / 40 / 50 % dans un rayon de 9 / 13 / 17 m). Un disque bleuté montre sa portée au sol,
     /// ses cristaux grandissent avec le niveau. Dans l'arène du boss final, elle tire plutôt des boules de glace dont le
     /// ralentissement s'estompe vite (<see cref="FiresIceBalls"/>).
     /// </summary>
@@ -19,7 +19,7 @@ namespace Archery.Building
 
         [Tooltip("Rayon (m) de la zone ralentie, par niveau. La hauteur ne compte pas : les volants au-dessus sont ralentis.")]
         [SerializeField]
-        float[] m_RadiusPerLevel = { 8f, 9f, 10f };
+        float[] m_RadiusPerLevel = { 9f, 13f, 17f };
 
         [Tooltip("Vitesse des ennemis dans la zone, par niveau (0,7 = 30 % plus lents).")]
         [SerializeField]
@@ -72,7 +72,7 @@ namespace Archery.Building
         float m_TickTimer;
         float m_Age;
 
-        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 8f) * RangeScale;
+        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 9f) * RangeScale;
 
         /// <summary>
         /// Dans l'arène du boss final : au lieu de ralentir tout ce qui l'entoure, la tour tire des boules de glace (c'est
@@ -231,7 +231,7 @@ namespace Archery.Building
         void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(0.55f, 0.85f, 1f, 0.8f);
-            var radius = ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 8f);
+            var radius = ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 9f);
             var previous = transform.position + Vector3.right * radius;
             for (var i = 1; i <= 48; i++)
             {

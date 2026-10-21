@@ -237,6 +237,7 @@ namespace Archery.FinalBoss
             }
 
             CheckThreshold();
+            UpdateGlitch();
             UpdateTitle();
         }
 

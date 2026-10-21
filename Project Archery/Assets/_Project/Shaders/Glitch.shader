@@ -2,6 +2,8 @@
 // Des tranches horizontales du modèle se décalent par à-coups, les couleurs se séparent (rouge, vert, bleu décalés),
 // des lignes de balayage défilent, et de rares bandes prennent la couleur des bugs. _Glitch règle la force (0 à 1).
 // Les à-coups changent 12 fois par seconde au plus, et ne touchent que le modèle (jamais toute la vue).
+// _Silhouette (0 à 1) assombrit le modèle jusqu'à _ShadowColor et ajoute un contour qui grésille, rouge ou cyan selon
+// les tranches : on ne voit plus qu'une forme sombre.
 Shader "Archery/Glitch"
 {
     Properties
@@ -10,6 +12,11 @@ Shader "Archery/Glitch"
         _BaseColor ("Couleur", Color) = (1, 1, 1, 1)
         _Glitch ("Force du bug", Range(0, 1)) = 0.5
         _Tint ("Couleur des bugs", Color) = (1, 0.1, 0.25, 1)
+        _Silhouette ("Silhouette (0 = texture, 1 = forme sombre)", Range(0, 1)) = 0
+        _ShadowColor ("Couleur de la silhouette", Color) = (0.012, 0.01, 0.018, 1)
+        [HDR] _RimColor ("Contour", Color) = (2.4, 0.12, 0.18, 1)
+        [HDR] _RimColorAlt ("Contour (autres tranches)", Color) = (0.15, 1.8, 2.4, 1)
+        _RimPower ("Finesse du contour", Float) = 3
     }
 
     SubShader
@@ -29,6 +36,11 @@ Shader "Archery/Glitch"
             half4 _BaseColor;
             half _Glitch;
             half4 _Tint;
+            half _Silhouette;
+            half4 _ShadowColor;
+            half4 _RimColor;
+            half4 _RimColorAlt;
+            half _RimPower;
         CBUFFER_END
 
         float GlitchHash(float n)
@@ -114,6 +126,13 @@ Shader "Archery/Glitch"
 
                 // Lignes de balayage qui défilent, et de rares bandes de la couleur des bugs.
                 color *= 0.82 + 0.18 * sin(input.positionWS.y * 140.0 + _Time.y * 25.0);
+
+                // La silhouette : le corps presque noir, et un contour qui grésille (rouge ou cyan, par tranches qui changent).
+                float3 viewDir = normalize(GetWorldSpaceViewDir(input.positionWS));
+                half rim = pow(1.0 - saturate(dot(normalize(input.normalWS), viewDir)), _RimPower);
+                half3 rimColor = GlitchHash(floor(input.positionWS.y * 7.0) + tick * 1.7) > 0.5 ? _RimColor.rgb : _RimColorAlt.rgb;
+                color = lerp(color, _ShadowColor.rgb, _Silhouette) + rimColor * rim * _Silhouette;
+
                 float band = GlitchHash(floor(input.positionWS.y * 9.0) + tick * 3.1);
                 color = band > 1.0 - 0.1 * _Glitch ? _Tint.rgb * 2.5 : color;
                 return half4(color, 1.0);

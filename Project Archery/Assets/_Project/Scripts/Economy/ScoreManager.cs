@@ -227,12 +227,17 @@ namespace Archery.Economy
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
+            // Un coup de katana compte comme une flèche qui touche (points de touche, combo).
+            var melee = info.Source is IMeleeSource;
+
             // Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche et ne font pas
             // monter le combo : sinon l'or grimperait avec le nombre de flèches. Leurs éliminations comptent.
-            if (!(info.Source is Arrow arrow) || arrow.IsExtra)
+            var arrow = info.Source as Arrow;
+            if (!melee && (arrow == null || arrow.IsExtra))
                 return;
 
-            m_ArrowsThatHitEnemies.Add(arrow);
+            if (arrow != null)
+                m_ArrowsThatHitEnemies.Add(arrow);
             Combo++;
 
             var basePoints = info.Zone switch

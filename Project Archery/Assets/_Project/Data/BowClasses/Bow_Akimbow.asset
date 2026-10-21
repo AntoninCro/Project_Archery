@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1048b2048fc20de45a8bc9fbfb3a58cb, type: 3}
+  m_Name: Bow_Akimbow
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Bows.BowDefinition
+  displayName: Akimbow
+  description: Il te voit clair comme de l'eau de roche.
+  specialPower: "Une arbal\xE8te dans chaque main, qui se recharge toute seule"
+  price: 0
+  availableFromWave: 0
+  visualPrefab: {fileID: 360677668153299517, guid: d8f2800bd63ae74408a9e43f289655dd, type: 3}
+  arrowSpeed: 45
+  damage: 4
+  arrowGravity: 0.85
+  maxDrawDistance: 0.2625
+  overdrawDistance: 0.15
+  drawToPower:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minDrawToFire: 0.12
+  pierceCount: 0
+  overcharge: 0
+  overchargeDuration: 0.9
+  laserDamageMultiplier: 3
+  laserRange: 120
+  laserColor: {r: 0.66, g: 0.16, b: 1, a: 1}
+  laserSecondColor: {r: 0.12, g: 0.45, b: 1, a: 1}
+  laserClips: []
+  overchargeClip: {fileID: 0}
+  starTrail: 0
+  arrowRain: 0
+  rainArrows: 10
+  rainRadius: 3.5
+  rainDamage: 0.5
+  rainZoneDuration: 3
+  rainZoneDamage: 0.3
+  rainColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  rainSplitClip: {fileID: 0}
+  rainZoneClip: {fileID: 0}
+  akimbo: 1
+  akimboModel: {fileID: 919132149155446097, guid: 046df2d1c7455f74d8ed030d34189c3e, type: 3}
+  akimboMaterial: {fileID: 2100000, guid: 5758e53424352ff4ebd0540d0120f38f, type: 2}
+  akimboMaterialRight: {fileID: 2100000, guid: 2c20e8bf5e959a34590111313bbb90f8, type: 2}
+  akimboNeon:
+  - {fileID: 2100000, guid: 72acd35fbb169d44b81620569b923ed1, type: 2}
+  - {fileID: 2100000, guid: 7587a2dd3cdec274e8927318844ba48a, type: 2}
+  akimboNeonRight:
+  - {fileID: 2100000, guid: 721c382590feed846bc738d1bf2f9a0e, type: 2}
+  - {fileID: 2100000, guid: d3e0a7afc0608e848b6d8c8164395579, type: 2}
+  akimboTip: {x: 0, y: 0.096, z: 0.285}
+  akimboScale: 0.7
+  akimboFireClip: {fileID: 8300000, guid: 60696dd005f234948b8e40f318eda6d5, type: 3}
+  ringDuration: 0.6
+  goldHalfWidth: 0.07
+  goodWidth: 0.15

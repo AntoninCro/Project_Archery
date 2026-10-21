@@ -19,6 +19,7 @@ MonoBehaviour:
   arrowSpeed: 55
   damage: 24
   maxDrawDistance: 0.2625
+  overdrawDistance: 0.15
   drawToPower:
     serializedVersion: 2
     m_Curve:

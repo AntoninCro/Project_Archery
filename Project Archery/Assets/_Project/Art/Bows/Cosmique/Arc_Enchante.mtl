@@ -1,0 +1,11 @@
+newmtl Corps
+Kd 0.6038 0.5395 0.0823
+d 1.0
+
+newmtl Ailettes
+Kd 0.5815 0.1708 0.0303
+d 1.0
+
+newmtl Poignee
+Kd 0.1329 0.1195 0.0215
+d 1.0

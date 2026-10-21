@@ -24,6 +24,9 @@ namespace Archery.Save
         /// <summary>L'épreuve du portail des étoiles a été réussie pendant la partie : une étoile à côté du nom.</summary>
         public bool stars;
 
+        /// <summary>L'épreuve du toit cyberpunk a été réussie pendant la partie : un losange à côté du nom.</summary>
+        public bool glitch;
+
         public static string Now() => DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 

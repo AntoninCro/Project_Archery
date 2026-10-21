@@ -195,6 +195,7 @@ namespace Archery.Upgrades
             public Color Trail;
             public bool OnFire;
             public int ArrowCount;
+            public float Gravity;
         }
 
         readonly Dictionary<Arrow, Tracked> m_Tracked = new Dictionary<Arrow, Tracked>();
@@ -246,9 +247,10 @@ namespace Archery.Upgrades
             var trail = shot.Arrow.TrailColor;
             var volley = 1 + PlayerUpgrades.RollCount(upgrades.MultishotAverage);
             var onFire = shot.Arrow.IsOnFire;
+            var gravity = shot.Arrow.GravityScale;
 
             Prepare(shot.Arrow, shot.Damage, shot.Grade, basePierce, trail, true);
-            Fan(shot.Origin, shot.Direction, shot.Speed, shot.Damage, shot.Grade, basePierce, trail, volley, onFire);
+            Fan(shot.Origin, shot.Direction, shot.Speed, shot.Damage, shot.Grade, basePierce, trail, volley, onFire, gravity);
 
             // Tir écho : la même volée, un instant plus tard, autant de fois que tiré au sort.
             var echoes = PlayerUpgrades.RollCount(upgrades.EchoAverage);
@@ -266,6 +268,7 @@ namespace Archery.Upgrades
                     Trail = trail,
                     OnFire = onFire,
                     ArrowCount = volley,
+                    Gravity = gravity,
                 });
             }
         }
@@ -273,7 +276,8 @@ namespace Archery.Upgrades
         // Les flèches en plus d'une volée de « total » flèches (celle du milieu est déjà partie, tout droit).
         // Elles se placent par paires, à gauche et à droite, à égalité : la volée reste centrée sur la visée.
         // Avec un nombre pair de flèches, celle qui n'a pas de paire part juste à côté de celle du milieu, dans la même direction.
-        void Fan(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, int pierce, Color trail, int total, bool onFire)
+        void Fan(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, int pierce, Color trail, int total, bool onFire,
+                 float gravity)
         {
             if (total <= 1 || direction.sqrMagnitude < 1e-4f)
                 return;
@@ -282,14 +286,14 @@ namespace Archery.Upgrades
             var aim = Quaternion.LookRotation(direction);
             var extras = total - 1;
             if (extras % 2 == 1)
-                LaunchExtra(origin + TwinOffset(aim), direction, speed, damage, grade, pierce, trail, true, onFire);
+                LaunchExtra(origin + TwinOffset(aim), direction, speed, damage, grade, pierce, trail, true, onFire, gravity);
 
             var pairs = extras / 2;
             var step = pairs > 0 ? Mathf.Min(m_SplitAngle, m_MaxFanAngle / pairs) : 0f;
             for (var i = 1; i <= pairs && HasRoomFor(2); i++)
             {
-                LaunchExtra(origin, aim * Quaternion.Euler(0f, i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true, onFire);
-                LaunchExtra(origin, aim * Quaternion.Euler(0f, -i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true, onFire);
+                LaunchExtra(origin, aim * Quaternion.Euler(0f, i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true, onFire, gravity);
+                LaunchExtra(origin, aim * Quaternion.Euler(0f, -i * step, 0f) * Vector3.forward, speed, damage, grade, pierce, trail, true, onFire, gravity);
             }
         }
 
@@ -300,7 +304,7 @@ namespace Archery.Upgrades
 
         // Une flèche en plus : elle ne casse pas le combo si elle rate, et tire ses propres effets au sort.
         void LaunchExtra(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, int pierce, Color trail, bool canSplit,
-                         bool onFire)
+                         bool onFire, float gravity)
         {
             var pool = ArrowPool.Instance;
             if (pool == null || direction.sqrMagnitude < 1e-4f || m_Tracked.Count >= m_MaxArrowsInFlight)
@@ -318,6 +322,7 @@ namespace Archery.Upgrades
                 TrailColor = trail,
                 IsShot = true,
                 IsExtra = true,
+                GravityScale = gravity,
             });
             if (onFire && Brazier.Instance != null)
                 Brazier.Instance.IgniteArrow(arrow);
@@ -387,8 +392,9 @@ namespace Archery.Upgrades
                     continue;
 
                 m_Echoes.RemoveAt(i);
-                LaunchExtra(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, true, echo.OnFire);
-                Fan(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, echo.ArrowCount, echo.OnFire);
+                LaunchExtra(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, true, echo.OnFire, echo.Gravity);
+                Fan(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, echo.ArrowCount, echo.OnFire,
+                    echo.Gravity);
                 Sfx.Play(m_EchoClip, echo.Origin, 0.7f, 1.1f);
             }
         }
@@ -426,7 +432,8 @@ namespace Archery.Upgrades
                 var aim = Quaternion.LookRotation(direction);
                 var position = arrow.transform.position;
                 if (splits % 2 == 1)
-                    LaunchExtra(position + TwinOffset(aim), direction, speed, state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire);
+                    LaunchExtra(position + TwinOffset(aim), direction, speed, state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire,
+                                arrow.GravityScale);
 
                 var pairs = splits / 2;
                 for (var i = 1; i <= pairs && HasRoomFor(2); i++)
@@ -434,9 +441,9 @@ namespace Archery.Upgrades
                     var plane = aim * Quaternion.AngleAxis(Random.Range(0f, 180f), Vector3.forward);
                     var angle = m_DelugeSpread * i / pairs;
                     LaunchExtra(position, plane * Quaternion.Euler(0f, angle, 0f) * Vector3.forward, speed,
-                                state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire);
+                                state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire, arrow.GravityScale);
                     LaunchExtra(position, plane * Quaternion.Euler(0f, -angle, 0f) * Vector3.forward, speed,
-                                state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire);
+                                state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire, arrow.GravityScale);
                 }
 
                 Sfx.Play(m_DelugeClip, position, 0.6f, Random.Range(0.95f, 1.1f));
@@ -709,7 +716,7 @@ namespace Archery.Upgrades
             var speed = Mathf.Max(10f, hit.Speed * m_RicochetSpeed);
             var target = Center(next);
             var time = Vector3.Distance(hit.Point, target) / speed;
-            target += Vector3.up * (0.5f * -Physics.gravity.y * time * time);
+            target += Vector3.up * (0.5f * -Physics.gravity.y * hit.Arrow.GravityScale * time * time);
             hit.Arrow.Deflect((target - hit.Point).normalized * speed);
             Sfx.Play(m_RicochetClip, hit.Point, 0.8f);
         }

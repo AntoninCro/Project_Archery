@@ -91,10 +91,13 @@ Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archer
   - bestiaire et boss : *Mini Legion Footman / Grunt / Lich PBR HP Polyart*, *RPG Monster DUO / Buddies / Couple / Partners PBR Polyart*, *Monster Minion Survivor PBR Polyart*, *Wizard PolyArt* (le mage) ; MK, le dragon rouge : *Four Evil Dragons PBR* (Dungeon Mason) ;
   - arcs et flèches : *Low Poly Style Bows & Quivers* (Dimasjk Studio) et *Easy Weapons* ; décor de l'antre : autres packs *Low Poly Style* de Dimasjk Studio ;
   - marteau de construction : *Stylized Mechanized Hammer* (AgeSoft) ; coffre animé : *Animated PBR Chest Demo* ; chevalier : *Toon RTS Units – Demo*.
-- **Kenney** (www.kenney.nl), licence CC0 : *Nature Kit*, *Castle Kit*, *Tower Defense Kit*, *UI Pack*, *UI Pack: RPG Extension*, *Fantasy UI Borders*, *Game Icons*, sons *Impact Sounds*, *Interface Sounds* et *RPG Audio*.
-- **Quaternius**, licence CC0 : le gant low-poly des mains, et la porte de l'antre (*Modular Dungeon*, coupée en double porte par le jeu).
+- **Kenney** (www.kenney.nl), licence CC0 : *Nature Kit*, *Castle Kit*, *Tower Defense Kit*, *UI Pack*, *UI Pack: RPG Extension*, *Fantasy UI Borders*, *Game Icons*, *City Kit (Commercial)*, sons *Impact Sounds*, *Interface Sounds* et *RPG Audio*.
+- **Quaternius**, licence CC0 : le gant low-poly des mains, la porte de l'antre (*Modular Dungeon*, coupée en double porte par le jeu), et les objets du toit cyberpunk (*Cyberpunk Game Kit*, via Poly Pizza).
+- **Toit cyberpunk** : les arbalètes, modèle *Sci fi crossbow* de **oarfish** (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), licence **CC-BY 4.0**, modifié (converti en OBJ, recentré, réduit, nouveau matériau).
+- **Arc légendaire** : le modèle *Bowblade – DAE WeaponCraft – WoW Styled Bow* de **Tijmen Matthys** (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), licence **CC-BY 4.0**, modifié (converti en OBJ, corde retirée, recentré et mis à l'échelle).
+- **Arc cosmique** : le modèle *Enchanted Bow* de **Zsky** (https://poly.pizza/m/9j2Tcybxue), licence **CC-BY 3.0**, modifié (corde retirée, matériaux refaits) ; la nébuleuse *Purple Nebula 1* des *Seamless Space Backgrounds* de **Screaming Brain Studios**, CC0 ; les sons *Sci-fi Weapon Charging 01* de **Tim_Verberne** et *Ion Cannon* de **qubodup** (freesound.org), CC0, recoupés.
 - **Polices**, licence SIL Open Font License 1.1 : *Cinzel* et *Cinzel Decorative* (Natanael Gama) ; *Share Tech Mono* (Carrois Type Design, Ralph du Carrois), pour les panneaux d'erreur du portail des étoiles.
-- **Musique du boss final** : « Mama Mia Marchello » (Klickaud), composée par un ami (crédit exact à confirmer).
+- **Musiques du boss final et de la dimension des étoiles** : « Mama Mia Marchello » et « Sad Nostalgie », composées par un ami (crédit exact à confirmer).
 - **Autres sons, ambiances et musiques** : provisoires, générés par script pour le prototype.
 - **Unity** : XR Interaction Toolkit et ses exemples, XR Hands, TextMesh Pro.
 - Développement assisté par IA (Claude, d'Anthropic) pour le code et la documentation ; les détails sont dans le rapport.
