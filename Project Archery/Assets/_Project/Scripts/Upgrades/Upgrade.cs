@@ -72,6 +72,12 @@ namespace Archery.Upgrades
 
         /// <summary>value = nombre de rebonds d'un ennemi à l'autre.</summary>
         Ricochet,
+
+        /// <summary>value = flèches en plus projetées par la grenade (6 = six flèches de plus).</summary>
+        GrenadeArrows,
+
+        /// <summary>value = part du temps de recharge de la grenade enlevée (0,3 = −30 %), sans descendre sous son minimum.</summary>
+        GrenadeCooldown,
     }
 
     /// <summary>Une amélioration proposée en boutique (GDD, section 6).</summary>

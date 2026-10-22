@@ -28,28 +28,28 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
   - displayName: Charge rapide
-    description: "Anneau 15 % plus rapide"
+    description: Anneau 15 % plus rapide
     rarity: 0
     effect: 2
     value: 0.15
     maxStacks: 0
     icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
   - displayName: "Pr\xE9cision"
-    description: "Bande verte 15 % plus large"
+    description: Bande verte 15 % plus large
     rarity: 0
     effect: 3
     value: 0.15
     maxStacks: 0
     icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
   - displayName: "Vitalit\xE9"
-    description: "+15 PV max"
+    description: +15 PV max
     rarity: 0
     effect: 4
     value: 15
     maxStacks: 0
     icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
   - displayName: Butin
-    description: "+20 % d'or"
+    description: +20 % d'or
     rarity: 0
     effect: 5
     value: 0.05
@@ -84,14 +84,14 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
   - displayName: "Fl\xE8che de foudre"
-    description: "20 % de chance d'appeler la foudre"
+    description: 20 % de chance d'appeler la foudre
     rarity: 1
     effect: 8
     value: 0.2
     maxStacks: 0
     icon: {fileID: 21300000, guid: 80004f1f07f44a90b07481b2be179056, type: 3}
   - displayName: "Per\xE7age"
-    description: "25 % de chance de traverser un ennemi"
+    description: 25 % de chance de traverser un ennemi
     rarity: 1
     effect: 9
     value: 0.25
@@ -112,7 +112,7 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
   - displayName: "Fl\xE8che de glace"
-    description: "25 % de chance de geler le sol"
+    description: 25 % de chance de geler le sol
     rarity: 1
     effect: 16
     value: 0.25
@@ -133,14 +133,14 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
   - displayName: "Cha\xEEne d'\xE9clairs"
-    description: "La foudre rebondit sur 3 ennemis"
+    description: La foudre rebondit sur 3 ennemis
     rarity: 2
     effect: 12
     value: 3
     maxStacks: 0
     icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
   - displayName: "Fl\xE8che explosive"
-    description: "25 % de chance d'exploser"
+    description: 25 % de chance d'exploser
     rarity: 2
     effect: 13
     value: 0.25
@@ -158,6 +158,20 @@ MonoBehaviour:
     rarity: 2
     effect: 18
     value: 1
+    maxStacks: 0
+    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+  - displayName: Grenade sauvage
+    description: "La grenade \xE0 fl\xE8ches en projette 6 de plus."
+    rarity: 1
+    effect: 19
+    value: 6
+    maxStacks: 0
+    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+  - displayName: Grenade rapide
+    description: "La grenade \xE0 fl\xE8ches recharge 30 % plus vite."
+    rarity: 1
+    effect: 20
+    value: 0.3
     maxStacks: 0
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   rarityOdds:
