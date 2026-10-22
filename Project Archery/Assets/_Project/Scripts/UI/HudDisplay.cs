@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using Archery.Bows;
 using Archery.Building;
@@ -70,6 +71,15 @@ namespace Archery.UI
         [SerializeField]
         Color m_TimerWarningColor = new Color(1f, 0.35f, 0.25f);
 
+        [Tooltip("Contenu caché tant que la première vague n'a pas commencé, puis affiché au gong. Pour le grand panneau du " +
+                 "décor, qui n'a rien à montrer avant la partie ; pas pour la montre.")]
+        [SerializeField]
+        bool m_HiddenBeforeFirstWave;
+
+        // Les enfants affichés au départ : ceux que « Hidden Before First Wave » cache et réaffiche.
+        readonly List<GameObject> m_Contents = new List<GameObject>();
+        bool? m_ContentsShown;
+
         // Dernières valeurs affichées : on ne reconstruit un texte que s'il change.
         int m_Score = -1;
         int m_Money = -1;
@@ -91,10 +101,20 @@ namespace Archery.UI
         {
             if (m_TimerText != null)
                 m_TimerColor = m_TimerText.color;
+
+            if (m_HiddenBeforeFirstWave)
+            {
+                foreach (Transform child in transform)
+                {
+                    if (child.gameObject.activeSelf)
+                        m_Contents.Add(child.gameObject);
+                }
+            }
         }
 
         void Update()
         {
+            UpdateVisibility();
             UpdateScore();
             UpdateWave();
             UpdateBoss();
@@ -102,6 +122,26 @@ namespace Archery.UI
             UpdateTowerHealth();
             UpdateDifficulty();
             UpdateBuffs();
+        }
+
+        // Avant la première vague, on cache les enfants et non l'objet : ce script continue de tourner pour les réafficher
+        // au gong (le fond du thème se déplie alors, comme un menu).
+        void UpdateVisibility()
+        {
+            if (!m_HiddenBeforeFirstWave)
+                return;
+
+            var waves = WaveManager.Instance;
+            var shown = waves == null || waves.Phase != WavePhase.Ready;
+            if (shown == m_ContentsShown)
+                return;
+
+            m_ContentsShown = shown;
+            foreach (var content in m_Contents)
+            {
+                if (content != null)
+                    content.SetActive(shown);
+            }
         }
 
         // « Dégâts ×2 · 23 s », une ligne par bonus. Le texte n'est reconstruit que quand une seconde change.
