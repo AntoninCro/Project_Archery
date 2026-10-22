@@ -5,8 +5,12 @@ using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Gravity;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Jump;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Turning;
 
 namespace Archery.Player
 {
@@ -43,6 +47,12 @@ namespace Archery.Player
 
         static readonly List<Collider> s_DestroyedColliders = new List<Collider>();
 
+        // Ceux qui figent le joueur sur place (l'intro du dragon, dans le noir…).
+        static readonly HashSet<object> s_MovementLocks = new HashSet<object>();
+
+        // Les déplacements coupés par le verrou, rallumés quand il se lève.
+        readonly List<LocomotionProvider> m_LockedProviders = new List<LocomotionProvider>();
+
         readonly List<XRBaseInputInteractor> m_Hands = new List<XRBaseInputInteractor>();
 
         // Colliders des objets tenus, avec leur calque d'origine.
@@ -50,6 +60,24 @@ namespace Archery.Player
         CharacterController m_Body;
 
         public static PlayerRig Instance { get; private set; }
+
+        /// <summary>Le joueur est figé sur place : voir <see cref="SetMovementLocked"/>.</summary>
+        public static bool IsMovementLocked => s_MovementLocks.Count > 0;
+
+        /// <summary>
+        /// Fige le joueur sur place (ou le libère) pour <paramref name="owner"/> : plus de marche, de course aux bras, de
+        /// glissade ni de saut, au casque comme au clavier ; il peut encore tourner et regarder autour de lui, et la
+        /// gravité reste. Il reste figé tant qu'un des demandeurs ne l'a pas libéré.
+        /// </summary>
+        public static void SetMovementLocked(object owner, bool locked)
+        {
+            if (owner == null)
+                return;
+
+            var changed = locked ? s_MovementLocks.Add(owner) : s_MovementLocks.Remove(owner);
+            if (changed && Instance != null)
+                Instance.ApplyMovementLock();
+        }
 
         public XROrigin Origin => m_Origin;
         public Transform Head => m_Origin != null && m_Origin.Camera != null ? m_Origin.Camera.transform : null;
@@ -164,6 +192,40 @@ namespace Archery.Player
         {
             if (Instance == this)
                 Instance = null;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => s_MovementLocks.Clear();
+
+        // Coupe les déplacements d'XRI et la course aux bras (pas la rotation, la gravité ni la téléportation du jeu), ou
+        // rallume ceux qu'on avait coupés.
+        void ApplyMovementLock()
+        {
+            if (IsMovementLocked)
+            {
+                if (m_LockedProviders.Count > 0)
+                    return;
+
+                var root = m_Origin != null ? m_Origin.transform : transform;
+                foreach (var provider in root.GetComponentsInChildren<LocomotionProvider>(true))
+                {
+                    if (!provider.enabled || provider is SnapTurnProvider || provider is ContinuousTurnProvider ||
+                        provider is GravityProvider || provider is TeleportationProvider)
+                        continue;
+                    provider.enabled = false;
+                    m_LockedProviders.Add(provider);
+                }
+
+                return;
+            }
+
+            foreach (var provider in m_LockedProviders)
+            {
+                if (provider != null)
+                    provider.enabled = true;
+            }
+
+            m_LockedProviders.Clear();
         }
 
         void OnSelectEntered(SelectEnterEventArgs args) => SetHeld(args.interactableObject, true);

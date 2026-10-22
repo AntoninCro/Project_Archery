@@ -15,7 +15,8 @@ namespace Archery.FinalBoss
     /// <summary>
     /// La mise en scène de l'arène du dragon (GDD, section 23), au rythme de la musique :
     /// <list type="number">
-    /// <item>le joueur arrive dans le noir complet, la musique commence ;</item>
+    /// <item>le joueur arrive dans le noir complet, la musique commence ; il reste figé sur place (il peut regarder
+    /// autour de lui) jusqu'à ce que tous les cristaux soient allumés (22 octobre) ;</item>
     /// <item>après les 4 premiers temps, les cristaux du plafond s'allument, un quart sur chaque temps ;</item>
     /// <item>la barre de PV du dragon apparaît et se remplit, avec son nom ;</item>
     /// <item>le dragon se réveille et rugit : le combat commence. Les cristaux pulsent ensuite sur chaque temps,
@@ -310,6 +311,7 @@ namespace Archery.FinalBoss
         {
             if (Instance == this)
                 Instance = null;
+            PlayerRig.SetMovementLocked(this, false);
             RestoreMusicVolume();
             if (m_Dragon != null)
             {
@@ -374,6 +376,7 @@ namespace Archery.FinalBoss
 
             m_Stage = Stage.Intro;
             m_StageTime = 0f;
+            PlayerRig.SetMovementLocked(this, true);
             ApplyRenderSettings(0f);
             SetLight(0f);
             SetFallProgress(0f);
@@ -446,6 +449,10 @@ namespace Archery.FinalBoss
             m_Light = Mathf.MoveTowards(m_Light, lit / (float)CeilingCrystals.GroupCount, Time.deltaTime * 3f);
             SetLight(m_Light);
 
+            // Tous les cristaux allumés : le joueur peut bouger.
+            if (lit >= CeilingCrystals.GroupCount)
+                PlayerRig.SetMovementLocked(this, false);
+
             // Le dragon, debout en haut de la coulée pendant l'allumage, s'envole et pique sur le centre avant la barre ;
             // pendant qu'elle se remplit, il crache son feu vers la voûte.
             if (m_Dragon != null && !m_DragonDashed && beat >= m_DragonDashBeat)
@@ -503,6 +510,7 @@ namespace Archery.FinalBoss
 
         void StartFight()
         {
+            PlayerRig.SetMovementLocked(this, false);
             if (m_Dragon != null)
                 m_Dragon.SetVisible(true);
             m_Stage = Stage.Fight;

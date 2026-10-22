@@ -20,9 +20,10 @@ namespace Archery.Bows
     [RequireComponent(typeof(PlayerRig))]
     public class Quiver : MonoBehaviour
     {
-        [Tooltip("Coin minimal de la zone de prise, dans le repère horizontal de la tête (x droite, y haut, z avant).")]
+        [Tooltip("Coin minimal de la zone de prise, dans le repère horizontal de la tête (x droite, y haut, z avant). " +
+                 "y = -0,42 (-0,6 avant le 22 octobre) : dessous, le bas du dos est à la ceinture de grenades.")]
         [SerializeField]
-        Vector3 m_GrabZoneMin = new Vector3(-0.45f, -0.6f, -0.6f);
+        Vector3 m_GrabZoneMin = new Vector3(-0.45f, -0.42f, -0.6f);
 
         [Tooltip("Coin maximal de la zone de prise. z = -0.02 : il suffit que la main passe derrière le plan des yeux.")]
         [SerializeField]

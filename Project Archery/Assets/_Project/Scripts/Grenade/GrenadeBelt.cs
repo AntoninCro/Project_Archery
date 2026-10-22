@@ -3,18 +3,24 @@ using Archery.Player;
 using Archery.Upgrades;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace Archery.Grenades
 {
     /// <summary>
-    /// Ceinture invisible dans le bas du dos : une main vide qui serre la poignée sous le carquois
-    /// en ressort une grenade à flèches. Elle tient aussi le temps de recharge, lu par la montre.
+    /// Ceinture invisible aux hanches : une main vide qui serre la poignée à hauteur des poches (devant, sur le côté ou
+    /// derrière) en sort une grenade à flèches. Elle tient aussi le temps de recharge, lu par la montre.
     /// À placer sur le XR Origin, avec <see cref="PlayerRig"/> et <see cref="Archery.Bows.Quiver"/>.
     /// </summary>
     /// <remarks>
     /// Même principe que le carquois, mais plus bas : la zone commence sous celle du carquois
     /// pour qu'un même geste ne puisse pas donner une flèche et une grenade.
+    /// Le 22 octobre, elle est passée du bas du dos (on devait aller la chercher loin derrière) aux hanches, comme une
+    /// grenade qu'on sort de sa poche. Elle s'arrête juste derrière le katana et le bouclier rangés à la hanche.
+    /// Une main qui vise ou touche déjà ce qu'elle peut prendre (un emplacement de construction au bout du rayon, une
+    /// arme rangée, un cristal…) le prend, pas une grenade : sinon, viser un emplacement au sol, la main basse, sortait
+    /// une grenade.
     /// </remarks>
     [DefaultExecutionOrder(XRInteractionUpdateOrder.k_InteractionManager - 100)]
     [DisallowMultipleComponent]
@@ -27,13 +33,15 @@ namespace Archery.Grenades
 
         [Header("Zone de prise")]
         [Tooltip("Coin minimal de la zone, dans le repère horizontal de la tête (x droite, y haut, z avant). " +
-                 "Le y reste sous la zone du carquois, qui descend à -0,6.")]
+                 "Les hanches et les poches : de 0,95 à 0,45 m sous les yeux (le carquois s'arrête à 0,42), " +
+                 "jusqu'à 35 cm derrière les yeux (les poches arrière).")]
         [SerializeField]
-        Vector3 m_GrabZoneMin = new Vector3(-0.45f, -1.05f, -0.5f);
+        Vector3 m_GrabZoneMin = new Vector3(-0.45f, -0.95f, -0.35f);
 
-        [Tooltip("Coin maximal de la zone. z = -0,02 : il suffit que la main passe derrière le plan des yeux.")]
+        [Tooltip("Coin maximal de la zone. z = 0,12 : les poches avant, juste derrière le katana et le bouclier rangés " +
+                 "à la hanche (18 et 20 cm devant les yeux).")]
         [SerializeField]
-        Vector3 m_GrabZoneMax = new Vector3(0.45f, -0.62f, -0.02f);
+        Vector3 m_GrabZoneMax = new Vector3(0.45f, -0.45f, 0.12f);
 
         [Tooltip("Délai (s) pendant lequel une pression faite juste avant d'entrer dans la zone compte encore.")]
         [SerializeField]
@@ -51,15 +59,19 @@ namespace Archery.Grenades
         float m_MinCooldown = 4f;
 
         [Header("Retours")]
-        [Tooltip("Petite vibration quand une main vide entre dans la zone.")]
+        [Tooltip("Petite vibration quand une main vide entre dans la zone (une toutes les 2 s au plus : en courant, les " +
+                 "bras balancés y passent sans arrêt).")]
         [SerializeField]
         float m_EnterHapticAmplitude = 0.12f;
 
         [SerializeField]
         AudioClip m_DrawClip;
 
+        const float k_EnterPulseInterval = 2f;
+
         PlayerRig m_Rig;
         ArrowGrenade m_Held;
+        float m_LastEnterPulse = float.NegativeInfinity;
         float m_Remaining;
         float m_LastCooldown;
 
@@ -118,8 +130,9 @@ namespace Archery.Grenades
             if (m_Remaining > 0f)
                 m_Remaining = Mathf.Max(0f, m_Remaining - Time.deltaTime);
 
+            // Jeu en pause (menu ouvert) : pas de grenade à prendre, comme le carquois.
             var head = m_Rig.Head;
-            if (head == null || m_GrenadePrefab == null)
+            if (head == null || m_GrenadePrefab == null || SlowMotion.IsPaused)
                 return;
 
             var toHeadSpace = Quaternion.Inverse(m_Rig.HeadYaw);
@@ -149,11 +162,14 @@ namespace Archery.Grenades
                 if (m_HandInZone != hand)
                 {
                     m_HandInZone = hand;
-                    if (!hand.hasSelection && IsReady)
+                    if (!hand.hasSelection && IsReady && Time.time - m_LastEnterPulse >= k_EnterPulseInterval)
+                    {
+                        m_LastEnterPulse = Time.time;
                         Haptics.Pulse(hand, m_EnterHapticAmplitude, 0.03f);
+                    }
                 }
 
-                if (IsReady && !hand.hasSelection && hand.selectInput.ReadIsPerformed() && PressedRecently(hand))
+                if (IsReady && !hand.hasSelection && hand.selectInput.ReadIsPerformed() && PressedRecently(hand) && !HasOtherTarget(hand))
                     GiveGrenade(hand);
             }
         }
@@ -165,6 +181,22 @@ namespace Archery.Grenades
 
         bool PressedRecently(XRBaseInputInteractor hand) =>
             m_PressedHand == hand && Time.time - m_PressTime <= m_PressBuffer;
+
+        // La main survole (au bout du rayon ou de près) quelque chose qu'elle peut prendre : un emplacement de construction,
+        // une arme rangée à la hanche (katana, bouclier, Akimbow), un cristal… La poignée le prend, pas une grenade.
+        static bool HasOtherTarget(XRBaseInputInteractor hand)
+        {
+            var hovered = hand.interactablesHovered;
+            for (var i = 0; i < hovered.Count; i++)
+            {
+                if (hovered[i] is not Object target || target == null)
+                    continue;
+                if (hovered[i] is IXRSelectInteractable selectable && selectable.IsSelectableBy(hand))
+                    return true;
+            }
+
+            return false;
+        }
 
         void GiveGrenade(XRBaseInputInteractor hand)
         {
@@ -193,6 +225,13 @@ namespace Archery.Grenades
             m_Held = null;
             m_LastCooldown = Cooldown;
             m_Remaining = m_LastCooldown;
+        }
+
+        /// <summary>Appelé par la grenade lâchée pendant la pause : elle retourne à la ceinture, sans recharge.</summary>
+        internal void OnGrenadeReturned(ArrowGrenade grenade)
+        {
+            if (m_Held == grenade)
+                m_Held = null;
         }
 
         /// <summary>Rend la grenade disponible tout de suite (nouvelle partie, test).</summary>

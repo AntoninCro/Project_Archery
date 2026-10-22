@@ -1,0 +1,152 @@
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using System.Collections.Generic;
+using Archery.Building;
+using Archery.Defense;
+using Archery.Player;
+using Archery.Shop;
+using Archery.UI;
+using Archery.Upgrades;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+namespace Archery.Core
+{
+    /// <summary>
+    /// Raccourci de la démo du 23 octobre, pour que le professeur puisse affronter le boss final : la touche F donne
+    /// 2 exemplaires de chaque amélioration de la boutique, et remplit les emplacements de tourelle (au bord de la voie)
+    /// de tourelles niveau 2, balistes et tours de givre en alternance autour de la tour. Une fois par partie.
+    /// </summary>
+    /// <remarks>
+    /// Seulement dans l'éditeur et les builds de développement, comme les autres raccourcis de démo. Il se crée tout
+    /// seul au lancement : rien à poser dans la scène. Une construction en cours est d'abord terminée ; une tourelle déjà
+    /// là monte au niveau 2, les emplacements de la voie (barricades, pièges) ne changent pas.
+    /// </remarks>
+    [DisallowMultipleComponent]
+    public class DemoBoost : MonoBehaviour
+    {
+        const int k_Copies = 2;
+        const int k_TurretLevel = 2;
+        static readonly Color k_Color = new Color(1f, 0.85f, 0.3f);
+
+        bool m_Used;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Create()
+        {
+            var go = new GameObject("[Demo Boost]");
+            DontDestroyOnLoad(go);
+            go.AddComponent<DemoBoost>();
+        }
+
+        void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+
+        void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // La scène recommence (nouvelle partie) : le raccourci resservira.
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (mode == LoadSceneMode.Single)
+                m_Used = false;
+        }
+
+        void Update()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null || !keyboard.fKey.wasPressedThisFrame || DesktopHand.IsTypingText)
+                return;
+
+            if (m_Used)
+            {
+                HeadMessages.Show("Démo : déjà fait pour cette partie", k_Color, 2.5f);
+                return;
+            }
+
+            m_Used = true;
+            var upgrades = GiveUpgrades();
+            var turrets = FillTurrets();
+            HeadMessages.Show($"Démo : {upgrades} améliorations, {turrets} tourelles niveau {k_TurretLevel}", k_Color, 4f);
+        }
+
+        static int GiveUpgrades()
+        {
+            var player = PlayerUpgrades.Instance;
+            var shop = ShopManager.Instance;
+            var catalog = shop != null ? shop.Catalog : null;
+            if (player == null || catalog == null)
+                return 0;
+
+            var given = 0;
+            foreach (var upgrade in catalog.upgrades)
+            {
+                for (var i = 0; i < k_Copies && player.CanTake(upgrade); i++)
+                {
+                    player.Add(upgrade);
+                    given++;
+                }
+            }
+
+            return given;
+        }
+
+        static int FillTurrets()
+        {
+            var manager = BuildManager.Instance;
+            if (manager == null)
+                return 0;
+
+            manager.FinishNow();
+            var choices = new List<StructureDefinition>();
+            manager.GetChoices(BuildSlot.Roadside, choices);
+            if (choices.Count == 0)
+                return 0;
+
+            // Dans l'ordre autour de la tour : les balistes et les tours de givre alternent sur la carte.
+            var center = Tower.Instance != null ? Tower.Instance.transform.position : Vector3.zero;
+            var sockets = new List<BuildSocket>();
+            foreach (var socket in BuildSocket.All)
+            {
+                if (socket != null && socket.isActiveAndEnabled && socket.Slot == BuildSlot.Roadside)
+                    sockets.Add(socket);
+            }
+
+            sockets.Sort((a, b) => Angle(a, center).CompareTo(Angle(b, center)));
+
+            var count = 0;
+            for (var i = 0; i < sockets.Count; i++)
+            {
+                var socket = sockets[i];
+                var structure = socket.Structure;
+                if (structure == null)
+                {
+                    var definition = choices[i % choices.Count];
+                    if (definition.MaxLevel < 1)
+                        continue;
+                    structure = socket.Place(definition);
+                }
+
+                var target = Mathf.Min(k_TurretLevel, structure.MaxLevel);
+                if (structure.Level >= target)
+                    continue;
+
+                // Niveau par niveau, comme au marteau, mais sans plan bleu ni coups.
+                for (var level = structure.Level + 1; level <= target; level++)
+                {
+                    structure.BeginConstruction(level, null);
+                    structure.FinishConstruction();
+                }
+
+                count++;
+            }
+
+            return count;
+        }
+
+        static float Angle(BuildSocket socket, Vector3 center)
+        {
+            var offset = socket.transform.position - center;
+            return Mathf.Atan2(offset.z, offset.x);
+        }
+    }
+}
+#endif

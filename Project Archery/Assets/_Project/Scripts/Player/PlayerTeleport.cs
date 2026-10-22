@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Archery.Core;
+using Archery.Waves;
 using UnityEngine;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
 
 namespace Archery.Player
@@ -11,7 +14,13 @@ namespace Archery.Player
     /// Le déplacement passe par le Teleportation Provider d'XRI, qui gère le CharacterController et la gravité ;
     /// sans lui, le XR Origin est déplacé directement.
     /// </summary>
-    /// <remarks>À placer sur le XR Origin, avec le <see cref="PlayerRig"/>. Le fondu utilise le <see cref="ScreenFader"/>.</remarks>
+    /// <remarks>
+    /// À placer sur le XR Origin, avec le <see cref="PlayerRig"/>. Le fondu utilise le <see cref="ScreenFader"/>.
+    /// Au lancement, le joueur apparaissait là où le casque se trouvait dans la pièce, par rapport au centre de la zone de
+    /// jeu : parfois dans la tour ou à côté. Depuis le 22 octobre, il est remis au point de départ (là où est le XR
+    /// Origin au lancement, tourné comme lui) dès que le casque suit la tête, puis, avant la première vague, chaque fois
+    /// qu'on remet le casque, qu'il se recentre ou que son suivi saute.
+    /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(PlayerRig))]
     public class PlayerTeleport : MonoBehaviour
@@ -26,6 +35,26 @@ namespace Archery.Player
 
         [SerializeField]
         AudioClip m_TeleportClip;
+
+        [Tooltip("Remet le joueur au point de départ quand le casque commence à suivre la tête, puis, avant la première " +
+                 "vague, quand on le remet, qu'il se recentre ou que son suivi saute : la place du casque dans la pièce ne " +
+                 "compte plus.")]
+        [SerializeField]
+        bool m_PlaceAtSpawn = true;
+
+        // Un saut de la tête plus grand que ça (m) d'une image à l'autre : le suivi s'est recentré.
+        const float k_TrackingJump = 0.5f;
+
+        static readonly List<XRInputSubsystem> s_InputSubsystems = new List<XRInputSubsystem>();
+
+        readonly List<XRInputSubsystem> m_Subscribed = new List<XRInputSubsystem>();
+        Vector3 m_SpawnPosition;
+        float m_SpawnYaw;
+        bool m_Placed;
+        bool m_WasPresent;
+        bool m_OriginUpdated;
+        bool m_HasLastHead;
+        Vector3 m_LastHead;
 
         PlayerRig m_Rig;
         TeleportationProvider m_Provider;
@@ -44,12 +73,86 @@ namespace Archery.Player
             m_Rig = GetComponent<PlayerRig>();
             m_Provider = GetComponentInChildren<TeleportationProvider>(true);
             m_Controller = GetComponentInChildren<CharacterController>(true);
+
+            // Le point de départ : le XR Origin tel qu'il est posé dans la scène (en haut de la tour).
+            var origin = m_Rig.Origin != null ? m_Rig.Origin.transform : transform;
+            m_SpawnPosition = origin.position;
+            m_SpawnYaw = origin.eulerAngles.y;
         }
 
         void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
+            foreach (var subsystem in m_Subscribed)
+            {
+                if (subsystem != null)
+                    subsystem.trackingOriginUpdated -= OnTrackingOriginUpdated;
+            }
+
+            m_Subscribed.Clear();
+        }
+
+        void OnTrackingOriginUpdated(XRInputSubsystem subsystem) => m_OriginUpdated = true;
+
+        void Update()
+        {
+            if (!m_PlaceAtSpawn)
+                return;
+
+            // Sans casque, le jeu au clavier place lui-même la caméra.
+            var desktop = DesktopControls.Instance;
+            if (desktop != null && desktop.IsActive)
+                return;
+
+            var device = InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            var head = m_Rig.Head;
+            if (!device.isValid || head == null)
+                return;
+
+            WatchTrackingOrigin();
+
+            // Sans capteur de présence, le casque compte comme porté.
+            var tracked = device.TryGetFeatureValue(CommonUsages.isTracked, out var isTracked) && isTracked;
+            var present = !device.TryGetFeatureValue(CommonUsages.userPresence, out var userPresent) || userPresent;
+            var local = head.localPosition;
+            var jumped = m_HasLastHead && (local - m_LastHead).sqrMagnitude > k_TrackingJump * k_TrackingJump;
+            m_LastHead = local;
+            m_HasLastHead = tracked;
+
+            var putOn = present && !m_WasPresent;
+            m_WasPresent = present;
+            var recentered = m_OriginUpdated;
+            m_OriginUpdated = false;
+            if (!tracked || !present || IsTeleporting)
+                return;
+
+            // La première fois dans la scène, toujours ; ensuite, seulement avant la première vague.
+            if (m_Placed && !(BeforeFirstWave() && (putOn || recentered || jumped)))
+                return;
+
+            if (TryTeleport(m_SpawnPosition, m_SpawnYaw))
+                m_Placed = true;
+        }
+
+        static bool BeforeFirstWave()
+        {
+            var waves = WaveManager.Instance;
+            return waves == null || waves.Phase == WavePhase.Ready;
+        }
+
+        // Le recentrage du casque (bouton Meta maintenu…) : Unity le signale par le sous-système d'entrée XR.
+        void WatchTrackingOrigin()
+        {
+            if (m_Subscribed.Count > 0)
+                return;
+
+            SubsystemManager.GetSubsystems(s_InputSubsystems);
+            foreach (var subsystem in s_InputSubsystems)
+            {
+                subsystem.trackingOriginUpdated += OnTrackingOriginUpdated;
+                m_Subscribed.Add(subsystem);
+            }
         }
 
         /// <summary>

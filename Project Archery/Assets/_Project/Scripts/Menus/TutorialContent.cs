@@ -40,6 +40,13 @@ namespace Archery.Menus
             public List<Window> windows = new List<Window>();
         }
 
+        /// <summary>La fenêtre de la grenade à flèches, ajoutée à la catégorie Tir le 22 octobre (vidéo <c>Tir_3</c>).</summary>
+        public const string GrenadeTitle = "La grenade à flèches";
+
+        public const string GrenadeText =
+            "Porte une main vide à ta hanche, comme pour fouiller ta poche, et serre la poignée : une grenade sort. Lance-la : " +
+            "elle éclate au premier contact en une gerbe de flèches. Ta montre affiche sa recharge.";
+
         public List<Section> sections = new List<Section>();
 
         /// <summary>L'asset de Resources, ou le contenu par défaut s'il manque.</summary>
@@ -49,7 +56,7 @@ namespace Archery.Menus
             return content != null && content.sections.Count > 0 ? content : CreateDefault();
         }
 
-        /// <summary>Le contenu validé le 16 octobre : 4 catégories, 13 fenêtres.</summary>
+        /// <summary>Le contenu validé le 16 octobre : 4 catégories, 13 fenêtres ; plus la grenade le 22 octobre.</summary>
         public static TutorialContent CreateDefault()
         {
             var content = CreateInstance<TutorialContent>();
@@ -61,7 +68,8 @@ namespace Archery.Menus
                      "Prends l'arc avec la poignée. Attrape une flèche au-dessus de ton épaule et pose-la sur la corde : tends-la, puis lâche."),
                     ("L'anneau et les points faibles",
                      "À pleine tension, un anneau apparaît : lâche quand le cercle passe dans le vert (un « ding » te prévient). " +
-                     "La tête compte double, la gemme des boss triple.")),
+                     "La tête compte double, la gemme des boss triple."),
+                    (GrenadeTitle, GrenadeText)),
                 NewSection("Déplacement", "Deplacement",
                     ("Marcher et tourner",
                      "Le joystick gauche te fait marcher là où tu regardes. Le joystick droit te tourne par crans (désactivable dans les paramètres)."),

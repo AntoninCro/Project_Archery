@@ -269,8 +269,10 @@ namespace Archery.Player
                 keyboard = null;
 
             // Avancer : touches à l'emplacement de W, A, S, D (Z, Q, S, D sur un clavier AZERTY), ou les flèches.
+            // Figé sur place (l'intro du dragon, dans le noir) : on peut encore regarder autour de soi, pas bouger.
+            var locked = PlayerRig.IsMovementLocked;
             var input = Vector2.zero;
-            if (keyboard != null)
+            if (keyboard != null && !locked)
             {
                 if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed)
                     input.y += 1f;
@@ -299,7 +301,7 @@ namespace Archery.Player
             if (m_Body.isGrounded)
             {
                 m_VerticalSpeed = -1f;
-                if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame)
+                if (keyboard != null && !locked && keyboard.spaceKey.wasPressedThisFrame)
                     m_VerticalSpeed = m_JumpSpeed;
             }
             else

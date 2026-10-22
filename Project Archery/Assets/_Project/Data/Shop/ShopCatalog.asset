@@ -161,10 +161,10 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Grenade sauvage
-    description: "La grenade \xE0 fl\xE8ches en projette 6 de plus."
+    description: "La grenade \xE0 fl\xE8ches en projette 12 de plus."
     rarity: 1
     effect: 19
-    value: 6
+    value: 12
     maxStacks: 0
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Grenade rapide

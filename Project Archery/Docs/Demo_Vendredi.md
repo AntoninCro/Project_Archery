@@ -46,7 +46,7 @@ L'idéal, c'est **deux personnes** : toi dans le casque, et un **copilote au cla
 
 **Faire essayer le jury** (si on te le propose) : en **Facile**, aux cibles d'entraînement puis le début de la vague 1, 2 à 3 minutes maximum. Règle le casque sur la personne et explique le geste avant, pas pendant.
 
-**Pour aller vite à MK** : chaque vague, c'est N (lancer la vague), N (faire venir le boss), N (le tuer). Répète-le jeudi pour connaître le nombre exact d'appuis. Plus simple : **prépare une partie déjà avancée** avant ton passage, pour ne pas tout faire en direct.
+**Pour aller vite à MK** : **F** d'abord (améliorations et tourelles niveau 2, qui suivent le joueur dans l'arène), puis chaque vague, c'est N (lancer la vague), N (faire venir le boss), N (le tuer). Répète-le jeudi pour connaître le nombre exact d'appuis. Plus simple : **prépare une partie déjà avancée** avant ton passage, pour ne pas tout faire en direct.
 
 ## 4. Les raccourcis de démo
 
@@ -65,6 +65,7 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
 | **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana et le bouclier (après U) |
+| **F** | **Pour faire affronter MK au prof** : 2 exemplaires de chaque amélioration de la boutique, et tous les emplacements de tourelle (au bord de la voie) remplis de tourelles **niveau 2** (balistes et tours de givre en alternance ; une tourelle déjà là monte au niveau 2). Une fois par partie ; les barricades et pièges ne changent pas |
 | **O** | Équipe tout de suite le katana et le bouclier (même verrouillés, même pendant une vague) ; **O** encore : l'arme d'avant |
 | **L** | Un fragment d'arc légendaire (au 3e, l'arc est débloqué et arrive en main) |
 | **U** | Débloque tous les succès, donc tous les arcs |
