@@ -81,7 +81,7 @@ Dans l'ordre conseillé (aussi dans le GDD, section 21, « À faire ensuite ») 
 2. Les tests au casque des nouveautés (`Checklist_Demo.md`).
 3. La refonte du katana (partie 2).
 4. Le build Windows en *Development Build* (les raccourcis de démo y marchent).
-5. La vidéo `Tir_3` du tutoriel (la grenade), les crédits des musiques de l'ami, les noms de l'équipe dans le README.
+5. La vidéo `Tir_3` du tutoriel (la grenade), les crédits des musiques de l'ami.
 6. Le ménage des fichiers inutilisés (liste dans le GDD, section 21).
 7. Plus tard : le mode démo en tutoriel interactif, les idées du lore (`Lore.md`, GDD section 24), refaire la ville du toit
    cyberpunk (le joueur s'en charge).

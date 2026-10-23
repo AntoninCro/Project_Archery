@@ -706,7 +706,7 @@ Objectif : toutes les consignes du cours sont couvertes.
 - [x] Coup de flèche au corps à corps (section 4.5) : rien à monter, testé (`Docs/Guide_CorpsACorps.md`).
 - [ ] Arc légendaire en 3 fragments, avec la pluie de flèches (refait le 20 octobre, section 5 : à tester en casque ; modèle à choisir).
 - [x] Grenade de flèches (section 4.6) et arcs comme classes avec leurs succès (section 23) : confiés à deux coéquipiers le 12 octobre, chacun sur sa branche ; arcs fusionnés le 19 octobre, grenade le 22 octobre.
-- [ ] README (mis à jour le 23 octobre ; noms de l'équipe à compléter), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
+- [ ] README (mis à jour le 23 octobre, avec les noms de l'équipe), tests complets, préparation de la démo (`Docs/Checklist_Demo.md`).
 
 ### Derniers jours (19 au 23 octobre)
 
@@ -726,7 +726,7 @@ Objectif : toutes les consignes du cours sont couvertes.
 - [ ] Tests au casque des nouveautés (`Docs/Checklist_Demo.md`, partie « Nouveautés du 19 au 23 octobre »).
 - [ ] Vidéo `Tir_3` du tutoriel (la grenade) à tourner.
 - [ ] Build Windows en *Development Build* (les raccourcis de démo y marchent).
-- [ ] Crédits des musiques de l'ami (nom et accord), noms de l'équipe dans le README.
+- [ ] Crédits des musiques de l'ami (nom et accord).
 - [ ] Ménage : anciens modèles du bouclier et du katana (`Art/Katana` : `Bouclier`, maillage `Katana.asset`), anciennes cascades creusées (`Art/Cyber/Cascade creusee 1/2`), `Assets/sci_fi_crossbow.glb`.
 
 ### Après les tests du 12 octobre
