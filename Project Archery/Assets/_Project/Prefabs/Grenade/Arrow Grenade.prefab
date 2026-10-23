@@ -14788,7 +14788,7 @@ MonoBehaviour:
   m_FuseSparks: {fileID: 7280363328717115926}
   m_ThrownSparkBoost: 2.5
   m_MegaRadius: 0.6
-  m_MegaMultiplier: 3
+  m_MegaMultiplier: 5
   m_MegaText: MEGA-BOMBA !
   m_MegaColor: {r: 1, g: 0.3, b: 0.75, a: 1}
 --- !u!1001 &7021588492062757600

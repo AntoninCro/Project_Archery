@@ -59,7 +59,7 @@ namespace Archery.Bows
         {
             var head = m_Rig.Head;
             var pool = ArrowPool.Instance;
-            // Une autre arme que l'arc en main (Akimbow, katana et bouclier), ou le jeu en pause : pas de flèche à prendre
+            // Une autre arme que l'arc en main (Akimbow, katana et gantelet), ou le jeu en pause : pas de flèche à prendre
             // dans le dos.
             if (head == null || pool == null || BowReplaced() || SlowMotion.IsPaused)
                 return;

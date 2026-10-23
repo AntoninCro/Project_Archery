@@ -11,7 +11,8 @@ namespace Archery.Player
     /// Une main gantée, créée par <see cref="GlovedHands"/> à partir du gant low-poly de Quaternius (Art/Hands).
     /// Elle plie les doigts (repos, poing, crochet sur la corde, index tendu vers un menu) et se place
     /// sur la manette, sur la poignée de l'arc tenu, sur celle d'un objet qui en donne une (<see cref="HandGrip"/> : les
-    /// arbalètes des Akimbow) ou sur l'encoche de la flèche tirée.
+    /// arbalètes des Akimbow) ou sur l'encoche de la flèche tirée. Une autre main peut la recouvrir (le gantelet du katana) :
+    /// <see cref="WristFrame"/> donne son poignet, <see cref="SetGloveHidden"/> cache le gant.
     /// </summary>
     /// <remarks>
     /// Le modèle d'origine n'a pas de squelette : « Glove Rig.json » lui en donne un (articulations placées dans
@@ -86,6 +87,8 @@ namespace Archery.Player
             new Vector3(35f, 74f, 55f), new Vector3(29f, 58f, 40f),
         };
 
+        static readonly List<GlovedHand> s_All = new List<GlovedHand>();
+
         const float k_FingerSpeed = 18f;
         const float k_BlendTime = 0.12f;
 
@@ -107,6 +110,12 @@ namespace Archery.Player
         Vector3 m_GripCenter;
         Vector3 m_HookPoint;
 
+        // Le poignet (repère de la racine) : Z vers les jointures, Y vers le dos de la main ; longueur jusqu'au bout du majeur.
+        Vector3 m_WristPoint;
+        Quaternion m_WristRotation = Quaternion.identity;
+        float m_FingerLength = 0.18f;
+        SkinnedMeshRenderer m_GloveRenderer;
+
         Mode m_Mode;
         Bow m_Bow;
         Arrow m_Arrow;
@@ -119,6 +128,37 @@ namespace Archery.Player
         Quaternion m_RelativeRotation = Quaternion.identity;
         Vector3 m_FromPosition;
         Quaternion m_FromRotation = Quaternion.identity;
+
+        /// <summary>La main gauche (sinon, la droite).</summary>
+        public bool IsLeft => m_IsLeft;
+
+        /// <summary>
+        /// Le poignet, dans le repère de cette main : Z vers les jointures, Y vers le dos de la main (X vers le pouce de la
+        /// main gauche, vers l'auriculaire de la droite).
+        /// </summary>
+        public Pose WristFrame => new Pose(m_WristPoint, m_WristRotation);
+
+        /// <summary>Distance (m) du poignet au bout du majeur.</summary>
+        public float FingerLength => m_FingerLength;
+
+        /// <summary>La main gantée de cette manette, ou null.</summary>
+        public static GlovedHand For(IXRInteractor interactor)
+        {
+            foreach (var hand in s_All)
+            {
+                if (hand != null && (UnityEngine.Object)hand.m_Interactor == interactor as UnityEngine.Object)
+                    return hand;
+            }
+
+            return null;
+        }
+
+        /// <summary>Cache le gant (une autre main le recouvre), ou le remontre.</summary>
+        public void SetGloveHidden(bool hidden)
+        {
+            if (m_GloveRenderer != null)
+                m_GloveRenderer.enabled = !hidden;
+        }
 
         /// <summary>Construit la main depuis les données du gant. Renvoie false si elles sont incomplètes.</summary>
         public bool Init(GlovedHands owner, XRBaseInputInteractor interactor, bool isLeft, TextAsset rig)
@@ -194,6 +234,10 @@ namespace Archery.Player
             var root = transform;
             m_InverseHandBasis = Quaternion.Inverse(Quaternion.LookRotation(
                 root.InverseTransformDirection(across), root.InverseTransformDirection(palm)));
+            m_WristPoint = root.InverseTransformPoint(wrist.position);
+            m_WristRotation = Quaternion.LookRotation(root.InverseTransformDirection(forward), root.InverseTransformDirection(-palm));
+            if (bones.TryGetValue("MiddleTip", out var middleTip))
+                m_FingerLength = Vector3.Distance(wrist.position, middleTip.position);
             var center = knuckles + palm * (0.012f + owner.GripRadius) - forward * 0.012f;
             m_GripCenter = root.InverseTransformPoint(center);
 
@@ -211,9 +255,17 @@ namespace Archery.Player
                 : new[] { prefix + "Proximal", prefix + "Intermediate", prefix + "Distal", prefix + "Tip" };
         }
 
-        void OnEnable() => Application.onBeforeRender += OnBeforeRender;
+        void OnEnable()
+        {
+            Application.onBeforeRender += OnBeforeRender;
+            s_All.Add(this);
+        }
 
-        void OnDisable() => Application.onBeforeRender -= OnBeforeRender;
+        void OnDisable()
+        {
+            Application.onBeforeRender -= OnBeforeRender;
+            s_All.Remove(this);
+        }
 
         void LateUpdate()
         {
@@ -453,6 +505,7 @@ namespace Archery.Player
             mesh.bindposes = bindposes;
 
             var renderer = skin.AddComponent<SkinnedMeshRenderer>();
+            m_GloveRenderer = renderer;
             renderer.bones = bones;
             renderer.rootBone = bones[0];
             renderer.sharedMesh = mesh;

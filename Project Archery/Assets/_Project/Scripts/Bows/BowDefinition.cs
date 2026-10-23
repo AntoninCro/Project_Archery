@@ -162,33 +162,45 @@ namespace Archery.Bows
         [Tooltip("Son d'un tir d'arbalète.")]
         public AudioClip akimboFireClip;
 
-        [Header("Katana et bouclier")]
-        [Tooltip("Un katana et un bouclier à la place de l'arc : le katana frappe au corps à corps (Katana Damage) et laisse " +
-                 "dans l'air une déchirure qui reste un instant ; frappée avec le bouclier, elle fonce vers l'avant comme une " +
-                 "flèche (Damage, Arrow Speed, Arrow Gravity, Pierce Count, qualité selon sa fraîcheur). Le bouclier tenu arrête " +
-                 "les coups et les projectiles. Visual Prefab ne sert qu'à l'aperçu du menu.")]
+        [Header("Katana et gantelet")]
+        [Tooltip("Un katana et un gantelet à la place de l'arc (refaits le 22 octobre) : un symbole style kanji apparaît devant " +
+                 "le joueur ; il le trace trait après trait d'un geste rapide de la lame, qui fend la matrice. Le signe tracé, " +
+                 "touché avec le gantelet, part vers l'ennemi le plus proche du centre de la vue et le suit (Damage, Arrow Speed ; " +
+                 "qualité selon la précision du tracé) ; tout le signe touche. Le katana frappe aussi au corps à corps (Katana " +
+                 "Damage). Visual Prefab ne sert qu'à l'aperçu du menu.")]
         public bool katana;
 
-        [Tooltip("Modèle du katana : le milieu de la poignée à l'origine, la lame vers +Y, le tranchant vers +Z.")]
+        [Tooltip("Modèle du katana : le milieu de la poignée à l'origine, la lame vers +Y, le tranchant vers +Z ; enfants " +
+                 "« Garde » (début de la lame) et « Pointe ».")]
         public GameObject katanaModel;
 
-        [Tooltip("Modèle du bouclier : le milieu de la poignée (au dos) à l'origine, la face vers +Z, la poignée le long de Y.")]
-        public GameObject shieldModel;
+        [Tooltip("Modèle du gantelet, porté sur la main de l'arc : main gauche, le poignet à l'origine, les doigts vers +Z, le " +
+                 "dos de la main vers +Y, 19 cm du poignet au bout du majeur ; enfant « Paume » (le point qui touche les signes).")]
+        public GameObject gauntletModel;
 
         [Tooltip("Dégâts d'un coup de katana (pointe à 2,5 m/s ; jusqu'à ×1,6 à 7 m/s ; tête ×2).")]
         public float katanaDamage = 30f;
 
-        [Tooltip("Matériau de la déchirure laissée par le katana (shader Archery/MatrixTear).")]
+        [Tooltip("Matériau des fissures du signe (shader Archery/MatrixTear : fissure, chiffres qui tombent).")]
         public Material katanaTearMaterial;
 
-        [Tooltip("Son d'un coup de katana qui touche.")]
+        [Tooltip("Matériau du symbole à tracer (shader Archery/KanjiBrush).")]
+        public Material katanaGlyphMaterial;
+
+        [Tooltip("Son d'un coup de katana qui touche (et d'un signe qui touche).")]
         public AudioClip katanaHitClip;
 
-        [Tooltip("Son de la déchirure lancée par le bouclier.")]
+        [Tooltip("Son du signe lancé par le gantelet.")]
         public AudioClip katanaLaunchClip;
 
-        [Tooltip("Son d'un coup ou d'un projectile arrêté par le bouclier.")]
-        public AudioClip shieldBlockClip;
+        [Tooltip("Son du geste rapide de la lame (un trait).")]
+        public AudioClip katanaSwooshClip;
+
+        [Tooltip("Son d'un trait réussi : la matrice se fend.")]
+        public AudioClip katanaCrackClip;
+
+        [Tooltip("Son du signe complet.")]
+        public AudioClip katanaSignClip;
 
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]

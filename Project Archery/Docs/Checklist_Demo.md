@@ -6,7 +6,18 @@
 
 Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la console ouverte : aucune ligne rouge, et le moins possible de lignes « Image lente ».
 
-**Nouveau cette semaine (13 au 17 octobre), jamais testé en casque : à vérifier en premier**
+**Nouveautés du 19 au 23 octobre : à vérifier en premier**
+- [ ] Départ : quelle que soit ta place dans la pièce, tu apparais en haut de la tour, tourné vers le menu ; remettre le casque ou le recentrer avant la première vague t'y ramène.
+- [ ] Avant la première vague : pas de panneau du score ; les panneaux de difficulté au-dessus du regard ; le panneau du score apparaît au gong.
+- [ ] Menu en cours de partie (bouton menu de la manette gauche) : il s'ouvre devant soi, le jeu se fige, on ne peut ni prendre de flèche, ni tirer, ni lancer de grenade ; il suit le regard ; un nouvel appui le referme.
+- [ ] Grenade : main vide à la hanche, poignée, une bombe à la mèche qui crépite ; elle reste en main en marchant ; lancée, elle éclate au premier contact (sol, mur, ennemi) en 28 flèches qui font mal ; recharge lisible sur la montre ; une flèche dans la grenade en vol : « MEGA-BOMBA » ; viser un socle de construction main basse ouvre bien le panneau (pas de grenade).
+- [ ] Tutoriel, rubrique Tir : la fenêtre « La grenade à flèches » (« Vidéo à venir »).
+- [ ] Raccourci **F** : 2 de chaque amélioration, tourelles niveau 2 sur tous les emplacements au bord de la voie, une seule fois par partie.
+- [ ] Vague 6 : dans le noir de l'intro, on ne peut pas bouger (on peut regarder) ; on peut bouger dès que tous les cristaux sont allumés.
+- [ ] Menu des armes : les Akimbow (arbalètes flottantes, une dans chaque main, la main gantée sur la poignée), l'arc cosmique, l'arc légendaire.
+- [ ] Katana et gantelet : en refonte (voir `Reprise_Projet.md`) ; à tester une fois refait.
+
+**Nouveau la semaine du 13 au 17 octobre, jamais testé en casque**
 - [ ] Menu d'accueil : plus de boutons « Jouer » ni « Difficulté » ; le titre THUNK VR, le bouton **Tutoriel** et une ligne d'aide.
 - [ ] Les menus se visent à l'arc : une flèche dans un bouton le presse, dans un curseur le règle ; « Quitter » demande deux flèches en 3 s. Les paramètres se règlent aussi à l'arc.
 - [ ] Les panneaux de difficulté se choisissent au rayon de la manette (ils grossissent au survol).

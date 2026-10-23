@@ -49,8 +49,8 @@ namespace Archery.Combat
         public bool Frozen { get; set; }
 
         /// <summary>
-        /// Optionnel : les dégâts qui restent d'une attaque, avant qu'ils comptent (0 : rien). Le bouclier du joueur
-        /// (<see cref="KatanaShield"/>) bloque ainsi les coups et les projectiles qu'il intercepte.
+        /// Optionnel : les dégâts qui restent d'une attaque, avant qu'ils comptent (0 : rien). Le bouclier du katana s'en
+        /// servait pour bloquer les coups (retiré le 22 octobre, remplacé par le gantelet).
         /// </summary>
         public Func<DamageInfo, float> DamageFilter { get; set; }
 

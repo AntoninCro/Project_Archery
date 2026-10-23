@@ -17,7 +17,7 @@ namespace Archery.Grenades
     /// Même principe que le carquois, mais plus bas : la zone commence sous celle du carquois
     /// pour qu'un même geste ne puisse pas donner une flèche et une grenade.
     /// Le 22 octobre, elle est passée du bas du dos (on devait aller la chercher loin derrière) aux hanches, comme une
-    /// grenade qu'on sort de sa poche. Elle s'arrête juste derrière le katana et le bouclier rangés à la hanche.
+    /// grenade qu'on sort de sa poche. Elle s'arrête juste derrière le katana rangé à la hanche.
     /// Une main qui vise ou touche déjà ce qu'elle peut prendre (un emplacement de construction au bout du rayon, une
     /// arme rangée, un cristal…) le prend, pas une grenade : sinon, viser un emplacement au sol, la main basse, sortait
     /// une grenade.
@@ -38,8 +38,8 @@ namespace Archery.Grenades
         [SerializeField]
         Vector3 m_GrabZoneMin = new Vector3(-0.45f, -0.95f, -0.35f);
 
-        [Tooltip("Coin maximal de la zone. z = 0,12 : les poches avant, juste derrière le katana et le bouclier rangés " +
-                 "à la hanche (18 et 20 cm devant les yeux).")]
+        [Tooltip("Coin maximal de la zone. z = 0,12 : les poches avant, juste derrière le katana rangé à la hanche " +
+                 "(20 cm devant les yeux).")]
         [SerializeField]
         Vector3 m_GrabZoneMax = new Vector3(0.45f, -0.45f, 0.12f);
 
