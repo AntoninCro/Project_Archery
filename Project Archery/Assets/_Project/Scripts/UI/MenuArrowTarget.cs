@@ -9,7 +9,8 @@ namespace Archery.UI
     /// <summary>
     /// Un élément d'un menu (bouton, case, curseur) qu'on peut aussi déclencher d'une flèche : un bouton est cliqué,
     /// une case change, un curseur prend la valeur de l'endroit touché. La flèche disparaît à l'impact. Pour « Quitter »,
-    /// il faut tirer deux fois (une flèche perdue ne ferme pas le jeu).
+    /// il faut tirer deux fois (une flèche perdue ne ferme pas le jeu) : c'est le menu qui demande la confirmation, à la
+    /// flèche comme à la main (23 octobre).
     /// </summary>
     /// <remarks>
     /// Ajouté en jeu par le menu (<see cref="AttachAll"/>). Il pose un collider à la taille de l'élément, quelques
@@ -25,10 +26,11 @@ namespace Archery.UI
         Selectable m_Selectable;
         RectTransform m_Rect;
         BoxCollider m_Collider;
-        float m_ConfirmUntil;
-
-        // « Quitter » : une flèche perdue ne doit pas fermer le jeu.
-        bool NeedsConfirmation => name.ToLowerInvariant().Contains("quit");
+        /// <summary>
+        /// Vrai pendant le clic d'une flèche (pour le texte des confirmations : « Tire encore une fois » plutôt que « Clique ») ;
+        /// « Quitter » demande sa confirmation lui-même, pour la flèche comme pour la main (<see cref="Menus.MainMenuPanel.Quit"/>).
+        /// </summary>
+        public static bool IsShotClick { get; private set; }
 
         /// <summary>Rend tirables tous les boutons, cases et curseurs sous <paramref name="root"/>.</summary>
         public static void AttachAll(GameObject root)
@@ -84,19 +86,17 @@ namespace Archery.UI
             }
             else
             {
-                // « Quitter » d'une flèche : il faut tirer une deuxième fois dans les 3 s.
-                if (NeedsConfirmation && Time.unscaledTime > m_ConfirmUntil)
-                {
-                    m_ConfirmUntil = Time.unscaledTime + 3f;
-                    HeadMessages.Show("Tire encore une fois pour quitter", new Color(1f, 0.55f, 0.5f), 2.5f);
-                    return false;
-                }
-
-                m_ConfirmUntil = 0f;
-
                 // Comme un clic : le bouton (ou la case) réagit, avec ses effets et son son.
                 var data = new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left };
-                ExecuteEvents.Execute(gameObject, data, ExecuteEvents.pointerClickHandler);
+                IsShotClick = true;
+                try
+                {
+                    ExecuteEvents.Execute(gameObject, data, ExecuteEvents.pointerClickHandler);
+                }
+                finally
+                {
+                    IsShotClick = false;
+                }
             }
 
             return false;

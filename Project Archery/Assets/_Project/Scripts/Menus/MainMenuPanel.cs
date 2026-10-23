@@ -72,6 +72,11 @@ namespace Archery.Menus
         const float k_FollowSpeed = 5f;
         bool m_Recentering;
 
+        const float k_QuitConfirmTime = 3f;
+        float m_QuitConfirmUntil = -1f;
+        TMP_Text m_QuitLabel;
+        string m_QuitText;
+
         InputAction m_MenuButton;
         bool m_OpenInGame;
         Vector3 m_HomePosition;
@@ -175,6 +180,13 @@ namespace Archery.Menus
 
             if (m_OpenInGame)
                 FollowPlayer(Time.unscaledDeltaTime);
+
+            // Pas de deuxième appui sur « Quitter » à temps : le bouton redevient normal.
+            if (m_QuitConfirmUntil > 0f && Time.unscaledTime > m_QuitConfirmUntil)
+            {
+                m_QuitConfirmUntil = -1f;
+                SetQuitLabel(false);
+            }
         }
 
         // Le jeu est en pause : le menu se déplace en temps réel.
@@ -309,9 +321,23 @@ namespace Archery.Menus
 
         public void PreviousDifficulty() => ChangeDifficulty(-1);
 
+        // « Quitter » demande une confirmation (23 octobre ; avant, seule une flèche la demandait, un clic de la main fermait
+        // le jeu d'un coup) : au premier appui, le bouton affiche « Vraiment ? » et un message dit quoi faire ; un deuxième
+        // appui dans les 3 s ferme le jeu.
         public void Quit()
         {
             Click();
+            if (Time.unscaledTime > m_QuitConfirmUntil)
+            {
+                m_QuitConfirmUntil = Time.unscaledTime + k_QuitConfirmTime;
+                SetQuitLabel(true);
+                var again = MenuArrowTarget.IsShotClick ? "Tire encore une fois" : "Clique encore une fois";
+                HeadMessages.Show(again + " sur « Quitter » pour fermer le jeu", new Color(1f, 0.55f, 0.5f), 2.5f);
+                return;
+            }
+
+            m_QuitConfirmUntil = -1f;
+            SetQuitLabel(false);
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -347,5 +373,25 @@ namespace Archery.Menus
         }
 
         void Click() => Sfx.Play(m_ClickClip, transform.position, 0.6f);
+
+        // Le texte du bouton « Quitter » (son objet a « quit » dans son nom) : « Vraiment ? » le temps de confirmer.
+        void SetQuitLabel(bool confirming)
+        {
+            if (m_QuitLabel == null && m_Content != null)
+            {
+                foreach (var button in m_Content.GetComponentsInChildren<Button>(true))
+                {
+                    if (!button.name.ToLowerInvariant().Contains("quit"))
+                        continue;
+                    m_QuitLabel = button.GetComponentInChildren<TMP_Text>(true);
+                    if (m_QuitLabel != null)
+                        m_QuitText = m_QuitLabel.text;
+                    break;
+                }
+            }
+
+            if (m_QuitLabel != null)
+                m_QuitLabel.text = confirming ? "Vraiment ?" : m_QuitText;
+        }
     }
 }

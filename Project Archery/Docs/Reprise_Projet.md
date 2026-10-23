@@ -15,71 +15,51 @@ des retours du joueur une partie des nouveautés (la grenade, les Akimbow, le po
 **Pas encore vérifié** : les cases non cochées de `Checklist_Demo.md` (la passe de tests complète n'a pas été faite), à commencer
 par la liste « Nouveautés du 19 au 23 octobre », en tête de la partie 1.
 
-**Pas encore commité** au moment d'écrire (fais un commit avant de changer de PC) : la refonte du katana (scripts
-`Scripts/Combat/KatanaGauntlet.cs`, `KanjiGlyphs.cs`, `KanjiGuide.cs`, `MatrixSign.cs`, `MatrixCrackMesh.cs`, shaders
-`KatanaBlade`, `KanjiBrush`, `MatrixTear` refait, `Editor/KatanaBaker.cs`, `Player/GlovedHand.cs`, `Bows/BowDefinition.cs`,
-`Bows/Bow.cs`), les modèles et sons téléchargés pour lui (`Assets/Katana by Pichuliru - 15A7InejC7`,
-`Assets/energy-gauntlet-low-poly-free-download`, `Assets/507466__danjocross__clean-fast-swoosh.aiff`,
-`Assets/650564__h2p34__lightsaber-whoosh.wav`), la suppression de `Scripts/Combat/KatanaShield.cs`, et la documentation
-(GDD, README, crédits, checklist, feuille de route, ce document).
+**Pas encore commité** (23 octobre, après-midi ; fais un commit avant de changer de PC) : la refonte du katana (les failles,
+partie 2), le gong et les cibles déclenchables au katana, la confirmation du bouton « Quitter » à la main, la correction de
+`Tools/compile_check.py` (il ne trouvait pas les Starter Assets d'XRI), le retrait de `CLAUDE.md` du dépôt (il reste sur le PC,
+et il est dans le `.gitignore`), et la documentation (GDD, README, checklist, démo, ce document).
 
-## 2. La refonte du katana (prochaine tâche)
+## 2. La refonte du katana (faite le 23 octobre, à tester au casque)
 
-### Ce qui existe aujourd'hui
+Les symboles kanji sont retirés ; le gantelet et la faille dans la matrice restent (GDD, section 5, paragraphe « Refait le
+23 octobre, après les tests : les failles »). Choix du joueur : on frappe la faille avec le gantelet, la qualité vient de sa
+fraîcheur, 3 failles ouvertes au plus ; la coupe se mesure par rapport au joueur et doit être une vraie taille ; la faille
+s'ouvre comme un œil (une fine fissure, puis d'un coup).
 
-Le katana et le gantelet remplacent le katana et le bouclier depuis le 22 octobre (GDD, section 5, paragraphe « Refait le
-22 octobre » et suivants). Le joueur trace au katana un symbole style kanji (2 ou 3 traits droits) qui flotte devant lui ;
-chaque trait ouvre une faille dans la matrice ; le signe complet vient à portée du gantelet, qui le lance vers l'ennemi le plus
-proche du centre de la vue ; tout le signe touche.
+- **La coupe** : la pointe à 3,5 m/s, au moins 40 cm de geste et 30 cm entre son début et sa fin, devant le joueur, 0,25 s après
+  la faille précédente ; tout est mesuré depuis la poitrine du joueur, dans le repère du XR Origin (se déplacer ne coupe rien).
+  La faille suit le point de la lame qui passe à 62 cm de la poitrine : elle s'ouvre à portée du gantelet.
+- **La faille** : fine fissure 0,14 s, puis ouverture en 0,1 s ; bords qui ondulent, tracé qui frémit, fissures secondaires qui
+  rampent ; elle vit 2,2 s ; ses bords prennent la couleur de la qualité du moment (vert sous 0,4 s, orange sous 1 s, rouge).
+- **Le lancer** : un coup de poing du gantelet (1,3 m/s, paume à moins de 40 cm) ; elle part vers l'ennemi le plus proche du
+  centre de la vue et toute la faille touche.
+- **Le gong** : la faille et la lame déclenchent aussi ce qui réagit aux flèches (gong, cibles d'entraînement, cibles de la
+  victoire, boules de feu), sauf les menus et les panneaux de difficulté.
 
-Les fichiers :
+| Fichier | Rôle |
+|---|---|
+| `Scripts/Combat/KatanaGauntlet.cs` | L'arme : le katana flottant (prise, coup au corps à corps, coupe des projectiles, gong), le gantelet, la coupe, les failles ouvertes (fraîcheur, dérive), le coup de poing, le lancer, le jeu au clavier, le raccourci **O** |
+| `Scripts/Combat/MatrixRift.cs` | Une faille : son plan face au joueur, son ouverture en œil, sa couleur, le vol vers la cible et la zone de touche, le gong et les cibles qu'elle traverse (ancien `MatrixSign.cs`) |
+| `Scripts/Combat/MatrixRiftMesh.cs` | Le squelette de la faille (le tracé et les fissures secondaires) ; sa forme vient du shader (ancien `MatrixCrackMesh.cs`) |
+| `Shaders/MatrixTear.shader` | La faille vivante : profil de plaie, ouverture (`_Open`), bords et tracé animés dans le vertex shader ; dedans, le vide et les 0 et 1 verts |
+| `Shaders/KatanaBlade.shader` | La lame néon qui bugue |
+| `Editor/KatanaBaker.cs` | Les prefabs, les matériaux, l'aperçu du menu, la fiche `Data/BowClasses/Bow_Katana.asset` et son texte |
+| `Player/GlovedHand.cs` | `For`, `WristFrame`, `SetGloveHidden` : le gantelet se pose sur la main gantée |
 
-| Fichier | Rôle | Dans la prochaine version |
-|---|---|---|
-| `Scripts/Combat/KatanaGauntlet.cs` | L'arme : le katana flottant (prise, coup au corps à corps, coupe des projectiles), le gantelet porté sur la main de l'arc, le symbole et la reconnaissance des traits, la présentation du signe au gantelet, le lancer (`LaunchSign`, `FindTarget`), le jeu au clavier, le raccourci **O** | À garder, sans tout ce qui touche aux symboles |
-| `Scripts/Combat/KanjiGlyphs.cs`, `KanjiGuide.cs`, `Shaders/KanjiBrush.shader`, matériau `Art/Katana/Kanji pinceau` | Les symboles et leur affichage | **À retirer** |
-| `Scripts/Combat/MatrixSign.cs` | La faille comme objet : ses fissures, son état (en cours, prête, en vol, brisée), le vol vers la cible (elle la suit) et la zone de touche (tout le signe) | À garder et adapter (une faille = une trace) |
-| `Scripts/Combat/MatrixCrackMesh.cs` | Le maillage d'une fissure : tracé en zigzag, bords déchiquetés, fissures secondaires ; **figé** | À refaire pour une faille vivante |
-| `Shaders/MatrixTear.shader` | L'intérieur et les bords de la faille : le vide, les 0 et 1 verts qui tombent, les bords qui grésillent | À garder et enrichir (ouverture, bords qui bougent) |
-| `Shaders/KatanaBlade.shader` | La lame néon qui bugue (Akimbow, Katana Zero) | À garder |
-| `Editor/KatanaBaker.cs` | Fabrique les prefabs (`Art/Katana/Katana.prefab`, `Gantelet.prefab`), les matériaux, l'aperçu du menu et la fiche `Data/BowClasses/Bow_Katana.asset` | Retirer le matériau des symboles |
-| `Bows/BowDefinition.cs` | Champs `katana…`, `gauntletModel`, `katanaGlyphMaterial`, les sons | Retirer `katanaGlyphMaterial` |
-| `Player/GlovedHand.cs` | `For`, `WristFrame`, `SetGloveHidden` : le gantelet se pose sur la main gantée | Inchangé |
+**Si quelque chose ne va pas au test**, les réglages sont des constantes en tête de `KatanaGauntlet.cs` (seuils de la coupe,
+portée et vitesse du coup de poing, fenêtres de fraîcheur, durée de vie) et de `MatrixRift.cs` (largeur, ouverture en œil),
+et des propriétés du matériau `Art/Katana/Dechirure` (bords qui ondulent, déchiquetés, tracé qui frémit, couleurs).
 
-L'ancienne version (katana et bouclier, traces libres) est dans Git, au commit `90d5f83` :
-`git show 90d5f83:"Project Archery/Assets/_Project/Scripts/Combat/KatanaShield.cs"`. Sa mécanique de traces est réutilisable :
-un coup rapide (pointe à 3,5 m/s ou plus) laisse une trace qui reste 1,2 s ; la frapper vite donne un tir parfait (moins de 0,3 s),
-bon (moins de 0,8 s), raté ensuite.
-
-### Ce que veut le joueur (décidé le 23 octobre)
-
-- **Retirer le système de symboles** : il ne convainc pas (traits durs à faire reconnaître, signe trop loin pour le gantelet,
-  courbes trop dures ; voir l'historique dans le GDD).
-- **Garder le gantelet** (il lance la faille) **et la faille dans la matrice** (les 0 et 1 qui tombent dedans, comme dans Matrix).
-- Sans doute **revenir aux traces libres** : un coup rapide ouvre une faille le long du geste de la lame ; la toucher avec le
-  gantelet la lance vers l'ennemi le plus proche du centre de la vue. **À confirmer avec le joueur avant de coder.**
-- **Améliorer la faille** : il faut vraiment avoir l'impression d'ouvrir le jeu, avec une faille **presque vivante** :
-  - elle **s'ouvre comme une plaie** : plus large au milieu qu'aux extrémités, avec une animation d'ouverture ;
-  - **la fissure et sa forme bougent** sans cesse : bords qui ondulent, tracé qui frémit, fissures secondaires qui rampent.
-
-### Pistes techniques
-
-- Ouverture : un paramètre `_Open` (0 à 1, animé par le script, avec un léger dépassement) qui multiplie la largeur ; un profil
-  de plaie le long de la faille (par exemple `sin(π·t)^0,7`, t de 0 à 1 le long) au lieu d'une largeur bruitée.
-- Bords vivants : dans le vertex shader, déplacer chaque sommet de bord le long de la normale dans le plan, d'un bruit qui dépend
-  de sa position le long de la faille et du temps. Il faut pour cela donner au maillage la position normalisée le long de la faille
-  et la normale dans le plan (UV2, tangentes ou couleur des sommets).
-- Tracé qui frémit : soit le même bruit sur les sommets du milieu, soit reconstruire le maillage quelques fois par seconde depuis
-  le tracé d'origine.
-- Garder pour le shader les UV actuelles : UV0 = (le long de la faille en mètres, -1 à 1 en travers), UV1 = position dans le plan
-  (grille des chiffres).
+L'ancienne version aux traces libres (katana et bouclier) est dans Git, au commit `90d5f83` ; celle aux symboles, au commit
+`ccbe156`.
 
 ## 3. Les autres choses à faire
 
 Dans l'ordre conseillé (aussi dans le GDD, section 21, « À faire ensuite ») :
 1. **La présentation** (PowerPoint) pour l'oral, et les répétitions (`Demo_Vendredi.md` : pitch, déroulé, raccourcis).
 2. Les tests au casque des nouveautés (`Checklist_Demo.md`).
-3. La refonte du katana (partie 2).
+3. Tester au casque la refonte du katana (partie 2) et la régler.
 4. Le build Windows en *Development Build* (les raccourcis de démo y marchent).
 5. La vidéo `Tir_3` du tutoriel (la grenade), les crédits des musiques de l'ami.
 6. Le ménage des fichiers inutilisés (liste dans le GDD, section 21).

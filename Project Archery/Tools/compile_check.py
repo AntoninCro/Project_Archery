@@ -91,6 +91,19 @@ def version_defines():
     return [entry["define"] for entry in asmdef.get("versionDefines", []) if entry["name"] in installed]
 
 
+def asmdef_references(known):
+    """Les assemblages cités par l'asmdef qu'Assembly-CSharp.csproj ne donne pas (23 octobre : les Starter Assets d'XRI,
+    utilisés par GameSettings, n'y sont qu'en ProjectReference) : leurs DLL compilées par Unity dans Library/ScriptAssemblies."""
+    with open(os.path.join(SCRIPTS, "Archery.Runtime.asmdef"), encoding="utf-8-sig") as file:
+        names = json.load(file).get("references", [])
+    found = []
+    for name in names:
+        dll = os.path.join(PROJECT, "Library", "ScriptAssemblies", name + ".dll")
+        if name not in known and os.path.isfile(dll):
+            found.append((name, dll))
+    return found
+
+
 def main():
     csproj = os.path.join(PROJECT, "Assembly-CSharp.csproj")
     with open(csproj, encoding="utf-8-sig") as file:
@@ -99,6 +112,7 @@ def main():
     defines = re.search(r"<DefineConstants>(.*?)</DefineConstants>", source, re.S).group(1).strip()
     defines = ";".join([defines] + version_defines())
     references = [(n, absolute(p)) for n, p in re.findall(r'<Reference Include="([^"]+)">\s*<HintPath>(.*?)</HintPath>', source, re.S)]
+    references += asmdef_references({n for n, _ in references})
     runtime_references = [(n, p) for n, p in references if not is_editor_dll(p)]
     runtime_defines = ";".join(d for d in defines.split(";") if not d.startswith("UNITY_EDITOR"))
 

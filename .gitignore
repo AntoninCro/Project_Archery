@@ -14,3 +14,7 @@ __pycache__/
 
 # Sujet du projet : document du professeur, inutile de le publier dans le dépôt
 Projet_UnityVR_Archery_Challenge_ST2OOS.pdf
+
+# Consignes et réglages de Claude (l'assistant IA) : gardés sur le PC, hors du dépôt (23 octobre)
+CLAUDE.md
+.claude/

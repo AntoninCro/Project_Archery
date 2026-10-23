@@ -8,10 +8,10 @@ using UnityEngine;
 namespace Archery.EditorTools
 {
     /// <summary>
-    /// Le katana et le gantelet dans le jeu (refaits le 22 octobre ; avant, un katana et un bouclier faits ici) : le katana
-    /// de Pichuliru (CC0) et l'Energy Gauntlet d'ENOMIC (CC-BY), remis dans le repère attendu par le jeu, avec leurs
-    /// matériaux (<c>Art/Katana</c> : lame néon qui bugue, gantelet chrome aux lueurs cyan), le matériau du symbole à tracer
-    /// et celui des fissures, leur fiche (<c>Data/BowClasses/Bow_Katana</c>), le succès qui les débloque (« Rōnin » : vaincre
+    /// Le katana et le gantelet dans le jeu (refaits le 22 octobre ; avant, un katana et un bouclier faits ici ; le 23
+    /// octobre, le symbole à tracer est retiré) : le katana de Pichuliru (CC0) et l'Energy Gauntlet d'ENOMIC (CC-BY), remis
+    /// dans le repère attendu par le jeu, avec leurs matériaux (<c>Art/Katana</c> : lame néon qui bugue, gantelet chrome aux
+    /// lueurs cyan) et celui des failles, leur fiche (<c>Data/BowClasses/Bow_Katana</c>), le succès qui les débloque (« Rōnin » : vaincre
     /// 2 boss de vague, <c>Data/Achievements/Succes_Ronin</c>), l'aperçu du menu des armes (<c>Prefabs/Bow Visual Katana</c>)
     /// et leur carte dans la liste des armes (<c>Prefabs/UI/Bow Classes</c>, avec le succès dans la liste des succès).
     /// </summary>
@@ -29,7 +29,6 @@ namespace Archery.EditorTools
         const string k_Visual = "Assets/_Project/Prefabs/Bow Visual Katana.prefab";
         const string k_Loadout = "Assets/_Project/Prefabs/UI/Bow Classes.prefab";
         const string k_TearShader = "Assets/_Project/Shaders/MatrixTear.shader";
-        const string k_GlyphShader = "Assets/_Project/Shaders/KanjiBrush.shader";
         const string k_BladeShader = "Assets/_Project/Shaders/KatanaBlade.shader";
         const string k_KatanaModel = "Assets/Katana by Pichuliru - 15A7InejC7/Flat Melee Bladed/Katana.fbx";
         const string k_GauntletModel = "Assets/energy-gauntlet-low-poly-free-download/source/HAND FBX LOW Poly.fbx";
@@ -51,8 +50,12 @@ namespace Archery.EditorTools
         const string k_OldDescription = "Le katana déchire la matrice ; le bouclier renvoie la déchirure.";
         const string k_OldPower = "Frappe la déchirure du katana avec le bouclier pour la lancer ; le bouclier arrête coups et projectiles";
         const string k_Name = "Katana et gantelet";
-        const string k_Description = "Le katana fend la matrice ; le gantelet envoie le signe.";
-        const string k_Power = "Trace le symbole au katana, puis touche le signe avec le gantelet : il file vers l'ennemi que tu regardes";
+
+        // Les textes du katana aux symboles (22 octobre), remplacés eux aussi s'ils n'ont pas été changés à la main.
+        const string k_SignDescription = "Le katana fend la matrice ; le gantelet envoie le signe.";
+        const string k_SignPower = "Trace le symbole au katana, puis touche le signe avec le gantelet : il file vers l'ennemi que tu regardes";
+        const string k_Description = "Le katana fend la matrice ; le gantelet lance la faille.";
+        const string k_Power = "Une taille rapide ouvre une faille ; frappe-la vite avec le gantelet : elle file vers l'ennemi que tu regardes";
 
         static KatanaBaker()
         {
@@ -74,8 +77,8 @@ namespace Archery.EditorTools
             if (AssetDatabase.LoadAssetAtPath<Shader>(k_TearShader) == null || AssetDatabase.LoadAssetAtPath<GameObject>(k_Loadout) == null)
                 return;
             var definition = AssetDatabase.LoadAssetAtPath<BowDefinition>(k_Definition);
-            if (definition != null && definition.katanaModel != null && definition.gauntletModel != null && definition.katanaGlyphMaterial != null &&
-                definition.visualPrefab != null && InLoadout(definition))
+            if (definition != null && definition.katanaModel != null && definition.gauntletModel != null && definition.katanaTearMaterial != null &&
+                definition.visualPrefab != null && InLoadout(definition) && definition.specialPower != k_SignPower)
                 return;
             Bake();
         }
@@ -126,7 +129,6 @@ namespace Archery.EditorTools
             definition.gauntletModel = gauntlet;
             if (definition.katanaTearMaterial == null)
                 definition.katanaTearMaterial = materials.Tear;
-            definition.katanaGlyphMaterial = materials.Glyph;
             Migrate(definition);
             definition.visualPrefab = BuildVisual(katana, gauntlet);
             EditorUtility.SetDirty(definition);
@@ -158,9 +160,9 @@ namespace Archery.EditorTools
         {
             if (definition.displayName == k_OldName)
                 definition.displayName = k_Name;
-            if (definition.description == k_OldDescription)
+            if (definition.description == k_OldDescription || definition.description == k_SignDescription)
                 definition.description = k_Description;
-            if (definition.specialPower == k_OldPower)
+            if (definition.specialPower == k_OldPower || definition.specialPower == k_SignPower)
                 definition.specialPower = k_Power;
 
             var oldLaunch = AssetDatabase.LoadAssetAtPath<AudioClip>(k_SignClip);
@@ -214,7 +216,6 @@ namespace Archery.EditorTools
             public readonly Material Glove = Lit("Gantelet gant", new Color(0.03f, 0.03f, 0.035f), 0f, 0.35f);
             public readonly Material Glow = Glowing("Gantelet lueur", new Color(0.3f, 1.8f, 2.4f));
             public readonly Material Tear = TearMaterial();
-            public readonly Material Glyph = GlyphMaterial();
         }
 
         static Material Lit(string name, Color color, float metallic, float smoothness)
@@ -250,14 +251,6 @@ namespace Archery.EditorTools
         {
             var material = LoadOrCreate("Dechirure", AssetDatabase.LoadAssetAtPath<Shader>(k_TearShader));
             material.renderQueue = 3000;
-            EditorUtility.SetDirty(material);
-            return material;
-        }
-
-        static Material GlyphMaterial()
-        {
-            var material = LoadOrCreate("Kanji pinceau", AssetDatabase.LoadAssetAtPath<Shader>(k_GlyphShader));
-            material.renderQueue = 3001;
             EditorUtility.SetDirty(material);
             return material;
         }

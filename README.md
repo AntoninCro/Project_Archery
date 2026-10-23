@@ -49,7 +49,7 @@ Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense
 | Coup au corps à corps | Frapper un ennemi avec la flèche tenue en main |
 | Grenade à flèches | Main vide à la hanche, comme pour fouiller sa poche, poignée : une grenade sort ; la lancer. Elle éclate au premier contact en une gerbe de flèches (recharge sur la montre). La toucher d'une flèche en vol : « MEGA-BOMBA », trois fois plus de flèches |
 | Akimbow (arme secrète) | Prendre chaque arbalète qui flotte à côté de soi, gâchette pour tirer |
-| Katana et gantelet (arme secrète) | Prendre le katana, le gantelet est porté sur la main de l'arc. En refonte (voir `Docs/Reprise_Projet.md`) |
+| Katana et gantelet (arme secrète) | Prendre le katana, le gantelet est porté sur la main de l'arc. Une vraie taille rapide devant soi ouvre une faille dans la matrice ; un coup de poing du gantelet dedans la lance vers l'ennemi regardé (plus on frappe vite, meilleur est le tir). La lame frappe aussi au corps à corps et fait sonner le gong |
 | Menu en cours de partie | Bouton menu de la manette gauche (Tab au clavier) : menu devant soi, jeu en pause ; encore une fois pour reprendre |
 
 **Raccourcis de test** (dans l'éditeur et les builds *Development*) : la liste complète est dans `Project Archery/Docs/Demo_Vendredi.md` (partie 4). Les principaux : **N** lance la vague, appelle le boss ou le tue (à la vague 6 : entre dans l'arène, passe l'intro, tue le dragon), **F** (pour la démo) donne 2 exemplaires de chaque amélioration et des tourelles niveau 2 sur tous les emplacements, **K** fait mourir le joueur, **M** donne 500 pièces d'or, **B** 50 matériaux, **C** pose un coffre, **V** un gisement de cristaux, **H** termine la construction en cours, **1 à 4** choisissent la difficulté, **5 à 9, 0, ), =** équipent une arme, **U** débloque tous les succès, **P** et **G** ouvrent les deux secrets, **O** équipe le katana. Après la victoire, **I** continue en mode infini et **T** termine la partie. Les touches suivent la position physique du clavier QWERTY : sur un clavier AZERTY, **M** se trouve sur la touche **,**.
@@ -81,7 +81,7 @@ Project Archery/
 │   ├── Prefabs/, Scenes/, Materials/, Shaders/, Art/, Audio/
 ├── Docs/
 │   ├── GDD.md       document de conception : règles, chiffres, planning
-│   ├── Reprise_Projet.md  état du projet au 23 octobre et suite (refonte du katana, présentation)
+│   ├── Reprise_Projet.md  état du projet au 23 octobre et suite (présentation, tests ; refonte du katana faite)
 │   └── Guide_*.md   pas-à-pas de montage de chaque partie dans Unity
 └── Tools/           vérifications sans ouvrir Unity : compilation des scripts, syntaxe des shaders
 ```

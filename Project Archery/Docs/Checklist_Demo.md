@@ -15,11 +15,14 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] Raccourci **F** : 2 de chaque amélioration, tourelles niveau 2 sur tous les emplacements au bord de la voie, une seule fois par partie.
 - [ ] Vague 6 : dans le noir de l'intro, on ne peut pas bouger (on peut regarder) ; on peut bouger dès que tous les cristaux sont allumés.
 - [ ] Menu des armes : les Akimbow (arbalètes flottantes, une dans chaque main, la main gantée sur la poignée), l'arc cosmique, l'arc légendaire.
-- [ ] Katana et gantelet : en refonte (voir `Reprise_Projet.md`) ; à tester une fois refait.
+- [ ] Katana et gantelet (refaits le 23 octobre, **O** pour les équiper) : une vraie taille devant soi ouvre une faille à portée de bras (une fine fissure, puis elle s'ouvre d'un coup) ; ses bords ondulent, son tracé frémit, ses fissures rampent ; ses bords passent du vert à l'orange puis au rouge ; un coup de poing du gantelet dedans la lance vers l'ennemi regardé ; elle se referme seule au bout de 2 s ; 3 failles au plus.
+- [ ] Katana : avancer au joystick, courir aux bras ou agiter l'épée sur place devant le gantelet n'ouvre pas de faille ; une petite taille (moins de 40 cm) non plus.
+- [ ] Katana : frapper le gong avec la lame, ou y envoyer une faille, lance la vague ; idem pour les cibles d'entraînement et les cibles « Continuer » / « Terminer » après MK. La lame ne clique pas les boutons des menus.
+- [ ] « Quitter » cliqué à la main : le bouton affiche « Vraiment ? » et un message ; un deuxième clic dans les 3 s ferme le jeu, sinon il redevient normal. Pareil à la flèche (deux flèches).
 
 **Nouveau la semaine du 13 au 17 octobre, jamais testé en casque**
 - [ ] Menu d'accueil : plus de boutons « Jouer » ni « Difficulté » ; le titre THUNK VR, le bouton **Tutoriel** et une ligne d'aide.
-- [ ] Les menus se visent à l'arc : une flèche dans un bouton le presse, dans un curseur le règle ; « Quitter » demande deux flèches en 3 s. Les paramètres se règlent aussi à l'arc.
+- [ ] Les menus se visent à l'arc : une flèche dans un bouton le presse, dans un curseur le règle ; « Quitter » demande deux flèches en 3 s (ou deux clics, depuis le 23 octobre). Les paramètres se règlent aussi à l'arc.
 - [ ] Les panneaux de difficulté se choisissent au rayon de la manette (ils grossissent au survol).
 - [ ] Tutoriel : 4 rubriques (Tir, Déplacement, Vagues, Construction) avec leur icône ; dans chaque fenêtre, le titre, le cadre de la vidéo, le texte, « < » et « > », le compteur et « Retour ».
 - [x] Les 13 vidéos du tutoriel enregistrées et déposées dans `Assets/_Project/Resources/Tutoriel` (noms dans `LISEZMOI.txt`). Faites le 19 octobre, dans le casque, avec l'outil `Archery > Tutoriel > Tournage des vidéos`. Vérifier en jeu que chacune passe sur le grand écran du tutoriel.
