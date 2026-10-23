@@ -104,7 +104,7 @@ Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archer
 
 ## Équipe
 
-Antonin Croquette : lead developer
-Jude Aybalen : Scope originel en partie + implémentation des clases
-Tchoffo Manfouo Dovin Vilson : Scope originel en partie + implémentation des grenades + test
-Merleau Gezo : scope originel en partie + test
+- Antonin Croquette : lead developer .
+- Jude Aybalen : Scope originel en partie + implémentation des clases .
+- Tchoffo Manfouo Dovin Vilson : Scope originel en partie + implémentation des grenades + test .
+- Merleau Gezo : scope originel en partie + test .
