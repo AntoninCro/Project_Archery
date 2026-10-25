@@ -11,7 +11,8 @@ namespace Archery.Cyber
     /// Un tireur du toit cyberpunk : un mannequin d'entraînement (un costume raté de THUNK, Docs/Lore.md), en silhouette
     /// sombre aux yeux rouges, qui tient la même arbalète que le joueur. Il ne bouge pas : il apparaît en pixels sur son
     /// poste, se tourne vers le joueur, s'allume (yeux et pointe de l'arbalète) juste avant de tirer, et s'efface en pixels
-    /// sous une flèche.
+    /// sous une flèche. Depuis le 24 octobre, il s'entend aussi : en son 3D, il annonce l'attaque qui vient, puis sa charge
+    /// monte jusqu'au tir (<see cref="CyberCues"/>).
     /// </summary>
     /// <remarks>Créé et commandé par <see cref="CyberDimension"/>, qui choisit quand et comment il tire.</remarks>
     public class CyberShooter : MonoBehaviour, IArrowHitHandler, IArrowAbsorber
@@ -48,6 +49,7 @@ namespace Archery.Cyber
         Material m_EyeMaterial;
         Material m_TipMaterial;
         Transform m_TipGlow;
+        AudioSource m_Voice;
         State m_State;
         float m_Timer;
         float m_Glow;
@@ -61,6 +63,9 @@ namespace Archery.Cyber
 
         /// <summary>Prêt à tirer (apparu, et pas déjà en train de viser).</summary>
         public bool Ready => m_State == State.Idle;
+
+        /// <summary>En train de viser (il s'allume, sa charge monte).</summary>
+        public bool Aiming => m_State == State.Aiming;
 
         /// <summary>Le milieu du corps (pour les panneaux, qui ne le cachent pas).</summary>
         public Vector3 Point => transform.position + Vector3.up * (k_Height * 0.6f);
@@ -81,6 +86,7 @@ namespace Archery.Cyber
             shooter.BuildBody(model, glitch);
             shooter.BuildCrossbow(crossbow, crossbowMaterial);
             shooter.BuildEyes();
+            shooter.BuildVoice();
 
             var capsule = go.AddComponent<CapsuleCollider>();
             capsule.center = Vector3.up * (k_Height * 0.5f);
@@ -185,6 +191,23 @@ namespace Archery.Cyber
             Dot("Œil droit", transform, new Vector3(0.07f, eyeHeight, 0.2f), 0.07f, m_EyeMaterial);
         }
 
+        // Sa voix : l'annonce et la charge de ses tirs, en son 3D depuis sa poitrine (24 octobre). Elle porte loin (les
+        // tireurs sont à 15 à 25 m) et faiblit peu avec la distance : c'est elle qui dit d'où vient le prochain tir.
+        void BuildVoice()
+        {
+            var voice = new GameObject("Voix");
+            voice.transform.SetParent(transform, false);
+            voice.transform.localPosition = Vector3.up * (k_Height * 0.7f);
+            m_Voice = voice.AddComponent<AudioSource>();
+            m_Voice.playOnAwake = false;
+            m_Voice.spatialBlend = 1f;
+            m_Voice.rolloffMode = AudioRolloffMode.Linear;
+            m_Voice.minDistance = 3f;
+            m_Voice.maxDistance = 70f;
+            m_Voice.dopplerLevel = 0f;
+            m_Voice.outputAudioMixerGroup = Sfx.Output;
+        }
+
         Material GlowMaterial(Color color)
         {
             var shared = LaserBeam.SharedMaterial;
@@ -214,9 +237,10 @@ namespace Archery.Cyber
 
         /// <summary>
         /// Vise ce point : il s'allume pendant <paramref name="aimTime"/> s, puis <paramref name="onAimed"/> tire (la
-        /// dimension lance les balles depuis <see cref="Muzzle"/>).
+        /// dimension lance les balles depuis <see cref="Muzzle"/>). Il annonce l'attaque <paramref name="pattern"/> (voir
+        /// <see cref="CyberCues.Tell"/>), puis sa charge monte jusqu'au tir.
         /// </summary>
-        public void Aim(Vector3 point, float aimTime, System.Action onAimed)
+        public void Aim(Vector3 point, float aimTime, int pattern, System.Action onAimed)
         {
             if (m_State != State.Idle)
                 return;
@@ -224,6 +248,14 @@ namespace Archery.Cyber
             m_OnAimed = onAimed;
             m_State = State.Aiming;
             m_Timer = Mathf.Max(0.1f, aimTime);
+            if (m_Voice != null)
+            {
+                m_Voice.outputAudioMixerGroup = Sfx.Output;
+                m_Voice.clip = CyberCues.Charge(m_Timer);
+                m_Voice.volume = 1f;
+                m_Voice.Play();
+                m_Voice.PlayOneShot(CyberCues.Tell(pattern));
+            }
         }
 
         void Update()
@@ -296,6 +328,8 @@ namespace Archery.Cyber
                 return;
             m_State = State.Dead;
             m_OnAimed = null;
+            if (m_Voice != null)
+                m_Voice.Stop();
             if (m_Dimension != null)
                 GlitchPixels.Burst(Point, 70, 1f, m_Dimension.GlowMaterial, m_Dimension.transform);
             Destroy(gameObject);

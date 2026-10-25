@@ -162,31 +162,39 @@ namespace Archery.Bows
         [Tooltip("Son d'un tir d'arbalète.")]
         public AudioClip akimboFireClip;
 
-        [Header("Katana et gantelet")]
-        [Tooltip("Un katana et un gantelet à la place de l'arc (refaits le 23 octobre, sans symbole à tracer) : une vraie taille " +
-                 "de katana ouvre une faille dans la matrice ; frappée vite avec le gantelet, elle part vers l'ennemi le plus " +
-                 "proche du centre de la vue et le suit (Damage, Arrow Speed ; qualité selon sa fraîcheur) ; toute la faille " +
-                 "touche. Le katana frappe aussi au corps à corps (Katana Damage). Visual Prefab ne sert qu'à l'aperçu du menu.")]
+        [Header("Katana")]
+        [Tooltip("Un katana à la place de l'arc (refait le 24 octobre : plus de gantelet, la main de l'arc devient le gant de la " +
+                 "matrice) : une taille de katana devant soi ouvre une faille dans la matrice, au fil de la lame ; frappée de " +
+                 "la main, elle part vers l'ennemi le plus proche du centre de la vue et le suit (Damage, Arrow Speed ; qualité " +
+                 "selon la longueur du coup) ; toute la faille touche, et les améliorations des flèches lui servent aussi. Des " +
+                 "failles qui se croisent fusionnent. Le katana et la main frappent aussi au corps à corps (Katana Damage). " +
+                 "Visual Prefab ne sert qu'à l'aperçu du menu.")]
         public bool katana;
 
         [Tooltip("Modèle du katana : le milieu de la poignée à l'origine, la lame vers +Y, le tranchant vers +Z ; enfants " +
                  "« Garde » (début de la lame) et « Pointe ».")]
         public GameObject katanaModel;
 
-        [Tooltip("Modèle du gantelet, porté sur la main de l'arc : main gauche, le poignet à l'origine, les doigts vers +Z, le " +
-                 "dos de la main vers +Y, 19 cm du poignet au bout du majeur ; enfant « Paume » (le point qui frappe les failles).")]
-        public GameObject gauntletModel;
-
-        [Tooltip("Dégâts d'un coup de katana (pointe à 2,5 m/s ; jusqu'à ×1,6 à 7 m/s ; tête ×2).")]
+        [Tooltip("Dégâts d'un coup de katana (pointe à 2,5 m/s ; jusqu'à ×1,6 à 7 m/s ; tête ×2) ; un coup de poing de la " +
+                 "main de la matrice en fait la moitié, et repousse l'ennemi.")]
         public float katanaDamage = 30f;
 
         [Tooltip("Matériau des failles (shader Archery/MatrixTear : faille vivante, chiffres qui tombent).")]
         public Material katanaTearMaterial;
 
+        [Tooltip("Matériau du gant de la main de l'arc avec le katana (shader Archery/MatrixGlove : le gant dans la matrice).")]
+        public Material katanaGloveMaterial;
+
+        [Tooltip("Matériau de la traînée de la lame (shader Archery/Glow), qui s'allume quand la lame va assez vite pour trancher.")]
+        public Material katanaTrailMaterial;
+
+        [Tooltip("Matériau des chiffres en lesquels se défait un ennemi tué par une faille (shader Archery/MatrixDigits).")]
+        public Material katanaDigitsMaterial;
+
         [Tooltip("Son d'un coup de katana qui touche (et d'une faille qui touche).")]
         public AudioClip katanaHitClip;
 
-        [Tooltip("Son d'une faille lancée par le gantelet.")]
+        [Tooltip("Son d'une faille lancée par la main.")]
         public AudioClip katanaLaunchClip;
 
         [Tooltip("Son d'une taille rapide de la lame.")]

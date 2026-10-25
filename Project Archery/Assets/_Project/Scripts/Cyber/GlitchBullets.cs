@@ -12,7 +12,8 @@ namespace Archery.Cyber
     /// Les balles du toit cyberpunk : des éclats d'erreur rouges, lents et lumineux, avec une courte traînée, qui
     /// tressautent en vol comme des pixels morts. Elles traversent le décor ; elles ne touchent que le joueur, à la tête et
     /// au haut du corps (une capsule sous la tête), jamais aux mains : on les esquive en se penchant ou en s'accroupissant.
-    /// Une balle qui frôle la tête siffle.
+    /// Une balle qui frôle la tête siffle ; depuis le 24 octobre, elle grésille en vol, en son 3D, de plus en plus fort en
+    /// approchant : on l'entend arriver, même sans la voir.
     /// </summary>
     public class GlitchBullets : MonoBehaviour
     {
@@ -32,6 +33,7 @@ namespace Archery.Cyber
         {
             public Transform Root;
             public TrailRenderer Trail;
+            public AudioSource Hum;
             public Vector3 Position;
             public Vector3 Velocity;
             public Vector3 Jitter;
@@ -91,6 +93,9 @@ namespace Archery.Cyber
             bullet.Root.position = origin;
             bullet.Root.gameObject.SetActive(true);
             bullet.Trail.Clear();
+            bullet.Hum.outputAudioMixerGroup = Sfx.Output;
+            bullet.Hum.pitch = Random.Range(0.9f, 1.15f);
+            bullet.Hum.Play();
             ActiveCount++;
         }
 
@@ -141,7 +146,19 @@ namespace Archery.Cyber
             trail.shadowCastingMode = ShadowCastingMode.Off;
             trail.receiveShadows = false;
             trail.alignment = LineAlignment.View;
-            return new Bullet { Root = root, Trail = trail };
+
+            // Le grésillement : faible au loin, fort tout près ; l'effet Doppler le fait monter quand elle arrive.
+            var hum = root.gameObject.AddComponent<AudioSource>();
+            hum.clip = CyberCues.Hum;
+            hum.loop = true;
+            hum.playOnAwake = false;
+            hum.spatialBlend = 1f;
+            hum.rolloffMode = AudioRolloffMode.Logarithmic;
+            hum.minDistance = 1f;
+            hum.maxDistance = 20f;
+            hum.dopplerLevel = 1f;
+            hum.volume = 0.55f;
+            return new Bullet { Root = root, Trail = trail, Hum = hum };
         }
 
         void Update()

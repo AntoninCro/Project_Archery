@@ -11,8 +11,9 @@ namespace Archery.Player
     /// Une main gantée, créée par <see cref="GlovedHands"/> à partir du gant low-poly de Quaternius (Art/Hands).
     /// Elle plie les doigts (repos, poing, crochet sur la corde, index tendu vers un menu) et se place
     /// sur la manette, sur la poignée de l'arc tenu, sur celle d'un objet qui en donne une (<see cref="HandGrip"/> : les
-    /// arbalètes des Akimbow) ou sur l'encoche de la flèche tirée. Une autre main peut la recouvrir (le gantelet du katana) :
-    /// <see cref="WristFrame"/> donne son poignet, <see cref="SetGloveHidden"/> cache le gant.
+    /// arbalètes des Akimbow) ou sur l'encoche de la flèche tirée. <see cref="WristFrame"/> donne son poignet,
+    /// <see cref="SetGloveHidden"/> cache le gant, <see cref="SetGloveMaterial"/> l'habille d'un autre matériau (le gant de
+    /// la matrice, avec le katana ; avant le 24 octobre, un gantelet le recouvrait).
     /// </summary>
     /// <remarks>
     /// Le modèle d'origine n'a pas de squelette : « Glove Rig.json » lui en donne un (articulations placées dans
@@ -158,6 +159,20 @@ namespace Archery.Player
         {
             if (m_GloveRenderer != null)
                 m_GloveRenderer.enabled = !hidden;
+        }
+
+        /// <summary>
+        /// Habille tout le gant d'un autre matériau (24 octobre : le gant de la matrice, avec le katana) ; null lui rend son
+        /// cuir. Renvoie son rendu (pour régler le matériau par bloc de propriétés), ou null s'il n'est pas encore construit.
+        /// </summary>
+        public Renderer SetGloveMaterial(Material material)
+        {
+            if (m_GloveRenderer == null || m_Owner == null)
+                return null;
+            m_GloveRenderer.sharedMaterials = material != null
+                ? new[] { material, material, material }
+                : new[] { m_Owner.Leather, m_IsLeft ? m_Owner.Leather : m_Owner.Skin, m_Owner.DarkLeather };
+            return m_GloveRenderer;
         }
 
         /// <summary>Construit la main depuis les données du gant. Renvoie false si elles sont incomplètes.</summary>

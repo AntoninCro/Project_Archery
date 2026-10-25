@@ -93,6 +93,7 @@ namespace Archery.Enemies
         float m_FadingSlow;
         float m_FadingDuration;
         float m_FadingAge;
+        Vector3 m_Push;
         bool m_HasSpeed;
         bool m_HasAttack;
         bool m_HasHit;
@@ -244,6 +245,8 @@ namespace Archery.Enemies
 
             if (m_FadingAge < m_FadingDuration)
                 m_FadingAge += deltaTime;
+
+            UpdatePush(deltaTime);
 
             if (m_State == State.Fleeing)
             {
@@ -517,6 +520,36 @@ namespace Archery.Enemies
             multiplier = Mathf.Max(Mathf.Clamp01(multiplier), 1f - Mathf.Clamp01(MaxSlow));
             m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, multiplier);
             m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
+        }
+
+        /// <summary>
+        /// Repousse l'ennemi (24 octobre : le coup de poing de la main de la matrice, avec le katana) : il glisse à
+        /// <paramref name="velocity"/> (m/s, à plat), de moins en moins vite, en restant sur le NavMesh. Les volants reculent
+        /// aussi. Un nouveau coup remplace le précédent s'il est plus fort.
+        /// </summary>
+        public void Push(Vector3 velocity)
+        {
+            if (m_State == State.Dead)
+                return;
+            velocity.y = 0f;
+            if (velocity.sqrMagnitude > m_Push.sqrMagnitude)
+                m_Push = velocity;
+        }
+
+        void UpdatePush(float deltaTime)
+        {
+            if (m_Push.sqrMagnitude < 0.01f)
+            {
+                m_Push = Vector3.zero;
+                return;
+            }
+
+            var step = m_Push * deltaTime;
+            if (m_Agent != null && m_Agent.enabled && m_Agent.isOnNavMesh)
+                m_Agent.Move(step);
+            else if (m_Behaviour != null)
+                transform.position += step;
+            m_Push *= Mathf.Exp(-6f * deltaTime);
         }
 
         /// <summary>

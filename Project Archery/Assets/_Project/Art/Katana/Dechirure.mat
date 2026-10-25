@@ -25,14 +25,29 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _Age: 10
+    - _Bulge: 1.4
+    - _CellSize: 0.011
     - _Columns: 40
+    - _CrackShare: 0.5
     - _EdgeWidth: 0.07
+    - _Fade: 1
+    - _Flash: 0
+    - _GrowTime: 1.4
+    - _Jag: 0.7
+    - _Open: 1
     - _Rows: 8
+    - _Seed: 0
+    - _Shiver: 0.007
     - _Speed: 5
+    - _SplitTime: 0.07
+    - _Wobble: 1
     m_Colors:
     - _CodeColor: {r: 0.25, g: 1.7, b: 0.65, a: 1}
     - _EdgeColor: {r: 0.6, g: 1.6, b: 2.4, a: 1}
     - _EdgeColorAlt: {r: 2.4, g: 0.25, b: 1.7, a: 1}
+    - _HeadColor: {r: 1.4, g: 2.6, b: 1.5, a: 1}
+    - _Tint: {r: 1, g: 1, b: 1, a: 1}
     - _VoidColor: {r: 0.008, g: 0, b: 0.03, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

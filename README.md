@@ -15,7 +15,7 @@ Inspirations : *Megabonk*, et *Longbow* dans *The Lab*.
 |---|---|
 | Interactions XR, geste naturel | Prendre l'arc, attraper une flèche dans son dos, l'encocher, tendre la corde, lâcher. Sortir une grenade de sa poche et la lancer. Soulever le couvercle d'un coffre, attraper une orbe, tremper une flèche dans le feu, frapper au corps à corps, construire au marteau, toucher des runes. |
 | Trajectoire physique | Flèches soumises à la gravité, portée selon la tension et la qualité du tir. |
-| Plusieurs arcs et flèches | Un menu des armes au début de la partie : arc de chasse, arcs court, puissant et runique, débloqués par des succès ; armes secrètes : les Akimbow (arbalètes jumelles), le katana et le gantelet, l'arc cosmique (laser), l'arc légendaire (en 3 fragments). Flèches spéciales (foudre, glace, explosion, multitir, déluge, ricochet…), flèches enflammées, grenade à flèches. |
+| Plusieurs arcs et flèches | Un menu des armes au début de la partie : arc de chasse, arcs court, puissant et runique, débloqués par des succès ; armes secrètes : les Akimbow (arbalètes jumelles), le katana, l'arc cosmique (laser), l'arc légendaire (en 3 fragments). Flèches spéciales (foudre, glace, explosion, multitir, déluge, ricochet…), flèches enflammées, grenade à flèches. |
 | Améliorations entre les niveaux | Boutique entre les vagues : 23 améliorations de trois raretés, sans limite d'achat (dont 2 pour la grenade). |
 | Zones de score, cibles mobiles, score en direct | Tête et corps des ennemis (et points faibles du boss) ; cibles d'entraînement, dont une mobile ; score, combo et argent sur la montre. |
 | Niveaux de difficulté | Facile, Normal, Difficile, Impossible, chacun avec son ciel (jour, coucher de soleil, nuit, lune de sang). |
@@ -49,7 +49,7 @@ Aussi : un timing à l'anneau (rouge, orange, vert, vert pastel) qui récompense
 | Coup au corps à corps | Frapper un ennemi avec la flèche tenue en main |
 | Grenade à flèches | Main vide à la hanche, comme pour fouiller sa poche, poignée : une grenade sort ; la lancer. Elle éclate au premier contact en une gerbe de flèches (recharge sur la montre). La toucher d'une flèche en vol : « MEGA-BOMBA », trois fois plus de flèches |
 | Akimbow (arme secrète) | Prendre chaque arbalète qui flotte à côté de soi, gâchette pour tirer |
-| Katana et gantelet (arme secrète) | Prendre le katana, le gantelet est porté sur la main de l'arc. Une vraie taille rapide devant soi ouvre une faille dans la matrice ; un coup de poing du gantelet dedans la lance vers l'ennemi regardé (plus on frappe vite, meilleur est le tir). La lame frappe aussi au corps à corps et fait sonner le gong |
+| Katana (arme secrète) | Prendre le katana ; la main de l'arc devient le gant de la matrice. Une taille devant soi ouvre une faille dans la matrice, au bout de la lame (plus le coup est long, meilleur est le tir ; deux failles qui se croisent fusionnent et explosent à l'impact ; 5 failles en tout) ; un coup de poing lance une onde de choc qui propulse les failles vers l'ennemi regardé, avec les effets des améliorations. La lame et le poing frappent aussi au corps à corps, la lame fait sonner le gong |
 | Menu en cours de partie | Bouton menu de la manette gauche (Tab au clavier) : menu devant soi, jeu en pause ; encore une fois pour reprendre |
 
 **Raccourcis de test** (dans l'éditeur et les builds *Development*) : la liste complète est dans `Project Archery/Docs/Demo_Vendredi.md` (partie 4). Les principaux : **N** lance la vague, appelle le boss ou le tue (à la vague 6 : entre dans l'arène, passe l'intro, tue le dragon), **F** (pour la démo) donne 2 exemplaires de chaque amélioration et des tourelles niveau 2 sur tous les emplacements, **K** fait mourir le joueur, **M** donne 500 pièces d'or, **B** 50 matériaux, **C** pose un coffre, **V** un gisement de cristaux, **H** termine la construction en cours, **1 à 4** choisissent la difficulté, **5 à 9, 0, ), =** équipent une arme, **U** débloque tous les succès, **P** et **G** ouvrent les deux secrets, **O** équipe le katana. Après la victoire, **I** continue en mode infini et **T** termine la partie. Les touches suivent la position physique du clavier QWERTY : sur un clavier AZERTY, **M** se trouve sur la touche **,**.
@@ -81,9 +81,10 @@ Project Archery/
 │   ├── Prefabs/, Scenes/, Materials/, Shaders/, Art/, Audio/
 ├── Docs/
 │   ├── GDD.md       document de conception : règles, chiffres, planning
-│   ├── Reprise_Projet.md  état du projet au 23 octobre et suite (présentation, tests ; refonte du katana faite)
+│   ├── Reprise_Projet.md  état du projet au 24 octobre et suite (tests ; katana refait après l'oral)
 │   └── Guide_*.md   pas-à-pas de montage de chaque partie dans Unity
 └── Tools/           vérifications sans ouvrir Unity : compilation des scripts, syntaxe des shaders
+Presentation/        le PowerPoint de l'oral (et son PDF), généré par generer_presentation.py ; captures/ : les captures du jeu
 ```
 
 Les fichiers de sauvegarde (`leaderboard.json`, `settings.json`) sont dans `%USERPROFILE%\AppData\LocalLow\DefaultCompany\THUNK VR`.
@@ -101,7 +102,7 @@ Inventaire complet, avec les licences et ce qu'elles demandent : `Project Archer
 - **Pichuliru**, licence CC0 : le katana (*Katana*, via Poly Pizza).
 - **Toit cyberpunk** : les arbalètes, modèle *Sci fi crossbow* de **oarfish** (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), licence **CC-BY 4.0**, modifié (converti en OBJ, recentré, réduit, nouveau matériau).
 - **Arc légendaire** : le modèle *Bowblade – DAE WeaponCraft – WoW Styled Bow* de **Tijmen Matthys** (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), licence **CC-BY 4.0**, modifié (converti en OBJ, corde retirée, recentré et mis à l'échelle).
-- **Gantelet du katana** : le modèle *Energy Gauntlet - Low Poly (Free Download)* de **ENOMIC** (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), licence **CC-BY 4.0**, modifié (remis à l'échelle et en main gauche, matériaux refaits).
+- **Ancien gantelet du katana** (plus utilisé depuis le 24 octobre, encore dans le projet) : le modèle *Energy Gauntlet - Low Poly (Free Download)* de **ENOMIC** (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), licence **CC-BY 4.0**, modifié (remis à l'échelle et en main gauche, matériaux refaits).
 - **Sons du katana** (Freesound, CC0) : *Clean fast Swoosh* de Danjocross, *Lightsaber Whoosh* de h2p34.
 - **Arc cosmique** : le modèle *Enchanted Bow* de **Zsky** (https://poly.pizza/m/9j2Tcybxue), licence **CC-BY 3.0**, modifié (corde retirée, matériaux refaits) ; la nébuleuse *Purple Nebula 1* des *Seamless Space Backgrounds* de **Screaming Brain Studios**, CC0 ; les sons *Sci-fi Weapon Charging 01* de **Tim_Verberne** et *Ion Cannon* de **qubodup** (freesound.org), CC0, recoupés.
 - **Polices**, licence SIL Open Font License 1.1 : *Cinzel* et *Cinzel Decorative* (Natanael Gama) ; *Share Tech Mono* (Carrois Type Design, Ralph du Carrois), pour les panneaux d'erreur du portail des étoiles.

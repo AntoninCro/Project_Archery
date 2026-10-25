@@ -290,11 +290,11 @@ namespace Archery.Upgrades
             Hitbox.HeadDamageMultiplier = HeadDamageMultiplier;
         }
 
-        // Vampirisme : chaque tir à la tête rend des PV.
+        // Vampirisme : chaque tir à la tête rend des PV (une flèche, ou une faille du katana).
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
             var heal = LifeOnHeadshot;
-            if (heal <= 0f || info.Zone != HitZone.Head || !(info.Source is Arrow))
+            if (heal <= 0f || info.Zone != HitZone.Head || !(info.Source is Arrow || info.Source is IPlayerShot))
                 return;
 
             var player = PlayerHealth.Instance;

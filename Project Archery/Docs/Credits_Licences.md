@@ -46,7 +46,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 
 | Asset | Auteur | Dossier | Utilisé pour |
 |---|---|---|---|
-| *Energy Gauntlet - Low Poly (Free Download)* (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), **CC-BY 4.0** | **ENOMIC** (Sketchfab, https://sketchfab.com/ENOMIC) | `energy-gauntlet-low-poly-free-download` | Le gantelet du katana. **Modifié** : remis dans le repère du jeu (poignet à l'origine, main gauche, 19 cm), matériaux refaits (plaques chromées, lueurs cyan) |
+| *Energy Gauntlet - Low Poly (Free Download)* (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), **CC-BY 4.0** | **ENOMIC** (Sketchfab, https://sketchfab.com/ENOMIC) | `energy-gauntlet-low-poly-free-download` | **Plus utilisé depuis le 24 octobre** (c'était le gantelet du katana, remplacé par le gant de la matrice ; les fichiers restent dans le projet). **Modifié** : remis dans le repère du jeu (poignet à l'origine, main gauche, 19 cm), matériaux refaits (plaques chromées, lueurs cyan) |
 | *Sci fi crossbow* (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), **CC-BY 4.0** | **oarfish** (Sketchfab, https://sketchfab.com/oarfish54) | `_Project/Art/Cyber/Arbalete.obj` | Les arbalètes jumelles du toit cyberpunk. **Modifié** : converti de glTF en OBJ, recentré sur la poignée, tourné et réduit (55 cm) ; matériau refait (silhouette sombre au contour néon) |
 | *Bowblade – DAE WeaponCraft – WoW Styled Bow* (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), **CC-BY 4.0** | **Tijmen Matthys** (Sketchfab, https://sketchfab.com/tijmenmatthys) | `_Project/Art/Bows/Legendaire/` | Le modèle de l'arc légendaire, avec sa texture peinte à la main. **Modifié** : converti de FBX en OBJ, corde retirée (le jeu dessine la sienne), recentré sur la poignée et mis à l'échelle ; la texture sert aussi de lueur |
 | *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
@@ -95,7 +95,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Charge de l'arc cosmique (`Audio/Arc_Cosmique_Charge.wav`) | *Sci-fi Weapon Charging 01*, Tim_Verberne (freesound.org/people/Tim_Verberne/sounds/514082) ; recoupé (2,5 à 5,2 s) et fondu. L'original est dans `Audio/` | CC0 |
 | Tir laser de l'arc cosmique (`Audio/Arc_Cosmique_Laser.wav`) | *Ion Cannon*, qubodup (freesound.org/people/qubodup/sounds/814049) ; recoupé (0 à 3,4 s), saturé (graves renforcés, distorsion) et fondu. L'original est dans `Audio/` | CC0 |
 | Geste du katana (`507466__danjocross__clean-fast-swoosh.aiff`) | *Clean fast Swoosh*, Danjocross (freesound.org/people/Danjocross/sounds/507466) | CC0 |
-| Signe lancé par le gantelet (`650564__h2p34__lightsaber-whoosh.wav`) | *Lightsaber Whoosh*, h2p34 (freesound.org/people/h2p34/sounds/650564) | CC0 |
+| Faille lancée par la main (`650564__h2p34__lightsaber-whoosh.wav`) | *Lightsaber Whoosh*, h2p34 (freesound.org/people/h2p34/sounds/650564) | CC0 |
 
 ### Fait pour le projet
 

@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1048b2048fc20de45a8bc9fbfb3a58cb, type: 3}
   m_Name: Bow_Katana
   m_EditorClassIdentifier: Archery.Runtime::Archery.Bows.BowDefinition
-  displayName: Katana et gantelet
-  description: Le katana fend la matrice ; le gantelet lance la faille.
-  specialPower: 'Une taille rapide ouvre une faille ; frappe-la vite avec le gantelet
-    : elle file vers l''ennemi que tu regardes'
+  displayName: Katana
+  description: "Le katana fend la matrice, ta main lance la faille ; des failles
+    crois\xE9es fusionnent."
+  specialPower: 'Une taille ouvre une faille, plus forte si le coup est long ; frappe-la
+    de la main : elle file vers l''ennemi que tu regardes'
   price: 0
   availableFromWave: 0
   visualPrefab: {fileID: 5842871957587590299, guid: b3f1c859e70291c47bcbd293fd5e62eb, type: 3}
@@ -79,9 +80,11 @@ MonoBehaviour:
   akimboFireClip: {fileID: 0}
   katana: 1
   katanaModel: {fileID: 6748999778779473540, guid: 960d6186cee55bd47b0bbcce00e3c352, type: 3}
-  gauntletModel: {fileID: 5857497301964544696, guid: 1df6d31e62bed964189271eff368815a, type: 3}
   katanaDamage: 30
   katanaTearMaterial: {fileID: 2100000, guid: 63e5c9abd5fc80143849ce5f4e0d21e5, type: 2}
+  katanaGloveMaterial: {fileID: 2100000, guid: 6bd9f2de14ed7b44480ff56b6f8e5b25, type: 2}
+  katanaTrailMaterial: {fileID: 2100000, guid: ef41e43580c5e68469ae27d7ff4d2c3d, type: 2}
+  katanaDigitsMaterial: {fileID: 2100000, guid: 7db3703d56e87fb49be3ac7b64886051, type: 2}
   katanaHitClip: {fileID: 8300000, guid: 101b5485c14ff7a4b966387f9f0d1b51, type: 3}
   katanaLaunchClip: {fileID: 8300000, guid: ec5c6523e89d8d249ba1bcbb25e0974d, type: 3}
   katanaSwooshClip: {fileID: 8300000, guid: 281fd56ec6e693445bbe7df5ebf9716b, type: 3}

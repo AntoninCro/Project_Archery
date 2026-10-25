@@ -64,9 +64,9 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
 | **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
-| **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana et le gantelet (après U) |
+| **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana (après U) |
 | **F** | **Pour faire affronter MK au prof** : 2 exemplaires de chaque amélioration de la boutique, et tous les emplacements de tourelle (au bord de la voie) remplis de tourelles **niveau 2** (balistes et tours de givre en alternance ; une tourelle déjà là monte au niveau 2). Une fois par partie ; les barricades et pièges ne changent pas |
-| **O** | Équipe tout de suite le katana et le gantelet (même verrouillés, même pendant une vague) ; **O** encore : l'arme d'avant. Au casque : une taille de katana ouvre une faille, un coup de poing du gantelet dedans la lance. Au clavier : clic gauche, un coup de katana qui ouvre une faille ; clic droit, le gantelet lance les failles ouvertes |
+| **O** | Équipe tout de suite le katana (même verrouillé, même pendant une vague) ; **O** encore : l'arme d'avant. Au casque : une taille de katana ouvre une faille au bout de la lame, un coup de poing du gant de la matrice lance une onde de choc qui la propulse ; deux failles qui se croisent fusionnent. Au clavier : clic gauche, un coup de katana qui ouvre une faille (deux coups de suite se croisent et fusionnent) ; clic droit, une onde de choc droit devant |
 | **L** | Un fragment d'arc légendaire (au 3e, l'arc est débloqué et arrive en main) |
 | **U** | Débloque tous les succès, donc tous les arcs |
 | **J** | Efface tous les succès : les arcs se reverrouillent (l'arc équipé redevient l'arc par défaut avant la première vague) |

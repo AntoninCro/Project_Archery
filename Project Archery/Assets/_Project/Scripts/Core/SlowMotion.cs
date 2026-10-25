@@ -23,6 +23,8 @@ namespace Archery.Core
         static readonly Dictionary<object, float> s_Requests = new Dictionary<object, float>();
         static SlowMotion s_Instance;
         static float s_NormalFixedDeltaTime = -1f;
+        static readonly object s_HitStop = new object();
+        static float s_HitStopUntil = -1f;
 
         /// <summary>Le temps est ralenti, ou en train de revenir à la normale.</summary>
         public static bool IsActive => s_Instance != null;
@@ -74,6 +76,20 @@ namespace Archery.Core
                 s_Requests.Remove(owner);
         }
 
+        /// <summary>
+        /// Un très bref ralenti qui marque un coup (24 octobre : une faille parfaite du katana) : le temps passe tout de suite
+        /// à <paramref name="timeScale"/> pendant <paramref name="duration"/> s (temps réel), puis revient en douceur. Rien en
+        /// pause.
+        /// </summary>
+        public static void HitStop(float timeScale, float duration)
+        {
+            if (IsPaused)
+                return;
+            Begin(s_HitStop, timeScale);
+            Time.timeScale = Mathf.Min(Time.timeScale, Mathf.Clamp(timeScale, 0.05f, 1f));
+            s_HitStopUntil = Time.unscaledTime + duration;
+        }
+
         static float TargetScale
         {
             get
@@ -94,6 +110,12 @@ namespace Archery.Core
 
         void Update()
         {
+            if (s_HitStopUntil >= 0f && Time.unscaledTime >= s_HitStopUntil)
+            {
+                s_Requests.Remove(s_HitStop);
+                s_HitStopUntil = -1f;
+            }
+
             var target = TargetScale;
             Time.timeScale = target <= 0f ? 0f : Mathf.MoveTowards(Time.timeScale, target, k_TransitionSpeed * Time.unscaledDeltaTime);
             // En pause, la physique ne fait plus de pas : son pas garde une valeur valable.
@@ -122,6 +144,7 @@ namespace Archery.Core
             s_Requests.Clear();
             s_Instance = null;
             s_NormalFixedDeltaTime = -1f;
+            s_HitStopUntil = -1f;
         }
     }
 }

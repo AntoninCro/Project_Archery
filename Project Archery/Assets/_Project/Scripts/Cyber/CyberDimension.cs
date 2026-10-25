@@ -20,12 +20,22 @@ namespace Archery.Cyber
     /// le joueur (jamais dans le dos), annoncés (le tireur s'allume), de plus en plus serrés ; quand le joueur tire, un tireur
     /// lui répond (ils copient ses gestes). 3 touches : expulsé. Scène à part (<c>Dimension_Cyberpunk</c>), chargée par le
     /// <see cref="CyberPassage"/> de la carte, construite par <c>Archery > Toit cyberpunk > Reconstruire le décor</c>.
+    /// <para>
+    /// Le 24 octobre, l'épreuve était impossible : deux fois moins de tirs, plus lents et mieux annoncés, un seul tireur
+    /// qui vise à la fois, des balles seules et des rafales au début, et un court répit après chaque touche (une rafale
+    /// ne coûte plus qu'une touche). Des indices sonores : le tireur annonce l'attaque (un son par sorte d'attaque) et sa
+    /// charge monte jusqu'au tir, en son 3D (<see cref="CyberCues"/>) ; les balles grésillent en approchant ; un tic
+    /// pour chacune des 10 dernières secondes ; un cœur qui bat quand il ne reste qu'une touche.
+    /// </para>
     /// </remarks>
     [DisallowMultipleComponent]
     public class CyberDimension : MonoBehaviour, IGlitchDimension
     {
         // Les tirs ne viennent que de ce demi-angle (°) autour du regard du joueur.
         const float k_FrontCone = 70f;
+
+        // La part de son volume que garde la musique pendant la minute à tenir.
+        const float k_MusicDuck = 0.7f;
 
         [Header("Scène (objets modifiables à la main)")]
         [Tooltip("Point d'arrivée du joueur, au milieu de la zone (son axe bleu donne la direction du regard).")]
@@ -39,6 +49,10 @@ namespace Archery.Cyber
         [Tooltip("La rambarde de la zone et les murets du toit (colliders) : les flèches les traversent.")]
         [SerializeField]
         Transform m_Rails;
+
+        [Tooltip("La rambarde de la zone (dans Rails) : fine, elle ne cache pas les tireurs (les murets, si).")]
+        [SerializeField]
+        Transform m_Zone;
 
         [Tooltip("La musique : elle part du début à l'arrivée du joueur, et sa montée donne le départ (Intro Time).")]
         [SerializeField]
@@ -89,30 +103,46 @@ namespace Archery.Cyber
         [SerializeField]
         int m_MaxHits = 3;
 
+        // 24 octobre (l'épreuve était impossible) : 8 à 12 tireurs (12 à 20 avant), une attaque toutes les 2,6 s puis 1,4 s
+        // (1,6 puis 0,55), des balles à 5 puis 6,5 m/s (6 puis 8), 1 s de visée (0,7), une réponse sur 7 (une sur 3).
         [Tooltip("Tireurs au départ, puis au plus.")]
         [SerializeField]
-        Vector2Int m_ShooterCount = new Vector2Int(12, 20);
+        Vector2Int m_ShooterCount = new Vector2Int(8, 12);
 
-        [Tooltip("Temps (s) entre deux attaques, au début puis à la fin de la minute.")]
+        [Tooltip("Temps (s) entre deux attaques, au début puis à la fin de la minute (compté seulement quand aucun tireur ne vise).")]
         [SerializeField]
-        Vector2 m_AttackInterval = new Vector2(1.6f, 0.55f);
+        Vector2 m_AttackInterval = new Vector2(2.6f, 1.4f);
 
         [Tooltip("Vitesse (m/s) des balles, au début puis à la fin.")]
         [SerializeField]
-        Vector2 m_BulletSpeed = new Vector2(6f, 8f);
+        Vector2 m_BulletSpeed = new Vector2(5f, 6.5f);
 
-        [Tooltip("Temps (s) pendant lequel le tireur s'allume avant de tirer.")]
+        [Tooltip("Temps (s) pendant lequel le tireur s'allume (et sa charge monte) avant de tirer.")]
         [SerializeField]
-        float m_AimTime = 0.7f;
+        float m_AimTime = 1f;
 
         [Tooltip("Chance qu'un tireur réponde quand le joueur tire (ils copient ses gestes).")]
         [Range(0f, 1f)]
         [SerializeField]
-        float m_AnswerChance = 0.35f;
+        float m_AnswerChance = 0.15f;
 
         [Tooltip("Délai (s) avant qu'un tireur effacé soit remplacé, au début puis à la fin.")]
         [SerializeField]
-        Vector2 m_RespawnDelay = new Vector2(3f, 1.2f);
+        Vector2 m_RespawnDelay = new Vector2(3f, 1.5f);
+
+        [Tooltip("Répit (s) après une touche : les balles le traversent (une rafale ne coûte qu'une touche).")]
+        [SerializeField]
+        float m_HitGrace = 1.2f;
+
+        [Tooltip("Part de la minute (0 à 1) avec seulement des balles seules et des rafales, avant les lignes et les colonnes.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_EasyStart = 0.2f;
+
+        [Header("Décor")]
+        [Tooltip("Les reflets du toit mouillé : rendus une fois, à l'arrivée du joueur.")]
+        [SerializeField]
+        ReflectionProbe m_Reflections;
 
         [Header("Panneaux d'erreur")]
         [TextArea(1, 3)]
@@ -169,6 +199,14 @@ namespace Archery.Cyber
         [SerializeField]
         AudioClip m_FailClip;
 
+        [Tooltip("Le tic des dernières secondes.")]
+        [SerializeField]
+        AudioClip m_TickClip;
+
+        [Tooltip("Les dernières secondes annoncées par un tic.")]
+        [SerializeField]
+        int m_TickSeconds = 10;
+
         enum Phase
         {
             Waiting,
@@ -176,6 +214,8 @@ namespace Archery.Cyber
             Survive,
             Over,
         }
+
+        static readonly RaycastHit[] s_SightHits = new RaycastHit[16];
 
         readonly List<Transform> m_FreePosts = new List<Transform>();
         readonly List<CyberShooter> m_Shooters = new List<CyberShooter>();
@@ -186,10 +226,13 @@ namespace Archery.Cyber
         ErrorPanels m_Panels;
         GlitchBullets m_Bullets;
         AudioLowPassFilter m_LowPass;
+        AudioSource m_Heartbeat;
         Phase m_Phase;
         float m_Time;
         float m_AttackTimer;
         float m_EndTimer = -1f;
+        float m_GraceUntil;
+        int m_LastTick;
         int m_Hits;
         bool m_Success;
 
@@ -235,6 +278,14 @@ namespace Archery.Cyber
             m_Bullets = new GameObject("Balles").AddComponent<GlitchBullets>();
             m_Bullets.transform.SetParent(transform, false);
             m_Bullets.Configure(new Color(1f, 0.08f, 0.1f), OnPlayerHit, m_PassClip);
+
+            // Le cœur qui bat quand il ne reste qu'une touche (2D : il est dans la tête du joueur).
+            m_Heartbeat = gameObject.AddComponent<AudioSource>();
+            m_Heartbeat.clip = CyberCues.Heartbeat;
+            m_Heartbeat.loop = true;
+            m_Heartbeat.playOnAwake = false;
+            m_Heartbeat.spatialBlend = 0f;
+            m_Heartbeat.volume = 0.7f;
         }
 
         void OnEnable() => TwinCrossbows.Fired += OnPlayerFired;
@@ -277,9 +328,13 @@ namespace Archery.Cyber
         {
             m_Passage = passage;
             DynamicGI.UpdateEnvironment();
+            if (m_Reflections != null)
+                m_Reflections.RenderProbe();
             m_Phase = Phase.Intro;
             m_Time = 0f;
             m_Hits = 0;
+            m_GraceUntil = 0f;
+            m_LastTick = -1;
             m_Panels.StartIntro(m_IntroTime);
             TwinCrossbows.Equip(m_CrossbowModel, m_CrossbowMaterial, m_CrossbowClip, m_CrossbowTip);
             if (m_MusicSource != null && m_MusicSource.clip != null)
@@ -320,13 +375,13 @@ namespace Archery.Cyber
 
                 case Phase.Survive:
                     UpdateRespawns(deltaTime);
-                    m_AttackTimer -= deltaTime;
-                    if (m_AttackTimer <= 0f)
-                    {
-                        m_AttackTimer = Mathf.Lerp(m_AttackInterval.x, m_AttackInterval.y, Progress) * Random.Range(0.8f, 1.2f);
-                        Attack();
-                    }
+                    // Un seul tireur vise à la fois : le temps jusqu'à l'attaque suivante ne court qu'entre deux visées.
+                    if (!AnyAiming())
+                        m_AttackTimer -= deltaTime;
+                    if (m_AttackTimer <= 0f && Attack())
+                        m_AttackTimer = AttackInterval() * Random.Range(0.85f, 1.15f);
 
+                    UpdateTicks();
                     if (TimeLeft <= 0f)
                         Finish(true);
                     break;
@@ -350,7 +405,13 @@ namespace Archery.Cyber
 
         void UpdateMusic(float deltaTime)
         {
-            if (m_MusicSource == null || m_Phase != Phase.Over)
+            if (m_MusicSource == null)
+                return;
+
+            // Pendant la minute, la musique baisse un peu : les annonces des tireurs doivent s'entendre (24 octobre).
+            if (m_Phase == Phase.Survive)
+                m_MusicSource.volume = Mathf.MoveTowards(m_MusicSource.volume, m_MusicVolume * k_MusicDuck, deltaTime * 0.5f);
+            if (m_Phase != Phase.Over)
                 return;
             m_MusicSource.volume = Mathf.MoveTowards(m_MusicSource.volume, 0f, deltaTime * 0.6f);
             if (m_LowPass != null)
@@ -404,36 +465,96 @@ namespace Archery.Cyber
 
         // ---------------------------------------------------------------- les attaques
 
-        // Un tireur de devant vise, s'allume, puis tire : une balle, une rafale, une ligne (s'accroupir) ou une colonne
-        // (se pencher). Les plus serrées viennent avec la fin de la minute.
-        void Attack()
+        // Un tireur de devant vise, s'allume et annonce son attaque, puis tire : une balle, une rafale, une ligne
+        // (s'accroupir) ou une colonne (se pencher). False : aucun tireur devant le joueur, on réessaie.
+        bool Attack()
         {
             var head = Head;
             if (head == null)
-                return;
+                return false;
 
             var shooter = PickShooter();
             if (shooter == null)
-                return;
+                return false;
 
-            var progress = Progress;
-            var roll = Random.value;
-            var pattern = roll < 0.4f - 0.15f * progress ? 0 : roll < 0.7f ? 1 : roll < 0.85f ? 2 : 3;
+            var pattern = PickPattern(Progress);
             var target = head.position;
-            shooter.Aim(target, m_AimTime, () => FirePattern(shooter, pattern, target));
+            shooter.Aim(target, m_AimTime, pattern, () => FirePattern(shooter, pattern, target));
+            return true;
         }
 
-        // Un tireur prêt, devant le joueur (jamais dans le dos), au hasard.
+        // Au début, des balles seules et des rafales ; ensuite, des lignes et des colonnes aussi, un peu plus avec la fin
+        // de la minute.
+        int PickPattern(float progress)
+        {
+            var roll = Random.value;
+            if (progress < m_EasyStart)
+                return roll < 0.75f ? 0 : 1;
+            return roll < 0.45f - 0.15f * progress ? 0 : roll < 0.7f ? 1 : roll < 0.85f ? 2 : 3;
+        }
+
+        float AttackInterval() => Mathf.Lerp(m_AttackInterval.x, m_AttackInterval.y, Progress);
+
+        bool AnyAiming()
+        {
+            foreach (var shooter in m_Shooters)
+            {
+                if (shooter != null && shooter.Aiming)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // Un tic pour chacune des dernières secondes, plus aigu pour les trois dernières.
+        void UpdateTicks()
+        {
+            var second = Mathf.CeilToInt(TimeLeft);
+            if (second == m_LastTick || second <= 0 || second > m_TickSeconds)
+                return;
+            m_LastTick = second;
+            var head = Head;
+            if (head != null)
+                Sfx.Play(m_TickClip, head.position, 0.6f, second <= 3 ? 1.35f : 1f, 0f);
+        }
+
+        // Un tireur prêt, devant le joueur (jamais dans le dos) et qu'il voit, au hasard.
         CyberShooter PickShooter()
         {
             m_Candidates.Clear();
+            var head = Head;
             foreach (var shooter in m_Shooters)
             {
-                if (shooter != null && shooter.Ready && InFront(shooter.Point, k_FrontCone))
+                if (shooter != null && shooter.Ready && InFront(shooter.Point, k_FrontCone) && (head == null || Visible(shooter, head.position)))
                     m_Candidates.Add(shooter);
             }
 
             return m_Candidates.Count > 0 ? m_Candidates[Random.Range(0, m_Candidates.Count)] : null;
+        }
+
+        // Le joueur voit ce tireur : rien d'opaque entre ses yeux et la poitrine du tireur (24 octobre : des tireurs tiraient
+        // de derrière un muret ou le réservoir, sans qu'on puisse les voir, ni voir leurs balles, ni les toucher). Les murets
+        // comptent, même si les flèches les traversent ; pas la rambarde de la zone, fine, ni le joueur, ni le tireur.
+        bool Visible(CyberShooter shooter, Vector3 eye)
+        {
+            var toShooter = shooter.Point - eye;
+            var distance = toShooter.magnitude;
+            if (distance < 0.5f)
+                return true;
+
+            var count = Physics.RaycastNonAlloc(eye, toShooter / distance, s_SightHits, distance, Physics.DefaultRaycastLayers,
+                                                QueryTriggerInteraction.Ignore);
+            var rig = PlayerRig.Instance;
+            var player = rig != null && rig.Origin != null ? rig.Origin.transform : null;
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_SightHits[i].collider.transform;
+                if (hit.IsChildOf(shooter.transform) || (player != null && hit.IsChildOf(player)) || (m_Zone != null && hit.IsChildOf(m_Zone)))
+                    continue;
+                return false;
+            }
+
+            return true;
         }
 
         void FirePattern(CyberShooter shooter, int pattern, Vector3 target)
@@ -456,7 +577,8 @@ namespace Archery.Cyber
                     break;
 
                 case 1:
-                    // Une rafale de trois, à 0,18 s d'écart : on ne l'esquive qu'en bougeant franchement.
+                    // Une rafale de trois, à 0,22 s d'écart (0,18 avant le 24 octobre) : on ne l'esquive qu'en bougeant
+                    // franchement.
                     m_Bullets.Fire(muzzle, forward * speed);
                     StartCoroutine(Burst(shooter, target, speed, 2));
                     break;
@@ -479,7 +601,7 @@ namespace Archery.Cyber
         {
             for (var i = 0; i < count; i++)
             {
-                yield return new WaitForSeconds(0.18f);
+                yield return new WaitForSeconds(0.22f);
                 if (shooter == null || !shooter.IsAlive || m_Phase != Phase.Survive)
                     yield break;
                 var muzzle = shooter.Muzzle;
@@ -487,17 +609,20 @@ namespace Archery.Cyber
             }
         }
 
-        // Le joueur tire : parfois, un tireur de devant lui répond, comme en miroir (ils copient ses gestes).
+        // Le joueur tire : parfois, un tireur de devant lui répond, comme en miroir (ils copient ses gestes). Depuis le
+        // 24 octobre, la réponse remplace l'attaque suivante (elle ne s'y ajoute plus), jamais pendant une autre visée,
+        // et elle s'annonce comme les autres (0,7 s de visée ; 0,45 avant).
         void OnPlayerFired(Vector3 origin, Vector3 direction)
         {
-            if (m_Phase != Phase.Survive || Random.value > m_AnswerChance || Head == null)
+            if (m_Phase != Phase.Survive || Random.value > m_AnswerChance || Head == null || AnyAiming())
                 return;
 
             var shooter = PickShooter();
             if (shooter != null)
             {
                 var target = Head.position;
-                shooter.Aim(target, 0.45f, () => FirePattern(shooter, 0, target));
+                shooter.Aim(target, 0.7f, 0, () => FirePattern(shooter, 0, target));
+                m_AttackTimer = Mathf.Max(m_AttackTimer, AttackInterval());
             }
         }
 
@@ -517,9 +642,11 @@ namespace Archery.Cyber
 
         void OnPlayerHit(Vector3 point)
         {
-            if (m_Phase != Phase.Survive)
+            // Le répit après une touche : les autres balles de la même attaque traversent le joueur.
+            if (m_Phase != Phase.Survive || m_Time < m_GraceUntil)
                 return;
 
+            m_GraceUntil = m_Time + m_HitGrace;
             m_Hits++;
             var head = Head;
             Sfx.Play(m_HitClip, head != null ? head.position : point, 1f, Random.Range(0.9f, 1.05f), 0f);
@@ -537,6 +664,12 @@ namespace Archery.Cyber
                 return;
             }
 
+            if (left == 1 && m_Heartbeat != null && !m_Heartbeat.isPlaying)
+            {
+                m_Heartbeat.outputAudioMixerGroup = Sfx.Output;
+                m_Heartbeat.Play();
+            }
+
             HeadMessages.Show(left > 1 ? $"TOUCHÉ\n<size=60%>encore {left} touches</size>" : "TOUCHÉ\n<size=60%>la prochaine te supprime</size>",
                               new Color(1f, 0.25f, 0.25f), 1.6f, 1f);
         }
@@ -550,6 +683,8 @@ namespace Archery.Cyber
             m_Success = success;
             m_EndTimer = success ? 2.8f : 2f;
             m_Bullets.Clear();
+            if (m_Heartbeat != null)
+                m_Heartbeat.Stop();
             TwinCrossbows.Unequip();
             foreach (var shooter in m_Shooters)
             {

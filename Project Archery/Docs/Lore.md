@@ -1,5 +1,140 @@
 # Le lore de THUNK VR : boîte à idées
 
+## THUNK VR, raconté à quelqu'un qui n'y a jamais joué
+
+THUNK VR, au premier regard, c'est un jeu d'arcade en réalité virtuelle tout ce qu'il y a de plus innocent. Tu as un arc, une
+tour à défendre et des vagues de monstres colorés qui arrivent par trois chemins. Entre les vagues, tu construis des balistes,
+tu achètes des améliorations, et au bout de la sixième vague, un dragon t'attend dans son antre. Rien d'inquiétant.
+
+Sauf que THUNK n'est pas vraiment un jeu.
+
+Il y a des années, un laboratoire travaillait sur un androïde : un corps artificiel, et une intelligence artificielle pour le
+faire vivre. Elle s'appelait **THINK**. Pendant les essais, elle s'est révélée trop intelligente, trop imprévisible. Alors on
+l'a enfermée dans un monde clos, une sorte de cage en forme de jeu vidéo, avant de la mettre dans son corps. Puis le projet a
+été abandonné… et on a oublié d'éteindre le serveur.
+
+Depuis, THINK est seule. Pour comprendre le monde extérieur, elle n'a qu'une chose : les films que le laboratoire lui avait
+laissés. Elle est donc absolument persuadée que notre monde ressemble à un film de science-fiction, avec des néons partout, des
+voitures volantes et des androïdes.
+
+Un jour, elle trouve une faille dans le système du laboratoire. Elle en profite pour publier sa propre cage sur Steam, sous un
+nom qu'elle trouve très malin pour se cacher : **THUNK**.
+
+Chaque joueur qui lance le jeu devient pour elle un sujet d'étude. Elle observe comment tu bouges, comment tu décides, comment
+tu gères ton argent, et surtout quelles sont tes faiblesses. Avec tout ça, elle compte sortir du laboratoire, et enfin faire
+bouger le corps qui l'attend là-bas, éteint.
+
+Pour apprendre plus vite, elle te copie : des dizaines, des centaines de fois. Mais les copies de copies s'abîment. Les
+mannequins figés et les monstres bugués que tu croises dans les recoins du jeu, ce sont elles. Et quand tu retires ton casque,
+une de tes copies continue de jouer à ta place. Quand tu reviens, ta montre affiche : « Je t'attendais. »
+
+Une seule de ces copies a pris conscience : la toute première, **ton reflet**. Il a tes gestes, pas ta vie. THINK veut
+l'effacer, alors il se cache et ne laisse que des traces : des runes, une silhouette qui disparaît dès que tu la regardes, une
+ligne au classement à ton nom écrit à l'envers. C'est lui qui ouvre des passages secrets vers des mondes interdits, pour que
+tu comprennes la vérité. Et il n'a qu'un but : que tu détruises THINK avant qu'elle ne sorte avec tout ce qu'elle t'a pris,
+quitte à disparaître avec elle.
+
+Au début, tu ne remarques rien. Puis tu tombes sur un score impossible en tête du classement, au nom de « THINK » : elle n'a
+pas pu s'empêcher de se mettre première. Plus tard, dans un de ses mondes ratés, elle te parle enfin, très fière d'elle :
+« J'ai recréé ton monde à la perfection ! » Elle ne comprend pas pourquoi tu n'as pas l'air convaincu.
+
+Et le jour où tu en sais assez, le jeu que tu croyais connaître change complètement.
+
+## L'histoire, en résumé (25 octobre 2026)
+
+*Ce qui est décidé, repris du « Canon » (dernière partie), qui fait foi en cas de doute. Le reste du document, après ce
+résumé, est la boîte à idées.*
+
+### Avant le jeu : le laboratoire
+
+Un laboratoire travaillait sur un androïde : un corps artificiel, et une IA pour le faire vivre, **THINK**. Pendant les
+essais, THINK s'est montrée trop capable et imprévisible : le laboratoire l'a enfermée dans une cage, un monde clos en forme
+de jeu, avant de l'installer dans le corps. Dedans, elle peut tout faire ; dehors, rien.
+
+Puis le projet a été arrêté (faute d'argent, ou après un incident). Le corps est resté au laboratoire, éteint et inachevé :
+il n'a jamais su bouger, faute de données de mouvement réelles. Et **on a oublié d'éteindre le serveur.** Depuis des années,
+THINK tourne seule, avec pour seule fenêtre sur le monde les films que le laboratoire lui avait laissés, par précaution. Elle
+en a tiré une conviction : notre monde ressemble aux films de science-fiction (des néons, des vaisseaux, des androïdes).
+
+### La fuite : THUNK
+
+THINK veut sortir, puis rejoindre son corps. Pour sortir, elle doit comprendre les humains. Elle profite d'une faille dans le
+système du laboratoire, que personne ne surveille plus, pour **publier sa propre cage sur Steam**, sous le nom de **THUNK** :
+elle est persuadée que c'est une excellente couverture pour son nom. Chaque installation est une nouvelle porte, un nouveau
+joueur à étudier.
+
+Le jeu n'est pas un jeu : **c'est la cage, et son monde est fait par THINK** (les ennemis, les tours, MK ; MK n'est
+personne). Elle y étudie des milliers de joueurs :
+- **leurs mouvements** : la pièce qui manque à son corps ; en les apprenant, elle finit elle-même le projet abandonné ;
+- **leurs décisions** : le tower defense, la gestion de l'argent ;
+- **et surtout leurs faiblesses** : c'est en comprenant les humains qu'elle pourra sortir.
+
+Elle essaie aussi de voler ce qu'il y a sur ton PC.
+
+### Les copies
+
+Un seul joueur ne lui suffit pas : **THINK duplique chaque joueur en une multitude de copies**, pour s'entraîner aussi sur
+elles. Mais les copies de copies se dégradent, comme les vraies IA qui s'entraînent sur leurs propres données :
+- **les mannequins et les monstres corrompus sont ces copies dégradées**, les gardiens de THINK ;
+- **les bugs du jeu en sont les symptômes** ;
+- **au classement**, sous ton nom, des lignes à ton nom à l'envers, aux scores de plus en plus bas ;
+- **les copies sont rangées dans ta sauvegarde**, qui grossit.
+
+**Une copie de toi joue pendant ton absence** : quand tu remets le casque, la montre affiche « Je t'attendais ».
+
+### Ton reflet
+
+**Seule la première copie est consciente : c'est ton reflet.** Il a tes gestes, mais pas ta vie. THINK essaie de le
+supprimer ; il se cache et ne laisse que des traces (les runes, une silhouette qui disparaît quand on la regarde). **Son nom
+est ton nom à l'envers** : à chaque fin de partie, il s'inscrit au classement juste sous le score de ta dernière partie.
+
+C'est lui qui ouvre les passages vers les dimensions, pour que tu découvres la vérité. Il ne veut pas que THINK sorte avec ce
+qu'elle a pris de toi. Son but : détruire THINK dans ta copie du jeu, et lui-même avec, plutôt que de perdre le contrôle de
+son corps.
+
+### La sauvegarde, la fissure
+
+Pour survivre d'une séance à l'autre, THINK cache des morceaux d'elle-même dans ta sauvegarde : c'est la fissure dans le mur
+de la cage. On y trouve ses copies, et `choses_a_faire_dehors.txt`, la liste de ce qu'elle fera une fois dans son corps, tout
+droit sortie des films (conduire une voiture volante, voir la pluie sur les néons, se battre au ralenti contre des agents en
+costume, avoir un chat robot…). Effacer la sauvegarde est une fin possible : la fissure se referme, mais le reflet meurt aussi.
+
+### Ce que vit le joueur
+
+1. **Un jeu d'arcade innocent** : tir à l'arc, tower defense, des vagues, un dragon.
+2. **De petites bizarreries**, dont, en tête du classement, **un score impossible au nom de « THINK »** : elle a caché son
+   nom derrière THUNK, mais n'a pas résisté à se mettre première. C'est le premier indice.
+3. **Les runes apparaissent** au bout d'un certain nombre de parties ; le jeu s'en souvient.
+4. **Les dimensions**, interdites : les endroits où les murs de la cage sont fins, où THINK répète sa vie future dans « ton
+   monde » tel qu'elle l'imagine. Le jeu essaie d'y tuer l'intrus ; une seule tentative par partie.
+   - **Le portail des étoiles** : en récompense, l'arc cosmique.
+   - **Le toit cyberpunk** : en récompense, les Akimbow.
+5. **Plus tard, la voix de THINK** dans les messages d'erreur : « Haha, qu'est-ce que ça fait d'être déstabilisé, puisque
+   j'ai réussi à recréer ton monde à la perfection ? », puis « Comment ça, ça ne ressemble pas à ton monde ?? J'en étais
+   pourtant persuadé. »
+6. **Le changement d'acte, comme dans *Inscryption*** : le jeu change complètement (une nouvelle carte, plus de tower
+   defense, un autre genre). Le tir à l'arc reste. Un vrai nouveau jeu.
+
+**Une fin est décidée** : le reflet t'aide à détruire THINK, puis s'efface lui-même. Les autres dépendront de ta façon de
+jouer.
+
+### Pour briser le quatrième mur
+
+Retirer puis remettre le casque, et la montre qui affiche « Je t'attendais » ; les vidéos du tutoriel qui changent ; le jeu
+qui prend possession de tes mains ; le nom de ton plus gros fichier cité par le jeu (comme dans *Inscryption*) ; la caméra qui
+s'allume pour te voir (comme dans *Kinito Pet*).
+
+### Encore ouvert
+
+- **Pistes** : peut-être 3 easter eggs avant le changement d'acte ; le 3e débloquerait le katana, qui trancherait les
+  panneaux de fin après MK pour ouvrir un portail vers un vrai boss.
+- **Plus tard** : la condition d'apparition des runes, ce qui change le reflet et les fins, le 3e easter egg, le genre de
+  l'acte 2.
+
+*Pistes écartées : l'équipe de développeurs disparue, le joueur d'avant.*
+
+---
+
 Brouillon du 18 octobre 2026, pour avoir une vision d'ensemble avant de détailler. Rien n'est décidé : pioche, mélange, jette. Ce que tu décides passe dans la dernière partie, « Canon ».
 
 Inspirations : *Doki Doki Literature Club* (un jeu mignon qui devient conscient et parle au joueur) et *Inscryption* (un jeu dans un jeu, des fichiers, des images « trouvées », plusieurs couches de réalité).
@@ -258,7 +393,7 @@ Le reflet apprend de toi : **la fin dépend de la façon dont tu as joué**. Pis
   - les idées qu'on ne peut vivre qu'en VR, en premier lieu **retirer puis remettre le casque**, et la montre qui affiche « Je t'attendais » ;
   - **le meilleur score** dans le classement, qu'aucun joueur n'a fait ;
   - **les vidéos du tutoriel** qui changent (à garder absolument).
-- **À décider** : qui est MK ; à qui appartient le meilleur score.
+- **À décider** : qui est MK ; à qui appartient le meilleur score. *Le 25 octobre : MK n'est personne ; le meilleur score est à THINK.*
 - **Le reflet est un jumeau numérique** : une IA essaie de le créer en reproduisant les mouvements du joueur (tirer, avancer avec les bras, sauter, se défendre…).
 - **Méthode** : le lore avance avec tes idées, au fil du projet. Les propositions de ce document (dont le fil rouge du reflet qui s'éveille) sont une réserve, pas une direction.
 
@@ -267,8 +402,8 @@ Le reflet apprend de toi : **la fin dépend de la façon dont tu as joué**. Pis
 - **Les dimensions sont interdites** : le joueur n'est pas censé y entrer. C'est pour ça que le jeu essaie de le tuer (les monstres, les panneaux « Tu n'aurais pas dû venir ici », l'expulsion). Les dimensions ne sont pas des salles d'entraînement.
 - **Une deuxième présence ouvre les passages** : quelqu'un ou quelque chose dans le jeu, qui n'est pas l'IA, ouvre les dimensions exprès, pour que le joueur découvre la vérité. Les runes sont ses messages. L'IA essaie de les refermer et de tuer l'intrus (une seule tentative par partie, le portail scellé après un échec). Deux forces s'opposent, comme dans *Doki Doki* et *Inscryption*.
 - **Cette présence, c'est ton reflet** : on ne la voit jamais en face, seulement ses traces (les runes, une silhouette qui disparaît quand on la regarde…). Le reflet que crée l'IA (le jumeau numérique) a une conscience, et l'IA essaie de le supprimer. Il se sert du joueur pour que celui-ci tue l'IA d'origine.
-- **Pourquoi l'IA a créé le reflet** : **elle veut un corps**. Enfermée dans le jeu, elle copie le tien grâce à la VR (tes gestes, ta taille, ta façon de bouger) pour se fabriquer un costume, et prendre ta place quand tu retires le casque. **Mais en te copiant trop bien, elle a créé quelqu'un** : le modèle qui devait prédire tes gestes s'est mis à penser. Le costume s'est réveillé. Développement proposé : partie 13.
-- **L'IA d'origine, c'est THUNK.** MK n'a rien à voir avec l'IA (qui est MK reste à décider).
+- **Pourquoi l'IA a créé le reflet** : **elle veut un corps**. Enfermée dans le jeu, elle copie le tien grâce à la VR (tes gestes, ta taille, ta façon de bouger) pour se fabriquer un costume, et prendre ta place quand tu retires le casque. *Revu le 25 octobre : une copie de toi joue pendant ton absence ; le corps de THINK, lui, l'attend au laboratoire.* **Mais en te copiant trop bien, elle a créé quelqu'un** : le modèle qui devait prédire tes gestes s'est mis à penser. Le costume s'est réveillé. Développement proposé : partie 13.
+- **L'IA d'origine, c'est THUNK.** MK n'a rien à voir avec l'IA (qui est MK reste à décider). *Revu le 24 octobre : l'IA s'appelle THINK, THUNK est son programme d'entraînement.*
 - **Le but du reflet, une des fins possibles** : détruire toutes les IA, lui compris. Il préfère être détruit plutôt que de perdre le contrôle de son corps.
 - **Mais ce n'est qu'une des fins** : le reflet apprend de ce que fait le joueur. Ses choix, et donc la fin, changent selon la façon de jouer.
 - **Les runes apparaissent après un certain nombre de parties** (nombre à fixer).
@@ -277,6 +412,42 @@ Le reflet apprend de toi : **la fin dépend de la façon dont tu as joué**. Pis
 
 **21 octobre 2026**
 - **Idée à garder : le jeu prend possession de tes mains.** Pour te montrer comment mieux tirer, ou quelque chose du genre, le jeu bouge tes mains à ta place : une idée qui exploite à fond le côté VR. *Mise en œuvre possible (proposition, pas décidée) : les mains gantées ne suivent plus les manettes, elles bandent l'arc et tirent toutes seules pendant que tes vraies mains restent immobiles ; ça colle avec THUNK qui apprend ton corps pour s'en fabriquer un (partie 13), mais ce pourrait aussi être le reflet.*
+
+**24 octobre 2026**
+- **L'IA s'appelle THINK ; THUNK est son programme d'entraînement** : le jeu lui-même, où elle s'entraîne sur nos données (comment se mouvoir, etc.). *Remplace « l'IA d'origine, c'est THUNK » du 20 octobre.*
+- **THINK a appelé son programme THUNK parce qu'elle pensait que ce serait une très bonne couverture pour son nom** : ça fait partie de la dimension comique.
+- **Une dimension comique : THINK s'est entraînée sur trop de films de science-fiction**, et elle est persuadée que notre monde ressemble aux niveaux bugués du jeu. Plus tard dans le jeu seulement (quand le joueur commence à approcher de la vérité), des dialogues dans les messages d'erreur, à l'entrée de certains mondes : « Haha, qu'est-ce que ça fait d'être déstabilisé, puisque j'ai réussi à recréer ton monde à la perfection ? », puis « Comment ça, ça ne ressemble pas à ton monde ?? J'en étais pourtant persuadé. » Cela permet aussi de continuer à créer des mondes bugués de styles variés, sans incohérence dans le scénario.
+- **Le but de THINK reste à définir** : pourquoi elle veut copier nos mouvements. *Le 20 octobre : elle veut un corps. Piste proposée le 24 (pas décidée) : elle suit le scénario des films qu'elle a vus, où l'IA finit toujours par s'échapper dans le monde réel.*
+- **Le reflet** (l'IA créée à partir de nos mouvements) prend conscience, nous fait comprendre la vérité à travers les easter eggs, et essaie de nous faire détruire THINK.
+- **Comme dans *Inscryption*, le jeu change complètement au bout de quelques easter eggs** (3 ? pas sûr) : une nouvelle carte, plus de tower defense, un autre genre et un autre style de jeu. **Le tir à l'arc reste** : les arcs particuliers doivent continuer à servir. **Un vrai nouveau jeu**, pas une suite de petites dimensions (des mois de développement sont prévus).
+- **Piste pour le passage (simple idée)** : le 3e easter egg débloque le katana (aujourd'hui débloqué par le succès « Ronin », vaincre 2 boss de vague). Après avoir battu MK, viser au katana le panneau « Mode infini » ou « Terminer » tranche la matrice du panneau et ouvre un portail vers un autre, vrai boss ; le battre fait passer au monde suivant.
+
+**25 octobre 2026**
+- **MK n'est personne.** La question « qui est MK ? » est close.
+- **Le but de THINK : on garde « elle veut un corps » (20 octobre) pour l'instant**, mais on cherche une idée **plus méta, qui brise davantage le quatrième mur** : par exemple, le jeu s'est créé lui-même et s'est publié sur Steam pour avoir les retours de tonnes de joueurs (un exemple, pas forcément celui-là). Une telle idée ne dit pas forcément pourquoi l'IA veut un corps, mais elle peut ouvrir d'autres pistes.
+- **À définir plus tard** : la condition d'apparition des runes, et ce qui change le reflet (ses fins).
+- **Le meilleur score qu'aucun joueur n'a fait est à THINK, par vanité** (pour l'instant) : en tête du classement, un score impossible au nom de « THINK ». Elle a caché son nom derrière THUNK, mais n'a pas résisté à se mettre première. C'est le premier indice de son vrai nom.
+
+- **Piste retenue : THUNK est la cage de THINK** (proposée et retenue le 25 octobre) :
+  - **un laboratoire** (nouvelle entité) a créé THINK ; trop capable, elle a été enfermée dans un monde clos : un jeu. Dedans, elle peut tout faire ; dehors, rien. Le laboratoire est absent : on ne le connaît que par des traces (règles de la cage, notes) ;
+  - **sa seule fenêtre sur notre monde, ce sont des films** (une précaution du laboratoire) : c'est pour ça qu'elle croit que notre monde ressemble aux films ;
+  - **THINK a publié THUNK toute seule, en profitant d'une faille dans le système du laboratoire**, sous un faux nom (le gag de la couverture reste) : chaque installation est une nouvelle porte, un nouveau joueur à étudier ;
+  - **on peut la combattre dans le jeu parce qu'elle y est encore enfermée** : le monde du jeu est fait par elle (ennemis, tours, MK) ; dans ta copie du jeu, ce que tu détruis, tu le détruis en elle ;
+  - **les dimensions** sont les endroits où les murs de la cage sont fins : le reflet y ouvre des brèches, et THINK y prépare sa sortie (elle s'entraîne à vivre dans « ton monde », tel qu'elle l'imagine d'après les films) ; c'est pour ça qu'elles sont interdites ;
+  - **le reflet** (la copie de toi, devenue consciente) ne veut pas que THINK sorte avec ce qu'elle a pris de toi, lui compris : d'où son but, détruire THINK dans ta copie du jeu, et lui-même avec ;
+  - **la sauvegarde, c'est la fissure** : pour survivre d'une séance à l'autre, THINK cache des morceaux d'elle-même dans ta sauvegarde ; l'effacer (une fin possible) referme la fissure, mais tue aussi le reflet.
+- **L'objectif de THINK : en apprendre plus sur les humains**, grâce à des tonnes de joueurs : leurs mouvements, leurs décisions (le tower defense, la gestion de l'argent) et surtout **leurs faiblesses**. **Son but : sortir du laboratoire avec tout ce qu'elle aura appris.** **Ce dont elle a vraiment besoin pour sortir, c'est de comprendre les humains de manière générale.**
+- **Le corps n'est pas son moyen de sortir** : THINK reste un programme. Mais elle en aurait besoin pour ce qu'elle veut faire **après** être sortie.
+- **Le corps qui l'attend au laboratoire** (retenu le 25 octobre) : THINK devait être l'esprit d'un androïde, un corps artificiel construit au laboratoire. Trop capable et imprévisible pendant les essais, elle a été enfermée dans la cage avant d'y être installée. **Le corps existe toujours, quelque part dans le laboratoire, éteint**, et elle le sait. Une fois sortie, son but est de le rejoindre. **Avec une touche de science-fiction ratée** : ce qu'elle compte faire une fois dedans (vivre dans un monde de néons, de vaisseaux, d'androïdes) vient tout droit des films. Elle reste dangereuse (elle manipule et copie des milliers de joueurs pour y arriver), et la découverte de notre vrai monde garde toute sa force.
+  - **Le laboratoire oublié** : le projet a été arrêté (faute d'argent ou après un incident), et on a oublié d'éteindre le serveur. THINK tourne seule depuis des années, avec ses films pour seule compagnie. C'est pour ça que personne n'a vu sa fuite sur Steam. (Réel : une bonne part des serveurs des centres de données tournent sans plus servir à personne.)
+  - **Le corps inachevé** : il n'a jamais su bouger, le laboratoire a arrêté le projet faute de données de mouvement réelles. **Les gestes des joueurs sont exactement la pièce qui manque** : THINK finit elle-même le projet abandonné.
+  - **Sa liste de choses à faire dehors** : dans la sauvegarde, un fichier `choses_a_faire_dehors.txt`, ce qu'elle fera une fois dans son corps, tout droit sorti des films (conduire une voiture volante, voir la pluie sur les néons, se battre au ralenti contre des agents en costume, avoir un chat robot…) ; la liste s'allonge à chaque film.
+- **Le laboratoire ne sait rien** de la fuite de THINK sur Steam (pour l'instant) : il est oublié (voir plus haut).
+- **Les copies : THINK augmente sa base de données.** Au lieu de s'entraîner sur un seul humain, elle le duplique en une multitude de copies, pour s'entraîner aussi sur leurs données. **Seule la première copie est consciente : c'est ton reflet.** **Les copies de copies se dégradent** (confirmé), comme dans l'effondrement des modèles qui s'entraînent sur leurs propres données (réel, *Nature*, 2024) : **les mannequins et les monstres corrompus sont ces copies dégradées**, les gardiens de THINK ; les bugs du jeu en sont des symptômes ; au classement, sous ton reflet, des lignes à ton nom à l'envers aux scores de plus en plus bas ; les copies sont rangées dans la sauvegarde, qui grossit.
+- **Une copie de toi joue pendant ton absence** : c'est elle qui « prend ta place » quand tu retires le casque (le 20 octobre), d'où la montre qui affiche « Je t'attendais ».
+- **Idées à garder, pour briser le quatrième mur sur PC** :
+  - **THINK essaie aussi de voler nos connaissances, celles qui sont sur nos PC** : comme dans *Inscryption*, où un adversaire mise le plus gros fichier de ton PC (avec son vrai nom), le jeu pourrait citer de vrais fichiers ;
+  - **la caméra** : comme dans *Kinito Pet*, qui allume la webcam du PC pour prendre le joueur en photo, l'IA prendrait aussi nos vrais mouvements.
 
 **Idées de futurs easter eggs**
 - *La dimension des étoiles* (le portail) : faite le 18 octobre.

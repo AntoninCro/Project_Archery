@@ -184,7 +184,7 @@ namespace Archery.Bows
         AudioSource m_ChargeSource;
         readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
         Akimbow m_Akimbow;
-        Archery.Combat.KatanaGauntlet m_Katana;
+        Archery.Combat.Katana m_Katana;
         bool m_ReplacedHidden;
         readonly List<Renderer> m_ReplacedRenderers = new List<Renderer>();
         readonly List<Collider> m_ReplacedColliders = new List<Collider>();
@@ -226,10 +226,10 @@ namespace Archery.Bows
         /// </summary>
         public bool IsAkimbo => m_Akimbow != null;
 
-        /// <summary>L'arme est le katana et le gantelet (<see cref="BowDefinition.katana"/>) : l'arc est caché et ne se prend plus.</summary>
+        /// <summary>L'arme est le katana (<see cref="BowDefinition.katana"/>) : l'arc est caché et ne se prend plus.</summary>
         public bool IsKatana => m_Katana != null;
 
-        /// <summary>Une autre arme remplace l'arc (Akimbow, katana et gantelet) : il est caché et ne se prend plus.</summary>
+        /// <summary>Une autre arme remplace l'arc (Akimbow, katana) : il est caché et ne se prend plus.</summary>
         public bool IsReplaced => m_Akimbow != null || m_Katana != null;
 
         /// <summary>L'anneau de timing de l'arc : les Akimbow en prennent une copie chacune.</summary>
@@ -727,7 +727,7 @@ namespace Archery.Bows
             ApplyReplaced();
         }
 
-        // Le katana et le gantelet remplacent l'arc (créés ici, détruits au retour à un arc).
+        // Le katana remplace l'arc (créé ici, détruit au retour à un arc).
         void SetKatana(bool katana)
         {
             if (katana == (m_Katana != null))
@@ -735,7 +735,7 @@ namespace Archery.Bows
 
             if (katana)
             {
-                m_Katana = Archery.Combat.KatanaGauntlet.Create(this, m_Definition);
+                m_Katana = Archery.Combat.Katana.Create(this, m_Definition);
             }
             else
             {
@@ -746,7 +746,7 @@ namespace Archery.Bows
             ApplyReplaced();
         }
 
-        // Remplacé (Akimbow, katana et gantelet) : l'arc se cache (ses rendus et ses colliders) et ne se prend plus. Il revient quand
+        // Remplacé (Akimbow, katana) : l'arc se cache (ses rendus et ses colliders) et ne se prend plus. Il revient quand
         // plus rien ne le remplace (sauf s'il est rangé pour une construction : il réapparaîtra avec).
         void ApplyReplaced()
         {

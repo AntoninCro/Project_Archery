@@ -20,6 +20,9 @@ namespace Archery.Upgrades
     /// </list>
     /// Tout se cumule sans limite : au-delà de 100 % de chance, un effet devient plus fort.
     /// Les flèches nées d'une division en vol ne se divisent pas à leur tour.
+    /// Les failles du katana s'en servent aussi (24 octobre) : <see cref="RollEffects"/>, <see cref="Impact"/>,
+    /// <see cref="Blast"/> et les réglages de l'écho, du déluge, du ricochet et de l'auto-visée ; le katana fait le reste
+    /// (<see cref="Archery.Combat.Katana"/>, <see cref="Archery.Combat.MatrixRift"/>).
     /// </summary>
     [DisallowMultipleComponent]
     public class SpecialArrows : MonoBehaviour
@@ -159,8 +162,9 @@ namespace Archery.Upgrades
         [SerializeField]
         Material m_EffectMaterial;
 
+        /// <summary>Les effets à l'impact, tirés au sort pour chaque flèche (et chaque faille du katana).</summary>
         [System.Flags]
-        enum Effect
+        public enum Effect
         {
             None = 0,
             Lightning = 1,
@@ -210,8 +214,26 @@ namespace Archery.Upgrades
         readonly List<Enemy> m_Enemies = new List<Enemy>();
         readonly List<Enemy> m_Struck = new List<Enemy>();
 
+        /// <summary>Les flèches spéciales de la scène : les failles du katana s'en servent aussi (24 octobre).</summary>
+        public static SpecialArrows Instance { get; private set; }
+
+        /// <summary>Délai (s) entre deux échos d'un tir.</summary>
+        public float EchoDelay => m_EchoDelay;
+
+        /// <summary>Moment (s après le départ) où un tir du déluge se divise, tiré entre ces deux valeurs.</summary>
+        public Vector2 DelugeSplitTime => m_DelugeSplitTime;
+
+        /// <summary>Distance maximale (m) jusqu'au prochain ennemi d'un ricochet.</summary>
+        public float RicochetRange => m_RicochetRange;
+
+        /// <summary>Distance (m) et angle (°) jusqu'où l'auto-visée cherche un ennemi devant le tir.</summary>
+        public float HomingRange => m_HomingRange;
+
+        public float HomingAngle => m_HomingAngle;
+
         void OnEnable()
         {
+            Instance = this;
             Bow.ShotFired += OnShotFired;
             Arrow.AnyHit += OnArrowHit;
             Arrow.ShotEnded += OnShotEnded;
@@ -219,6 +241,8 @@ namespace Archery.Upgrades
 
         void OnDisable()
         {
+            if (Instance == this)
+                Instance = null;
             Bow.ShotFired -= OnShotFired;
             Arrow.AnyHit -= OnArrowHit;
             Arrow.ShotEnded -= OnShotEnded;
@@ -351,15 +375,7 @@ namespace Archery.Upgrades
             if (upgrades == null)
                 return;
 
-            var lightningChance = upgrades.LightningChance;
-            if (lightningChance <= 0f && upgrades.ChainCount > 0)
-                lightningChance = m_ChainOnlyLightningChance;
-            if (Roll(lightningChance))
-                state.Effects |= Effect.Lightning;
-            if (Roll(upgrades.ExplosiveChance))
-                state.Effects |= Effect.Explosive;
-            if (Roll(upgrades.FrostChance))
-                state.Effects |= Effect.Frost;
+            state.Effects = RollEffects();
             if (state.Effects != Effect.None)
                 arrow.SetTrailColor(ColorOf(state.Effects));
 
@@ -374,7 +390,28 @@ namespace Archery.Upgrades
 
         static bool Roll(float chance) => chance > 0f && Random.value < chance;
 
-        Color ColorOf(Effect effect)
+        /// <summary>Tire au sort les effets à l'impact d'un tir (foudre, explosion, glace), d'après les améliorations.</summary>
+        public Effect RollEffects()
+        {
+            var upgrades = PlayerUpgrades.Instance;
+            if (upgrades == null)
+                return Effect.None;
+
+            var effects = Effect.None;
+            var lightningChance = upgrades.LightningChance;
+            if (lightningChance <= 0f && upgrades.ChainCount > 0)
+                lightningChance = m_ChainOnlyLightningChance;
+            if (Roll(lightningChance))
+                effects |= Effect.Lightning;
+            if (Roll(upgrades.ExplosiveChance))
+                effects |= Effect.Explosive;
+            if (Roll(upgrades.FrostChance))
+                effects |= Effect.Frost;
+            return effects;
+        }
+
+        /// <summary>La couleur d'un tir qui porte ces effets (la traînée d'une flèche, les bords d'une faille).</summary>
+        public Color ColorOf(Effect effect)
         {
             if ((effect & Effect.Explosive) != 0)
                 return m_ExplosionColor;
@@ -590,15 +627,53 @@ namespace Archery.Upgrades
             // Chaque effet ne se déclenche qu'une fois, même si la flèche traverse ou rebondit.
             var effects = state.Effects;
             state.Effects = Effect.None;
+            Impact(effects, hit, enemy);
+
+            if (enemy != null)
+                TryRicochet(hit, enemy, state);
+        }
+
+        /// <summary>
+        /// Les effets d'un tir qui touche (<paramref name="hit"/>, sur <paramref name="enemy"/> s'il y en a un) : foudre et
+        /// chaîne d'éclairs, explosion, zone de glace. Pour les flèches, et pour les failles du katana (24 octobre).
+        /// </summary>
+        public void Impact(Effect effects, in ArrowHit hit, Enemy enemy)
+        {
             if ((effects & Effect.Lightning) != 0)
                 StrikeLightning(hit, enemy);
             if ((effects & Effect.Explosive) != 0)
                 Explode(hit);
             if ((effects & Effect.Frost) != 0)
                 Freeze(hit, enemy);
+        }
 
-            if (enemy != null)
-                TryRicochet(hit, enemy, state);
+        /// <summary>
+        /// Une explosion qui n'est pas celle d'une amélioration (la fusion de failles du katana) : <paramref name="damage"/> au
+        /// centre, moitié moins au bord du rayon <paramref name="radius"/> (m), avec l'effet et le son de l'explosion.
+        /// </summary>
+        public void Blast(Vector3 point, float damage, float radius, Color color, in ArrowHit hit)
+        {
+            LightningBolt.Burst(point, radius * 0.6f, color, m_EffectMaterial);
+            Sfx.Play(m_ExplosionClip, point);
+            if (m_ExplosionEffect != null)
+                Destroy(Instantiate(m_ExplosionEffect, point, Quaternion.identity), 3f);
+
+            m_Enemies.Clear();
+            m_Enemies.AddRange(Enemy.Alive);
+            foreach (var enemy in m_Enemies)
+            {
+                if (enemy == null || !enemy.IsAlive)
+                    continue;
+
+                var center = Center(enemy);
+                var distance = Vector3.Distance(center, point);
+                if (distance > radius)
+                    continue;
+
+                var direction = center - point;
+                Hurt(enemy, damage * Mathf.Lerp(1f, 0.5f, distance / radius), center,
+                     direction.sqrMagnitude > 1e-4f ? direction.normalized : Vector3.up, hit);
+            }
         }
 
         // Au-delà de 100 % de chance, l'éclair fait plus de dégâts et ralentit plus fort, plus longtemps.
@@ -736,7 +811,8 @@ namespace Archery.Upgrades
             });
         }
 
-        static Enemy NearestEnemy(Vector3 point, float radius, List<Enemy> exclude)
+        /// <summary>L'ennemi vivant le plus proche de <paramref name="point"/>, à <paramref name="radius"/> m au plus, hors de <paramref name="exclude"/>.</summary>
+        public static Enemy NearestEnemy(Vector3 point, float radius, List<Enemy> exclude)
         {
             Enemy best = null;
             var bestDistance = radius;
