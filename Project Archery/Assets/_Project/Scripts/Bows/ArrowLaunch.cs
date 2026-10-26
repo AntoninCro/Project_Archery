@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace Archery.Bows
 {
@@ -35,5 +36,14 @@ namespace Archery.Bows
         public float Damage;
         public Vector3 Origin;
         public Vector3 Direction;
+
+        /// <summary>
+        /// L'arme qui a tiré (26 octobre, pièces de la flèche) : son avant est la direction où elle vise, son haut l'axe de ses
+        /// branches pour un arc, le dessus de l'arbalète. Vide pour les failles du katana.
+        /// </summary>
+        public Transform Aim;
+
+        /// <summary>La main qui tient l'arme (sa gâchette guide la flèche de l'empennage télékinésie). Vide sans casque.</summary>
+        public IXRSelectInteractor Hand;
     }
 }

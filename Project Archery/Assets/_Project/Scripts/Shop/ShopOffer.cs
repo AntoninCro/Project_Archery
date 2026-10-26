@@ -1,18 +1,13 @@
-using Archery.Bows;
 using Archery.Upgrades;
 using UnityEngine;
 
 namespace Archery.Shop
 {
+    // Plus d'arc ni de réparations en boutique depuis le 25 octobre au soir : la tour et les barricades se réparent seules.
     public enum ShopOfferKind
     {
+        /// <summary>Un objet ou un parchemin.</summary>
         Upgrade,
-        Bow,
-        Repair,
-        Rebuild,
-
-        /// <summary>Réparer ou reconstruire toutes les barricades.</summary>
-        Barricades,
 
         /// <summary>Carte d'information, qu'on ne peut pas acheter (« La tour est intacte »…).</summary>
         Unavailable,
@@ -26,7 +21,6 @@ namespace Archery.Shop
     {
         public ShopOfferKind Kind;
         public Upgrade Upgrade;
-        public BowDefinition Bow;
         public string Title;
         public string Subtitle;
         public string Description;
@@ -36,6 +30,18 @@ namespace Archery.Shop
 
         /// <summary>Monnaie affichée après le prix : « or », ou « mat. » pour les matériaux.</summary>
         public string PriceUnit = "or";
+
+        /// <summary>
+        /// Optionnel : affiché à la place du prix, pour une carte qui ne se paie pas (l'atelier, 26 octobre :
+        /// « Équipée », « Équiper »). Le clic ne coûte alors rien.
+        /// </summary>
+        public string PriceText;
+
+        /// <summary>Optionnel : le verbe du viseur sans casque (« Équiper · Pointe éclatée ») ; vide, « Acheter » (ou « Construire »).</summary>
+        public string Verb;
+
+        /// <summary>La carte est mise en avant (l'emplacement choisi dans l'atelier) : fond plus teinté, cadre plein.</summary>
+        public bool Highlight;
 
         public bool Sold;
 

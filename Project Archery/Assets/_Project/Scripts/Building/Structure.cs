@@ -134,8 +134,41 @@ namespace Archery.Building
             OnLevelChanged(Level);
         }
 
+        float m_OverchargeTimer;
+
+        /// <summary>
+        /// Surchargé (26 octobre : une flèche du joueur avec le talisman de l'ingénieur) : la baliste tire deux fois plus vite,
+        /// la baliste et la tour de givre portent 50 % plus loin.
+        /// </summary>
+        public bool IsOvercharged => m_OverchargeTimer > 0f;
+
+        /// <summary>Multiplie la cadence de tir pendant la surcharge.</summary>
+        public float OverchargeRate => IsOvercharged ? 2f : 1f;
+
+        /// <summary>Multiplie la portée pendant la surcharge.</summary>
+        public float OverchargeRange => IsOvercharged ? 1.5f : 1f;
+
+        /// <summary>Surcharge le bâtiment construit pendant <paramref name="duration"/> s (prolonge une surcharge en cours).</summary>
+        public void Overcharge(float duration)
+        {
+            if (!IsBuilt || duration <= 0f)
+                return;
+
+            var was = IsOvercharged;
+            m_OverchargeTimer = Mathf.Max(m_OverchargeTimer, duration);
+            if (!was)
+                OnRangeChanged();
+        }
+
         protected virtual void Update()
         {
+            if (m_OverchargeTimer > 0f)
+            {
+                m_OverchargeTimer -= Time.deltaTime;
+                if (m_OverchargeTimer <= 0f)
+                    OnRangeChanged();
+            }
+
             if (!IsUnderConstruction || m_Blueprint == null)
                 return;
 

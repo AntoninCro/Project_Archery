@@ -11,9 +11,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Arena_Dragon.unity
     guid: 497431d333613405a283f0796dd6fda1
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 55daccc09a3b69647bbab145b54a3ab3
   - enabled: 1
     path: Assets/_Project/Scenes/Dimension_Etoiles.unity
     guid: 709103ad548a44d79c264ea6fa51f43d

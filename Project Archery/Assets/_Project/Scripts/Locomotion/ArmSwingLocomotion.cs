@@ -215,6 +215,9 @@ namespace Archery.Locomotion
 
         public bool IsSliding => m_SlideTimeLeft > 0f;
 
+        /// <summary>Le joueur est en l'air : un saut aux bras, ou une chute (26 octobre : le talisman d'acrobate).</summary>
+        public bool IsAirborne => isActiveAndEnabled && !IsGrounded();
+
         /// <summary>Vitesse horizontale actuelle (m/s).</summary>
         public float Speed => m_Velocity.magnitude;
 

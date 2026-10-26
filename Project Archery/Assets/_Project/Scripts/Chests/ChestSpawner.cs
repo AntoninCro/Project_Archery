@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using Archery.Bows;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Enemies;
 using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
@@ -17,6 +19,8 @@ namespace Archery.Chests
     /// Fait apparaître 2 ou 3 coffres par vague (GDD, sections 3 bis et 13), loin de la tour : il faut descendre et courir
     /// pour aller les ouvrir. Le premier arrive pendant l'accalmie, le deuxième au début de la montée, et un troisième
     /// parfois plus tard. Les coffres disparaissent à la fin de la vague, ouverts ou non.
+    /// Depuis la refonte du 25 octobre, le boss vaincu laisse aussi un coffre d'objets, qui tombe près du joueur au début
+    /// de la pause (pas après la victoire contre le boss final) ; il reste jusqu'à la fin de la vague suivante.
     /// </summary>
     /// <remarks>
     /// Sans points d'apparition, les coffres se posent au hasard sur le sol des ennemis (NavMesh), dans un anneau
@@ -67,10 +71,26 @@ namespace Archery.Chests
         [SerializeField]
         Color m_MessageColor = new Color(1f, 0.85f, 0.3f);
 
+        [Header("Coffre de boss")]
+        [Tooltip("Délai (s) entre la fin de la vague et la chute du coffre du boss : le message de fin de vague passe d'abord.")]
+        [SerializeField]
+        float m_BossChestDelay = 1.5f;
+
+        [Tooltip("Distance (m) entre le joueur et le coffre du boss, devant lui à droite (la boutique s'ouvre à sa gauche).")]
+        [SerializeField]
+        float m_BossChestDistance = 1.8f;
+
+        // Places essayées pour le coffre de boss, en degrés depuis le regard du joueur (positif : vers sa droite).
+        static readonly float[] k_BossChestAngles = { 40f, 20f, 60f, 0f, 85f, -20f, 110f, -45f, 145f, -80f, 180f };
+        static readonly float[] k_BossChestDistanceScales = { 1f, 0.7f, 1.4f };
+        static readonly Vector3 k_BossChestHalfExtents = new Vector3(0.45f, 0.4f, 0.45f);
+        static readonly Collider[] s_Overlaps = new Collider[16];
+
         readonly List<Chest> m_Chests = new List<Chest>();
         readonly List<float> m_Pending = new List<float>();
         readonly List<Transform> m_FreePoints = new List<Transform>();
         WaveManager m_Waves;
+        float m_BossChestTimer = -1f;
 
         void Start()
         {
@@ -113,12 +133,20 @@ namespace Archery.Chests
                 m_Pending.Add(m_ExtraChestMoment);
         }
 
-        void OnWaveEnded(int wave) => ClearAll();
+        void OnWaveEnded(int wave)
+        {
+            ClearAll();
+
+            // Le boss vaincu laisse un coffre d'objets, sauf le boss final de la victoire.
+            if (!(m_Waves.HasWon && wave == m_Waves.WavesToWin))
+                m_BossChestTimer = Mathf.Max(0.01f, m_BossChestDelay);
+        }
 
         // Fin de vague ou de partie : les coffres restants disparaissent.
         void ClearAll()
         {
             m_Pending.Clear();
+            m_BossChestTimer = -1f;
             foreach (var chest in m_Chests)
             {
                 if (chest != null)
@@ -131,6 +159,13 @@ namespace Archery.Chests
         void Update()
         {
             UpdateDebugKey();
+            if (m_BossChestTimer > 0f)
+            {
+                m_BossChestTimer -= Time.deltaTime;
+                if (m_BossChestTimer <= 0f)
+                    SpawnBossChest();
+            }
+
             if (m_Waves == null || m_Waves.Phase != WavePhase.Wave || m_Pending.Count == 0 || m_Waves.WaveDuration <= 0f)
                 return;
 
@@ -152,9 +187,10 @@ namespace Archery.Chests
 
             // Le coffre est tourné vers la tour : on arrive par l'avant.
             SpawnAt(position, TowerPosition());
+            Announce();
         }
 
-        void SpawnAt(Vector3 position, Vector3 lookAt)
+        Chest SpawnAt(Vector3 position, Vector3 lookAt)
         {
             var toTarget = lookAt - position;
             toTarget.y = 0f;
@@ -164,16 +200,80 @@ namespace Archery.Chests
             m_Chests.Add(chest);
 
             Sfx.Play(m_AppearClip, position + Vector3.up, 1f, 1f, 0.5f);
-            Announce();
+            return chest;
         }
 
-        // Raccourci de test au clavier (éditeur) : C pose un coffre 2,5 m devant le joueur, tourné vers lui.
+        // Le coffre du boss tombe près du joueur, où qu'il soit, tourné vers lui.
+        void SpawnBossChest()
+        {
+            m_BossChestTimer = -1f;
+            var rig = PlayerRig.Instance;
+            if (m_ChestPrefab == null || rig == null)
+                return;
+
+            var feet = rig.BodyPosition;
+            var head = rig.Head != null ? rig.Head.position : feet + Vector3.up * 1.6f;
+            SpawnAt(FindBossChestPlace(feet, head, rig.HeadYaw), feet).MakeBossChest();
+            HeadMessages.Show("Le boss a laissé un coffre !\n<size=60%>Un objet à choisir</size>", m_MessageColor, 4f);
+        }
+
+        // Devant le joueur à droite si possible, sur le même sol que lui (le haut de la tour, ou la carte), à une place libre
+        // qu'il voit ; sinon juste devant lui.
+        Vector3 FindBossChestPlace(Vector3 feet, Vector3 head, Quaternion yaw)
+        {
+            foreach (var scale in k_BossChestDistanceScales)
+            {
+                foreach (var angle in k_BossChestAngles)
+                {
+                    var direction = yaw * Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+                    if (TryGround(feet + direction * (m_BossChestDistance * scale), feet.y, out var ground) && IsFreeAndVisible(ground, head))
+                        return ground;
+                }
+            }
+
+            var front = feet + yaw * Vector3.forward * 1.5f;
+            return TryGround(front, feet.y, out var fallback) ? fallback : front;
+        }
+
+        static bool TryGround(Vector3 point, float floorHeight, out Vector3 ground)
+        {
+            ground = point;
+            if (!Physics.Raycast(point + Vector3.up * 1.5f, Vector3.down, out var hit, 3f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) ||
+                ArrowIgnore.IsIgnored(hit.collider) || Mathf.Abs(hit.point.y - floorHeight) > 0.6f)
+                return false;
+
+            ground = hit.point;
+            return true;
+        }
+
+        // Rien à la place du coffre (le joueur, son arc et les ennemis qui s'enfuient ne comptent pas), et le joueur le voit.
+        static bool IsFreeAndVisible(Vector3 ground, Vector3 head)
+        {
+            var center = ground + Vector3.up * (k_BossChestHalfExtents.y + 0.12f);
+            var count = Physics.OverlapBoxNonAlloc(center, k_BossChestHalfExtents, s_Overlaps, Quaternion.identity, Physics.DefaultRaycastLayers,
+                                                   QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (!ArrowIgnore.IsIgnored(s_Overlaps[i]) && s_Overlaps[i].GetComponentInParent<Enemy>() == null)
+                    return false;
+            }
+
+            return !Physics.Linecast(head, center, out var hit, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) ||
+                   ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<Enemy>() != null;
+        }
+
+        // Raccourcis de test au clavier (éditeur) : C pose un coffre 2,5 m devant le joueur, tourné vers lui ; X, un coffre de boss.
         void UpdateDebugKey()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             var keyboard = Keyboard.current;
             var rig = PlayerRig.Instance;
-            if (keyboard == null || !keyboard.cKey.wasPressedThisFrame || rig == null || m_ChestPrefab == null)
+            if (keyboard == null || rig == null || m_ChestPrefab == null)
+                return;
+
+            if (keyboard.xKey.wasPressedThisFrame)
+                SpawnBossChest();
+            if (!keyboard.cKey.wasPressedThisFrame)
                 return;
 
             var feet = rig.BodyPosition;
@@ -181,6 +281,7 @@ namespace Archery.Chests
             if (Physics.Raycast(position + Vector3.up * 2f, Vector3.down, out var hit, 6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 position = hit.point;
             SpawnAt(position, feet);
+            Announce();
 #endif
         }
 

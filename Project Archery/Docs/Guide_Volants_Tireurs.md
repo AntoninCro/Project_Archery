@@ -73,12 +73,14 @@ Les deux packs utilisent des shaders de l'ancien pipeline : leurs modèles sont 
 
 1. Ouvre *Window > Rendering > Render Pipeline Converter*, choisis *Built-in to URP*, coche *Material Upgrade*, puis *Initialize And Convert*.
 2. Vérifie que ces deux matériaux utilisent maintenant *Universal Render Pipeline/Lit* :
-   - `RPGMonsterPartnersPBRPolyart/Materials/PolyartDefault` (le Beholder) ;
+   - `RPGMonsterPartnersPBRPolyart/Materials/PBRDefault` (le Beholder : le jeu utilise sa version PBR ; la version
+     Polyart, `PolyartDefault`, inutilisée, a été supprimée le 25 octobre) ;
    - `WizardPolyArt/Materials/PolyArtStandardMaterial` (le mage).
 
 > **Attention** : choisis bien *Built-in to URP*, pas *Built-in to 2D (URP)*. Les matériaux des deux packs avaient été convertis en *Mesh2D-Lit-Default*, un shader 2D qui éclaire mal les modèles en 3D. Ils sont maintenant en *Universal Render Pipeline/Lit* (corrigés le 6 octobre) : il n'y a plus rien à convertir.
 
-Le matériau `PolyArtMaskTint` du mage utilise un shader spécial que le convertisseur ne sait pas traiter : il reste rose. On ne s'en sert pas, on prend le prefab `PolyArtWizardStandardMat`.
+Le matériau `PolyArtMaskTint` du mage utilise un shader spécial que le convertisseur ne sait pas traiter : il reste rose. On ne s'en sert pas, on prend le prefab `PolyArtWizardStandardMat` (le matériau `PolyArtMaskTint` et son prefab
+`PolyArtWizardMaskTintMat` ont été supprimés le 25 octobre).
 
 ### 2.2 Les animations
 
@@ -129,7 +131,7 @@ Chaque animation est dans son propre FBX. Pour la glisser dans un Animator, dép
 Le pivot du volant est le **centre de son corps** : c'est le point qui vole, et qui pique sur ta tête. Le Beholder du pack, lui, a son pivot au sol et flotte 1,45 m au-dessus : on le descend donc de 1,45 m.
 
 1. *Create Empty*, nomme-le `Enemy_Volant`, en `(0, 0, 0)`.
-2. Glisse le prefab `RPGMonsterPartnersPBRPolyart/Prefabs/Character/BeholderPolyartDefault` en enfant de `Enemy_Volant`, et renomme-le `Model` :
+2. Glisse le prefab `RPGMonsterPartnersPBRPolyart/Prefabs/Character/BeholderPBRDefault` en enfant de `Enemy_Volant`, et renomme-le `Model` (la version PBR, celle du prefab `Enemy_Volant` ; la version Polyart, `BeholderPolyartDefault`, a été supprimée le 25 octobre) :
    - Position `(0, -1.45, 0)`, Rotation `(0, 0, 0)`, Scale `(1, 1, 1)`. Son corps est alors centré sur le pivot, et son œil regarde vers l'axe Z (bleu) ;
    - composant *Animator* : *Controller* `Volant`, *Apply Root Motion* décoché.
 3. Les zones de touche. Les os sont dans `Model > Root > Body` :
@@ -242,7 +244,7 @@ Pense à remettre les *First Wave* à 2 et 4.
 
 ## En cas de problème
 
-- **Le Beholder ou le mage est rose** : leurs matériaux ne sont pas convertis (section 2.1). Pour le mage, vérifie que c'est bien `PolyArtWizardStandardMat` et pas `PolyArtWizardMaskTintMat`.
+- **Le Beholder ou le mage est rose** : leurs matériaux ne sont pas convertis (section 2.1). Pour le mage, vérifie que c'est bien `PolyArtWizardStandardMat` (l'autre, `PolyArtWizardMaskTintMat`, a été supprimé le 25 octobre).
 - **Le Beholder ou le mage est sombre, plat ou mal éclairé** : son matériau doit utiliser *Universal Render Pipeline/Lit*, pas *Mesh2D-Lit-Default* (section 2.1).
 - **« Enemy : il faut un NavMeshAgent, ou un comportement particulier »** : le volant n'a pas de `Flying Enemy`.
 - **Les volants n'apparaissent pas** : vérifie leur ligne dans *Enemies* (prefab, *First Wave*). Ils n'ont pas besoin du NavMesh.

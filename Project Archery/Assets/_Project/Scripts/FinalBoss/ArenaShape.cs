@@ -5,8 +5,8 @@ namespace Archery.FinalBoss
 {
     /// <summary>
     /// Ce que le combat du boss final doit savoir de son arène, quelle que soit sa forme : son centre et son sol, ses
-    /// piliers, où est la lave, où est la voûte, jusqu'où se battre. L'arène ronde (<see cref="DragonArenaBuilder"/>)
-    /// et l'arène en cubes (<see cref="ArenaGridBuilder"/>) en sont deux.
+    /// piliers, où est la lave, où est la voûte, jusqu'où se battre. L'arène en cubes (<see cref="ArenaGridBuilder"/>) en
+    /// est une ; l'arène ronde du début (DragonArenaBuilder) a été supprimée le 25 octobre, avec le ménage des fichiers.
     /// </summary>
     /// <remarks>L'objet est le centre du sol de l'arène, axe Z bleu vers le dragon ; le joueur arrive côté -Z.</remarks>
     public abstract class ArenaShape : MonoBehaviour

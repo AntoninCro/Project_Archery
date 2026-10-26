@@ -4,6 +4,7 @@ using Archery.Bows;
 using Archery.Core;
 using Archery.Difficulty;
 using Archery.Economy;
+using Archery.Lore;
 using Archery.Player;
 using Archery.Save;
 using Archery.Waves;
@@ -127,6 +128,10 @@ namespace Archery.Menus
             m_Shown = true;
             PlaceInFrontOfPlayer();
 
+            // La partie compte pour la mémoire du jeu : THINK laisse ses traces au fil des parties (Lore).
+            GameMemory.RecordGameFinished();
+            ThinkList.Write(GameMemory.GamesFinished);
+
             var victory = m_Waves != null && m_Waves.HasWon;
             if (m_TitleText != null)
                 m_TitleText.text = victory ? "<size=140%>Victoire !</size>" : "<size=140%>Tu es mort</size>\n<size=60%>Fin de partie</size>";
@@ -179,7 +184,7 @@ namespace Archery.Menus
             s_LastName = playerName;
 
             var score = ScoreManager.Instance;
-            var rank = Leaderboard.Add(new LeaderboardEntry
+            var entry = new LeaderboardEntry
             {
                 name = playerName,
                 score = score != null ? score.Score : 0,
@@ -189,14 +194,16 @@ namespace Archery.Menus
                 date = LeaderboardEntry.Now(),
                 stars = Portal.StarPortal.TrialCompleted,
                 glitch = Cyber.CyberPassage.TrialCompleted,
-            });
+            };
+            var rank = Leaderboard.Add(entry, ThinkTraces.After(entry));
 
             if (m_NameSection != null)
                 m_NameSection.SetActive(false);
             if (m_Leaderboard != null)
                 m_Leaderboard.Highlight(rank);
+            // Le record se compte entre vraies parties : le score impossible de THINK reste au-dessus, même d'un record.
             if (m_MessageText != null)
-                m_MessageText.text = rank == 0 ? "Nouveau record !" : rank > 0 ? $"{rank + 1}e place" : "";
+                m_MessageText.text = Leaderboard.IsPlayerRecord(rank) ? "Nouveau record !" : rank > 0 ? $"{rank + 1}e place" : "";
 
             Sfx.Play(m_SaveClip, transform.position, 0.9f);
         }

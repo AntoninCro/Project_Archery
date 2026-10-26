@@ -343,18 +343,17 @@ namespace Archery.Player
             slider.normalizedValue = t;
         }
 
-        // « Acheter · Flèches de feu (120 or) » pour une carte, le texte du bouton sinon.
+        // « Acheter · Flèches de feu (120 or) » pour une carte, « Équiper · Pointe éclatée » pour une carte de l'atelier de la
+        // flèche (qui ne se paie pas), le texte du bouton sinon.
         static string Label(Selectable selectable)
         {
             var card = selectable.GetComponent<ShopCard>();
             var offer = card != null ? card.Offer : null;
             if (offer != null)
             {
-                var verb = offer.Kind == ShopOfferKind.Build ? offer.Subtitle == "Amélioration" ? "Améliorer" : "Construire"
-                    : offer.Kind == ShopOfferKind.Repair ? "Réparer"
-                    : offer.Kind == ShopOfferKind.Rebuild ? "Reconstruire"
-                    : "Acheter";
-                return $"{verb} · {Plain(offer.Title)} ({offer.Price} {offer.PriceUnit})";
+                var verb = !string.IsNullOrEmpty(offer.Verb) ? offer.Verb
+                         : offer.Kind == ShopOfferKind.Build ? offer.Subtitle == "Amélioration" ? "Améliorer" : "Construire" : "Acheter";
+                return offer.PriceText != null ? $"{verb} · {Plain(offer.Title)}" : $"{verb} · {Plain(offer.Title)} ({offer.Price} {offer.PriceUnit})";
             }
 
             if (selectable is Toggle toggle)

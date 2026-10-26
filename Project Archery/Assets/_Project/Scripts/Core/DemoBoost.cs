@@ -14,7 +14,9 @@ namespace Archery.Core
 {
     /// <summary>
     /// Raccourci de la démo du 23 octobre, pour que le professeur puisse affronter le boss final : la touche F donne
-    /// 2 exemplaires de chaque amélioration de la boutique, et remplit les emplacements de tourelle (au bord de la voie)
+    /// toutes les pièces de la flèche au niveau maximal (la première de chaque emplacement équipée, les autres dans l'atelier
+    /// de la flèche), les objets hors emplacement et 5 exemplaires de chaque parchemin (depuis la refonte roguelike des 25 et
+    /// 26 octobre ; avant, 2 exemplaires de chaque amélioration), et remplit les emplacements de tourelle (au bord de la voie)
     /// de tourelles niveau 2, balistes et tours de givre en alternance autour de la tour. Une fois par partie.
     /// </summary>
     /// <remarks>
@@ -25,11 +27,13 @@ namespace Archery.Core
     [DisallowMultipleComponent]
     public class DemoBoost : MonoBehaviour
     {
-        const int k_Copies = 2;
+        // Les parchemins remplacent les anciennes cartes de statistiques (dont F donnait 2 exemplaires).
+        const int k_ScrollCopies = 5;
         const int k_TurretLevel = 2;
         static readonly Color k_Color = new Color(1f, 0.85f, 0.3f);
 
         bool m_Used;
+        int m_NextPiece;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
@@ -53,7 +57,12 @@ namespace Archery.Core
         void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || !keyboard.fKey.wasPressedThisFrame || DesktopHand.IsTypingText)
+            if (keyboard == null || DesktopHand.IsTypingText)
+                return;
+
+            if (keyboard.rKey.wasPressedThisFrame)
+                GiveNextNewPiece();
+            if (!keyboard.fKey.wasPressedThisFrame)
                 return;
 
             if (m_Used)
@@ -68,6 +77,31 @@ namespace Archery.Core
             HeadMessages.Show($"Démo : {upgrades} améliorations, {turrets} tourelles niveau {k_TurretLevel}", k_Color, 4f);
         }
 
+        // Raccourci de test (26 octobre) : R donne la pièce nouvelle suivante des étapes 3 et 5 (de la corde triple au talisman
+        // du bourreau, 24 pièces), un niveau de plus, et l'équipe : appuyer plusieurs fois pour essayer les combinaisons.
+        void GiveNextNewPiece()
+        {
+            var player = PlayerUpgrades.Instance;
+            var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
+            if (player == null || catalog == null)
+                return;
+
+            var pieces = catalog.upgrades.FindAll(upgrade => upgrade != null && upgrade.kind == UpgradeKind.Object &&
+                                                             upgrade.effect >= UpgradeEffect.Triple);
+            if (pieces.Count == 0)
+            {
+                HeadMessages.Show("Essai : aucune pièce nouvelle dans le catalogue", k_Color, 2.5f);
+                return;
+            }
+
+            var piece = pieces[m_NextPiece++ % pieces.Count];
+            if (player.CanTake(piece))
+                player.Add(piece);
+            player.Equip(piece);
+            var level = player.Level(piece.effect);
+            HeadMessages.Show($"Essai : {piece.displayName}\n<size=60%>{ShopCatalog.NameOf(piece.slot)} · niveau {level}</size>", k_Color, 2.5f);
+        }
+
         static int GiveUpgrades()
         {
             var player = PlayerUpgrades.Instance;
@@ -76,10 +110,16 @@ namespace Archery.Core
             if (player == null || catalog == null)
                 return 0;
 
+            // Toutes les pièces, au niveau maximal (26 octobre) : la première de chaque emplacement s'équipe, les autres attendent
+            // dans l'atelier, pour essayer les combinaisons.
             var given = 0;
             foreach (var upgrade in catalog.upgrades)
             {
-                for (var i = 0; i < k_Copies && player.CanTake(upgrade); i++)
+                if (upgrade == null || upgrade.kind == UpgradeKind.Retired)
+                    continue;
+
+                var copies = upgrade.kind == UpgradeKind.Scroll ? k_ScrollCopies : Mathf.Max(1, upgrade.maxStacks);
+                for (var i = 0; i < copies && player.CanTake(upgrade); i++)
                 {
                     player.Add(upgrade);
                     given++;

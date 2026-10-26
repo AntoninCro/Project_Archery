@@ -33,6 +33,27 @@ namespace Archery.Bows
         /// <summary>Déclenché à chaque tir (score, statistiques, interface…).</summary>
         public static event Action<Bow, ShotInfo> ShotFired;
 
+        /// <summary>
+        /// Demandé à chaque tir lâché dans l'anneau, quand il n'est pas déjà forcé parfait (26 octobre, pièces de la flèche :
+        /// une flèche boomerang rattrapée, le talisman d'acrobate en l'air) : vrai si ce tir doit compter comme parfait.
+        /// Celui qui répond consomme ce qu'il accorde.
+        /// </summary>
+        public static Func<bool> ClaimPerfectShot;
+
+        /// <summary>
+        /// Multiplie la gravité des flèches tirées, et l'aide à la visée suit (26 octobre : l'empennage plume, presque 0 ;
+        /// l'empennage de plomb, plus lourd).
+        /// </summary>
+        public static float GravityMultiplier { get; set; } = 1f;
+
+        /// <summary>La gravité d'une flèche d'une arme dont la fiche dit <paramref name="definitionGravity"/>, avec <see cref="GravityMultiplier"/>.</summary>
+        public static float ArrowGravity(float definitionGravity) =>
+            Mathf.Max(0.001f, (definitionGravity > 0f ? definitionGravity : 1f) * GravityMultiplier);
+
+        /// <summary>Ce tir de qualité <paramref name="grade"/> devient-il parfait ? (forcé, ou accordé par <see cref="ClaimPerfectShot"/>).</summary>
+        public bool MakesPerfect(ShotGrade grade) =>
+            grade != ShotGrade.None && (ForcePerfect || (ClaimPerfectShot != null && ClaimPerfectShot()));
+
         [Header("Arc")]
         [SerializeField]
         BowDefinition m_Definition;
@@ -62,6 +83,9 @@ namespace Archery.Bows
         [Tooltip("Corde (3 points), dans le repère local du modèle.")]
         [SerializeField]
         LineRenderer m_String;
+
+        // La lueur de la corde (26 octobre : la couleur de la pièce de la corde, PieceLook), sur les mêmes points.
+        LineRenderer m_StringGlow;
 
         [SerializeField]
         Transform m_UpperLimb;
@@ -463,7 +487,7 @@ namespace Archery.Bows
             StopCharge();
 
             var grade = m_TimingRing != null && m_TimingRing.IsRunning ? m_TimingRing.Release() : ShotGrade.None;
-            if (ForcePerfect && grade != ShotGrade.None)
+            if (canFire && ratio >= Def.minDrawToFire && MakesPerfect(grade))
                 grade = ShotGrade.Perfect;
             if (!canFire || ratio < Def.minDrawToFire)
             {
@@ -495,7 +519,7 @@ namespace Archery.Bows
                 Pierce = Def.pierceCount + BonusPierce,
                 TrailColor = trailColor,
                 IsShot = true,
-                GravityScale = Def.arrowGravity,
+                GravityScale = ArrowGravity(Def.arrowGravity),
             });
 
             if (Def.starTrail)
@@ -524,6 +548,8 @@ namespace Archery.Bows
                 Damage = damage,
                 Origin = origin,
                 Direction = m_AimDirection,
+                Aim = m_Model,
+                Hand = m_BowHand,
             });
         }
 
@@ -565,6 +591,8 @@ namespace Archery.Bows
                 Damage = damage,
                 Origin = start,
                 Direction = direction,
+                Aim = m_Model,
+                Hand = m_BowHand,
             });
         }
 
@@ -810,6 +838,37 @@ namespace Archery.Bows
         /// flèches, comme un tir de l'arc.
         /// </summary>
         internal void ReportShot(ShotInfo shot) => ShotFired?.Invoke(this, shot);
+
+        /// <summary>
+        /// Une lueur colorée le long de la corde (26 octobre : la pièce de la corde, <c>Upgrades/PieceLook</c>), dessinée avec
+        /// <paramref name="material"/> (couleurs des sommets) ; une couleur transparente l'éteint.
+        /// </summary>
+        public void SetStringGlow(Color color, Material material)
+        {
+            if (color.a <= 0f || m_String == null)
+            {
+                if (m_StringGlow != null)
+                    m_StringGlow.enabled = false;
+                return;
+            }
+
+            if (m_StringGlow == null)
+            {
+                m_StringGlow = new GameObject("Lueur de la corde").AddComponent<LineRenderer>();
+                m_StringGlow.transform.SetParent(m_String.transform, false);
+                m_StringGlow.useWorldSpace = false;
+                m_StringGlow.positionCount = 3;
+                m_StringGlow.widthMultiplier = Mathf.Max(0.006f, m_String.widthMultiplier * 2.5f);
+                m_StringGlow.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                m_StringGlow.receiveShadows = false;
+                for (var i = 0; i < 3; i++)
+                    m_StringGlow.SetPosition(i, m_String.GetPosition(i));
+            }
+
+            m_StringGlow.sharedMaterial = material;
+            m_StringGlow.startColor = m_StringGlow.endColor = color;
+            m_StringGlow.enabled = true;
+        }
 
         // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde un peu après.
         void UpdateRecache(float deltaTime)
@@ -1182,6 +1241,12 @@ namespace Archery.Bows
                 m_String.SetPosition(0, StringEndLocal(m_StringTop));
                 m_String.SetPosition(1, middle);
                 m_String.SetPosition(2, StringEndLocal(m_StringBottom));
+                if (m_StringGlow != null && m_StringGlow.enabled)
+                {
+                    m_StringGlow.SetPosition(0, StringEndLocal(m_StringTop));
+                    m_StringGlow.SetPosition(1, middle);
+                    m_StringGlow.SetPosition(2, StringEndLocal(m_StringBottom));
+                }
             }
 
             if (m_TimingRing != null)
@@ -1247,7 +1312,7 @@ namespace Archery.Bows
 
             // Arc à pluie (légendaire) : la courbe et le cercle où tombera la pluie.
             m_AimGuide.Show(tip, m_AimDirection, speed, color, Mathf.Lerp(0.35f, 1f, drawRatio), Def.arrowRain ? Def.rainRadius : 0f,
-                            Def.arrowGravity);
+                            ArrowGravity(Def.arrowGravity));
         }
 
         // Avec un arc à surcharge, le parfait est doré, comme dans l'anneau.
@@ -1330,6 +1395,11 @@ namespace Archery.Bows
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => ShotFired = null;
+        static void ResetStatics()
+        {
+            ShotFired = null;
+            ClaimPerfectShot = null;
+            GravityMultiplier = 1f;
+        }
     }
 }

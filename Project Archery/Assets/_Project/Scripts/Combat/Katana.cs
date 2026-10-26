@@ -1159,8 +1159,11 @@ namespace Archery.Combat
                 var speed = Mathf.Max(k_MinRiftSpeed, m_Definition.arrowSpeed * modifiers.speed * (m_Bow != null ? m_Bow.SpeedMultiplier : 1f));
                 var damage = m_Definition.damage * modifiers.damage * DamageMultiplier * (1f + k_FusionBonus * fusions);
                 var origin = rift.transform.position;
-                var volley = 1 + (upgrades != null ? PlayerUpgrades.RollCount(upgrades.MultishotAverage) : 0);
-                var echoes = upgrades != null ? PlayerUpgrades.RollCount(upgrades.EchoAverage) : 0;
+                // La corde triple (26 octobre) ajoute ses copies comme le multitir : vers d'autres ennemis, en éventail sinon.
+                var volley = 1 + (upgrades != null
+                    ? PlayerUpgrades.RollCount(upgrades.MultishotAverageFor(grade)) + Mathf.RoundToInt(upgrades.Total(UpgradeEffect.Triple))
+                    : 0);
+                var echoes = upgrades != null ? PlayerUpgrades.RollCount(upgrades.EchoAverageFor(grade)) : 0;
 
                 // L'écho : des copies cachées là où elle part, relancées un instant après.
                 var delay = arrows != null ? arrows.EchoDelay : 0.25f;
@@ -1242,7 +1245,7 @@ namespace Archery.Combat
             var upgrades = PlayerUpgrades.Instance;
             var arrows = SpecialArrows.Instance;
             var modifiers = Tuning.Get(grade);
-            var effects = arrows != null ? arrows.RollEffects() : SpecialArrows.Effect.None;
+            var effects = arrows != null ? arrows.RollEffects(grade) : SpecialArrows.Effect.None;
             var color = fusions > 0 ? k_FusionColor : modifiers.color;
             if (effects != SpecialArrows.Effect.None && arrows != null)
                 color = Color.Lerp(color, arrows.ColorOf(effects), 0.6f);
@@ -1256,10 +1259,10 @@ namespace Archery.Combat
                 Color = color,
                 HitClip = m_Definition.katanaHitClip,
                 IsExtra = extra,
-                Pierce = upgrades != null ? PlayerUpgrades.RollCount(upgrades.PierceAverage) : 0,
+                Pierce = upgrades != null ? PlayerUpgrades.RollCount(upgrades.PierceAverageFor(grade)) : 0,
                 Ricochets = upgrades != null ? upgrades.RicochetCount : 0,
                 Reacquire = upgrades != null && upgrades.HomingTurnRate > 0f,
-                Splits = !extra && upgrades != null ? PlayerUpgrades.RollCount(upgrades.DelugeAverage) : 0,
+                Splits = !extra && upgrades != null ? PlayerUpgrades.RollCount(upgrades.DelugeAverageFor(grade)) : 0,
                 Effects = effects,
                 BlastRadius = fusions > 0 ? Mathf.Min(k_MaxBlastRadius, k_BlastRadius + k_BlastRadiusStep * (fusions - 1)) : 0f,
                 BlastDamage = damage * k_BlastShare,

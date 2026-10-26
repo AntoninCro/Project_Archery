@@ -33,7 +33,9 @@ Une amélioration trouvée dans un coffre ne fait pas monter les prix de la bout
 
 Les bonus temporaires sont gérés par `Player Upgrades`, déjà sur `Game` : il n'y a rien à ajouter pour eux.
 
-Les sons sont dans `Audio/Placeholder` : `chest_appear`, `chest_open`, `orb_pick` et `chest_vanish`.
+Les sons sont dans `Audio/Placeholder` : `chest_appear`, `chest_open`, `orb_pick` et `chest_vanish`. (25 octobre : le
+prefab `Chest` n'avait aucun son réglé ; `chest_open` et `chest_vanish`, inutilisés, ont été supprimés, et sont
+récupérables dans Git.)
 
 ## 1. Préparer le modèle du pack
 

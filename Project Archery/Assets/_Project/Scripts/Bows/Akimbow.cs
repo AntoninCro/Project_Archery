@@ -717,7 +717,7 @@ namespace Archery.Bows
                 if (!slot.Ring.IsRunning)
                     return;
                 grade = slot.Ring.Release();
-                if (m_Bow != null && m_Bow.ForcePerfect && grade != ShotGrade.None)
+                if (m_Bow != null && m_Bow.MakesPerfect(grade))
                     grade = ShotGrade.Perfect;
             }
             else
@@ -742,7 +742,7 @@ namespace Archery.Bows
                 TrailColor = modifiers.color,
                 IsShot = true,
                 IsExtra = m_Trial,
-                GravityScale = m_Definition.arrowGravity,
+                GravityScale = Bow.ArrowGravity(m_Definition.arrowGravity),
             });
 
             if (slot.Ring != null)
@@ -767,6 +767,8 @@ namespace Archery.Bows
                     Damage = damage,
                     Origin = origin,
                     Direction = direction,
+                    Aim = slot.Crossbow,
+                    Hand = m_Desktop ? null : slot.Holder,
                 });
             }
 
@@ -788,7 +790,7 @@ namespace Archery.Bows
             var grade = CurrentGrade(slot);
             var color = grade == ShotGrade.None ? Color.white : Tuning.Get(grade).color;
             var origin = slot.Crossbow.TransformPoint(m_Definition.akimboTip);
-            slot.Guide.Show(origin, slot.Crossbow.forward, Speed(grade), color, 0.75f, 0f, m_Definition.arrowGravity);
+            slot.Guide.Show(origin, slot.Crossbow.forward, Speed(grade), color, 0.75f, 0f, Bow.ArrowGravity(m_Definition.arrowGravity));
         }
 
         // ---------------------------------------------------------------- les bugs

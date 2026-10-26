@@ -1,6 +1,6 @@
 # Guide : le boss des vagues 5, 10, 15…
 
-> **Historique.** Ce guide décrit l'ancien boss, un chevalier géant monté à la main. Depuis le 12 octobre au soir, il est retiré : chaque vague a son propre boss (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), généré par Claude dans `Prefabs/Boss_*.prefab`, avec ses données dans `Data/Enemies/Boss_*.asset`. La liste se règle dans `WaveSettings`, champ *Bosses* (un par vague, dans l'ordre). Le composant `Boss`, la barre de PV et les points faibles marchent comme décrit ci-dessous. Depuis le 13 octobre, la partie compte 6 vagues : la vague 6 est celle du boss final, le dragon rouge (GDD, section 23).
+> **Historique.** Ce guide décrit l'ancien boss, un chevalier géant monté à la main. Depuis le 12 octobre au soir, il est retiré : chaque vague a son propre boss (Roi Gluant, Mimique vorace, Tortue colossale, Chef de guerre orc, Liche suprême), généré par Claude dans `Prefabs/Boss_*.prefab`, avec ses données dans `Data/Enemies/Boss_*.asset`. La liste se règle dans `WaveSettings`, champ *Bosses* (un par vague, dans l'ordre). Le composant `Boss`, la barre de PV et les points faibles marchent comme décrit ci-dessous. Depuis le 13 octobre, la partie compte 6 vagues : la vague 6 est celle du boss final, le dragon rouge (GDD, section 23). Le Roi Gluant (remplacé par Thomas le 15 octobre), `DemoMat` et `Boss_Knoght` ont été supprimés le 25 octobre.
 
 Ce guide ajoute le boss du GDD (sections 3 et 10) à la scène `Prototype_Tir`.
 

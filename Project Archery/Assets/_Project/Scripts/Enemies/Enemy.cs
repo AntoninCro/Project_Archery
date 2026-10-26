@@ -89,6 +89,7 @@ namespace Archery.Enemies
         float m_MoveSpeed;
         float m_RunAnimationSpeed = 1f;
         float m_SlowMultiplier = 1f;
+        float m_FrozenTimer;
         float m_SlowTimer;
         float m_FadingSlow;
         float m_FadingDuration;
@@ -245,6 +246,24 @@ namespace Archery.Enemies
 
             if (m_FadingAge < m_FadingDuration)
                 m_FadingAge += deltaTime;
+
+            // Gelé (pointe de givre, 26 octobre) : figé sur place, sans bouger, attaquer ni s'animer ; la poussée (l'aimant)
+            // le déplace quand même.
+            if (m_FrozenTimer > 0f)
+            {
+                m_FrozenTimer -= deltaTime;
+                if (m_FrozenTimer > 0f)
+                {
+                    UpdatePush(deltaTime);
+                    Stop();
+                    if (m_Animator != null)
+                        m_Animator.speed = 0f;
+                    return;
+                }
+
+                if (m_Animator != null)
+                    m_Animator.speed = 1f;
+            }
 
             UpdatePush(deltaTime);
 
@@ -520,6 +539,40 @@ namespace Archery.Enemies
             multiplier = Mathf.Max(Mathf.Clamp01(multiplier), 1f - Mathf.Clamp01(MaxSlow));
             m_SlowMultiplier = Mathf.Min(m_SlowTimer > 0f ? m_SlowMultiplier : 1f, multiplier);
             m_SlowTimer = Mathf.Max(m_SlowTimer, duration);
+        }
+
+        /// <summary>L'ennemi est gelé (pointe de givre, 26 octobre) : figé, sans attaquer.</summary>
+        public bool IsFrozen => m_FrozenTimer > 0f && m_State != State.Dead;
+
+        /// <summary>
+        /// Gèle l'ennemi pendant <paramref name="duration"/> s (pointe de givre, 26 octobre) : figé sur place, animation
+        /// arrêtée, sans attaquer. Un ennemi dont le ralentissement est limité (<see cref="MaxSlow"/> : le dragon) est
+        /// seulement ralenti, dans sa limite. Renvoie vrai s'il est vraiment gelé.
+        /// </summary>
+        public bool Freeze(float duration)
+        {
+            if (m_State == State.Dead || duration <= 0f)
+                return false;
+
+            if (MaxSlow < 1f)
+            {
+                Slow(0f, duration);
+                return false;
+            }
+
+            m_FrozenTimer = Mathf.Max(m_FrozenTimer, duration);
+            return true;
+        }
+
+        /// <summary>Dégèle l'ennemi tout de suite (il vient d'éclater en éclats de glace).</summary>
+        public void Thaw()
+        {
+            if (m_FrozenTimer <= 0f)
+                return;
+
+            m_FrozenTimer = 0f;
+            if (m_Animator != null)
+                m_Animator.speed = 1f;
         }
 
         /// <summary>

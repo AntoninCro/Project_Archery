@@ -11,17 +11,18 @@ namespace Archery.Bows
     /// À placer sur la racine du modèle, rangé sous l'objet « Model » du prefab Bow.
     /// </summary>
     /// <remarks>
-    /// Avec les arcs du pack Easy Weapons, ce composant remplace leur script <c>bowWeaponControllerAA</c> :
-    /// sa corde est mise à jour trop tôt dans l'image et traînerait derrière l'arc en VR.
+    /// Avec un arc riggé qui a son propre script de corde, ce composant le remplace. C'était le cas des arcs du pack Easy
+    /// Weapons (<c>bowWeaponControllerAA</c>, pack supprimé le 25 octobre) : leur corde était mise à jour trop tôt dans
+    /// l'image et traînait derrière l'arc en VR.
     /// </remarks>
     [DisallowMultipleComponent]
     public class BowVisual : MonoBehaviour
     {
-        [Tooltip("Extrémité de la branche du haut, où s'accroche la corde. Easy Weapons : top.end.")]
+        [Tooltip("Extrémité de la branche du haut, où s'accroche la corde.")]
         [SerializeField]
         Transform m_StringTop;
 
-        [Tooltip("Extrémité de la branche du bas. Easy Weapons : bottom.end.")]
+        [Tooltip("Extrémité de la branche du bas.")]
         [SerializeField]
         Transform m_StringBottom;
 
@@ -44,7 +45,7 @@ namespace Archery.Bows
         Transform m_Grip;
 
 #if ARCHERY_ANIMATION_RIGGING
-        [Tooltip("Optionnel : contrainte qui fait passer la corde du repos (source 0) à la tension maximale (source 1). Easy Weapons : StringDraw.")]
+        [Tooltip("Optionnel : contrainte qui fait passer la corde du repos (source 0) à la tension maximale (source 1).")]
         [SerializeField]
         MultiPositionConstraint m_DrawConstraint;
 

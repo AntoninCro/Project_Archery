@@ -719,7 +719,7 @@ namespace Archery.Combat
                 shot.Target = target;
                 shot.IsExtra = true;
                 shot.Splits = 0;
-                shot.Effects = SpecialArrows.Instance != null ? SpecialArrows.Instance.RollEffects() : SpecialArrows.Effect.None;
+                shot.Effects = SpecialArrows.Instance != null ? SpecialArrows.Instance.RollEffects(shot.Grade) : SpecialArrows.Effect.None;
                 shot.BlastRadius *= 0.5f;
                 shot.BlastDamage *= 0.5f;
                 piece.Launch(shot);
@@ -840,6 +840,7 @@ namespace Archery.Combat
 
             // Au premier ennemi touché : les effets des améliorations (foudre, explosion, glace), et l'explosion des
             // failles fusionnées.
+            var firstImpact = !m_Impacted;
             if (!m_Impacted)
             {
                 m_Impacted = true;
@@ -852,6 +853,11 @@ namespace Archery.Combat
                         arrows.Blast(point, m_Shot.BlastDamage, m_Shot.BlastRadius, m_Tint, hit);
                 }
             }
+
+            // Les pièces de la flèche qui ont un sens pour une faille (refonte roguelike, étape 5, 26 octobre) : pointe de givre,
+            // de chasseur, bourreau ; et à son premier ennemi, la mèche et l'aimant.
+            if (enemy != null && ArrowPieces.Instance != null)
+                ArrowPieces.Instance.OnRiftHit(enemy, hit, hitbox.Zone, firstImpact);
 
             // Sa cible touchée : ricochet, perçage, ou elle la traverse encore un instant, puis se brise. En perçage, chaque
             // ennemi traversé en use un.

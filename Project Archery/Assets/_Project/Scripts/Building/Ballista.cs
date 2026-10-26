@@ -93,7 +93,7 @@ namespace Archery.Building
                 return;
 
             var deltaTime = Time.deltaTime;
-            m_Cooldown -= deltaTime;
+            m_Cooldown -= deltaTime * OverchargeRate;
             m_RetargetTimer -= deltaTime;
             if (m_RetargetTimer <= 0f || m_Target == null || !m_Target.IsAlive)
             {
@@ -135,7 +135,7 @@ namespace Archery.Building
         {
             var muzzle = Muzzle;
             Enemy best = null;
-            var range = m_Range * RangeScale;
+            var range = m_Range * RangeScale * OverchargeRange;
             var bestDistance = range * range;
             foreach (var enemy in Enemy.Alive)
             {

@@ -28,7 +28,7 @@ Filmer les vidéos (dans le casque, avec Unity Recorder)
 Les 13 vidéos ont été tournées le 19 octobre (1280 x 720, 76 s en tout), puis allégées : 224 Mo -> 49 Mo
 (H.264, 30 images/s, 5 Mbit/s). Les originaux sont dans « projet archery/Tutoriel_originaux », hors de Git.
 Après avoir refait une vidéo, allège-la (Unity Recorder les écrit environ 4 fois plus lourdes) :
-  powershell -ExecutionPolicy Bypass -File Toolslleger_videos_tutoriel.ps1 -Name Tir_1
+  powershell -ExecutionPolicy Bypass -File Tools lleger_videos_tutoriel.ps1 -Name Tir_1
 (depuis le dossier « Project Archery » ; sans -Name, toutes les vidéos trop lourdes).
 
 1. Menu Archery > Tutoriel > Tournage des vidéos : la fenêtre s'ouvre et le tournage est prêt.
@@ -52,3 +52,26 @@ Raccourcis de test (clavier, en mode Play) :
   B   +50 matériaux        H   finit la construction en cours
   C   un coffre            1 à 4   la difficulté        K   le joueur meurt
   5 à 9   équipe un arc    U   débloque tous les arcs   J   reverrouille les arcs
+
+
+
+arc fungus : 
+tue un ennemi = spawn ennemi
+spawn zone de degats au sol
+
+
+
+katakana:
+auto focus
+
+
+
+mode demo
+tutoriel tuer ennemis
+tuto arme à corps 
+bar de pv sur ennemi
+
+
+autre map
+gabget
+monde à la matrice avec 0 et 1

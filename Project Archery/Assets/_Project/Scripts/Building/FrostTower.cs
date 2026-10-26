@@ -72,7 +72,7 @@ namespace Archery.Building
         float m_TickTimer;
         float m_Age;
 
-        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 9f) * RangeScale;
+        public float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 9f) * RangeScale * OverchargeRange;
 
         /// <summary>
         /// Dans l'arène du boss final : au lieu de ralentir tout ce qui l'entoure, la tour tire des boules de glace (c'est

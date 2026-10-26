@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Archery.Bows;
 using Archery.Upgrades;
 using UnityEngine;
 
@@ -26,11 +25,14 @@ namespace Archery.Shop
     }
 
     /// <summary>
-    /// Contenu et prix de la boutique (GDD, sections 5, 6 et 7) : améliorations, raretés, arcs, services de la tour.
+    /// Contenu et prix de la boutique (GDD, sections 6 et 7) : améliorations, raretés, prix.
     /// </summary>
     /// <remarks>
-    /// Le menu ⋮ de l'asset propose « Remplir avec le GDD » : les 21 améliorations, les chances et les prix.
-    /// Les arcs se glissent à la main dans la liste « Bows ».
+    /// Depuis la refonte du 25 octobre (<c>Docs/Refonte_Roguelike.md</c>, étape 1), chaque amélioration a un genre
+    /// (<see cref="UpgradeKind"/>) : la boutique propose les parchemins, toujours en vente, et sur une autre ligne des objets,
+    /// chers, jusqu'à trois par pause. Le catalogue a été converti par <c>Editor/RoguelikeStep1Baker</c> ; le menu
+    /// « Remplir avec le GDD », qui remettait l'ancienne liste sans genres, est retiré. Plus de relance, d'arcs ni de
+    /// réparations (25 octobre au soir) : leurs réglages ont disparu avec eux.
     /// </remarks>
     [CreateAssetMenu(fileName = "ShopCatalog", menuName = "Archery/Shop Catalog")]
     public class ShopCatalog : ScriptableObject
@@ -38,81 +40,68 @@ namespace Archery.Shop
         [Header("Améliorations")]
         public List<Upgrade> upgrades = new List<Upgrade>();
 
-        [Tooltip("Chances des raretés. Une seule ligne : les mêmes chances toute la partie. " +
+        [Tooltip("Chances des raretés des objets (boutique, coffres). Une seule ligne : les mêmes chances toute la partie. " +
                  "On peut ajouter des lignes pour les faire changer à partir d'une vague.")]
         public List<RarityOdds> rarityOdds = new List<RarityOdds>
         {
-            new RarityOdds(1, 70f, 25f, 5f),
+            new RarityOdds(1, 20f, 60f, 20f),
         };
 
         [Tooltip("Part minimale des cartes communes, même avec beaucoup d'améliorations Chance (0,4 = 40 %).")]
         [Range(0f, 1f)]
         public float minCommonShare = 0.4f;
 
-        [Tooltip("Nombre d'améliorations proposées à chaque pause.")]
-        [Min(1)]
-        public int upgradeOffers = 4;
+        [Tooltip("Objets proposés à chaque pause, sur la ligne du bas (autant de cartes que le panneau en a). " +
+                 "Les parchemins, eux, sont toujours tous proposés, sur la ligne du haut.")]
+        [Min(0)]
+        public int objectOffers = 3;
 
-        [Header("Prix des améliorations")]
-        public int commonPrice = 25;
-        public int rarePrice = 60;
-        public int legendaryPrice = 140;
+        [Tooltip("Objets qu'on peut acheter par pause.")]
+        [Min(1)]
+        public int objectsPerShop = 3;
+
+        [Header("Prix des objets")]
+        [Tooltip("Chers exprès (25 octobre au soir) : améliorer ses parchemins doit rapporter plus que d'acheter tous les objets au hasard.")]
+        public int commonPrice = 120;
+        public int rarePrice = 160;
+        public int legendaryPrice = 220;
+
+        [Tooltip("Chaque objet acheté en boutique fait monter le prix des suivants, en se cumulant (0,15 = +15 % par objet : " +
+                 "×2 après 5). Ceux des coffres ne comptent pas.")]
+        [Min(0f)]
+        public float objectPriceIncreasePerPurchase = 0.15f;
 
         [Tooltip("Hausse des prix à chaque vague, en se cumulant (0,24 = +24 % par vague : ×2,4 après la vague 5). " +
-                 "Elle touche aussi la relance.")]
+                 "Elle touche les objets et les parchemins.")]
         [Min(0f)]
         public float priceGrowthPerWave = 0.24f;
 
-        [Tooltip("Chaque amélioration achetée en boutique fait monter le prix de toutes les suivantes, en se cumulant " +
-                 "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20). Celles des coffres ne comptent pas.")]
+        [Header("Prix des parchemins")]
+        [Tooltip("Prix d'un parchemin dans la boutique qui suit la vague 1, avant la hausse par achat.")]
+        public int scrollPrice = 25;
+
+        [Tooltip("Chaque parchemin acheté en boutique fait monter le prix de tous les suivants, en se cumulant " +
+                 "(0,05 = +5 % par achat : ×1,6 après 10 achats, ×2,7 après 20). Ceux des coffres ne comptent pas.")]
         [Min(0f)]
         public float priceIncreasePerPurchase = 0.05f;
+
+        [Tooltip("En plus, chaque parchemin acheté en boutique fait monter son propre prix, en se cumulant (0,1 = +10 % par " +
+                 "achat du même parchemin). Ajouté le 26 octobre : chaque parchemin a son prix, qui monte quand on le prend " +
+                 "souvent ; les autres restent abordables (et donnent de la vie, comme dans Dead Cells). 0 : un seul prix pour tous.")]
+        [Min(0f)]
+        public float ownScrollPriceIncrease = 0.1f;
 
         [Tooltip("En mode infini, tous les prix de la boutique sont multipliés par cette valeur à chaque vague, en se cumulant (1,3 = +30 %).")]
         [Min(1f)]
         public float endlessPriceGrowth = 1.3f;
 
-        [Header("Relance des offres")]
-        public int rerollCost = 10;
-
-        [Tooltip("Ajouté au prix de la relance à chaque relance ; le prix revient au départ à chaque pause.")]
-        public int rerollCostIncrease = 5;
-
-        [Header("Arcs")]
-        [Tooltip("Les arcs dans l'ordre d'achat. Le premier est l'arc de départ ; la boutique propose toujours le suivant.")]
-        public List<BowDefinition> bows = new List<BowDefinition>();
-
-        [Header("Tour")]
-        [Tooltip("Part des PV max rendue par une réparation.")]
-        [Range(0.05f, 1f)]
-        public float repairFraction = 0.25f;
-
-        public int repairPrice = 40;
-        public int rebuildPrice = 250;
-
-        [Header("Défenses")]
-        [Tooltip("Prix de la réparation de toutes les barricades.")]
-        public int barricadePrice = 60;
-
         [Header("Couleurs")]
         public Color commonColor = new Color(0.9f, 0.9f, 0.9f);
         public Color rareColor = new Color(0.35f, 0.6f, 1f);
         public Color legendaryColor = new Color(1f, 0.78f, 0.2f);
-        public Color bowColor = new Color(0.6f, 0.9f, 0.5f);
-        public Color towerColor = new Color(0.9f, 0.68f, 0.45f);
-        public Color defenseColor = new Color(1f, 0.55f, 0.25f);
 
-        [Header("Icônes des cartes")]
-        [Tooltip("Carte des arcs. Celles des améliorations sont dans la liste « Upgrades » (champ « Icon »).")]
-        public Sprite bowIcon;
-
-        [Tooltip("Carte « Réparer la tour ».")]
-        public Sprite repairIcon;
-
-        [Tooltip("Carte « Reconstruire la tour », et la carte de la tour quand elle est intacte.")]
-        public Sprite towerIcon;
-
-        public Sprite barricadeIcon;
+        [Tooltip("Couleur des parchemins (cartes et orbes des coffres).")]
+        public Color scrollColor = new Color(0.95f, 0.82f, 0.58f);
 
         public Color ColorOf(UpgradeRarity rarity) => rarity switch
         {
@@ -128,11 +117,74 @@ namespace Archery.Shop
             _ => "Commune",
         };
 
+        /// <summary>La couleur des parchemins, ou celle de la rareté d'un objet.</summary>
+        public Color ColorOf(Upgrade upgrade) =>
+            upgrade == null ? commonColor : upgrade.kind == UpgradeKind.Scroll ? scrollColor : ColorOf(upgrade.rarity);
+
+        /// <summary>Le nom d'un emplacement de la flèche (« Pointe »), vide hors emplacement.</summary>
+        public static string NameOf(ArrowSlot slot) => slot switch
+        {
+            ArrowSlot.Tip => "Pointe",
+            ArrowSlot.Fletching => "Empennage",
+            ArrowSlot.Shaft => "Fût",
+            ArrowSlot.String => "Corde",
+            ArrowSlot.Talisman => "Talisman",
+            _ => "",
+        };
+
+        /// <summary>Un niveau en chiffres romains (« II »), pour la liste des pièces.</summary>
+        public static string LevelName(int level) => level switch
+        {
+            2 => "II",
+            3 => "III",
+            4 => "IV",
+            5 => "V",
+            _ => level.ToString(),
+        };
+
         /// <summary>
-        /// Prix d'une amélioration dans la boutique qui suit cette vague, arrondi à 5.
-        /// <paramref name="purchases"/> : nombre d'améliorations déjà achetées pendant la partie.
+        /// Sous-titre d'une carte ou d'une orbe : « Parchemin · niveau 3 », ou l'emplacement d'une pièce et sa rareté
+        /// (« Pointe · Rare »), son niveau si elle en monte (« Pointe · niveau 2 »), et « tir parfait » si elle ne joue qu'aux
+        /// tirs parfaits. <paramref name="level"/> : le niveau qu'elle atteindrait.
         /// </summary>
-        public int PriceOf(UpgradeRarity rarity, int wave, int wavesToWin, int purchases)
+        public static string SubtitleOf(Upgrade upgrade, int level)
+        {
+            if (upgrade.kind == UpgradeKind.Scroll)
+                return level > 1 ? $"Parchemin · niveau {level}" : "Parchemin";
+
+            var text = upgrade.slot != ArrowSlot.None ? NameOf(upgrade.slot) + " · " : "";
+            text += level > 1 ? $"niveau {level}" : NameOf(upgrade.rarity);
+            return upgrade.trigger == UpgradeTrigger.PerfectShot ? text + " · tir parfait" : text;
+        }
+
+        /// <summary>
+        /// La ligne qui prévient qu'une pièce irait dans l'atelier, son emplacement étant déjà pris (vide sinon),
+        /// en couleur, pour un texte TMP. Depuis le 26 octobre, rien n'est remplacé : on choisit dans l'atelier.
+        /// </summary>
+        public static string StorageLine(Upgrade occupant) =>
+            occupant == null ? "" : $"<color=#9FD3FF>Rangée dans l'atelier (équipée : « {occupant.displayName} »)</color>";
+
+        /// <summary>« Duo possible : Trou noir » (vide sans duo), en couleur, pour un texte TMP.</summary>
+        public static string DuoLine(ArrowDuos.Duo duo) => duo == null ? "" : $"<color=#FFD54F>Duo possible : {duo.Name}</color>";
+
+        /// <summary>Les lignes non vides, l'une sous l'autre.</summary>
+        public static string Lines(string first, string second, string third = "")
+        {
+            var text = first;
+            foreach (var line in new[] { second, third })
+            {
+                if (!string.IsNullOrEmpty(line))
+                    text = string.IsNullOrEmpty(text) ? line : text + "\n" + line;
+            }
+
+            return text;
+        }
+
+        /// <summary>
+        /// Prix d'un objet dans la boutique qui suit cette vague, arrondi à 5.
+        /// <paramref name="purchases"/> : nombre d'objets déjà achetés en boutique pendant la partie.
+        /// </summary>
+        public int ObjectPriceOf(UpgradeRarity rarity, int wave, int wavesToWin, int purchases)
         {
             var basePrice = rarity switch
             {
@@ -141,8 +193,20 @@ namespace Archery.Shop
                 _ => commonPrice,
             };
 
-            var purchaseFactor = Mathf.Pow(1f + priceIncreasePerPurchase, Mathf.Max(0, purchases));
+            var purchaseFactor = Mathf.Pow(1f + objectPriceIncreasePerPurchase, Mathf.Max(0, purchases));
             return RoundPrice(basePrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
+        }
+
+        /// <summary>
+        /// Prix d'un parchemin dans la boutique qui suit cette vague, arrondi à 5.
+        /// <paramref name="purchases"/> : nombre de parchemins déjà achetés en boutique pendant la partie, tous confondus ;
+        /// <paramref name="ownPurchases"/> : combien de celui-ci (26 octobre).
+        /// </summary>
+        public int ScrollPriceOf(int wave, int wavesToWin, int purchases, int ownPurchases)
+        {
+            var purchaseFactor = Mathf.Pow(1f + priceIncreasePerPurchase, Mathf.Max(0, purchases)) *
+                                 Mathf.Pow(1f + ownScrollPriceIncrease, Mathf.Max(0, ownPurchases));
+            return RoundPrice(scrollPrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
         }
 
         /// <summary>Hausse des prix due aux vagues : +10 % par vague, en se cumulant.</summary>
@@ -206,62 +270,6 @@ namespace Archery.Shop
             }
 
             return found || rarityOdds.Count == 0 ? best : rarityOdds[0];
-        }
-
-        [ContextMenu("Remplir avec le GDD")]
-        void FillFromGdd()
-        {
-#if UNITY_EDITOR
-            UnityEditor.Undo.RecordObject(this, "Remplir avec le GDD");
-#endif
-            // Aucune limite d'achat : les bonus se cumulent, et au-delà de 100 % de chance un effet devient plus fort.
-            upgrades = new List<Upgrade>
-            {
-                new Upgrade("Dégâts", "+10 % de dégâts", UpgradeRarity.Common, UpgradeEffect.Damage, 0.1f),
-                new Upgrade("Flèches rapides", "+8 % de vitesse des flèches", UpgradeRarity.Common, UpgradeEffect.ArrowSpeed, 0.08f),
-                new Upgrade("Charge rapide", "Anneau 15 % plus rapide", UpgradeRarity.Common, UpgradeEffect.QuickCharge, 0.15f),
-                new Upgrade("Précision", "Bande verte 15 % plus large", UpgradeRarity.Common, UpgradeEffect.Precision, 0.15f),
-                new Upgrade("Vitalité", "+15 PV max", UpgradeRarity.Common, UpgradeEffect.Vitality, 15f),
-                new Upgrade("Butin", "+20 % d'or", UpgradeRarity.Common, UpgradeEffect.Loot, 0.05f),
-                new Upgrade("Chasseur de têtes", "+25 % de dégâts à la tête", UpgradeRarity.Common, UpgradeEffect.HeadHunter, 0.25f),
-                new Upgrade("Chance", "Plus de cartes rares et légendaires", UpgradeRarity.Common, UpgradeEffect.Luck, 0.25f),
-                new Upgrade("Puissance", "+25 % de dégâts", UpgradeRarity.Rare, UpgradeEffect.Damage, 0.25f),
-                new Upgrade("Multitir", "+50 % de chance de tirer une flèche supplémentaire", UpgradeRarity.Rare, UpgradeEffect.Multishot, 0.5f),
-                new Upgrade("Flèche de foudre", "20 % de chance d'appeler la foudre", UpgradeRarity.Rare, UpgradeEffect.Lightning, 0.2f),
-                new Upgrade("Perçage", "25 % de chance de traverser un ennemi", UpgradeRarity.Rare, UpgradeEffect.Piercing, 0.25f),
-                new Upgrade("Vampirisme", "+2 PV par tir à la tête", UpgradeRarity.Rare, UpgradeEffect.Vampirism, 2f),
-                new Upgrade("Tir écho", "25 % de chance de répéter le tir", UpgradeRarity.Rare, UpgradeEffect.Echo, 0.25f),
-                new Upgrade("Flèche de glace", "25 % de chance de geler le sol", UpgradeRarity.Rare, UpgradeEffect.Frost, 0.25f),
-                new Upgrade("Force du géant", "+60 % de dégâts", UpgradeRarity.Legendary, UpgradeEffect.Damage, 0.6f),
-                new Upgrade("Déluge", "50 % de chance que la flèche se divise", UpgradeRarity.Legendary, UpgradeEffect.Deluge, 0.5f),
-                new Upgrade("Chaîne d'éclairs", "La foudre rebondit sur 3 ennemis", UpgradeRarity.Legendary, UpgradeEffect.ChainLightning, 3f),
-                new Upgrade("Flèche explosive", "25 % de chance d'exploser", UpgradeRarity.Legendary, UpgradeEffect.Explosive, 0.25f),
-                new Upgrade("Auto-visée", "Les flèches visent l'ennemi proche", UpgradeRarity.Legendary, UpgradeEffect.Homing, 30f),
-                new Upgrade("Tir ricochet", "La flèche rebondit sur un autre ennemi", UpgradeRarity.Legendary, UpgradeEffect.Ricochet, 1f),
-            };
-
-            rarityOdds = new List<RarityOdds>
-            {
-                new RarityOdds(1, 70f, 25f, 5f),
-            };
-
-            minCommonShare = 0.4f;
-            upgradeOffers = 4;
-            commonPrice = 25;
-            rarePrice = 60;
-            legendaryPrice = 140;
-            priceGrowthPerWave = 0.24f;
-            priceIncreasePerPurchase = 0.05f;
-            endlessPriceGrowth = 1.3f;
-            rerollCost = 10;
-            rerollCostIncrease = 5;
-            repairFraction = 0.25f;
-            repairPrice = 40;
-            rebuildPrice = 250;
-            barricadePrice = 60;
-#if UNITY_EDITOR
-            UnityEditor.EditorUtility.SetDirty(this);
-#endif
         }
     }
 }

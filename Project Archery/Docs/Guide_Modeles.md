@@ -1,5 +1,9 @@
 # Guide : remplacer l'arc, les flèches et l'ennemi par de vrais modèles
 
+> **Historique** (25 octobre) : le pack Easy Weapons a été supprimé du projet (plus aucun arc ne s'en servait ; il reste
+> dans l'historique de Git). Ce guide décrit comment les premiers arcs ont été montés ; `Bow Visual` marche toujours avec
+> un autre arc riggé.
+
 Ce guide remplace les formes provisoires par les modèles de tes deux packs :
 
 - **Easy Weapons** (dossier `Kendall H`) pour l'arc et les flèches ;

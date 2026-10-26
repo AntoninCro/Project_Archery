@@ -197,6 +197,9 @@ Les réglages sont dans le *Shop Panel*, partie *Placement* :
 
 ## 5. Les modèles des arcs (optionnel)
 
+> **Historique** (25 octobre) : le pack Easy Weapons a été supprimé du projet ; les arcs des classes ont leurs propres
+> modèles (`Art/Bows`). Cette partie ne s'applique plus telle quelle.
+
 Sans modèle, un nouvel arc change de caractéristiques mais garde son apparence. Pour lui donner son propre modèle, fais ceci pour chacun des arcs composite, long et runique :
 
 1. Ouvre le prefab `Bow`. Glisse un autre arc d'Easy Weapons (par exemple `Bow.RegColor.noEnch.1.1`) dans `Model`, en position et rotation `(0, 0, 0)`.

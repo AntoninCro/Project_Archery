@@ -80,6 +80,12 @@ namespace Archery.UI
         readonly List<GameObject> m_Contents = new List<GameObject>();
         bool? m_ContentsShown;
 
+        // Un message du jeu sur la montre (Whisper), à la place de la ligne de la vague, jusqu'à s_WhisperUntil (temps réel).
+        static string s_Whisper;
+        static float s_WhisperUntil;
+        bool m_IsWatch;
+        bool m_Whispering;
+
         // Dernières valeurs affichées : on ne reconstruit un texte que s'il change.
         int m_Score = -1;
         int m_Money = -1;
@@ -97,10 +103,28 @@ namespace Archery.UI
         DifficultyDefinition m_Difficulty;
         Color m_TimerColor;
 
+        /// <summary>
+        /// Un message du jeu sur la montre (Lore/HeadsetAbsence : « Je t'attendais ») : il remplace la ligne de la vague
+        /// pendant <paramref name="duration"/> s. Seulement la montre (l'affichage accroché au poignet), pas le grand panneau.
+        /// </summary>
+        public static void Whisper(string text, float duration)
+        {
+            s_Whisper = text;
+            s_WhisperUntil = Time.unscaledTime + duration;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            s_Whisper = null;
+            s_WhisperUntil = 0f;
+        }
+
         void Awake()
         {
             if (m_TimerText != null)
                 m_TimerColor = m_TimerText.color;
+            m_IsWatch = GetComponentInParent<WristMount>() != null;
 
             if (m_HiddenBeforeFirstWave)
             {
@@ -213,6 +237,14 @@ namespace Archery.UI
             if (waves == null)
                 return;
 
+            // Au début et à la fin d'un message du jeu, la ligne de la vague est refaite.
+            var whispering = m_IsWatch && Time.unscaledTime < s_WhisperUntil;
+            if (whispering != m_Whispering)
+            {
+                m_Whispering = whispering;
+                m_Phase = null;
+            }
+
             var phase = waves.Phase;
             var seconds = Mathf.CeilToInt(waves.TimeRemaining);
             var bossWave = waves.IsBossWave;
@@ -240,7 +272,11 @@ namespace Archery.UI
                 m_TimerText.color = warning ? m_TimerWarningColor : m_TimerColor;
             }
 
-            if (m_WaveText != null)
+            if (m_WaveText != null && m_Whispering)
+            {
+                m_WaveText.text = s_Whisper;
+            }
+            else if (m_WaveText != null)
             {
                 var wave = Mathf.Max(1, phase == WavePhase.Ready ? 1 : waves.WaveNumber);
                 m_WaveText.text = wave > waves.WavesToWin ? $"Vague {wave} (infini)" : $"Vague {wave} / {waves.WavesToWin}";

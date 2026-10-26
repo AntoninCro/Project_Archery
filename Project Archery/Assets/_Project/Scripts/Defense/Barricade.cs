@@ -9,7 +9,7 @@ namespace Archery.Defense
     /// <summary>
     /// Barricade à une entrée de la clairière (GDD, section 9) : un mur qui arrête les ennemis au sol.
     /// Ceux qui arrivent devant elle (côté forêt) s'arrêtent pour la frapper, et ne passent qu'une fois qu'elle est détruite.
-    /// Elle se répare en boutique, toutes les barricades d'un coup.
+    /// Toutes les barricades se réparent d'elles-mêmes à la fin de chaque vague (depuis le 25 octobre ; avant, en boutique).
     /// </summary>
     /// <remarks>
     /// L'avant de la barricade (axe Z, bleu) doit pointer vers la forêt, d'où viennent les ennemis.
@@ -88,7 +88,7 @@ namespace Archery.Defense
                 return;
             }
 
-            // Détruite au départ, sans bruit : il faudra l'acheter en boutique.
+            // Détruite au départ, sans bruit : elle se relèvera à la fin de la première vague.
             m_Silent = true;
             m_Health.TakeDamage(new DamageInfo { Amount = m_Health.Max * 10f, Point = transform.position, Source = this });
             m_Silent = false;
@@ -106,7 +106,7 @@ namespace Archery.Defense
                 Sfx.Play(m_BuildClip, transform.position + Vector3.up, 0.9f);
         }
 
-        /// <summary>Répare ou reconstruit toutes les barricades (achat en boutique).</summary>
+        /// <summary>Répare ou reconstruit toutes les barricades (à la fin de chaque vague, depuis le 25 octobre ; avant, en boutique).</summary>
         public static void RebuildAll()
         {
             foreach (var barricade in s_All)

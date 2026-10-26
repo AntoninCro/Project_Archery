@@ -186,9 +186,18 @@ namespace Archery.Upgrades
             public readonly List<Enemy> RicochetHits = new List<Enemy>();
         }
 
+        // Corde triple (26 octobre) : écart (°) entre deux flèches de l'éventail.
+        const float k_TripleSpread = 6f;
+
+        // Effets d'explosion réutilisés (26 octobre : la pointe à mèche en fait beaucoup ; avant, chacun était créé puis
+        // détruit, un suspect de l'audit de performance du Quest). Au-delà, la plus ancienne repart.
+        const int k_MaxExplosionEffects = 6;
+
         // Une volée à répéter (tir écho).
         struct PendingEcho
         {
+            public Vector3 FanAxis;
+            public int Triple;
             public float Time;
             public Vector3 Origin;
             public Vector3 Direction;
@@ -213,6 +222,9 @@ namespace Archery.Upgrades
         readonly List<PendingEcho> m_Echoes = new List<PendingEcho>();
         readonly List<Enemy> m_Enemies = new List<Enemy>();
         readonly List<Enemy> m_Struck = new List<Enemy>();
+        readonly List<GameObject> m_ExplosionPool = new List<GameObject>();
+        int m_NextExplosion;
+        Arrow m_LastLaunched;
 
         /// <summary>Les flèches spéciales de la scène : les failles du katana s'en servent aussi (24 octobre).</summary>
         public static SpecialArrows Instance { get; private set; }
@@ -231,9 +243,38 @@ namespace Archery.Upgrades
 
         public float HomingAngle => m_HomingAngle;
 
+        // Prêtés aux pièces de la flèche (ArrowPieces, 26 octobre).
+        public Material EffectMaterial => m_EffectMaterial;
+        public Color FrostColor => m_FrostColor;
+        public Color LightningColor => m_LightningColor;
+        public AudioClip FrostClip => m_FrostClip;
+        public AudioClip LightningClip => m_LightningClip;
+        public AudioClip ExplosionClip => m_ExplosionClip;
+
+        /// <summary>
+        /// Une flèche née d'une pièce (26 octobre : les éclats de la pointe éclatée, les flèches du fût détonateur) : une flèche
+        /// en plus, qui tire ses propres effets au sort mais ne se divise pas. La renvoie (null s'il y a trop de flèches en vol).
+        /// </summary>
+        public Arrow LaunchChild(Vector3 origin, Vector3 direction, float speed, float damage, ShotGrade grade, Color trail, float gravity)
+        {
+            if (!HasRoomFor(1))
+                return null;
+
+            m_LastLaunched = null;
+            LaunchExtra(origin, direction, speed, damage, grade, 0, trail, false, false, gravity);
+            return m_LastLaunched;
+        }
+
         void OnEnable()
         {
             Instance = this;
+
+            // Les pièces de la flèche (26 octobre) vivent à côté, sans rien à poser dans la scène : ce qu'elles font, et ce qui
+            // se voit sur la flèche et l'arc.
+            if (!TryGetComponent<ArrowPieces>(out _))
+                gameObject.AddComponent<ArrowPieces>();
+            if (!TryGetComponent<PieceLook>(out _))
+                gameObject.AddComponent<PieceLook>();
             Bow.ShotFired += OnShotFired;
             Arrow.AnyHit += OnArrowHit;
             Arrow.ShotEnded += OnShotEnded;
@@ -266,18 +307,26 @@ namespace Archery.Upgrades
             if (upgrades == null || shot.Arrow == null)
                 return;
 
+            // Les pièces de la flèche savent d'où part ce tir (l'arme, la main) avant que ses flèches soient préparées.
+            var pieces = ArrowPieces.Instance;
+            if (pieces != null)
+                pieces.BeginShot(shot);
+
             // Perçage de l'arc lui-même (arc runique), avant le tirage au sort des améliorations.
             var basePierce = shot.Arrow.PierceLeft;
             var trail = shot.Arrow.TrailColor;
-            var volley = 1 + PlayerUpgrades.RollCount(upgrades.MultishotAverage);
+            var volley = 1 + PlayerUpgrades.RollCount(upgrades.MultishotAverageFor(shot.Grade));
+            var triple = Mathf.RoundToInt(upgrades.Total(UpgradeEffect.Triple));
+            var axis = FanAxis(shot);
             var onFire = shot.Arrow.IsOnFire;
             var gravity = shot.Arrow.GravityScale;
 
             Prepare(shot.Arrow, shot.Damage, shot.Grade, basePierce, trail, true);
             Fan(shot.Origin, shot.Direction, shot.Speed, shot.Damage, shot.Grade, basePierce, trail, volley, onFire, gravity);
+            FanAround(shot.Origin, shot.Direction, axis, shot.Speed, shot.Damage, shot.Grade, basePierce, trail, triple, onFire, gravity);
 
             // Tir écho : la même volée, un instant plus tard, autant de fois que tiré au sort.
-            var echoes = PlayerUpgrades.RollCount(upgrades.EchoAverage);
+            var echoes = PlayerUpgrades.RollCount(upgrades.EchoAverageFor(shot.Grade));
             for (var i = 1; i <= echoes; i++)
             {
                 m_Echoes.Add(new PendingEcho
@@ -293,7 +342,37 @@ namespace Archery.Upgrades
                     OnFire = onFire,
                     ArrowCount = volley,
                     Gravity = gravity,
+                    FanAxis = axis,
+                    Triple = triple,
                 });
+            }
+        }
+
+        // L'axe autour duquel s'ouvre l'éventail de la corde triple : le haut de l'arme (les branches de l'arc, le dessus de
+        // l'arbalète), à angle droit de la visée ; sans arme connue, la verticale.
+        static Vector3 FanAxis(in ShotInfo shot)
+        {
+            var direction = shot.Direction.sqrMagnitude > 1e-4f ? shot.Direction.normalized : Vector3.forward;
+            var axis = Vector3.ProjectOnPlane(shot.Aim != null ? shot.Aim.up : Vector3.up, direction);
+            return axis.sqrMagnitude > 1e-4f ? axis.normalized : Vector3.up;
+        }
+
+        // Corde triple (26 octobre) : les flèches en plus, par paires, de part et d'autre de la flèche de l'arc, en tournant
+        // autour de l'axe des branches : l'arc droit, l'éventail est à plat (contre les groupes) ; l'arc couché, il est
+        // vertical (contre les volants, une grande cible).
+        void FanAround(Vector3 origin, Vector3 direction, Vector3 axis, float speed, float damage, ShotGrade grade, int pierce, Color trail,
+                       int extras, bool onFire, float gravity)
+        {
+            if (extras <= 0 || direction.sqrMagnitude < 1e-4f)
+                return;
+
+            direction.Normalize();
+            for (var i = 1; 2 * i - 1 <= extras && HasRoomFor(2); i++)
+            {
+                var angle = i * k_TripleSpread;
+                LaunchExtra(origin, Quaternion.AngleAxis(angle, axis) * direction, speed, damage, grade, pierce, trail, true, onFire, gravity);
+                if (2 * i <= extras)
+                    LaunchExtra(origin, Quaternion.AngleAxis(-angle, axis) * direction, speed, damage, grade, pierce, trail, true, onFire, gravity);
             }
         }
 
@@ -336,6 +415,7 @@ namespace Archery.Upgrades
 
             direction.Normalize();
             var arrow = pool.Get();
+            m_LastLaunched = arrow;
             arrow.transform.SetPositionAndRotation(origin, Quaternion.LookRotation(direction));
             arrow.Launch(new ArrowLaunch
             {
@@ -375,37 +455,48 @@ namespace Archery.Upgrades
             if (upgrades == null)
                 return;
 
-            state.Effects = RollEffects();
+            state.Effects = RollEffects(grade);
             if (state.Effects != Effect.None)
                 arrow.SetTrailColor(ColorOf(state.Effects));
 
-            arrow.AddPierce(PlayerUpgrades.RollCount(upgrades.PierceAverage));
+            arrow.AddPierce(PlayerUpgrades.RollCount(upgrades.PierceAverageFor(grade)));
 
             if (canSplit)
             {
-                state.Splits = PlayerUpgrades.RollCount(upgrades.DelugeAverage);
+                state.Splits = PlayerUpgrades.RollCount(upgrades.DelugeAverageFor(grade));
                 state.SplitTime = Time.time + Random.Range(m_DelugeSplitTime.x, m_DelugeSplitTime.y);
             }
+
+            var pieces = ArrowPieces.Instance;
+            if (pieces != null)
+                pieces.Track(arrow, damage, grade);
         }
 
         static bool Roll(float chance) => chance > 0f && Random.value < chance;
 
-        /// <summary>Tire au sort les effets à l'impact d'un tir (foudre, explosion, glace), d'après les améliorations.</summary>
-        public Effect RollEffects()
+        /// <summary>
+        /// Tire au sort les effets à l'impact d'un tir de cette qualité (foudre, explosion, glace), d'après les améliorations :
+        /// un objet qui ne joue qu'aux tirs parfaits ne compte que pour eux.
+        /// </summary>
+        public Effect RollEffects(ShotGrade grade)
         {
             var upgrades = PlayerUpgrades.Instance;
             if (upgrades == null)
                 return Effect.None;
 
             var effects = Effect.None;
-            var lightningChance = upgrades.LightningChance;
-            if (lightningChance <= 0f && upgrades.ChainCount > 0)
-                lightningChance = m_ChainOnlyLightningChance;
+            var lightningChance = upgrades.ChanceFor(UpgradeEffect.Lightning, grade);
+
+            // La chaîne d'éclairs sans la flèche de foudre appelle l'éclair elle-même : à chaque tir parfait si elle ne joue
+            // qu'au parfait, sinon une flèche sur cinq.
+            if (upgrades.Stacks(UpgradeEffect.Lightning) == 0 && upgrades.ChainCount > 0)
+                lightningChance = !upgrades.IsPerfectOnly(UpgradeEffect.ChainLightning) ? m_ChainOnlyLightningChance
+                                  : grade == ShotGrade.Perfect ? 1f : 0f;
             if (Roll(lightningChance))
                 effects |= Effect.Lightning;
-            if (Roll(upgrades.ExplosiveChance))
+            if (Roll(upgrades.ChanceFor(UpgradeEffect.Explosive, grade)))
                 effects |= Effect.Explosive;
-            if (Roll(upgrades.FrostChance))
+            if (Roll(upgrades.ChanceFor(UpgradeEffect.Frost, grade)))
                 effects |= Effect.Frost;
             return effects;
         }
@@ -432,6 +523,8 @@ namespace Archery.Upgrades
                 LaunchExtra(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, true, echo.OnFire, echo.Gravity);
                 Fan(echo.Origin, echo.Direction, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, echo.ArrowCount, echo.OnFire,
                     echo.Gravity);
+                FanAround(echo.Origin, echo.Direction, echo.FanAxis, echo.Speed, echo.Damage, echo.Grade, echo.Pierce, echo.Trail, echo.Triple,
+                          echo.OnFire, echo.Gravity);
                 Sfx.Play(m_EchoClip, echo.Origin, 0.7f, 1.1f);
             }
         }
@@ -655,8 +748,7 @@ namespace Archery.Upgrades
         {
             LightningBolt.Burst(point, radius * 0.6f, color, m_EffectMaterial);
             Sfx.Play(m_ExplosionClip, point);
-            if (m_ExplosionEffect != null)
-                Destroy(Instantiate(m_ExplosionEffect, point, Quaternion.identity), 3f);
+            PlayExplosionEffect(point);
 
             m_Enemies.Clear();
             m_Enemies.AddRange(Enemy.Alive);
@@ -674,6 +766,46 @@ namespace Archery.Upgrades
                 Hurt(enemy, damage * Mathf.Lerp(1f, 0.5f, distance / radius), center,
                      direction.sqrMagnitude > 1e-4f ? direction.normalized : Vector3.up, hit);
             }
+        }
+
+        // Un effet d'explosion de la réserve : un libre (éteint à la fin de ses particules), sinon un nouveau, sinon le plus ancien.
+        // Le prefab se détruit seul à la fin : ses copies s'éteignent à la place, pour resservir.
+        void PlayExplosionEffect(Vector3 point)
+        {
+            if (m_ExplosionEffect == null)
+                return;
+
+            m_ExplosionPool.RemoveAll(effect => effect == null);
+            GameObject chosen = null;
+            foreach (var effect in m_ExplosionPool)
+            {
+                if (!effect.activeSelf)
+                {
+                    chosen = effect;
+                    break;
+                }
+            }
+
+            if (chosen == null && m_ExplosionPool.Count < k_MaxExplosionEffects)
+            {
+                chosen = Instantiate(m_ExplosionEffect);
+                chosen.SetActive(false);
+                foreach (var particles in chosen.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    var main = particles.main;
+                    main.stopAction = ParticleSystemStopAction.Disable;
+                }
+
+                m_ExplosionPool.Add(chosen);
+            }
+
+            if (chosen == null)
+                chosen = m_ExplosionPool[m_NextExplosion++ % m_ExplosionPool.Count];
+
+            // Rallumé, il rejoue ses particules (Play On Awake).
+            chosen.SetActive(false);
+            chosen.transform.SetPositionAndRotation(point, Quaternion.identity);
+            chosen.SetActive(true);
         }
 
         // Au-delà de 100 % de chance, l'éclair fait plus de dégâts et ralentit plus fort, plus longtemps.
@@ -728,8 +860,7 @@ namespace Archery.Upgrades
 
             LightningBolt.Burst(point, radius * 0.6f, m_ExplosionColor, m_EffectMaterial);
             Sfx.Play(m_ExplosionClip, point);
-            if (m_ExplosionEffect != null)
-                Destroy(Instantiate(m_ExplosionEffect, point, Quaternion.identity), 3f);
+            PlayExplosionEffect(point);
 
             // Copie de la liste : les ennemis tués en sortent pendant la boucle.
             m_Enemies.Clear();

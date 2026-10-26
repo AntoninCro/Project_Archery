@@ -9,12 +9,13 @@ namespace Archery.Chests
 {
     /// <summary>
     /// Un coffre de la forêt (GDD, section 13), gratuit. On l'ouvre en le visant (gâchette ou gâchette de prise, à quelques mètres) :
-    /// le temps ralentit, trois orbes sortent du coffre, et on en prend une de la même façon : deux améliorations permanentes (tirées comme en boutique)
-    /// et un bonus temporaire (dégâts doublés, tirs parfaits ou anneau rapide).
+    /// le temps ralentit, trois orbes sortent du coffre, et on en prend une de la même façon. Depuis la refonte du 25 octobre :
+    /// un objet (parfois) ou un parchemin, un autre parchemin, et un bonus temporaire (dégâts doublés, tirs parfaits ou anneau rapide).
+    /// Le coffre de boss (<see cref="MakeBossChest"/>), plus grand, ne propose que des objets.
     /// </summary>
     /// <remarks>
     /// Un rayon de lumière le signale de loin ; il s'éteint à l'ouverture. Le coffre disparaît à la fin de la vague
-    /// (<see cref="ChestSpawner"/>), qu'il ait été ouvert ou non.
+    /// (<see cref="ChestSpawner"/>), qu'il ait été ouvert ou non ; le coffre de boss, à la fin de la vague suivante.
     /// </remarks>
     [DisallowMultipleComponent]
     public class Chest : MonoBehaviour
@@ -64,6 +65,20 @@ namespace Archery.Chests
         [SerializeField]
         float m_BuffDuration = 30f;
 
+        [Tooltip("Chance (0 à 1) que la première orbe d'un coffre de vague soit un objet plutôt qu'un parchemin (25 octobre).")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_ObjectChance = 0.25f;
+
+        [Tooltip("Objets proposés par le coffre de boss (un seul à prendre).")]
+        [Min(1)]
+        [SerializeField]
+        int m_BossObjects = 2;
+
+        [Tooltip("Taille du coffre de boss, par rapport à un coffre de vague.")]
+        [SerializeField]
+        float m_BossScale = 1.3f;
+
         [SerializeField]
         ChestColors m_Colors = ChestColors.Default;
 
@@ -88,6 +103,17 @@ namespace Archery.Chests
 
         /// <summary>Une orbe a été prise.</summary>
         public bool IsLooted { get; private set; }
+
+        /// <summary>Le coffre laissé par le boss de la vague : des objets seulement (refonte du 25 octobre).</summary>
+        public bool IsBossChest { get; private set; }
+
+        /// <summary>En fait un coffre de boss, plus grand. À appeler juste après sa création, avant son ouverture.</summary>
+        public void MakeBossChest()
+        {
+            IsBossChest = true;
+            m_BaseScale *= m_BossScale;
+            transform.localScale = m_BaseScale;
+        }
 
         void Awake()
         {
@@ -161,7 +187,7 @@ namespace Archery.Chests
         }
 
         // Les orbes sortent du coffre et s'alignent au-dessus. Vues par le joueur, qui fait face au coffre, de gauche à droite :
-        // les deux améliorations permanentes, puis le bonus temporaire.
+        // l'objet ou le parchemin, l'autre parchemin, puis le bonus temporaire ; ou les objets du coffre de boss.
         void SpawnOrbs()
         {
             if (m_OrbPrefab == null)
@@ -170,7 +196,7 @@ namespace Archery.Chests
                 return;
             }
 
-            var rewards = ChestRewards.Roll(m_BuffDuration, m_Colors);
+            var rewards = IsBossChest ? ChestRewards.RollBoss(m_BossObjects) : ChestRewards.Roll(m_BuffDuration, m_Colors, m_ObjectChance);
             var anchor = m_OrbAnchor != null ? m_OrbAnchor.position : transform.position + transform.up * 1.1f;
             var from = transform.position + transform.up * 0.4f;
             for (var i = 0; i < rewards.Count; i++)

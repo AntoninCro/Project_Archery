@@ -635,6 +635,9 @@ namespace Archery.Waves
             var points = score != null ? score.AddPoints(m_Settings.clearBonusPerWave * WaveNumber * score.DifficultyMultiplier) : 0;
             var gold = GiveWaveReward(score, out var bonusLine);
 
+            // Après la récompense (divisée par deux si la tour était détruite) : la tour et les barricades se réparent.
+            var repairLine = RestoreDefenses();
+
             var won = WaveNumber == WavesToWin && !HasWon;
             if (won)
                 HasWon = true;
@@ -642,6 +645,8 @@ namespace Archery.Waves
             var lines = $"+{points} points · +{gold} or";
             if (!string.IsNullOrEmpty(bonusLine))
                 lines += $"\n<size=60%>{bonusLine}</size>";
+            if (!string.IsNullOrEmpty(repairLine))
+                lines += $"\n<size=60%>{repairLine}</size>";
 
             if (finishGame)
             {
@@ -660,6 +665,34 @@ namespace Archery.Waves
 
             WaveEnded?.Invoke(WaveNumber);
             m_OnWaveEnded.Invoke();
+        }
+
+        // Depuis le 25 octobre, la tour (reconstruite si elle est tombée) et les barricades retrouvent tous leurs PV à la fin
+        // de chaque vague : la boutique ne vend plus de réparations. Renvoie la ligne du message de fin de vague (vide si
+        // rien n'était abîmé).
+        static string RestoreDefenses()
+        {
+            var parts = new List<string>();
+            var tower = Tower.Instance;
+            if (tower != null && !tower.IsStanding)
+            {
+                tower.Rebuild();
+                parts.Add("Tour reconstruite");
+            }
+            else if (tower != null && tower.Health.Current < tower.Health.Max - 0.5f)
+            {
+                tower.Repair(tower.Health.Max - tower.Health.Current);
+                parts.Add("Tour réparée");
+            }
+
+            Barricade.TotalHealth(out var current, out var max);
+            if (current < max - 0.5f)
+            {
+                Barricade.RebuildAll();
+                parts.Add(parts.Count == 0 ? "Barricades réparées" : "barricades réparées");
+            }
+
+            return string.Join(" · ", parts);
         }
 
         // Or de fin de vague : base × difficulté × (1 + gong + bonus de performance), divisé par deux si la tour est détruite.

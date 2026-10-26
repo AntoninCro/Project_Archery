@@ -24,8 +24,21 @@ namespace Archery.Bows
 
         readonly Stack<Arrow> m_Free = new Stack<Arrow>();
         readonly List<Arrow> m_Stuck = new List<Arrow>();
+        int m_Created;
 
         public static ArrowPool Instance => s_Instance;
+
+        /// <summary>Le modèle des flèches (26 octobre : l'atelier en montre une copie, sans script, qui tourne).</summary>
+        public Arrow Prefab => m_ArrowPrefab;
+
+        /// <summary>Une flèche sort de la réserve (vers une main, un tir, une volée) : 26 octobre, elle prend les couleurs des pièces.</summary>
+        public static event System.Action<Arrow> Taken;
+
+        /// <summary>Les flèches sorties de la réserve : en main, en vol ou plantées (pour <c>Core/PerfProbe</c>).</summary>
+        public int InUse => m_Created - m_Free.Count;
+
+        /// <summary>Les flèches plantées dans le décor ou dans un ennemi.</summary>
+        public int StuckCount => m_Stuck.Count;
 
         void Awake()
         {
@@ -53,8 +66,15 @@ namespace Archery.Bows
         {
             var arrow = m_Free.Count > 0 ? m_Free.Pop() : CreateArrow();
             arrow.gameObject.SetActive(true);
+            Taken?.Invoke(arrow);
             return arrow;
         }
+
+        /// <summary>Toutes les flèches créées, en réserve ou sorties.</summary>
+        public Arrow[] AllArrows() => GetComponentsInChildren<Arrow>(true);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => Taken = null;
 
         public void Release(Arrow arrow)
         {
@@ -83,6 +103,7 @@ namespace Archery.Bows
         Arrow CreateArrow()
         {
             var arrow = Instantiate(m_ArrowPrefab, transform);
+            m_Created++;
             arrow.name = m_ArrowPrefab.name;
             arrow.Pool = this;
             arrow.gameObject.SetActive(false);

@@ -72,7 +72,7 @@ namespace Archery.UI
         float m_CooldownLeft;
         float m_Hold;
         bool m_Armed = true;
-        string m_LastLabel;
+        int m_LastLabel = int.MinValue;
 
         void Awake() => m_Rect = (RectTransform)transform;
 
@@ -176,14 +176,14 @@ namespace Archery.UI
             if (m_Label == null)
                 return;
 
-            var text = !m_Teleporter.IsUsable ? "Tour détruite"
-                : m_CooldownLeft > 0f ? $"Tour {Mathf.CeilToInt(m_CooldownLeft)} s"
-                : "Tour";
-            if (text == m_LastLabel)
+            // -1 : tour détruite ; 0 : prête ; sinon, les secondes de recharge. Le texte n'est refait qu'à un changement
+            // (une fois par seconde au plus) : il était reconstruit à chaque image pendant la recharge (audit, 25 octobre).
+            var label = !m_Teleporter.IsUsable ? -1 : Mathf.CeilToInt(m_CooldownLeft);
+            if (label == m_LastLabel)
                 return;
 
-            m_LastLabel = text;
-            m_Label.text = text;
+            m_LastLabel = label;
+            m_Label.text = label < 0 ? "Tour détruite" : label > 0 ? $"Tour {label} s" : "Tour";
         }
 
         void SetFill(float amount)

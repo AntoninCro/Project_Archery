@@ -133,6 +133,12 @@ def main():
     # passe dans l'éditeur mais fait échouer le build.
     print("== Assembly-CSharp, scripts des assets (comme un build joueur) ==")
     asset_files = [absolute(f.replace("\\", "/")) for f in re.findall(r'<Compile Include="([^"]+)"', source)]
+    # Un script supprimé depuis la dernière ouverture de Unity reste dans le .csproj jusqu'à ce qu'Unity le refasse
+    # (25 octobre : le ménage des fichiers inutilisés).
+    missing = [f for f in asset_files if not os.path.exists(f)]
+    if missing:
+        print(f"({len(missing)} script(s) supprimé(s) depuis la dernière ouverture de Unity, ignoré(s))")
+        asset_files = [f for f in asset_files if f not in missing]
     asset_references = list(runtime_references)
     known = {n for n, _ in asset_references}
     for dll in sorted(glob.glob(os.path.join(PROJECT, "Library", "ScriptAssemblies", "*.dll"))):

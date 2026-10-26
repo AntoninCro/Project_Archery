@@ -15,196 +15,537 @@ MonoBehaviour:
   upgrades:
   - displayName: "D\xE9g\xE2ts"
     description: "+10 % de d\xE9g\xE2ts"
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 0
+    trigger: 0
     value: 0.1
     maxStacks: 0
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "Fl\xE8ches rapides"
     description: "+8 % de vitesse des fl\xE8ches"
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 1
+    trigger: 0
     value: 0.08
     maxStacks: 0
     icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
   - displayName: Charge rapide
     description: Anneau 15 % plus rapide
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 2
+    trigger: 0
     value: 0.15
     maxStacks: 0
     icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
   - displayName: "Pr\xE9cision"
     description: Bande verte 15 % plus large
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 3
+    trigger: 0
     value: 0.15
     maxStacks: 0
     icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
   - displayName: "Vitalit\xE9"
     description: +15 PV max
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 4
+    trigger: 0
     value: 15
     maxStacks: 0
     icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
   - displayName: Butin
     description: +20 % d'or
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 5
+    trigger: 0
     value: 0.05
     maxStacks: 0
     icon: {fileID: 21300000, guid: 15910d99da8d4b4faa1d9b05956a7665, type: 3}
   - displayName: "Chasseur de t\xEAtes"
     description: "+25 % de d\xE9g\xE2ts \xE0 la t\xEAte"
+    kind: 0
+    slot: 1
     rarity: 0
     effect: 6
+    trigger: 0
     value: 0.25
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: b47fa108c8ba4dd894f1a881f0ae0bde, type: 3}
   - displayName: Chance
     description: "Plus de cartes rares et l\xE9gendaires"
+    kind: 2
+    slot: 0
     rarity: 0
     effect: 14
+    trigger: 0
     value: 0.25
     maxStacks: 0
     icon: {fileID: 21300000, guid: 2136d06e116f4fbc83a3d35eaa55b573, type: 3}
   - displayName: Puissance
     description: "+25 % de d\xE9g\xE2ts"
+    kind: 2
+    slot: 0
     rarity: 1
     effect: 0
+    trigger: 0
     value: 0.25
     maxStacks: 0
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: Multitir
     description: "+50 % de chance de tirer une fl\xE8che suppl\xE9mentaire"
+    kind: 0
+    slot: 4
     rarity: 1
     effect: 7
+    trigger: 0
     value: 0.5
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
   - displayName: "Fl\xE8che de foudre"
     description: 20 % de chance d'appeler la foudre
+    kind: 0
+    slot: 1
     rarity: 1
     effect: 8
+    trigger: 0
     value: 0.2
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: 80004f1f07f44a90b07481b2be179056, type: 3}
   - displayName: "Per\xE7age"
     description: 25 % de chance de traverser un ennemi
+    kind: 0
+    slot: 1
     rarity: 1
     effect: 9
+    trigger: 0
     value: 0.25
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: 597e992213ca4445a54400a0ce167384, type: 3}
   - displayName: Vampirisme
     description: "+2 PV par tir \xE0 la t\xEAte"
+    kind: 0
+    slot: 1
     rarity: 1
     effect: 10
+    trigger: 0
     value: 2
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: b316b8f1a1c248e7923d15874c4c211c, type: 3}
   - displayName: "Tir \xE9cho"
     description: "25 % de chance de r\xE9p\xE9ter le tir"
+    kind: 0
+    slot: 4
     rarity: 1
     effect: 15
+    trigger: 0
     value: 0.25
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
   - displayName: "Fl\xE8che de glace"
     description: 25 % de chance de geler le sol
+    kind: 0
+    slot: 1
     rarity: 1
     effect: 16
+    trigger: 0
     value: 0.25
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
   - displayName: "Force du g\xE9ant"
     description: "+60 % de d\xE9g\xE2ts"
+    kind: 2
+    slot: 0
     rarity: 2
     effect: 0
+    trigger: 0
     value: 0.6
     maxStacks: 0
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "D\xE9luge"
     description: "50 % de chance que la fl\xE8che se divise"
+    kind: 0
+    slot: 3
     rarity: 2
     effect: 11
+    trigger: 0
     value: 0.5
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
   - displayName: "Cha\xEEne d'\xE9clairs"
     description: La foudre rebondit sur 3 ennemis
+    kind: 0
+    slot: 1
     rarity: 2
     effect: 12
+    trigger: 0
     value: 3
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
   - displayName: "Fl\xE8che explosive"
     description: 25 % de chance d'exploser
+    kind: 0
+    slot: 1
     rarity: 2
     effect: 13
+    trigger: 0
     value: 0.25
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
   - displayName: "Auto-vis\xE9e"
     description: "Les fl\xE8ches visent l'ennemi proche"
+    kind: 0
+    slot: 2
     rarity: 2
     effect: 17
+    trigger: 0
     value: 30
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: e867723acec6472c96c3ac662429b174, type: 3}
   - displayName: Tir ricochet
     description: "La fl\xE8che rebondit sur un autre ennemi"
+    kind: 0
+    slot: 2
     rarity: 2
     effect: 18
+    trigger: 0
     value: 1
-    maxStacks: 0
+    maxStacks: 3
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Grenade sauvage
     description: "La grenade \xE0 fl\xE8ches en projette 12 de plus."
+    kind: 0
+    slot: 0
     rarity: 1
     effect: 19
+    trigger: 0
     value: 12
-    maxStacks: 0
+    maxStacks: 1
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Grenade rapide
     description: "La grenade \xE0 fl\xE8ches recharge 30 % plus vite."
+    kind: 0
+    slot: 0
     rarity: 1
     effect: 20
+    trigger: 0
     value: 0.3
-    maxStacks: 0
+    maxStacks: 1
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+  - displayName: Force
+    description: "+12 % de d\xE9g\xE2ts, fl\xE8ches un peu plus rapides"
+    kind: 1
+    slot: 0
+    rarity: 0
+    effect: 21
+    trigger: 0
+    value: 0.12
+    maxStacks: 0
+    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
+  - displayName: Adresse
+    description: Anneau 10 % plus rapide, bande verte 10 % plus large
+    kind: 1
+    slot: 0
+    rarity: 0
+    effect: 22
+    trigger: 0
+    value: 0.1
+    maxStacks: 0
+    icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
+  - displayName: Vigueur
+    description: +15 PV max
+    kind: 1
+    slot: 0
+    rarity: 0
+    effect: 23
+    trigger: 0
+    value: 15
+    maxStacks: 0
+    icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
+  - displayName: Corde triple
+    description: "3 fl\xE8ches en \xE9ventail, dans le plan de l'arc : penche l'arc
+      pour le tourner"
+    kind: 0
+    slot: 4
+    rarity: 1
+    effect: 24
+    trigger: 0
+    value: 2
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
+  - displayName: Empennage boomerang
+    description: "La fl\xE8che revient vers toi ; rattrape-la : tir suivant parfait"
+    kind: 0
+    slot: 2
+    rarity: 1
+    effect: 25
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+  - displayName: "Empennage t\xE9l\xE9kin\xE9sie"
+    description: "Garde la g\xE2chette de la main de l'arc : la fl\xE8che suit ton
+      arc"
+    kind: 0
+    slot: 2
+    rarity: 2
+    effect: 26
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: e867723acec6472c96c3ac662429b174, type: 3}
+  - displayName: "F\xFBt aimant"
+    description: "La fl\xE8che plant\xE9e attire les ennemis autour d'elle"
+    kind: 0
+    slot: 3
+    rarity: 1
+    effect: 27
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 800b1b0233fa4bd58124bbb5bba421b2, type: 3}
+  - displayName: "F\xFBt conducteur"
+    description: "Deux fl\xE8ches plant\xE9es proches : un arc \xE9lectrique entre
+      elles"
+    kind: 0
+    slot: 3
+    rarity: 2
+    effect: 28
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
+  - displayName: "Pointe \xE0 m\xE8che"
+    description: "La fl\xE8che plant\xE9e explose une seconde plus tard"
+    kind: 0
+    slot: 1
+    rarity: 1
+    effect: 29
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
+  - displayName: Pointe de givre
+    description: "Tir parfait : l'ennemi g\xE8le. Touch\xE9 gel\xE9, il \xE9clate
+      en glace"
+    kind: 0
+    slot: 1
+    rarity: 1
+    effect: 30
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
+  - displayName: Talisman d'acrobate
+    description: 'En l''air ou en glissade : ralenti, et chaque tir est parfait'
+    kind: 0
+    slot: 5
+    rarity: 2
+    effect: 31
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
+  - displayName: "Pointe \xE9clat\xE9e"
+    description: "\xC0 l'impact, la fl\xE8che se brise en 4 \xE9clats qui filent
+      derri\xE8re l'ennemi"
+    kind: 0
+    slot: 1
+    rarity: 1
+    effect: 32
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
+  - displayName: Pointe de chasseur
+    description: "Marque la cible : elle prend double d\xE9g\xE2ts. \xC0 sa mort,
+      la marque saute"
+    kind: 0
+    slot: 1
+    rarity: 1
+    effect: 33
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: b47fa108c8ba4dd894f1a881f0ae0bde, type: 3}
+  - displayName: Empennage rebond
+    description: "La fl\xE8che rebondit 2 fois sur le sol et les murs"
+    kind: 0
+    slot: 2
+    rarity: 1
+    effect: 35
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+  - displayName: Empennage plume
+    description: "La fl\xE8che ne tombe plus, et va plus vite"
+    kind: 0
+    slot: 2
+    rarity: 1
+    effect: 36
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
+  - displayName: Empennage de plomb
+    description: "Fl\xE8che lourde : une onde de choc l\xE0 o\xF9 elle touche le
+      d\xE9cor"
+    kind: 0
+    slot: 2
+    rarity: 1
+    effect: 37
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: b070f6fe023c42f98a2c2fa898dad3e9, type: 3}
+  - displayName: Empennage spectral
+    description: "La fl\xE8che traverse les murs et le d\xE9cor"
+    kind: 0
+    slot: 2
+    rarity: 2
+    effect: 38
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 597e992213ca4445a54400a0ce167384, type: 3}
+  - displayName: "F\xFBt-pieu"
+    description: "Plant\xE9e au sol, elle blesse et ralentit les ennemis qui passent
+      dessus"
+    kind: 0
+    slot: 3
+    rarity: 1
+    effect: 39
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 8beff2f2271a423d809c37e9325cea1c, type: 3}
+  - displayName: "F\xFBt d\xE9tonateur"
+    description: "Tire sur une de tes fl\xE8ches plant\xE9es : elle \xE9clate en
+      6 fl\xE8ches"
+    kind: 0
+    slot: 3
+    rarity: 2
+    effect: 40
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
+  - displayName: "F\xFBt suspendu"
+    description: "La fl\xE8che s'arr\xEAte en l'air ; la g\xE2chette de l'autre main
+      les rel\xE2che"
+    kind: 0
+    slot: 3
+    rarity: 1
+    effect: 41
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
+  - displayName: Corde de transe
+    description: "Chaque tir parfait d'affil\xE9e frappe plus fort ; au 5e, la fl\xE8che
+      traverse tout"
+    kind: 0
+    slot: 4
+    rarity: 1
+    effect: 42
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
+  - displayName: Corde du faucon
+    description: "\xC0 pleine tension, le temps ralentit (toutes les 8 s)"
+    kind: 0
+    slot: 4
+    rarity: 1
+    effect: 43
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
+  - displayName: Talisman du sniper
+    description: "+2 % de d\xE9g\xE2ts par m\xE8tre au-del\xE0 de 15 m, moiti\xE9
+      moins tout pr\xE8s"
+    kind: 0
+    slot: 5
+    rarity: 1
+    effect: 44
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: f5451cef9ad247c4960997e915323f22, type: 3}
+  - displayName: Pacte de verre
+    description: "D\xE9g\xE2ts \xD72, mais chaque tir rat\xE9 co\xFBte 5 PV"
+    kind: 0
+    slot: 5
+    rarity: 2
+    effect: 45
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
+  - displayName: "Talisman de l'ing\xE9nieur"
+    description: "Une fl\xE8che dans ta baliste ou ta tour de givre la surcharge
+      5 s"
+    kind: 0
+    slot: 5
+    rarity: 1
+    effect: 46
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: f22b715492004f108efe8a2c08f2b14c, type: 3}
+  - displayName: Talisman du duelliste
+    description: "Coup de fl\xE8che au corps \xE0 corps \xD74, et le tir suivant
+      est parfait"
+    kind: 0
+    slot: 5
+    rarity: 1
+    effect: 47
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
+  - displayName: Talisman du bourreau
+    description: "Tir \xE0 la t\xEAte sous 25 % de PV : l'ennemi meurt net (pas les
+      boss)"
+    kind: 0
+    slot: 5
+    rarity: 2
+    effect: 34
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: b316b8f1a1c248e7923d15874c4c211c, type: 3}
   rarityOdds:
   - fromWave: 1
-    common: 70
-    rare: 25
-    legendary: 5
+    common: 20
+    rare: 60
+    legendary: 20
   minCommonShare: 0.4
-  upgradeOffers: 4
-  commonPrice: 10
-  rarePrice: 25
-  legendaryPrice: 45
+  objectOffers: 3
+  objectsPerShop: 3
+  commonPrice: 120
+  rarePrice: 160
+  legendaryPrice: 220
+  objectPriceIncreasePerPurchase: 0.15
   priceGrowthPerWave: 0.24
+  scrollPrice: 25
   priceIncreasePerPurchase: 0.05
+  ownScrollPriceIncrease: 0.1
   endlessPriceGrowth: 1.3
-  rerollCost: 10
-  rerollCostIncrease: 5
-  bows:
-  - {fileID: 11400000, guid: 9c6f1dda086f0454495bdee8563e4798, type: 2}
-  - {fileID: 11400000, guid: 1a8cd5315c9b8ac4bb46388bfaeb3d56, type: 2}
-  - {fileID: 11400000, guid: 1d4ff1130f180bd4bb6c940a44ec39cb, type: 2}
-  - {fileID: 11400000, guid: 8b58969b99e94e346aa89bb272a5e4db, type: 2}
-  repairFraction: 0.25
-  repairPrice: 40
-  rebuildPrice: 250
-  barricadePrice: 60
   commonColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   rareColor: {r: 0.35, g: 0.6, b: 1, a: 1}
   legendaryColor: {r: 1, g: 0.78, b: 0.2, a: 1}
-  bowColor: {r: 0.6, g: 0.9, b: 0.5, a: 1}
-  towerColor: {r: 0.9, g: 0.68, b: 0.45, a: 1}
-  defenseColor: {r: 1, g: 0.55, b: 0.25, a: 1}
-  bowIcon: {fileID: 21300000, guid: f5451cef9ad247c4960997e915323f22, type: 3}
-  repairIcon: {fileID: 21300000, guid: 3763e4295dfd486cafa11f69f5bfeda7, type: 3}
-  towerIcon: {fileID: 21300000, guid: e163abfd85a34499a53d7748b1003645, type: 3}
-  barricadeIcon: {fileID: 21300000, guid: 618fed3b5d6b446a8d1573870490eac8, type: 3}
+  scrollColor: {r: 0.95, g: 0.82, b: 0.58, a: 1}

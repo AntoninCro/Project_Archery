@@ -408,7 +408,13 @@ namespace Archery.World
             var now = Time.time;
             var deltaTime = Time.deltaTime;
             var lamps = SkyController.Lamps;
-            m_Pulses.RemoveAll(pulse => pulse.Lane >= m_Scan.Lanes.Count || (now - pulse.Start) * m_Settings.alarmSpeed > m_Scan.Lanes[pulse.Lane].Length + 15f);
+            // Une boucle plutôt que RemoveAll : sa lambda, qui capture « now », était allouée à chaque image (audit, 25 octobre).
+            for (var i = m_Pulses.Count - 1; i >= 0; i--)
+            {
+                var pulse = m_Pulses[i];
+                if (pulse.Lane >= m_Scan.Lanes.Count || (now - pulse.Start) * m_Settings.alarmSpeed > m_Scan.Lanes[pulse.Lane].Length + 15f)
+                    m_Pulses.RemoveAt(i);
+            }
 
             foreach (var torch in m_Torches)
             {

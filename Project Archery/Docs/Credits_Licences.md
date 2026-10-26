@@ -1,10 +1,11 @@
 # Crédits et licences
 
-Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons, musiques), avec sa licence et ce qu'elle demande. Fait le 18 octobre 2026 à partir des fichiers de licence présents dans `Assets/` ; les lignes « à confirmer » n'ont pas de fichier de licence dans le projet.
+Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons, musiques), avec sa licence et ce qu'elle demande. Fait le 18 octobre 2026 à partir des fichiers de licence présents dans `Assets/` ; les lignes « à confirmer » n'ont pas de fichier de licence dans le projet. Le 25 octobre, le ménage des fichiers inutilisés (`Fichiers_Inutilises.md`) a retiré du projet les packs *UI Pack* et *UI Pack: RPG Extension* de Kenney, l'ancien gantelet, et les parties inutilisées des autres packs (scènes de démo, versions de style non retenues).
 
 ## ⚠️ À régler avant le rendu
 
-1. **Le dépôt GitHub est public, et il contient les packs de l'Asset Store** (Dungeon Mason, Dimasjk Studio, Easy Weapons, AgeSoft, coffre animé, Toon RTS). Le contrat de l'Asset Store (EULA standard) permet de les mettre dans un jeu, mais pas de redistribuer leurs fichiers sources, gratuits compris. Or un dépôt public les met à disposition de n'importe qui. Le plus simple : **rendre le dépôt privé** (GitHub > *Settings* > *General* > *Danger Zone* > *Change visibility*) et inviter le professeur et les coéquipiers comme collaborateurs. Ou demander au professeur ce qu'il attend.
+1. **Le dépôt GitHub est public, et il contient les packs de l'Asset Store** (Dungeon Mason, Dimasjk Studio, AgeSoft, coffre animé, Toon RTS ; Easy Weapons, inutilisé, a été supprimé du projet le
+25 octobre, mais reste dans l'historique de Git). Le contrat de l'Asset Store (EULA standard) permet de les mettre dans un jeu, mais pas de redistribuer leurs fichiers sources, gratuits compris. Or un dépôt public les met à disposition de n'importe qui. Le plus simple : **rendre le dépôt privé** (GitHub > *Settings* > *General* > *Danger Zone* > *Change visibility*) et inviter le professeur et les coéquipiers comme collaborateurs. Ou demander au professeur ce qu'il attend.
 2. **Musiques de l'ami** (boss final et dimension des étoiles) : son nom exact (ou son pseudo), et son accord pour les utiliser dans le jeu.
 3. **Les packs « à confirmer »** : vérifier l'auteur dans Unity, *Window > Package Manager > My Assets*.
 
@@ -27,8 +28,6 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Nature Kit (2.1) | Kenney (kenney.nl) | `kenney_nature-kit` | Toute la carte (falaises, arbres, rochers, rivière, statues du portail) ; pièces retouchées dans `_Project/Art` (*Diagonal Cuts*, *River*, *Stair Borders*) |
 | Castle Kit (2.0) | Kenney | `kenney_castle-kit` | Tour, remparts, décor |
 | Tower Defense Kit (2.1) | Kenney | `kenney_tower-defense-kit` | Bâtiments, socles |
-| UI Pack (2.0), avec les polices *Kenney Future* | Kenney | `kenney_ui-pack` | Interface |
-| UI Pack: RPG Extension | Kenney | `UIpack_RPG` | Interface |
 | Fantasy UI Borders (1.0) | Kenney | `kenney_fantasy-ui-borders` | Cadres des menus, barres de vie, plaques |
 | Game Icons | Kenney | `kenney_game-icons` | Icônes |
 | Impact Sounds (1.0) | Kenney | `kenney_impact-sounds` | Sons d'impact, pas des monstres de la dimension |
@@ -46,7 +45,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 
 | Asset | Auteur | Dossier | Utilisé pour |
 |---|---|---|---|
-| *Energy Gauntlet - Low Poly (Free Download)* (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), **CC-BY 4.0** | **ENOMIC** (Sketchfab, https://sketchfab.com/ENOMIC) | `energy-gauntlet-low-poly-free-download` | **Plus utilisé depuis le 24 octobre** (c'était le gantelet du katana, remplacé par le gant de la matrice ; les fichiers restent dans le projet). **Modifié** : remis dans le repère du jeu (poignet à l'origine, main gauche, 19 cm), matériaux refaits (plaques chromées, lueurs cyan) |
+| *Energy Gauntlet - Low Poly (Free Download)* (https://sketchfab.com/3d-models/energy-gauntlet-low-poly-free-download-708a936c5bdc4537842f976e51cbb1a9), **CC-BY 4.0** | **ENOMIC** (Sketchfab, https://sketchfab.com/ENOMIC) | `energy-gauntlet-low-poly-free-download` | **Plus utilisé depuis le 24 octobre** (c'était le gantelet du katana, remplacé par le gant de la matrice) ; **supprimé du projet le 25 octobre**, il reste dans l'historique de Git, d'où ce crédit. **Modifié** : remis dans le repère du jeu (poignet à l'origine, main gauche, 19 cm), matériaux refaits (plaques chromées, lueurs cyan) |
 | *Sci fi crossbow* (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), **CC-BY 4.0** | **oarfish** (Sketchfab, https://sketchfab.com/oarfish54) | `_Project/Art/Cyber/Arbalete.obj` | Les arbalètes jumelles du toit cyberpunk. **Modifié** : converti de glTF en OBJ, recentré sur la poignée, tourné et réduit (55 cm) ; matériau refait (silhouette sombre au contour néon) |
 | *Bowblade – DAE WeaponCraft – WoW Styled Bow* (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), **CC-BY 4.0** | **Tijmen Matthys** (Sketchfab, https://sketchfab.com/tijmenmatthys) | `_Project/Art/Bows/Legendaire/` | Le modèle de l'arc légendaire, avec sa texture peinte à la main. **Modifié** : converti de FBX en OBJ, corde retirée (le jeu dessine la sienne), recentré sur la poignée et mis à l'échelle ; la texture sert aussi de lueur |
 | *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
@@ -67,9 +66,8 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | RPG Monster DUO, Buddies, Couple et Partners PBR Polyart | Dungeon Mason | `RPG Monster DUO PBR Polyart`, `RPGMonster…` | Bestiaire, volant (Beholder), mimique (Jean) |
 | Monster Minion Survivor PBR Polyart | Dungeon Mason | `Monster Minion Survivor PBR Polyart` | Bestiaire |
 | Wizard PolyArt | Dungeon Mason (à confirmer) | `WizardPolyArt` | Le mage (Tireur) |
-| Four Evil Dragons PBR | Dungeon Mason | `FourEvilDragonsPBR` | MK, le boss final |
+| Four Evil Dragons PBR | Dungeon Mason | `FourEvilDragonsPBR` | MK, le boss final (le dragon rouge ; les trois autres couleurs, inutilisées, supprimées le 25 octobre) |
 | Low Poly Style Bows & Quivers, Shields, 1H Swords, Staffs, Warglaives (Part 1) | Dimasjk Studio | `Dimasjk Studio` | L'arc et la flèche de base ; décor de l'antre |
-| Easy Weapons | Kendall H. (à confirmer) | `Kendall H` | Arcs et flèches gardés pour les arcs des classes |
 | Stylized Mechanized Hammer | AgeSoft | `AgeSoft` | Les marteaux de construction |
 | Animated PBR Chest Demo | à confirmer | `Animated PBR Chest Demo` | Les coffres |
 | Toon RTS Units – Demo | à confirmer | `_Project/Art/Monsters`, animations `WK_…` dans `_Project/Animations` | Le chevalier, ennemi au sol |
@@ -78,8 +76,8 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 
 | Asset | Dossier | Utilisé pour |
 |---|---|---|
-| Exemples de XR Interaction Toolkit 3.5.1 (*Starter Assets*, *Hands Interaction Demo*, *Spatial Keyboard*) et de XR Hands 1.8.1 (*HandVisualizer*) | `Samples`, `XRI` | Le joueur en VR (XR Origin, manettes) |
-| Modèle de projet VR | `VRTemplateAssets` | Éléments repris du modèle VR de Unity |
+| Exemples de XR Interaction Toolkit 3.5.1 (*Starter Assets*, *Hands Interaction Demo*, *Spatial Keyboard*) et de XR Hands 1.8.1 (*HandVisualizer*) | `Samples`, `XRI` | Le joueur en VR (XR Origin, manettes) ; leurs scènes de démo et leurs décors ont été supprimés le 25 octobre |
+| Modèle de projet VR | `VRTemplateAssets` | La police *Inter* et quelques scripts ; le reste (scène d'exemple, décors, tutoriel) a été supprimé le 25 octobre |
 | TextMesh Pro | `TextMesh Pro` | Les textes |
 | Unity Recorder 5.1.7 (paquet, éditeur seulement : rien dans le jeu) | `Packages` | Le tournage des vidéos du tutoriel |
 

@@ -96,8 +96,7 @@ namespace Archery.Chests
 
             if (m_Label != null)
             {
-                var kind = reward.IsPermanent ? "PERMANENT" : "TEMPORAIRE";
-                m_Label.text = $"<size=55%><color=#FFFFFFC0>{kind}</color></size>\n<b>{reward.Title}</b>\n<size=70%>{reward.Subtitle}</size>";
+                m_Label.text = $"<size=55%><color=#FFFFFFC0>{reward.KindLabel}</color></size>\n<b>{reward.Title}</b>\n<size=70%>{reward.Subtitle}</size>";
                 m_Label.color = reward.Color;
             }
 

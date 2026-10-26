@@ -1,4 +1,4 @@
-# Reprise du projet (24 octobre)
+# Reprise du projet (26 octobre)
 
 Ce document fait le point pour reprendre le projet ailleurs (autre compte Claude, autre PC, coéquipier). Il complète le GDD
 (`GDD.md`, la référence, à tenir à jour) et les règles de travail (`../../CLAUDE.md`).
@@ -6,7 +6,7 @@ Ce document fait le point pour reprendre le projet ailleurs (autre compte Claude
 ## 1. Où en est le jeu
 
 THUNK VR est complet et jouable de la première vague au dragon : tir à l'arc physique avec anneau de timing, 6 vagues (accalmie,
-montée, boss), tower defense (cristaux, 12 socles, 4 bâtiments à 3 niveaux, marteau), boutique roguelike (23 améliorations),
+montée, boss), tower defense (cristaux, 12 socles, 4 bâtiments à 3 niveaux, marteau), boutique roguelike (en refonte depuis le 25 octobre : parchemins et pièces de la flèche, voir plus bas),
 coffres, 4 difficultés avec leur ciel, menu des armes et succès, deux secrets (portail des étoiles, toit cyberpunk), le dragon MK
 dans son antre, mode infini, classement, tutoriel en vidéos, menu en cours de partie avec pause, jeu au clavier sans casque.
 
@@ -15,10 +15,57 @@ des retours du joueur une partie des nouveautés (la grenade, les Akimbow, le po
 **Pas encore vérifié** : les cases non cochées de `Checklist_Demo.md` (la passe de tests complète n'a pas été faite), à commencer
 par la liste « Nouveautés du 19 au 23 octobre », en tête de la partie 1.
 
-**Pas encore commité** (24 octobre ; fais un commit avant de changer de PC) : la 3e version du katana (partie 2), le toit
-cyberpunk refait (décor 3, épreuve rendue faisable), le dossier `Presentation/` (le PowerPoint de l'oral, son PDF et son
-script), et la documentation (GDD, README, checklist, démo, crédits, ce document). La 2e version du katana (les failles qui
-s'ouvrent comme un œil) est commitée (`f506918`, 23 octobre).
+**Commité le 25 octobre** (`f986573`) : la 3e version du katana (partie 2), le toit cyberpunk refait (décor 4, épreuve rendue
+faisable), la présentation et le rapport. **Pas encore commité** : le lore, acte 1, première partie (codée le 25 octobre :
+GDD, section 24 ; scripts dans `Scripts/Lore`), et l'audit de performance pour le Quest en autonome, avec le niveau de
+qualité « Quest » (`Docs/Audit_Performance_Quest.md`, `Editor/QuestQualityBaker.cs`), le ménage des fichiers
+inutilisés (`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure
+de performance des builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike** : les
+propositions (`Docs/Refonte_Roguelike.md` ; le joueur a choisi la B, « la flèche en pièces ») et ses étapes 1 à 5,
+codées les 25 et 26 octobre (objets et parchemins, coffre de boss, emplacements de la flèche, 24 pièces nouvelles, pièces
+visibles sur la flèche et l'arc, 6 duos, l'atelier à côté de la boutique, un prix par parchemin : GDD,
+sections 6, 7 et 13 ; bakers `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs`).
+
+### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
+
+**Pourquoi** : le joueur trouvait la partie roguelike ratée (des hausses de statistiques en boucle, une cinquantaine
+d'améliorations par partie, presque toujours les mêmes). Il a choisi la proposition B, « la flèche en pièces »
+(`Refonte_Roguelike.md`, avec le diagnostic, les propositions et la partie « Avancement » à jour).
+
+**Codé, rien n'est encore testé au casque** (le jeu et les bakers compilent sans erreur ni avertissement) :
+- étape 1 : les statistiques passent dans 3 parchemins (Force, Adresse, Vigueur) ; les objets se prennent une fois ; la
+  boutique sur deux lignes (parchemins, 3 objets chers) sans relance ni réparations (la tour et les barricades se réparent
+  seules à la fin de la vague) ; le coffre de boss (2 objets au choix) ;
+- étape 2 : chaque objet est une pièce d'une partie de la flèche (pointe, empennage, fût, corde, talisman), niveaux 1 à 3 ;
+- étapes 3 et 5 : 24 pièces nouvelles, 6 duos (la corde de l'arc bat d'or) ;
+- étape 4 : les pièces se voient sur la flèche et l'arc, un son par pièce ;
+- demandé par le joueur le 26 octobre : **l'atelier**, à droite de la boutique (plus de remplacement : on garde toutes les
+  pièces et on équipe celle qu'on veut ; la flèche du jeu y tourne en 3D, un cadre cliquable par partie), et **un prix par
+  parchemin** (chacun monte quand on le prend souvent ; la Force et l'Adresse donnent aussi +5 PV max, comme dans Dead Cells).
+
+**À l'ouverture de Unity** : cliquer dans la fenêtre ; la console écrit ce que chaque baker a fait (le catalogue de la
+boutique est modifié une seule fois par étape). Si un baker a changé la scène, l'enregistrer (Ctrl+S). Puis les tests :
+`Checklist_Demo.md`, parties « Refonte roguelike, étape 1 » à « étape 5 » ; raccourcis **R**, **F**, **X**, **M**
+(`Demo_Vendredi.md`).
+
+| Fichier | Rôle |
+|---|---|
+| `Scripts/Upgrades/Upgrade.cs` | les effets (nouveaux toujours à la fin), les genres (objet, parchemin, retiré), les emplacements, le déclencheur « tir parfait » |
+| `Scripts/Upgrades/PlayerUpgrades.cs` | ce qu'on possède (`Level`) et ce qui joue (`Stacks` : les pièces équipées, les parchemins), `Equip`, les PV des parchemins |
+| `Scripts/Upgrades/SpecialArrows.cs` | les anciens effets (foudre, glace…), la corde triple ; crée `ArrowPieces` et `PieceLook` |
+| `Scripts/Upgrades/ArrowPieces.cs`, `ArrowPieces.Lot2.cs` | les 24 pièces nouvelles et ce que font les duos (réglages en tête des fichiers) |
+| `Scripts/Upgrades/ArrowDuos.cs` | les 6 duos, « Duo possible » |
+| `Scripts/Upgrades/PieceLook.cs`, `PieceSounds.cs` | les pièces visibles (flèches, corde, breloque, flèche de l'atelier) et leurs couleurs ; les sons fabriqués |
+| `Scripts/Shop/ShopCatalog.cs`, `ShopManager.cs`, `ShopPanel.cs`, `ShopCard.cs`, `ShopOffer.cs` | la boutique : prix, offres, panneau |
+| `Scripts/Shop/ArrowWorkshop.cs` | l'atelier : la flèche 3D, les cadres, les pièces à équiper (taille et place en tête du fichier) |
+| `Scripts/Chests/ChestReward.cs`, `Chest.cs`, `ChestSpawner.cs` | les coffres et le coffre de boss |
+| `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs` | les changements du catalogue et de la scène, faits une fois |
+| `Scripts/Core/DemoBoost.cs` | les raccourcis F et R |
+
+**En attente du joueur** : quels anciens objets ne jouent qu'aux tirs parfaits (tableau dans `Refonte_Roguelike.md`), la
+courbe des ennemis avec moins d'améliorations, les textes et les icônes des pièces nouvelles (provisoires), les PV des
+parchemins (*Health Per Scroll*, 5) et leur hausse de prix (*Own Scroll Price Increase*, 10 %). **Ensuite** : l'étape 6
+(des pièces débloquées par les succès, une réserve par source).
 
 ## 2. Le katana, 3e version (refait le 24 octobre, après l'oral ; testé au casque le même jour, satisfaisant)
 
@@ -78,12 +125,22 @@ Dans l'ordre conseillé (aussi dans le GDD, section 21, « À faire ensuite ») 
 3. Tester au casque le katana, 3e version (partie 2), et le régler.
 4. Le build Windows en *Development Build* (les raccourcis de démo y marchent).
 5. La vidéo `Tir_3` du tutoriel (la grenade), les crédits des musiques de l'ami.
-6. Le ménage des fichiers inutilisés (liste dans le GDD, section 21).
+6. Le ménage des fichiers inutilisés, fait le 25 octobre (`Docs/Fichiers_Inutilises.md` : 3 726 fichiers, 740 Mo, dont
+   le pack Easy Weapons et presque tout le modèle VR de Unity). À vérifier à l'ouverture de Unity (`Checklist_Demo.md`,
+   « Ménage »). Ce qui reste (43 Mo) est gardé exprès : les modèles des kits, pour plus tard.
 7. Tester au casque le toit cyberpunk refait le 24 octobre (décor 4 et épreuve rendue faisable : GDD section 23). Les
    réglages de l'épreuve sont sur l'objet « Toit cyberpunk » de la scène `Dimension_Cyberpunk` ; le décor est fait par
    `Editor/CyberDimensionBaker.cs` (la scène est refaite toute seule quand sa version change : la refaire efface ce qu'on y
    a changé à la main).
-8. Plus tard : le mode démo en tutoriel interactif, les idées du lore (`Lore.md`, GDD section 24).
+8. Tester le lore, acte 1, première partie (GDD section 24 ; `Checklist_Demo.md`, « Lore, acte 1 »), puis fixer ses nombres
+   avec la condition d'apparition des runes.
+9. Le Quest seul : premier build testé le 25 octobre au soir, qui rame un peu vers la vague 10. Mesurer une partie
+   (`Docs/Audit_Performance_Quest.md`, partie 8), puis alléger ce qui pèse.
+10. La refonte roguelike (partie 1, « Le chantier en cours », et `Docs/Refonte_Roguelike.md`) : tester au casque les étapes 1 à 5
+    (codées les 25 et 26 octobre : `Checklist_Demo.md`, « Refonte roguelike » ; R pour essayer les pièces nouvelles,
+    F pour les avoir toutes dans l'atelier), les régler, écrire leurs textes, décider quels anciens objets ne jouent
+    qu'aux tirs parfaits, reprendre la courbe des ennemis.
+11. Plus tard : le mode démo en tutoriel interactif, la suite du lore (`Lore.md`, GDD section 24).
 
 ## 4. Pour la présentation
 

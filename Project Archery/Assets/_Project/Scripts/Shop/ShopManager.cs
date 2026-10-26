@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Archery.Bows;
-using Archery.Chests;
-using Archery.Defense;
 using Archery.Economy;
 using Archery.Upgrades;
 using Archery.Waves;
@@ -14,13 +11,14 @@ using UnityEngine.InputSystem;
 namespace Archery.Shop
 {
     /// <summary>
-    /// La boutique entre les vagues (GDD, section 7). Elle propose des améliorations tirées au sort
-    /// selon les raretés, le prochain arc, et la réparation ou la reconstruction de la tour.
-    /// On paie avec l'or du <see cref="ScoreManager"/>.
+    /// La boutique entre les vagues (GDD, section 7). Depuis la refonte du 25 octobre, elle ne vend que des améliorations,
+    /// sur deux lignes : les parchemins (toujours en vente, de plus en plus chers) et des objets tirés au sort selon les
+    /// raretés (chers, jusqu'à trois par pause). On paie avec l'or du <see cref="ScoreManager"/>.
     /// </summary>
     /// <remarks>
-    /// Elle s'ouvre à la fin de chaque vague et se ferme au début de la suivante.
-    /// Le <see cref="ShopPanel"/> l'affiche.
+    /// Elle s'ouvre à la fin de chaque vague et se ferme au début de la suivante. Le <see cref="ShopPanel"/> l'affiche.
+    /// Plus de relance ni de réparations depuis le 25 octobre au soir (demandé par le joueur) : la tour et les barricades se
+    /// réparent seules à la fin de la vague (<see cref="WaveManager"/>). L'arc ne s'y achète plus depuis le 19 octobre.
     /// </remarks>
     [DisallowMultipleComponent]
     public class ShopManager : MonoBehaviour
@@ -28,40 +26,29 @@ namespace Archery.Shop
         [SerializeField]
         ShopCatalog m_Catalog;
 
-        [Tooltip("L'arc du joueur. Vide : celui de la scène.")]
-        [SerializeField]
-        Bow m_Bow;
-
+        // Les cartes, dans l'ordre du panneau : les parchemins (ligne du haut), puis les objets (ligne du bas).
         readonly List<ShopOffer> m_UpgradeOffers = new List<ShopOffer>();
         readonly List<Upgrade> m_Candidates = new List<Upgrade>();
-        ShopOffer m_BowOffer;
-        ShopOffer m_TowerOffer;
-        ShopOffer m_BarricadeOffer;
         WaveManager m_Waves;
+        PlayerUpgrades m_Upgrades;
         int m_Wave;
-        int m_Rerolls;
-        int m_UpgradesBought;
+
+        // Objets achetés pendant cette pause ; objets et parchemins achetés en boutique pendant la partie (ceux des coffres,
+        // non : ce sont des cadeaux), et chaque parchemin à part (26 octobre : chacun a son prix).
+        int m_ObjectsThisPause;
+        int m_ObjectsBought;
+        int m_ScrollsBought;
+        readonly int[] m_ScrollsOfType = new int[Enum.GetValues(typeof(UpgradeEffect)).Length];
 
         public static ShopManager Instance { get; private set; }
 
         public bool IsOpen { get; private set; }
         public ShopCatalog Catalog => m_Catalog;
         public IReadOnlyList<ShopOffer> UpgradeOffers => m_UpgradeOffers;
-        public ShopOffer BowOffer => m_BowOffer;
-        public ShopOffer TowerOffer => m_TowerOffer;
-        public ShopOffer BarricadeOffer => m_BarricadeOffer;
-        public int RerollCost => m_Catalog != null
-            ? ShopCatalog.RoundPrice((m_Catalog.rerollCost + m_Catalog.rerollCostIncrease * m_Rerolls) *
-                                     m_Catalog.WaveFactor(m_Wave) * EndlessFactor)
-            : 0;
 
         int WavesToWin => m_Waves != null ? m_Waves.WavesToWin : 0;
 
-        // Chaque amélioration achetée en boutique fait monter le prix des suivantes. Celles des coffres, non : ce sont des cadeaux.
-        int Purchases => m_UpgradesBought;
-
-        // En mode infini, tous les prix montent de 20 % par vague, en se cumulant.
-        float EndlessFactor => m_Catalog != null ? m_Catalog.EndlessFactor(m_Wave, WavesToWin) : 1f;
+        bool ObjectLimitReached => m_Catalog != null && m_ObjectsThisPause >= m_Catalog.objectsPerShop;
 
         /// <summary>La boutique s'est ouverte ou fermée, ou ses offres ont changé.</summary>
         public event Action Changed;
@@ -72,14 +59,17 @@ namespace Archery.Shop
                 Debug.LogWarning("Il y a plusieurs Shop Manager dans la scène.", this);
             Instance = this;
 
-            if (m_Bow == null)
-                m_Bow = FindAnyObjectByType<Bow>();
             if (m_Catalog == null)
                 Debug.LogError("ShopManager : aucun Shop Catalog assigné.", this);
         }
 
         void Start()
         {
+            // Une pièce prise ailleurs (le coffre du boss, pendant la pause) change le niveau et les remplacements affichés.
+            m_Upgrades = PlayerUpgrades.Instance;
+            if (m_Upgrades != null)
+                m_Upgrades.Changed += OnUpgradesChanged;
+
             m_Waves = WaveManager.Instance;
             if (m_Waves == null)
             {
@@ -94,6 +84,8 @@ namespace Archery.Shop
 
         void OnDestroy()
         {
+            if (m_Upgrades != null)
+                m_Upgrades.Changed -= OnUpgradesChanged;
             if (m_Waves != null)
             {
                 m_Waves.WaveEnded -= Open;
@@ -107,19 +99,26 @@ namespace Archery.Shop
 
         void OnWaveStarted(int wave) => Close();
 
-        /// <summary>Ouvre la boutique après la vague <paramref name="wave"/> : nouvelles offres, relance au prix de départ.</summary>
+        void OnUpgradesChanged()
+        {
+            if (!IsOpen || m_Catalog == null)
+                return;
+
+            RefreshScrollOffers(m_Upgrades);
+            RefreshObjectOffers();
+            Changed?.Invoke();
+        }
+
+        /// <summary>Ouvre la boutique après la vague <paramref name="wave"/> : nouveaux objets, parchemins au prix de cette vague.</summary>
         public void Open(int wave)
         {
             if (m_Catalog == null)
                 return;
 
             m_Wave = wave;
-            m_Rerolls = 0;
+            m_ObjectsThisPause = 0;
             IsOpen = true;
-            RollUpgrades();
-            RefreshBowOffer();
-            RefreshTowerOffer();
-            RefreshDefenseOffers();
+            RollOffers();
             Changed?.Invoke();
         }
 
@@ -134,110 +133,100 @@ namespace Archery.Shop
 
         public ShopResult TryBuy(ShopOffer offer)
         {
-            if (!IsOpen || offer == null || !offer.CanBuy)
+            if (!IsOpen || offer == null || !offer.CanBuy || offer.Kind != ShopOfferKind.Upgrade || offer.Upgrade == null)
                 return ShopResult.Failed("Indisponible");
 
             // On vérifie tout avant de payer.
             var upgrades = PlayerUpgrades.Instance;
-            var tower = Tower.Instance;
-            switch (offer.Kind)
-            {
-                case ShopOfferKind.Upgrade when upgrades == null:
-                    return ShopResult.Failed("Il manque un Player Upgrades dans la scène");
-                case ShopOfferKind.Upgrade when !upgrades.CanTake(offer.Upgrade):
-                    return ShopResult.Failed("Niveau maximal atteint");
-                case ShopOfferKind.Bow when m_Bow == null:
-                    return ShopResult.Failed("Il n'y a pas d'arc dans la scène");
-                case ShopOfferKind.Repair:
-                case ShopOfferKind.Rebuild:
-                    if (tower == null)
-                        return ShopResult.Failed("Il n'y a pas de tour dans la scène");
-                    break;
-            }
+            var isScroll = offer.Upgrade.kind == UpgradeKind.Scroll;
+            if (upgrades == null)
+                return ShopResult.Failed("Il manque un Player Upgrades dans la scène");
+            if (!upgrades.CanTake(offer.Upgrade))
+                return ShopResult.Failed("Niveau maximal atteint");
+            if (!isScroll && ObjectLimitReached)
+                return ShopResult.Failed(m_Catalog.objectsPerShop == 1 ? "Un objet par pause" : $"{m_Catalog.objectsPerShop} objets par pause au plus");
 
             var score = ScoreManager.Instance;
             if (score == null || !score.TrySpend(offer.Price))
                 return ShopResult.Failed("Pas assez d'or");
 
-            ShopResult result;
-            switch (offer.Kind)
+            var occupant = upgrades.Occupant(offer.Upgrade);
+            if (isScroll)
             {
-                case ShopOfferKind.Upgrade:
-                    upgrades.Add(offer.Upgrade);
-                    m_UpgradesBought++;
-                    offer.Sold = true;
-                    RefreshUpgradePrices();
-                    result = ShopResult.Done(offer.Upgrade.displayName + " !", offer.Color);
-                    break;
-
-                case ShopOfferKind.Bow:
-                    m_Bow.SetDefinition(offer.Bow);
-                    RefreshBowOffer();
-                    result = ShopResult.Done(offer.Bow.displayName + " en main !", offer.Color);
-                    break;
-
-                case ShopOfferKind.Repair:
-                    tower.Repair(tower.Health.Max * m_Catalog.repairFraction);
-                    result = ShopResult.Done("Tour réparée", offer.Color);
-                    break;
-
-                case ShopOfferKind.Barricades:
-                    Barricade.RebuildAll();
-                    result = ShopResult.Done("Barricades réparées", offer.Color);
-                    break;
-
-                default:
-                    tower.Rebuild();
-                    result = ShopResult.Done("Tour reconstruite !", offer.Color);
-                    break;
+                // Le parchemin reste en vente, au niveau suivant : il coûte plus cher, les autres un peu plus.
+                m_ScrollsBought++;
+                m_ScrollsOfType[(int)offer.Upgrade.effect]++;
+                upgrades.Add(offer.Upgrade);
+                RefreshScrollOffers(upgrades);
+            }
+            else
+            {
+                // Chaque objet acheté rend les suivants plus chers. Compté avant l'ajout : les autres cartes se mettent à
+                // jour dès que la pièce est prise (OnUpgradesChanged).
+                m_ObjectsThisPause++;
+                m_ObjectsBought++;
+                offer.Sold = true;
+                upgrades.Add(offer.Upgrade);
+                RefreshObjectOffers();
             }
 
-            RefreshTowerOffer();
-            RefreshDefenseOffers();
             Changed?.Invoke();
-            return result;
+            return ShopResult.Done(PurchaseMessage(offer.Upgrade, occupant, upgrades.Level(offer.Upgrade.effect)), offer.Color);
         }
 
-        /// <summary>Remplace les améliorations proposées. Le prix augmente à chaque relance.</summary>
-        public ShopResult TryReroll()
+        /// <summary>
+        /// « Multitir niveau 2 ! », « Flèche de foudre ! (rangée dans l'atelier) » quand son emplacement était déjà pris
+        /// (<paramref name="occupant"/>, 26 octobre : on l'équipe dans l'atelier).
+        /// </summary>
+        public static string PurchaseMessage(Upgrade upgrade, Upgrade occupant, int level)
         {
-            if (!IsOpen)
-                return ShopResult.Failed("Indisponible");
-
-            var score = ScoreManager.Instance;
-            if (score == null || !score.TrySpend(RerollCost))
-                return ShopResult.Failed("Pas assez d'or");
-
-            m_Rerolls++;
-            RollUpgrades();
-            Changed?.Invoke();
-            return ShopResult.Done("Nouvelles offres", Color.white);
+            var name = upgrade.kind == UpgradeKind.Object && level > 1 ? $"{upgrade.displayName} niveau {level}" : upgrade.displayName;
+            return occupant != null ? name + " ! (rangée dans l'atelier)" : name + " !";
         }
 
-        void RollUpgrades()
+        // Tous les parchemins du catalogue, puis les objets tirés au sort.
+        void RollOffers()
         {
             m_UpgradeOffers.Clear();
             var owned = PlayerUpgrades.Instance;
-            var luck = owned != null ? owned.LuckMultiplier : 1f;
-            for (var i = 0; i < m_Catalog.upgradeOffers; i++)
+            foreach (var upgrade in m_Catalog.upgrades)
             {
-                var upgrade = PickUpgrade(m_Catalog.RollRarity(m_Wave, luck), owned);
+                if (upgrade == null || upgrade.kind != UpgradeKind.Scroll)
+                    continue;
+
+                m_UpgradeOffers.Add(new ShopOffer
+                {
+                    Kind = ShopOfferKind.Upgrade,
+                    Upgrade = upgrade,
+                    Title = upgrade.displayName,
+                    Description = upgrade.description,
+                    Color = m_Catalog.ColorOf(upgrade),
+                    Icon = upgrade.icon,
+                });
+            }
+
+            RefreshScrollOffers(owned);
+
+            var luck = owned != null ? owned.LuckMultiplier : 1f;
+            for (var i = 0; i < m_Catalog.objectOffers; i++)
+            {
+                var upgrade = PickObject(m_Catalog.RollRarity(m_Wave, luck), owned);
                 m_UpgradeOffers.Add(upgrade != null
-                    ? UpgradeOffer(upgrade, owned)
-                    : ShopOffer.Info("Rupture de stock", "Plus aucune amélioration à proposer.", m_Catalog.commonColor));
+                    ? ObjectOffer(upgrade)
+                    : ShopOffer.Info("Rupture de stock", "Tu as déjà tous les objets.", m_Catalog.commonColor));
             }
         }
 
-        // La rareté tirée d'abord ; s'il n'en reste aucune de cette rareté, une autre.
-        Upgrade PickUpgrade(UpgradeRarity rarity, PlayerUpgrades owned)
+        // La rareté tirée d'abord ; s'il ne reste aucun objet de cette rareté, une autre.
+        Upgrade PickObject(UpgradeRarity rarity, PlayerUpgrades owned)
         {
-            var upgrade = PickUpgradeOf(rarity, owned);
+            var upgrade = PickObjectOf(rarity, owned);
             if (upgrade != null)
                 return upgrade;
 
             foreach (UpgradeRarity other in Enum.GetValues(typeof(UpgradeRarity)))
             {
-                upgrade = PickUpgradeOf(other, owned);
+                upgrade = PickObjectOf(other, owned);
                 if (upgrade != null)
                     return upgrade;
             }
@@ -245,25 +234,44 @@ namespace Archery.Shop
             return null;
         }
 
-        Upgrade PickUpgradeOf(UpgradeRarity rarity, PlayerUpgrades owned)
+        Upgrade PickObjectOf(UpgradeRarity rarity, PlayerUpgrades owned)
         {
             m_Candidates.Clear();
             foreach (var upgrade in m_Catalog.upgrades)
             {
-                if (upgrade != null && upgrade.rarity == rarity && (owned == null || owned.CanTake(upgrade)) && !IsOffered(upgrade))
+                if (upgrade != null && upgrade.kind == UpgradeKind.Object && upgrade.rarity == rarity &&
+                    (owned == null || owned.CanTake(upgrade)) && !IsOffered(upgrade))
                     m_Candidates.Add(upgrade);
             }
 
             return m_Candidates.Count > 0 ? m_Candidates[UnityEngine.Random.Range(0, m_Candidates.Count)] : null;
         }
 
-        // Après un achat, les autres améliorations proposées coûtent plus cher.
-        void RefreshUpgradePrices()
+        // Le prix et le niveau des parchemins, après chaque achat de l'un d'eux : chacun a son prix (26 octobre). Sous la
+        // description (inchangée), les PV max que donnent la Force et l'Adresse.
+        void RefreshScrollOffers(PlayerUpgrades owned)
         {
             foreach (var offer in m_UpgradeOffers)
             {
-                if (offer.Kind == ShopOfferKind.Upgrade && !offer.Sold && offer.Upgrade != null)
-                    offer.Price = m_Catalog.PriceOf(offer.Upgrade.rarity, m_Wave, WavesToWin, Purchases);
+                if (offer.Kind != ShopOfferKind.Upgrade || offer.Upgrade == null || offer.Upgrade.kind != UpgradeKind.Scroll)
+                    continue;
+
+                var effect = offer.Upgrade.effect;
+                var level = (owned != null ? owned.Level(effect) : 0) + 1;
+                var health = owned != null && PlayerUpgrades.ScrollGivesHealth(effect) ? owned.HealthPerScroll : 0f;
+                offer.Subtitle = ShopCatalog.SubtitleOf(offer.Upgrade, level);
+                offer.Description = health > 0f ? $"{offer.Upgrade.description}\n<color=#8BE28B>+{health:0} PV max</color>" : offer.Upgrade.description;
+                offer.Price = m_Catalog.ScrollPriceOf(m_Wave, WavesToWin, m_ScrollsBought, m_ScrollsOfType[(int)effect]);
+            }
+        }
+
+        // Après chaque achat ou pièce prise : le prix (un objet de plus acheté), le niveau et ce que la pièce remplacerait.
+        void RefreshObjectOffers()
+        {
+            foreach (var offer in m_UpgradeOffers)
+            {
+                if (offer.Kind == ShopOfferKind.Upgrade && !offer.Sold && offer.Upgrade != null && offer.Upgrade.kind != UpgradeKind.Scroll)
+                    UpdateObjectOffer(offer);
             }
         }
 
@@ -278,132 +286,35 @@ namespace Archery.Shop
             return false;
         }
 
-        ShopOffer UpgradeOffer(Upgrade upgrade, PlayerUpgrades owned)
+        ShopOffer ObjectOffer(Upgrade upgrade)
         {
-            var level = (owned != null ? owned.Stacks(upgrade.effect) : 0) + 1;
-            var rarity = ShopCatalog.NameOf(upgrade.rarity);
-            return new ShopOffer
+            var offer = new ShopOffer
             {
                 Kind = ShopOfferKind.Upgrade,
                 Upgrade = upgrade,
                 Title = upgrade.displayName,
-                Subtitle = level > 1 ? $"{rarity} · niveau {level}" : rarity,
-                Description = upgrade.description,
-                Color = m_Catalog.ColorOf(upgrade.rarity),
+                Color = m_Catalog.ColorOf(upgrade),
                 Icon = upgrade.icon,
-                Price = m_Catalog.PriceOf(upgrade.rarity, m_Wave, WavesToWin, Purchases),
             };
+            UpdateObjectOffer(offer);
+            return offer;
         }
 
-        // Le prochain arc de la liste, s'il est déjà en vente.
-        void RefreshBowOffer()
+        // « Pointe · niveau 2 », et sous la description (inchangée), le duo qu'elle pourrait former et, si son emplacement est
+        // pris, qu'elle ira dans l'atelier. Une pièce montée au niveau maximal entre-temps (par le coffre du boss) ne s'achète plus.
+        void UpdateObjectOffer(ShopOffer offer)
         {
-            var color = m_Catalog.bowColor;
-            var bows = m_Catalog.bows;
-            var current = m_Bow != null ? m_Bow.Definition : null;
-            var index = current != null ? bows.IndexOf(current) : 0;
-            var next = index + 1 < bows.Count ? bows[index + 1] : null;
-
-            var legendary = LegendaryBow.Instance;
-            if (legendary != null && current != null && current == legendary.Definition)
+            var upgrade = offer.Upgrade;
+            var level = (m_Upgrades != null ? m_Upgrades.Level(upgrade.effect) : 0) + 1;
+            var occupant = m_Upgrades != null ? m_Upgrades.Occupant(upgrade) : null;
+            offer.Subtitle = ShopCatalog.SubtitleOf(upgrade, level);
+            offer.Description = ShopCatalog.Lines(upgrade.description, ShopCatalog.DuoLine(ArrowDuos.Completes(upgrade, m_Upgrades)),
+                                                  ShopCatalog.StorageLine(occupant));
+            offer.Price = m_Catalog.ObjectPriceOf(upgrade.rarity, m_Wave, WavesToWin, m_ObjectsBought);
+            if (m_Upgrades != null && !m_Upgrades.CanTake(upgrade))
             {
-                m_BowOffer = ShopOffer.Info("Arc légendaire", "Aucun arc ne le vaut", legendary.Color, m_Catalog.bowIcon);
-                return;
-            }
-
-            if (m_Bow == null || next == null)
-            {
-                m_BowOffer = ShopOffer.Info("Arcs", "Tu as le meilleur arc", color, m_Catalog.bowIcon);
-                return;
-            }
-
-            if (next.availableFromWave > m_Wave + 1)
-            {
-                m_BowOffer = ShopOffer.Info(next.displayName, $"En vente avant la vague {next.availableFromWave}", color, m_Catalog.bowIcon);
-                return;
-            }
-
-            m_BowOffer = new ShopOffer
-            {
-                Kind = ShopOfferKind.Bow,
-                Bow = next,
-                Title = next.displayName,
-                Subtitle = "Arc",
-                Description = $"{next.description.TrimEnd('.')}\n{next.damage:0} dégâts · {next.arrowSpeed:0} m/s",
-                Color = color,
-                Icon = m_Catalog.bowIcon,
-                Price = ShopCatalog.RoundPrice(next.price * EndlessFactor),
-            };
-        }
-
-        // Reconstruire la tour détruite, sinon la réparer si elle a perdu des PV.
-        void RefreshTowerOffer()
-        {
-            var color = m_Catalog.towerColor;
-            var tower = Tower.Instance;
-            if (tower == null)
-            {
-                m_TowerOffer = ShopOffer.Info("Tour", "Pas de tour dans la scène", color, m_Catalog.towerIcon);
-                return;
-            }
-
-            var health = tower.Health;
-            if (!tower.IsStanding)
-            {
-                m_TowerOffer = new ShopOffer
-                {
-                    Kind = ShopOfferKind.Rebuild,
-                    Title = "Reconstruire la tour",
-                    Subtitle = "Tour",
-                    Description = "Tous ses PV, et l'or n'est plus divisé par deux",
-                    Color = color,
-                    Icon = m_Catalog.towerIcon,
-                    Price = ShopCatalog.RoundPrice(m_Catalog.rebuildPrice * EndlessFactor),
-                };
-            }
-            else if (health.Current < health.Max - 0.5f)
-            {
-                m_TowerOffer = new ShopOffer
-                {
-                    Kind = ShopOfferKind.Repair,
-                    Title = "Réparer la tour",
-                    Subtitle = "Tour",
-                    Description = $"+{Mathf.RoundToInt(m_Catalog.repairFraction * 100f)} % de PV\n" +
-                                  $"{Mathf.CeilToInt(health.Current)} / {Mathf.CeilToInt(health.Max)} PV",
-                    Color = color,
-                    Icon = m_Catalog.repairIcon,
-                    Price = ShopCatalog.RoundPrice(m_Catalog.repairPrice * EndlessFactor),
-                };
-            }
-            else
-            {
-                m_TowerOffer = ShopOffer.Info("Tour", "La tour est intacte", color, m_Catalog.towerIcon);
-            }
-        }
-
-        // Barricades : les réparer toutes d'un coup.
-        void RefreshDefenseOffers()
-        {
-            var color = m_Catalog.defenseColor;
-            if (Barricade.All.Count == 0)
-            {
-                m_BarricadeOffer = ShopOffer.Info("Barricades", "Pas de barricades sur la carte", color, m_Catalog.barricadeIcon);
-            }
-            else
-            {
-                Barricade.TotalHealth(out var current, out var max);
-                m_BarricadeOffer = current < max - 0.5f
-                    ? new ShopOffer
-                    {
-                        Kind = ShopOfferKind.Barricades,
-                        Title = "Réparer les barricades",
-                        Subtitle = "Défense",
-                        Description = $"Remises à neuf\n{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)} PV",
-                        Color = color,
-                        Icon = m_Catalog.barricadeIcon,
-                        Price = ShopCatalog.RoundPrice(m_Catalog.barricadePrice * EndlessFactor),
-                    }
-                    : ShopOffer.Info("Barricades", "Les barricades sont intactes", color, m_Catalog.barricadeIcon);
+                offer.Kind = ShopOfferKind.Unavailable;
+                offer.Subtitle = "Niveau maximal";
             }
         }
 

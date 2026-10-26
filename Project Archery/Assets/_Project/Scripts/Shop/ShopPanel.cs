@@ -19,7 +19,8 @@ namespace Archery.Shop
     /// Le panneau de la boutique (Canvas en World Space). Il affiche les offres du <see cref="ShopManager"/>
     /// pendant les pauses et transmet les clics. Les sons partent du panneau.
     /// Pendant la pause, il suit le joueur, devant lui à gauche, sans jamais rentrer dans un mur.
-    /// Son bouton « Retour à la tour » ramène le joueur en haut de la tour.
+    /// Son bouton « Retour à la tour » ramène le joueur en haut de la tour. À sa droite, l'atelier
+    /// (<see cref="ArrowWorkshop"/>, 26 octobre), qu'il construit au lancement.
     /// </summary>
     /// <remarks>
     /// Pour cliquer au rayon de la manette, le Canvas a besoin d'un <c>Tracked Device Graphic Raycaster</c>,
@@ -32,26 +33,10 @@ namespace Archery.Shop
         [SerializeField]
         GameObject m_Content;
 
-        [Tooltip("Une carte par amélioration proposée (4 par défaut).")]
+        [Tooltip("Une carte par offre, dans l'ordre : les parchemins (ligne du haut), puis les objets (ligne du bas). " +
+                 "Depuis le 25 octobre au soir : 6 cartes, sur une grille de 3 colonnes (Editor/RoguelikeStep1Baker).")]
         [SerializeField]
         ShopCard[] m_UpgradeCards = Array.Empty<ShopCard>();
-
-        [SerializeField]
-        ShopCard m_BowCard;
-
-        [SerializeField]
-        ShopCard m_TowerCard;
-
-        [Tooltip("Optionnel : carte « Barricades ».")]
-        [SerializeField]
-        ShopCard m_BarricadeCard;
-
-        [SerializeField]
-        Button m_RerollButton;
-
-        [Tooltip("Texte du bouton de relance (son prix).")]
-        [SerializeField]
-        TMP_Text m_RerollText;
 
         [Tooltip("Optionnel : bouton « Retour à la tour », caché quand le joueur y est déjà.")]
         [SerializeField]
@@ -109,15 +94,27 @@ namespace Archery.Shop
         [SerializeField]
         float m_FollowSmoothing = 0.35f;
 
+        [Header("L'atelier (26 octobre)")]
+        [Tooltip("À droite du panneau, l'atelier où l'on équipe les pièces de la flèche (une flèche 3D qui tourne, un cadre par " +
+                 "partie), construit au lancement avec des copies des cartes, du titre et des textes de la boutique (ArrowWorkshop). " +
+                 "Sa taille et la flèche se règlent en tête d'ArrowWorkshop.cs.")]
+        [SerializeField]
+        bool m_ShowWorkshop = true;
+
+        [Tooltip("Écart (px) entre le panneau de la boutique et l'atelier.")]
+        [SerializeField]
+        float m_WorkshopGap = 40f;
+
+        [Tooltip("Angle (°) dont l'atelier est tourné vers le joueur, autour de son bord gauche.")]
+        [SerializeField]
+        float m_WorkshopAngle = 25f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_BuyClip;
 
         [SerializeField]
         AudioClip m_ErrorClip;
-
-        [SerializeField]
-        AudioClip m_RerollClip;
 
         [Tooltip("Optionnel : joué quand la boutique s'ouvre.")]
         [SerializeField]
@@ -130,6 +127,7 @@ namespace Archery.Shop
         static readonly RaycastHit[] s_Hits = new RaycastHit[16];
 
         readonly StringBuilder m_Builder = new StringBuilder();
+        ArrowWorkshop m_Workshop;
         ShopManager m_Shop;
         ScoreManager m_Score;
         PlayerUpgrades m_Upgrades;
@@ -153,18 +151,12 @@ namespace Archery.Shop
                     card.Clicked += OnCardClicked;
             }
 
-            if (m_BowCard != null)
-                m_BowCard.Clicked += OnCardClicked;
-            if (m_TowerCard != null)
-                m_TowerCard.Clicked += OnCardClicked;
-            if (m_BarricadeCard != null)
-                m_BarricadeCard.Clicked += OnCardClicked;
-            if (m_RerollButton != null)
-                m_RerollButton.onClick.AddListener(OnRerollClicked);
             if (m_TowerButton != null)
                 m_TowerButton.onClick.AddListener(OnTowerClicked);
             if (m_FinishButton != null)
                 m_FinishButton.onClick.AddListener(OnFinishClicked);
+            if (m_ShowWorkshop)
+                CreateWorkshop();
             if (m_Content != null)
                 m_Content.SetActive(false);
 
@@ -242,18 +234,41 @@ namespace Archery.Shop
                     m_UpgradeCards[i].Show(i < offers.Count ? offers[i] : null, money);
             }
 
-            if (m_BowCard != null)
-                m_BowCard.Show(m_Shop.BowOffer, money);
-            if (m_TowerCard != null)
-                m_TowerCard.Show(m_Shop.TowerOffer, money);
-            if (m_BarricadeCard != null)
-                m_BarricadeCard.Show(m_Shop.BarricadeOffer, money);
-            if (m_RerollText != null)
-                m_RerollText.text = $"Relancer\n{m_Shop.RerollCost} or";
             if (m_MoneyText != null)
                 m_MoneyText.text = "Or " + money.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', ' ');
             if (m_OwnedText != null)
                 m_OwnedText.text = OwnedSummary();
+            if (m_Workshop != null)
+                m_Workshop.Refresh();
+        }
+
+        // L'atelier, à droite du contenu du panneau : copies d'une carte (la dernière), du titre (l'enfant « Title »,
+        // sinon le montant d'or), de la liste des pièces (sinon du message), du fond et du cadre du contenu.
+        void CreateWorkshop()
+        {
+            ShopCard template = null;
+            foreach (var card in m_UpgradeCards)
+            {
+                if (card != null)
+                    template = card;
+            }
+
+            if (m_Content == null || !(m_Content.transform is RectTransform content) || template == null)
+                return;
+
+            var titleObject = content.Find("Title");
+            var title = titleObject != null ? titleObject.GetComponent<TMP_Text>() : m_MoneyText;
+            var text = m_OwnedText != null ? m_OwnedText : m_MessageText;
+            m_Workshop = ArrowWorkshop.Create(content, template, title, text, m_Content.GetComponent<Image>(), content.Find(UI.UiThemer.BorderName),
+                                              m_WorkshopGap, m_WorkshopAngle, OnWorkshopResult);
+        }
+
+        // Équiper ne coûte rien et ne sonne pas comme un achat : le motif de l'emplacement vient de PieceLook.
+        void OnWorkshopResult(ShopResult result)
+        {
+            if (!result.Success)
+                Sfx.Play(m_ErrorClip, transform.position, 0.9f);
+            ShowMessage(result.Message, result.Color);
         }
 
         // À l'ouverture : devant le joueur, à sa gauche. Sans suivi, à sa place dans la scène.
@@ -334,7 +349,7 @@ namespace Archery.Shop
                         first = false;
                     }
 
-                    if (IsFree(head, candidate, candidateRotation, halfExtents))
+                    if (IsFree(head, candidate, candidateRotation, halfExtents) && WorkshopFits(candidate, candidateRotation))
                     {
                         position = candidate;
                         rotation = candidateRotation;
@@ -387,6 +402,28 @@ namespace Archery.Shop
             return true;
         }
 
+        // L'atelier, à droite du panneau, ne rentre dans rien non plus (le panneau placé ici, tourné ainsi).
+        bool WorkshopFits(Vector3 position, Quaternion rotation)
+        {
+            if (m_Workshop == null)
+                return true;
+
+            var rect = m_Workshop.Rect;
+            var center = transform.InverseTransformPoint(rect.TransformPoint(rect.rect.center));
+            var size = Vector2.Scale(rect.rect.size, rect.lossyScale);
+            var workshopRotation = rotation * (Quaternion.Inverse(transform.rotation) * rect.rotation);
+            var count = Physics.OverlapBoxNonAlloc(position + rotation * Vector3.Scale(center, transform.lossyScale),
+                                                   new Vector3(size.x * 0.5f, size.y * 0.5f, 0.05f), s_Overlaps, workshopRotation,
+                                                   Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (var i = 0; i < count; i++)
+            {
+                if (IsObstacle(s_Overlaps[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
         // Le joueur, son arc et les ennemis (qui s'en vont à la fin de la vague) ne comptent pas comme obstacles.
         static bool IsObstacle(Collider collider) =>
             collider != null && !ArrowIgnore.IsIgnored(collider) && collider.GetComponentInParent<Enemy>() == null;
@@ -397,12 +434,6 @@ namespace Archery.Shop
         {
             if (m_Shop != null)
                 Report(m_Shop.TryBuy(card.Offer), m_BuyClip);
-        }
-
-        void OnRerollClicked()
-        {
-            if (m_Shop != null)
-                Report(m_Shop.TryReroll(), m_RerollClip);
         }
 
         // Le bouton se cache quand le joueur est déjà en haut de la tour, et se grise tant qu'elle est détruite.
@@ -459,26 +490,60 @@ namespace Archery.Shop
             m_MessageTimer = string.IsNullOrEmpty(message) ? 0f : m_MessageDuration;
         }
 
-        // « Améliorations : Dégâts ×2 · Multitir »
+        // La flèche, emplacement par emplacement (26 octobre), puis les objets hors emplacement et les parchemins :
+        // « Pointe : Flèche de foudre II · Corde : Multitir — Grenade rapide — Parchemins : Force ×3 · Adresse »
         string OwnedSummary()
         {
             if (m_Upgrades == null || m_Upgrades.Owned.Count == 0)
                 return "";
 
             m_Builder.Clear();
-            m_Builder.Append("Améliorations : ");
-            for (var i = 0; i < m_Upgrades.Owned.Count; i++)
+            var first = true;
+            foreach (ArrowSlot slot in Enum.GetValues(typeof(ArrowSlot)))
             {
-                var upgrade = m_Upgrades.Owned[i];
-                if (i > 0)
+                var piece = m_Upgrades.InSlot(slot);
+                if (piece == null)
+                    continue;
+
+                m_Builder.Append(first ? "" : " · ").Append(ShopCatalog.NameOf(slot)).Append(" : ").Append(piece.displayName);
+                var level = m_Upgrades.Stacks(piece.effect);
+                if (level > 1)
+                    m_Builder.Append(' ').Append(ShopCatalog.LevelName(level));
+                first = false;
+            }
+
+            AppendOwned(UpgradeKind.Object, "");
+            AppendOwned(UpgradeKind.Scroll, "Parchemins : ");
+            return m_Builder.ToString();
+        }
+
+        // Les objets hors emplacement, ou les parchemins, après « — ».
+        void AppendOwned(UpgradeKind kind, string label)
+        {
+            var first = true;
+            foreach (var upgrade in m_Upgrades.Owned)
+            {
+                var isScroll = upgrade.kind == UpgradeKind.Scroll;
+                if (isScroll != (kind == UpgradeKind.Scroll) || (!isScroll && upgrade.slot != ArrowSlot.None))
+                    continue;
+
+                if (first)
+                {
+                    if (m_Builder.Length > 0)
+                        m_Builder.Append(" — ");
+                    m_Builder.Append(label);
+                    first = false;
+                }
+                else
+                {
                     m_Builder.Append(" · ");
+                }
+
                 m_Builder.Append(upgrade.displayName);
                 var stacks = m_Upgrades.Stacks(upgrade.effect);
                 if (stacks > 1)
                     m_Builder.Append(" ×").Append(stacks);
             }
-
-            return m_Builder.ToString();
         }
     }
 }

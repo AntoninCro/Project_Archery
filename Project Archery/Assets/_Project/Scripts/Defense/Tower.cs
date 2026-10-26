@@ -36,7 +36,7 @@ namespace Archery.Defense
         [SerializeField]
         AudioClip m_DestroyedClip;
 
-        [Tooltip("Joué quand la tour est réparée ou reconstruite (boutique).")]
+        [Tooltip("Joué quand la tour est réparée ou reconstruite (à la fin de la vague).")]
         [SerializeField]
         AudioClip m_RepairClip;
 
@@ -75,7 +75,7 @@ namespace Archery.Defense
         /// <summary>La tour vient d'être détruite (malus, effondrement…).</summary>
         public event Action Destroyed;
 
-        /// <summary>La tour vient d'être reconstruite (boutique).</summary>
+        /// <summary>La tour vient d'être reconstruite (à la fin de la vague).</summary>
         public event Action Rebuilt;
 
         void Awake()
@@ -144,7 +144,7 @@ namespace Archery.Defense
             return best;
         }
 
-        /// <summary>Rend des PV à la tour debout (réparation en boutique). Les PV ne remontent jamais tout seuls.</summary>
+        /// <summary>Rend des PV à la tour debout : à la fin de chaque vague, tous (depuis le 25 octobre ; avant, en boutique).</summary>
         public void Repair(float amount)
         {
             if (!IsStanding || amount <= 0f)
@@ -154,7 +154,7 @@ namespace Archery.Defense
             Sfx.Play(m_RepairClip, transform.position + Vector3.up * 2f);
         }
 
-        /// <summary>Relève la tour détruite avec tous ses PV (boutique).</summary>
+        /// <summary>Relève la tour détruite avec tous ses PV (à la fin de la vague, depuis le 25 octobre ; avant, en boutique).</summary>
         public void Rebuild()
         {
             if (IsStanding)

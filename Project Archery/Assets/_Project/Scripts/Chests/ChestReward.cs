@@ -34,15 +34,33 @@ namespace Archery.Chests
         /// <summary>Gardée toute la partie (amélioration, morceau d'arc), et non temporaire (bonus).</summary>
         public bool IsPermanent => Kind != ChestRewardKind.Buff;
 
+        /// <summary>
+        /// Au-dessus de l'orbe : l'emplacement d'une pièce (« POINTE »), « OBJET » hors emplacement, « PARCHEMIN »,
+        /// « TEMPORAIRE », ou « PERMANENT » pour le fragment d'arc.
+        /// </summary>
+        public string KindLabel => Kind switch
+        {
+            ChestRewardKind.Buff => "TEMPORAIRE",
+            ChestRewardKind.Upgrade when Upgrade != null && Upgrade.kind == UpgradeKind.Scroll => "PARCHEMIN",
+            ChestRewardKind.Upgrade when Upgrade != null && Upgrade.slot != ArrowSlot.None => ShopCatalog.NameOf(Upgrade.slot).ToUpperInvariant(),
+            ChestRewardKind.Upgrade => "OBJET",
+            _ => "PERMANENT",
+        };
+
         /// <summary>Applique la récompense au joueur. Renvoie le message à afficher.</summary>
         public string Apply(float buffDuration)
         {
             switch (Kind)
             {
                 case ChestRewardKind.Upgrade:
-                    if (Upgrade != null && PlayerUpgrades.Instance != null)
-                        PlayerUpgrades.Instance.Add(Upgrade);
-                    return Title + " !";
+                    var upgrades = PlayerUpgrades.Instance;
+                    if (Upgrade == null || upgrades == null)
+                        return Title + " !";
+
+                    // Une pièce prise s'équipe si son emplacement est libre, sinon va dans l'atelier ; ou elle monte de niveau.
+                    var occupant = upgrades.Occupant(Upgrade);
+                    upgrades.Add(Upgrade);
+                    return ShopManager.PurchaseMessage(Upgrade, occupant, upgrades.Level(Upgrade.effect));
 
                 case ChestRewardKind.Buff:
                     if (PlayerUpgrades.Instance != null)
@@ -68,18 +86,19 @@ namespace Archery.Chests
         static readonly TemporaryBuff[] s_Buffs = { TemporaryBuff.DoubleDamage, TemporaryBuff.PerfectShots, TemporaryBuff.FastRing };
 
         /// <summary>
-        /// Les récompenses d'un coffre, toujours dans cet ordre : deux améliorations permanentes différentes, tirées
-        /// comme en boutique (raretés et Chance comprises), puis un bonus temporaire. Un fragment de l'arc légendaire
-        /// peut remplacer la deuxième amélioration.
+        /// Les récompenses d'un coffre de vague, toujours dans cet ordre (refonte du 25 octobre) : un objet (avec la chance
+        /// <paramref name="objectChance"/>, tiré comme en boutique) ou un parchemin, un autre parchemin, puis un bonus
+        /// temporaire. Un fragment de l'arc légendaire peut remplacer la deuxième orbe.
         /// </summary>
-        public static List<ChestReward> Roll(float buffDuration, ChestColors colors)
+        public static List<ChestReward> Roll(float buffDuration, ChestColors colors, float objectChance)
         {
             var rewards = new List<ChestReward>();
-            for (var i = 0; i < 2; i++)
-            {
-                if (TryRollUpgrade(rewards, out var upgrade))
-                    rewards.Add(upgrade);
-            }
+            var wantsObject = Random.value < objectChance;
+            if (TryRollUpgrade(wantsObject ? UpgradeKind.Object : UpgradeKind.Scroll, rewards, out var first) ||
+                (wantsObject && TryRollUpgrade(UpgradeKind.Scroll, rewards, out first)))
+                rewards.Add(first);
+            if (TryRollUpgrade(UpgradeKind.Scroll, rewards, out var second))
+                rewards.Add(second);
 
             var legendaryBow = LegendaryBow.Instance;
             if (legendaryBow != null && legendaryBow.RollPartDrop())
@@ -101,8 +120,24 @@ namespace Archery.Chests
             return rewards;
         }
 
-        // Comme en boutique : la rareté d'abord (chance comprise), puis une amélioration de cette rareté.
-        static bool TryRollUpgrade(List<ChestReward> taken, out ChestReward reward)
+        /// <summary>
+        /// Le coffre de boss (refonte du 25 octobre) : <paramref name="count"/> objets différents, un seul à prendre ; des
+        /// parchemins quand il ne reste plus d'objet à donner.
+        /// </summary>
+        public static List<ChestReward> RollBoss(int count)
+        {
+            var rewards = new List<ChestReward>();
+            for (var i = 0; i < count; i++)
+            {
+                if (TryRollUpgrade(UpgradeKind.Object, rewards, out var reward) || TryRollUpgrade(UpgradeKind.Scroll, rewards, out reward))
+                    rewards.Add(reward);
+            }
+
+            return rewards;
+        }
+
+        // Un objet : comme en boutique, la rareté d'abord (chance comprise), puis un objet de cette rareté. Un parchemin : au hasard.
+        static bool TryRollUpgrade(UpgradeKind kind, List<ChestReward> taken, out ChestReward reward)
         {
             reward = default;
             var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
@@ -110,20 +145,32 @@ namespace Archery.Chests
             if (catalog == null || catalog.upgrades.Count == 0)
                 return false;
 
-            var waves = WaveManager.Instance;
-            var wave = waves != null ? Mathf.Max(1, waves.WaveNumber) : 1;
-            var rarity = catalog.RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f);
-            if (!PickUpgrade(catalog, rarity, owned, taken, true, out var upgrade) &&
-                !PickUpgrade(catalog, rarity, owned, taken, false, out upgrade))
+            Upgrade upgrade;
+            if (kind == UpgradeKind.Object)
+            {
+                var waves = WaveManager.Instance;
+                var wave = waves != null ? Mathf.Max(1, waves.WaveNumber) : 1;
+                var rarity = catalog.RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f);
+                if (!PickUpgrade(catalog, kind, rarity, owned, taken, true, out upgrade) &&
+                    !PickUpgrade(catalog, kind, rarity, owned, taken, false, out upgrade))
+                    return false;
+            }
+            else if (!PickUpgrade(catalog, kind, UpgradeRarity.Common, owned, taken, false, out upgrade))
+            {
                 return false;
+            }
 
+            // Le niveau qu'elle atteindrait, et dessous, le duo qu'elle pourrait former et si elle irait dans l'atelier.
+            var level = (owned != null ? owned.Level(upgrade.effect) : 0) + 1;
+            var duo = ShopCatalog.DuoLine(ArrowDuos.Completes(upgrade, owned));
+            var storage = ShopCatalog.StorageLine(owned != null ? owned.Occupant(upgrade) : null);
             reward = new ChestReward
             {
                 Kind = ChestRewardKind.Upgrade,
                 Upgrade = upgrade,
                 Title = upgrade.displayName,
-                Subtitle = ShopCatalog.NameOf(upgrade.rarity),
-                Color = catalog.ColorOf(upgrade.rarity),
+                Subtitle = ShopCatalog.Lines(ShopCatalog.SubtitleOf(upgrade, level), duo, storage),
+                Color = catalog.ColorOf(upgrade),
                 Icon = upgrade.icon,
             };
             return true;
@@ -145,13 +192,14 @@ namespace Archery.Chests
             return null;
         }
 
-        static bool PickUpgrade(ShopCatalog catalog, UpgradeRarity rarity, PlayerUpgrades owned, List<ChestReward> taken,
+        static bool PickUpgrade(ShopCatalog catalog, UpgradeKind kind, UpgradeRarity rarity, PlayerUpgrades owned, List<ChestReward> taken,
                                 bool sameRarity, out Upgrade upgrade)
         {
             s_Candidates.Clear();
             foreach (var candidate in catalog.upgrades)
             {
-                if (candidate == null || (sameRarity && candidate.rarity != rarity) || (owned != null && !owned.CanTake(candidate)))
+                if (candidate == null || candidate.kind != kind || (sameRarity && candidate.rarity != rarity) ||
+                    (owned != null && !owned.CanTake(candidate)))
                     continue;
                 if (!IsTaken(taken, candidate))
                     s_Candidates.Add(candidate);

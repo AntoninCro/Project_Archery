@@ -2,7 +2,9 @@
 
 Ce guide ajoute les deux défenses de la tour du GDD (sections 6.2, 7 et 9) à la scène `Prototype_Tir`.
 
-> **Où en est ce guide** (6 octobre) : tout est monté par Claude. C'est testé dans le casque (13 octobre). Le brasero a été retiré de la scène le 12 octobre ; les barricades restent. Les sections 1 à 4 décrivent ce qui est en place, pour le vérifier ou le retoucher.
+> **Où en est ce guide** (6 octobre) : tout est monté par Claude. C'est testé dans le casque (13 octobre). Le brasero a été retiré de la scène le 12 octobre ; les barricades restent. Le 25 octobre, les prefabs `Brazier` et
+> `Arrow Fire`, le matériau `Brazier_Stone` et les sons `arrow_ignite` et `brazier_build` ont été supprimés (récupérables
+> dans Git) : la section 3 n'est plus qu'un historique. Les sections 1 à 4 décrivent ce qui est en place, pour le vérifier ou le retoucher.
 
 **Les barricades** sont des murs de planches aux entrées de la clairière, au bout des chemins :
 - un ennemi au sol qui arrive devant une barricade, côté forêt, **s'arrête pour la frapper** ;

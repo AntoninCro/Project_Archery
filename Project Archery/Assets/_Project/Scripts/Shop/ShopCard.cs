@@ -89,21 +89,23 @@ namespace Archery.Shop
 
             if (m_PriceText != null)
             {
-                m_PriceText.text = offer.Sold ? "Acheté" : available ? offer.Price + " " + offer.PriceUnit : "";
-                m_PriceText.color = available && money < offer.Price ? m_TooExpensiveColor : Color.white;
+                var free = offer.PriceText != null;
+                m_PriceText.text = free ? offer.PriceText : offer.Sold ? "Acheté" : available ? offer.Price + " " + offer.PriceUnit : "";
+                m_PriceText.color = !free && available && money < offer.Price ? m_TooExpensiveColor : Color.white;
             }
 
+            // Mise en avant (l'emplacement choisi dans l'atelier) : deux fois plus de couleur, cadre blanc.
             if (m_Background != null)
             {
-                var color = Color.Lerp(m_BaseColor, offer.Color, m_Tint);
-                color.a = m_BaseColor.a * (available ? 1f : 0.6f);
+                var color = Color.Lerp(m_BaseColor, offer.Color, offer.Highlight ? Mathf.Min(1f, m_Tint * 2f) : m_Tint);
+                color.a = m_BaseColor.a * (available || offer.Highlight ? 1f : 0.6f);
                 m_Background.color = color;
             }
 
             if (m_Border != null)
             {
-                var color = Color.Lerp(offer.Color, Color.white, 0.15f);
-                color.a = available ? 1f : 0.45f;
+                var color = Color.Lerp(offer.Color, Color.white, offer.Highlight ? 0.6f : 0.15f);
+                color.a = available || offer.Highlight ? 1f : 0.45f;
                 m_Border.color = color;
             }
 

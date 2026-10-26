@@ -27,6 +27,14 @@ namespace Archery.Save
         /// <summary>L'épreuve du toit cyberpunk a été réussie pendant la partie : un losange à côté du nom.</summary>
         public bool glitch;
 
+        /// <summary>
+        /// Vide pour une vraie partie. Sinon, une ligne que le jeu écrit lui-même (Lore/ThinkTraces) : « think », « reflet »
+        /// ou « copie ».
+        /// </summary>
+        public string kind;
+
+        public bool IsPlayer => string.IsNullOrEmpty(kind);
+
         public static string Now() => DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
     }
 
@@ -60,13 +68,23 @@ namespace Archery.Save
             }
         }
 
-        /// <summary>Ajoute une partie, trie et enregistre. Renvoie son rang (0 = première place).</summary>
-        public static int Add(LeaderboardEntry entry)
+        /// <summary>
+        /// Ajoute une partie, trie et enregistre. Renvoie son rang (0 = première place).
+        /// <paramref name="traces"/> : les lignes que le jeu écrit lui-même après cette partie (Lore/ThinkTraces) ; elles
+        /// remplacent toutes les anciennes.
+        /// </summary>
+        public static int Add(LeaderboardEntry entry, List<LeaderboardEntry> traces = null)
         {
             if (entry == null)
                 return -1;
 
             EnsureLoaded();
+            if (traces != null)
+            {
+                s_Data.entries.RemoveAll(other => !other.IsPlayer);
+                s_Data.entries.AddRange(traces);
+            }
+
             s_Data.entries.Add(entry);
             s_Data.entries.Sort(Compare);
             var rank = s_Data.entries.IndexOf(entry);
@@ -77,6 +95,25 @@ namespace Archery.Save
             return rank < k_MaxEntries ? rank : -1;
         }
 
+        /// <summary>
+        /// Aucune vraie partie ne passe devant celle de ce rang : c'est le record du joueur, même si une ligne écrite par
+        /// le jeu (le score impossible de THINK) reste au-dessus.
+        /// </summary>
+        public static bool IsPlayerRecord(int rank)
+        {
+            EnsureLoaded();
+            if (rank < 0 || rank >= s_Data.entries.Count)
+                return false;
+
+            for (var i = 0; i < rank; i++)
+            {
+                if (s_Data.entries[i].IsPlayer)
+                    return false;
+            }
+
+            return true;
+        }
+
         static int Compare(LeaderboardEntry a, LeaderboardEntry b)
         {
             var byScore = b.score.CompareTo(a.score);
@@ -84,7 +121,12 @@ namespace Archery.Save
                 return byScore;
 
             var byWave = b.wave.CompareTo(a.wave);
-            return byWave != 0 ? byWave : string.CompareOrdinal(a.date, b.date);
+            if (byWave != 0)
+                return byWave;
+
+            // À égalité, les vraies parties passent devant les lignes du jeu : le reflet reste juste sous ta partie.
+            var byKind = b.IsPlayer.CompareTo(a.IsPlayer);
+            return byKind != 0 ? byKind : string.CompareOrdinal(a.date, b.date);
         }
 
         static void EnsureLoaded()

@@ -58,6 +58,15 @@ namespace Archery.Bows
         /// </summary>
         public static event Action<Arrow> ShotEnded;
 
+        /// <summary>
+        /// La flèche vient de se planter dans ce collider (un ennemi ou le décor), juste avant <see cref="ShotEnded"/>
+        /// (26 octobre : la pointe à mèche, les fûts aimant et conducteur).
+        /// </summary>
+        public static event Action<Arrow, Collider> Stuck;
+
+        /// <summary>Multiplie les dégâts du coup de flèche au corps à corps (26 octobre : le talisman du duelliste).</summary>
+        public static float MeleeDamageMultiplier { get; set; } = 1f;
+
         [Header("Pièces")]
         [Tooltip("Pointe de la flèche. La racine de l'objet est l'encoche.")]
         [SerializeField]
@@ -141,6 +150,8 @@ namespace Archery.Bows
         bool m_HandlingHit;
         bool m_DeflectPending;
         Vector3 m_DeflectVelocity;
+        bool m_BouncePending;
+        bool m_Hovering;
 
         public State CurrentState => m_State;
 
@@ -149,6 +160,9 @@ namespace Archery.Bows
 
         public Vector3 NockPosition => transform.position;
         public float Length => m_Length;
+
+        /// <summary>La longueur de l'encoche à la pointe, lisible aussi sur le prefab (avant Awake) : pour la flèche de l'atelier.</summary>
+        public float ModelLength => m_Tip != null ? Mathf.Max(0.1f, m_Tip.localPosition.z) : m_Length;
         public ArrowPool Pool { get; set; }
 
         /// <summary>Flèche ajoutée par le multitir ou le déluge (voir <see cref="ArrowLaunch.IsExtra"/>).</summary>
@@ -167,6 +181,26 @@ namespace Archery.Bows
         public Vector3 TipPosition => m_Tip != null ? m_Tip.position : transform.position + transform.forward * m_Length;
 
         public Color TrailColor { get; private set; }
+
+        /// <summary>Dégâts de la flèche tirée ; modifiables en vol (26 octobre : le talisman du sniper, la corde de transe).</summary>
+        public float Damage
+        {
+            get => m_Damage;
+            set
+            {
+                if (m_State == State.Flying)
+                    m_Damage = Mathf.Max(0f, value);
+            }
+        }
+
+        /// <summary>
+        /// La flèche traverse le décor (tout ce qui ne réagit pas aux flèches) : elle ne touche que les ennemis, le gong, les
+        /// cibles… (26 octobre : l'empennage spectral). Remis à faux quand elle revient au pool.
+        /// </summary>
+        public bool PassesThroughScenery { get; set; }
+
+        /// <summary>La flèche est arrêtée en l'air (26 octobre : le fût suspendu), sans tomber ni rien toucher.</summary>
+        public bool IsHovering => m_Hovering;
 
         /// <summary>Vitesse en vol. Modifiable pendant le vol, par exemple pour guider la flèche.</summary>
         public Vector3 Velocity
@@ -325,7 +359,7 @@ namespace Archery.Bows
         {
             if (s_MeleeBow == null)
                 s_MeleeBow = FindAnyObjectByType<Bow>();
-            var damage = s_MeleeBow != null ? s_MeleeBow.MeleeDamage(m_MeleeGrade) : 10f;
+            var damage = (s_MeleeBow != null ? s_MeleeBow.MeleeDamage(m_MeleeGrade) : 10f) * MeleeDamageMultiplier;
 
             m_Damage = damage;
             m_Grade = m_MeleeGrade;
@@ -572,6 +606,9 @@ namespace Archery.Bows
         /// <summary>Permet à la flèche en vol de traverser des ennemis en plus (perçage).</summary>
         public void AddPierce(int count) => m_PierceLeft += Mathf.Max(0, count);
 
+        /// <summary>La flèche peut de nouveau toucher les ennemis qu'elle a déjà traversés (le retour de l'empennage boomerang).</summary>
+        public void ResetPierced() => m_Pierced.Clear();
+
         /// <summary>
         /// À appeler pendant <see cref="AnyHit"/> : au lieu de se planter, la flèche repart du point d'impact
         /// avec cette vitesse (ricochet). Elle ne peut plus toucher ce qu'elle vient de toucher.
@@ -583,6 +620,47 @@ namespace Archery.Bows
 
             m_DeflectPending = true;
             m_DeflectVelocity = velocity;
+        }
+
+        /// <summary>
+        /// À appeler pendant <see cref="AnyHit"/>, sur le décor : au lieu de se planter, la flèche rebondit avec cette vitesse
+        /// (26 octobre : l'empennage rebond). Contrairement au ricochet, elle pourra retoucher la même surface.
+        /// </summary>
+        public void Bounce(Vector3 velocity)
+        {
+            if (!m_HandlingHit || velocity.sqrMagnitude < 1e-4f)
+                return;
+
+            m_BouncePending = true;
+            m_DeflectVelocity = velocity;
+        }
+
+        /// <summary>
+        /// Arrête la flèche en vol là où elle est (26 octobre : le fût suspendu), ou la laisse repartir ; c'est celui qui la
+        /// relâche qui lui redonne sa vitesse (<see cref="Velocity"/>).
+        /// </summary>
+        public void Hover(bool hover)
+        {
+            if (m_State != State.Flying || m_Hovering == hover)
+                return;
+
+            m_Hovering = hover;
+            m_Body.useGravity = !hover;
+            m_Body.linearVelocity = Vector3.zero;
+            m_Body.angularVelocity = Vector3.zero;
+            if (m_Trail != null)
+                m_Trail.emitting = !hover && m_IsShot;
+        }
+
+        /// <summary>Déplace la flèche arrêtée en l'air (l'essaim du fût suspendu tourne autour du joueur).</summary>
+        public void HoverAt(Vector3 position, Quaternion rotation)
+        {
+            if (!m_Hovering)
+                return;
+
+            transform.SetPositionAndRotation(position, rotation);
+            m_Body.position = position;
+            m_Body.rotation = rotation;
         }
 
         /// <summary>Renvoie la flèche dans le pool. Sans effet si elle est en main.</summary>
@@ -606,6 +684,15 @@ namespace Archery.Bows
 
             var deltaTime = Time.fixedDeltaTime;
             m_FlightTime += deltaTime;
+
+            // Arrêtée en l'air (fût suspendu) : elle attend, sans bouger ni rien toucher.
+            if (m_Hovering)
+            {
+                m_Body.linearVelocity = Vector3.zero;
+                if (m_FlightTime > m_MaxFlightTime)
+                    Despawn();
+                return;
+            }
 
             // Une flèche plus lourde (arc légendaire) : la gravité du Rigidbody, plus ce qui manque.
             if (!Mathf.Approximately(m_GravityScale, 1f))
@@ -659,6 +746,8 @@ namespace Archery.Bows
             {
                 var hit = s_RaycastHits[i];
                 if (hit.collider == null || ArrowIgnore.IsIgnored(hit.collider) || m_Pierced.Contains(PierceKey(hit)))
+                    continue;
+                if (PassesThroughScenery && hit.collider.GetComponentInParent<IArrowHitHandler>() == null)
                     continue;
 
                 if (hit.distance < bestDistance)
@@ -741,7 +830,15 @@ namespace Archery.Bows
             if (m_DeflectPending)
             {
                 m_DeflectPending = false;
+                m_BouncePending = false;
                 Ricochet(raycastHit);
+                return;
+            }
+
+            if (m_BouncePending)
+            {
+                m_BouncePending = false;
+                BounceOff(raycastHit);
                 return;
             }
 
@@ -781,6 +878,19 @@ namespace Archery.Bows
             m_Body.linearVelocity = m_DeflectVelocity;
         }
 
+        // Le rebond sur le décor : la pointe repart juste au-dessus de la surface, sans la marquer comme traversée (elle doit
+        // pouvoir retoucher le sol plus loin).
+        void BounceOff(RaycastHit hit)
+        {
+            var direction = m_DeflectVelocity.normalized;
+            var rotation = Quaternion.LookRotation(direction);
+            var position = hit.point + hit.normal * 0.04f - direction * m_Length;
+            transform.SetPositionAndRotation(position, rotation);
+            m_Body.position = position;
+            m_Body.rotation = rotation;
+            m_Body.linearVelocity = m_DeflectVelocity;
+        }
+
         void StickInto(RaycastHit hit, Vector3 direction)
         {
             m_State = State.Stuck;
@@ -806,6 +916,8 @@ namespace Archery.Bows
             if (Pool != null)
                 Pool.NotifyStuck(this);
 
+            if (m_IsShot)
+                Stuck?.Invoke(this, hit.collider);
             EndShot();
         }
 
@@ -829,6 +941,9 @@ namespace Archery.Bows
             m_IsShot = false;
             m_ShotPending = false;
             m_DeflectPending = false;
+            m_BouncePending = false;
+            m_Hovering = false;
+            PassesThroughScenery = false;
             IsExtra = false;
             m_GravityScale = 1f;
             Extinguish();
@@ -863,6 +978,8 @@ namespace Archery.Bows
             s_MeleeBow = null;
             AnyHit = null;
             ShotEnded = null;
+            Stuck = null;
+            MeleeDamageMultiplier = 1f;
         }
     }
 }
