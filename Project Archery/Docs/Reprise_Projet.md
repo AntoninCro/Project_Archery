@@ -21,9 +21,8 @@ section 24 ; scripts dans `Scripts/Lore`), l'audit de performance pour le Quest 
 « Quest » (`Docs/Audit_Performance_Quest.md`, `Editor/QuestQualityBaker.cs`), le ménage des fichiers inutilisés
 (`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure de performance des
 builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike**, étapes 1 à 5 (partie suivante).
-**Pas encore commité** (le soir du 26 octobre) : la troisième version de l'atelier (flèche debout, sceaux animés), les PV
-des parchemins retirés, la télékinésie guidée par la main (`ArrowWorkshop.cs`, `PlayerUpgrades.cs`, `ShopManager.cs`,
-`ShopCatalog.cs`, `ArrowPieces.cs` et les docs).
+**Commité le soir du 26 octobre** (`d523f2b`, pas encore poussé) : la troisième version de l'atelier (flèche debout,
+sceaux animés), les PV des parchemins retirés, la télékinésie guidée par la main.
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
 
