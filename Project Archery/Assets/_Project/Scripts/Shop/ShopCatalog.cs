@@ -87,7 +87,7 @@ namespace Archery.Shop
 
         [Tooltip("En plus, chaque parchemin acheté en boutique fait monter son propre prix, en se cumulant (0,1 = +10 % par " +
                  "achat du même parchemin). Ajouté le 26 octobre : chaque parchemin a son prix, qui monte quand on le prend " +
-                 "souvent ; les autres restent abordables (et donnent de la vie, comme dans Dead Cells). 0 : un seul prix pour tous.")]
+                 "souvent ; les autres restent abordables. 0 : un seul prix pour tous.")]
         [Min(0f)]
         public float ownScrollPriceIncrease = 0.1f;
 

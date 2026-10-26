@@ -247,8 +247,7 @@ namespace Archery.Shop
             return m_Candidates.Count > 0 ? m_Candidates[UnityEngine.Random.Range(0, m_Candidates.Count)] : null;
         }
 
-        // Le prix et le niveau des parchemins, après chaque achat de l'un d'eux : chacun a son prix (26 octobre). Sous la
-        // description (inchangée), les PV max que donnent la Force et l'Adresse.
+        // Le prix et le niveau des parchemins, après chaque achat de l'un d'eux : chacun a son prix (26 octobre).
         void RefreshScrollOffers(PlayerUpgrades owned)
         {
             foreach (var offer in m_UpgradeOffers)
@@ -258,9 +257,7 @@ namespace Archery.Shop
 
                 var effect = offer.Upgrade.effect;
                 var level = (owned != null ? owned.Level(effect) : 0) + 1;
-                var health = owned != null && PlayerUpgrades.ScrollGivesHealth(effect) ? owned.HealthPerScroll : 0f;
                 offer.Subtitle = ShopCatalog.SubtitleOf(offer.Upgrade, level);
-                offer.Description = health > 0f ? $"{offer.Upgrade.description}\n<color=#8BE28B>+{health:0} PV max</color>" : offer.Upgrade.description;
                 offer.Price = m_Catalog.ScrollPriceOf(m_Wave, WavesToWin, m_ScrollsBought, m_ScrollsOfType[(int)effect]);
             }
         }

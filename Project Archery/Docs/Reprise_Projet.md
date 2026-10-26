@@ -16,15 +16,14 @@ des retours du joueur une partie des nouveautés (la grenade, les Akimbow, le po
 par la liste « Nouveautés du 19 au 23 octobre », en tête de la partie 1.
 
 **Commité le 25 octobre** (`f986573`) : la 3e version du katana (partie 2), le toit cyberpunk refait (décor 4, épreuve rendue
-faisable), la présentation et le rapport. **Pas encore commité** : le lore, acte 1, première partie (codée le 25 octobre :
-GDD, section 24 ; scripts dans `Scripts/Lore`), et l'audit de performance pour le Quest en autonome, avec le niveau de
-qualité « Quest » (`Docs/Audit_Performance_Quest.md`, `Editor/QuestQualityBaker.cs`), le ménage des fichiers
-inutilisés (`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure
-de performance des builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike** : les
-propositions (`Docs/Refonte_Roguelike.md` ; le joueur a choisi la B, « la flèche en pièces ») et ses étapes 1 à 5,
-codées les 25 et 26 octobre (objets et parchemins, coffre de boss, emplacements de la flèche, 24 pièces nouvelles, pièces
-visibles sur la flèche et l'arc, 6 duos, l'atelier à côté de la boutique, un prix par parchemin : GDD,
-sections 6, 7 et 13 ; bakers `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs`).
+faisable), la présentation et le rapport. **Commité le 26 octobre** (`5232b71`) : le lore, acte 1, première partie (GDD,
+section 24 ; scripts dans `Scripts/Lore`), l'audit de performance pour le Quest en autonome, avec le niveau de qualité
+« Quest » (`Docs/Audit_Performance_Quest.md`, `Editor/QuestQualityBaker.cs`), le ménage des fichiers inutilisés
+(`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure de performance des
+builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike**, étapes 1 à 5 (partie suivante).
+**Pas encore commité** (le soir du 26 octobre) : la troisième version de l'atelier (flèche debout, sceaux animés), les PV
+des parchemins retirés, la télékinésie guidée par la main (`ArrowWorkshop.cs`, `PlayerUpgrades.cs`, `ShopManager.cs`,
+`ShopCatalog.cs`, `ArrowPieces.cs` et les docs).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
 
@@ -40,8 +39,14 @@ d'améliorations par partie, presque toujours les mêmes). Il a choisi la propos
 - étapes 3 et 5 : 24 pièces nouvelles, 6 duos (la corde de l'arc bat d'or) ;
 - étape 4 : les pièces se voient sur la flèche et l'arc, un son par pièce ;
 - demandé par le joueur le 26 octobre : **l'atelier**, à droite de la boutique (plus de remplacement : on garde toutes les
-  pièces et on équipe celle qu'on veut ; la flèche du jeu y tourne en 3D, un cadre cliquable par partie), et **un prix par
-  parchemin** (chacun monte quand on le prend souvent ; la Force et l'Adresse donnent aussi +5 PV max, comme dans Dead Cells).
+  pièces et on équipe celle qu'on veut ; la flèche du jeu y tourne en 3D, debout, un sceau animé cliquable sur
+  chaque partie, les pièces à sa droite), et **un prix par
+  parchemin** (chacun monte quand on le prend souvent ; seule la Vigueur donne des PV max).
+
+**Premiers retours du joueur** (26 octobre au soir, après quelques tests) : les +5 PV max de la Force et de l'Adresse sont
+retirés ; la télékinésie faisait toujours monter la flèche (elle suivait l'avant du modèle de l'arc) : elle est maintenant
+guidée par rapport à la main (à l'appui, la main sert de référence, puis la flèche tourne comme elle, deux fois plus,
+*k_SteerGain* en tête de `ArrowPieces.cs`). Le reste n'a pas encore de retour : suivre `Checklist_Demo.md`.
 
 **À l'ouverture de Unity** : cliquer dans la fenêtre ; la console écrit ce que chaque baker a fait (le catalogue de la
 boutique est modifié une seule fois par étape). Si un baker a changé la scène, l'enregistrer (Ctrl+S). Puis les tests :
@@ -51,20 +56,20 @@ boutique est modifié une seule fois par étape). Si un baker a changé la scèn
 | Fichier | Rôle |
 |---|---|
 | `Scripts/Upgrades/Upgrade.cs` | les effets (nouveaux toujours à la fin), les genres (objet, parchemin, retiré), les emplacements, le déclencheur « tir parfait » |
-| `Scripts/Upgrades/PlayerUpgrades.cs` | ce qu'on possède (`Level`) et ce qui joue (`Stacks` : les pièces équipées, les parchemins), `Equip`, les PV des parchemins |
+| `Scripts/Upgrades/PlayerUpgrades.cs` | ce qu'on possède (`Level`) et ce qui joue (`Stacks` : les pièces équipées, les parchemins), `Equip` |
 | `Scripts/Upgrades/SpecialArrows.cs` | les anciens effets (foudre, glace…), la corde triple ; crée `ArrowPieces` et `PieceLook` |
 | `Scripts/Upgrades/ArrowPieces.cs`, `ArrowPieces.Lot2.cs` | les 24 pièces nouvelles et ce que font les duos (réglages en tête des fichiers) |
 | `Scripts/Upgrades/ArrowDuos.cs` | les 6 duos, « Duo possible » |
 | `Scripts/Upgrades/PieceLook.cs`, `PieceSounds.cs` | les pièces visibles (flèches, corde, breloque, flèche de l'atelier) et leurs couleurs ; les sons fabriqués |
 | `Scripts/Shop/ShopCatalog.cs`, `ShopManager.cs`, `ShopPanel.cs`, `ShopCard.cs`, `ShopOffer.cs` | la boutique : prix, offres, panneau |
-| `Scripts/Shop/ArrowWorkshop.cs` | l'atelier : la flèche 3D, les cadres, les pièces à équiper (taille et place en tête du fichier) |
+| `Scripts/Shop/ArrowWorkshop.cs` | l'atelier : la flèche 3D debout, les sceaux animés et leurs légendes, les pièces à équiper (place, tailles et vitesses en tête du fichier) |
 | `Scripts/Chests/ChestReward.cs`, `Chest.cs`, `ChestSpawner.cs` | les coffres et le coffre de boss |
 | `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs` | les changements du catalogue et de la scène, faits une fois |
 | `Scripts/Core/DemoBoost.cs` | les raccourcis F et R |
 
 **En attente du joueur** : quels anciens objets ne jouent qu'aux tirs parfaits (tableau dans `Refonte_Roguelike.md`), la
-courbe des ennemis avec moins d'améliorations, les textes et les icônes des pièces nouvelles (provisoires), les PV des
-parchemins (*Health Per Scroll*, 5) et leur hausse de prix (*Own Scroll Price Increase*, 10 %). **Ensuite** : l'étape 6
+courbe des ennemis avec moins d'améliorations, les textes et les icônes des pièces nouvelles (provisoires), la hausse
+de prix de chaque parchemin (*Own Scroll Price Increase*, 10 %). **Ensuite** : l'étape 6
 (des pièces débloquées par les succès, une réserve par source).
 
 ## 2. Le katana, 3e version (refait le 24 octobre, après l'oral ; testé au casque le même jour, satisfaisant)

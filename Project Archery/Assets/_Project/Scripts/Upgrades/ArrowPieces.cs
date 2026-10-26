@@ -54,12 +54,14 @@ namespace Archery.Upgrades
         const int k_MaxQueuedPerfects = 3;
 
         // Empennage télékinésie : le virage (°/s) au niveau 1 et par niveau en plus, la durée (s) après le tir, la part de vitesse
-        // perdue par seconde, la vitesse minimale (m/s).
+        // perdue par seconde, la vitesse minimale (m/s), et combien la flèche tourne quand la main tourne (2 : la main tourne de
+        // 20°, la flèche de 40° ; sans casque, la caméra, ×1).
         const float k_SteerRate = 110f;
         const float k_SteerRatePerLevel = 45f;
         const float k_SteerTime = 3f;
         const float k_SteerSlowdown = 0.12f;
         const float k_SteerMinSpeed = 12f;
+        const float k_SteerGain = 2f;
 
         // Pointe à mèche : le délai (s), les dégâts au centre en part du tir (moitié au bord) et le rayon (m), avec ce qui
         // s'ajoute par niveau ; les mèches en même temps au plus ; l'intervalle (s) des étincelles.
@@ -134,6 +136,11 @@ namespace Archery.Upgrades
             public float ReturnStart;
             public float ReturnSpeed;
             public Vector3 PreviousTip;
+
+            // La télékinésie : la gâchette est tenue ; l'orientation de la main et la direction de la flèche à l'appui.
+            public bool Steering;
+            public Quaternion SteerReference;
+            public Vector3 SteerDirection;
 
             // Le deuxième lot (ArrowPieces.Lot2) : une flèche née d'une pièce (éclat, détonation), les rebonds faits, le
             // facteur du sniper déjà appliqué, les allers-retours de la faux et la direction du premier, le fût suspendu.
@@ -315,6 +322,7 @@ namespace Archery.Upgrades
             flight.LaunchTime = Time.time;
             flight.Returning = false;
             flight.ReturnDone = false;
+            flight.Steering = false;
             flight.PreviousTip = arrow.TipPosition;
             flight.IsChild = m_TrackingChild;
             flight.Bounces = 0;
@@ -592,20 +600,49 @@ namespace Archery.Upgrades
             FloatingText.Spawn(point, "Rattrapée ! Tir parfait", k_CatchColor, 0.7f, 1f);
         }
 
-        // Télékinésie : la gâchette de la main qui tient l'arme (le clic droit sans casque) ; la flèche suit l'avant de l'arme
-        // (la caméra sans casque).
+        // Télékinésie : tant que la gâchette de la main qui tient l'arme est tenue (le clic droit sans casque), la flèche tourne
+        // comme la main a tourné depuis l'appui (deux fois plus), à partir de sa direction à l'appui ; la main immobile, elle file
+        // droit. Relâcher puis rappuyer reprend la main où elle est. Revu le 26 octobre après le test du joueur : la flèche
+        // suivait l'avant du modèle de l'arc, qui ne vise pas où l'on tire, et montait toujours.
         static bool SteerTarget(Flight flight, out Vector3 aim)
         {
             aim = default;
-            if (flight.Returning || Time.time - flight.LaunchTime > k_SteerTime)
+            if (flight.Returning || Time.time - flight.LaunchTime > k_SteerTime || !SteerInput(flight, out var pose, out var gain))
+            {
+                flight.Steering = false;
                 return false;
+            }
 
+            if (!flight.Steering)
+            {
+                var velocity = flight.Arrow.Velocity;
+                flight.Steering = true;
+                flight.SteerReference = pose;
+                flight.SteerDirection = velocity.sqrMagnitude > 0.01f ? velocity.normalized : flight.Arrow.transform.forward;
+            }
+
+            (pose * Quaternion.Inverse(flight.SteerReference)).ToAngleAxis(out var angle, out var axis);
+            if (angle > 180f)
+                angle -= 360f;
+            aim = Mathf.Abs(angle) < 0.01f || float.IsNaN(axis.x)
+                ? flight.SteerDirection
+                : Quaternion.AngleAxis(Mathf.Clamp(angle * gain, -175f, 175f), axis) * flight.SteerDirection;
+            return true;
+        }
+
+        // La gâchette tenue, et l'orientation de ce qui guide : la main qui tient l'arme (plus fort : k_SteerGain), ou la caméra
+        // sans casque (le clic droit).
+        static bool SteerInput(Flight flight, out Quaternion pose, out float gain)
+        {
+            pose = Quaternion.identity;
+            gain = 1f;
             if (flight.Hand is XRBaseInputInteractor hand)
             {
                 if (hand.activateInput == null || !hand.activateInput.ReadIsPerformed())
                     return false;
 
-                aim = flight.Aim != null ? flight.Aim.forward : hand.transform.forward;
+                pose = hand.transform.rotation;
+                gain = k_SteerGain;
                 return true;
             }
 
@@ -615,7 +652,7 @@ namespace Archery.Upgrades
                 !mouse.rightButton.isPressed)
                 return false;
 
-            aim = desktop.CameraTransform.forward;
+            pose = desktop.CameraTransform.rotation;
             return true;
         }
 

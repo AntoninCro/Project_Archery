@@ -57,12 +57,6 @@ namespace Archery.Upgrades
         [SerializeField]
         Color m_HealPopupColor = new Color(0.45f, 1f, 0.45f);
 
-        [Tooltip("PV max donnés en plus par chaque parchemin de Force ou d'Adresse (26 octobre, comme dans Dead Cells : un " +
-                 "parchemin pris hors de son build n'est jamais perdu, il donne de la vie). La Vigueur garde sa valeur. 0 : aucun.")]
-        [Min(0f)]
-        [SerializeField]
-        float m_HealthPerScroll = 5f;
-
         [Header("Bonus temporaires (coffres)")]
         [Tooltip("Multiplie les dégâts pendant « Dégâts ×2 ».")]
         [SerializeField]
@@ -104,9 +98,6 @@ namespace Archery.Upgrades
         /// <summary>Améliorations possédées, une fois chacune, dans l'ordre du premier achat (les pièces rangées dans l'atelier aussi).</summary>
         public IReadOnlyList<Upgrade> Owned => m_Owned;
 
-        /// <summary>PV max donnés en plus par chaque parchemin de Force ou d'Adresse (comme dans Dead Cells).</summary>
-        public float HealthPerScroll => m_HealthPerScroll;
-
         /// <summary>Nombre total d'améliorations obtenues pendant la partie, en boutique ou dans un coffre (chaque exemplaire compte).</summary>
         public int Count { get; private set; }
 
@@ -144,12 +135,9 @@ namespace Archery.Upgrades
             1f + k_QuickChargeBandBonus * Stacks(UpgradeEffect.QuickCharge) + k_DexterityBandShare * Total(UpgradeEffect.Dexterity);
 
         public float GoldWidthMultiplier => 1f + Total(UpgradeEffect.Precision) + Total(UpgradeEffect.Dexterity);
-        public float BonusMaxHealth =>
-            Total(UpgradeEffect.Vitality) + Total(UpgradeEffect.Vigor) +
-            m_HealthPerScroll * (Stacks(UpgradeEffect.Strength) + Stacks(UpgradeEffect.Dexterity));
-
-        /// <summary>Ce parchemin donne aussi <see cref="HealthPerScroll"/> PV max (la Force et l'Adresse).</summary>
-        public static bool ScrollGivesHealth(UpgradeEffect effect) => effect == UpgradeEffect.Strength || effect == UpgradeEffect.Dexterity;
+        // Seule la Vigueur donne des PV max : les +5 PV de la Force et de l'Adresse (26 octobre, comme dans Dead Cells) ont été
+        // retirés le même jour, à la demande du joueur.
+        public float BonusMaxHealth => Total(UpgradeEffect.Vitality) + Total(UpgradeEffect.Vigor);
         public float HeadDamageMultiplier => 1f + Total(UpgradeEffect.HeadHunter);
         public float LifeOnHeadshot => Total(UpgradeEffect.Vampirism);
         public int ChainCount => Mathf.RoundToInt(Total(UpgradeEffect.ChainLightning));

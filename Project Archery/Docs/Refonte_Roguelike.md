@@ -87,12 +87,17 @@ roguelike, étape 4 ») :
 - les failles du katana passent par `ArrowPieces.OnRiftHit` (givre, chasseur, bourreau ; mèche et aimant au premier ennemi) ;
 - **demandé par le joueur le même jour** : l'**atelier** (`Scripts/Shop/ArrowWorkshop.cs`, construit par le
   `ShopPanel` à droite de la boutique) : plus de remplacement, toutes les pièces prises restent, une seule équipée par
-  emplacement, celle d'un emplacement vide s'équipe toute seule ; dans sa deuxième version, la flèche du jeu y tourne
-  en 3D, avec un petit cadre relié à chaque partie, et l'on clique une partie (ou son cadre) pour la changer ; et **chaque parchemin a son prix** (+10 % par achat du
-  même, *Own Scroll Price Increase*), la Force et l'Adresse donnant aussi +5 PV max (*Health Per Scroll*), comme dans
-  *Dead Cells* ;
+  emplacement, celle d'un emplacement vide s'équipe toute seule ; dans sa troisième version, la flèche du jeu y tourne
+  en 3D, debout, chaque partie entourée d'un sceau animé (comme les points faibles des boss), les pièces à sa droite ;
+  on clique une partie pour la changer ; et **chaque parchemin a son prix** (+10 % par achat du
+  même, *Own Scroll Price Increase*) ; la Force et l'Adresse ont donné aussi +5 PV max, comme dans *Dead Cells*, retiré le
+  même jour à la demande du joueur ;
 - **écarts avec le plan** : la question 5 de la partie 13 (que devient une pièce remplacée ?) a maintenant la réponse du
   joueur : rien n'est perdu, on choisit dans l'atelier. Textes, icônes et couleurs des pièces provisoires.
+
+**Premiers retours du joueur** (26 octobre au soir) : les +5 PV max de la Force et de l'Adresse sont retirés ; la
+télékinésie faisait toujours monter la flèche (elle suivait l'avant du modèle de l'arc) : elle est maintenant guidée par
+rapport à la main (à l'appui, la main sert de référence, puis la flèche tourne comme elle, deux fois plus).
 
 **Ensuite** : tout tester au casque ; régler les pièces et leurs couleurs (constantes en tête de `ArrowPieces.cs`,
 `ArrowPieces.Lot2.cs` et `PieceLook.cs`) et la taille des cartes de l'atelier (en tête d'`ArrowWorkshop.cs`) ; reprendre la
