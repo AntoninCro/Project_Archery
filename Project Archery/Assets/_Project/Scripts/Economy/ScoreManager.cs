@@ -92,7 +92,11 @@ namespace Archery.Economy
         public int Score { get; private set; }
         public int Money => Mathf.FloorToInt(m_Money);
 
-        /// <summary>Matériaux de construction (GDD, section 9) : seconde monnaie, gagnée seulement sur la carte.</summary>
+        /// <summary>
+        /// Matériaux de construction (GDD, section 9) : seconde monnaie, gagnée seulement sur la carte. Plus gagnés ni dépensés
+        /// depuis la refonte du tower defense du 27 octobre (des plans à la place, <c>Building/BuildManager</c>) ; restent pour
+        /// les anciens gisements de cristaux (<c>CrystalDeposit</c>), à retirer avec eux.
+        /// </summary>
         public int Materials { get; private set; }
 
         /// <summary>Nombre de touches consécutives sur des ennemis.</summary>
@@ -227,6 +231,10 @@ namespace Archery.Economy
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
+            // Les mannequins du centre d'entraînement (26 octobre) ne rapportent rien.
+            if (enemy != null && enemy.IsTrainingDummy)
+                return;
+
             // Un coup de katana compte comme une flèche qui touche (points de touche, combo) ; une faille du katana aussi.
             var melee = info.Source is IMeleeSource;
             var shot = info.Source as IPlayerShot;
@@ -253,6 +261,9 @@ namespace Archery.Economy
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)
         {
+            if (enemy != null && enemy.IsTrainingDummy)
+                return;
+
             Kills++;
             var headshot = info.Zone == HitZone.Head;
             if (headshot)

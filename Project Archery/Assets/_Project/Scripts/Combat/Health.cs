@@ -43,6 +43,16 @@ namespace Archery.Combat
         public UnityEvent OnDeath => m_OnDeath;
 
         /// <summary>
+        /// Ne descend jamais à 0. Les mannequins d'entraînement le sont pendant les vagues, et redeviennent mortels entre deux
+        /// (26 octobre : ils comptent alors comme des ennemis, <c>Training/TrainingDummy</c>).
+        /// </summary>
+        public bool Invulnerable
+        {
+            get => m_Invulnerable;
+            set => m_Invulnerable = value;
+        }
+
+        /// <summary>
         /// Figé (la carte pendant l'épreuve du portail des étoiles) : il ne prend plus de dégâts et ne se régénère plus.
         /// Ses scripts sont alors désactivés : un ennemi tué pendant ce temps ne serait jamais compté comme mort.
         /// </summary>

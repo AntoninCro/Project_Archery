@@ -76,21 +76,36 @@ namespace Archery.Chests
         [SerializeField]
         float m_BossChestDelay = 1.5f;
 
-        [Tooltip("Distance (m) entre le joueur et le coffre du boss, devant lui à droite (la boutique s'ouvre à sa gauche).")]
+        [Tooltip("Le coffre du boss tombe là où le boss est mort (27 octobre au soir). Sans boss mort pendant la vague (raccourci X) : " +
+                 "distance (m) entre le joueur et le coffre, juste devant lui (la boutique s'ouvre à sa gauche, l'atelier à sa droite).")]
         [SerializeField]
         float m_BossChestDistance = 1.8f;
 
-        // Places essayées pour le coffre de boss, en degrés depuis le regard du joueur (positif : vers sa droite).
-        static readonly float[] k_BossChestAngles = { 40f, 20f, 60f, 0f, 85f, -20f, 110f, -45f, 145f, -80f, 180f };
+        // Places essayées pour le coffre de boss, en degrés depuis le regard du joueur (positif : vers sa droite). Juste devant
+        // d'abord depuis le 27 octobre au soir : l'atelier a pris la droite du joueur (devant à droite, 40°, avant).
+        static readonly float[] k_BossChestAngles = { 0f, 15f, -15f, 30f, -30f, 60f, -60f, 90f, -90f, 135f, -135f, 180f };
         static readonly float[] k_BossChestDistanceScales = { 1f, 0.7f, 1.4f };
         static readonly Vector3 k_BossChestHalfExtents = new Vector3(0.45f, 0.4f, 0.45f);
         static readonly Collider[] s_Overlaps = new Collider[16];
+
+        // Autour de l'endroit où le boss est mort, les places essayées pour son coffre (27 octobre au soir) : là même, puis deux
+        // cercles (m), 8 places chacun.
+        static readonly float[] k_DeathChestRings = { 1.5f, 3f };
+        static readonly RaycastHit[] s_GroundHits = new RaycastHit[16];
 
         readonly List<Chest> m_Chests = new List<Chest>();
         readonly List<float> m_Pending = new List<float>();
         readonly List<Transform> m_FreePoints = new List<Transform>();
         WaveManager m_Waves;
         float m_BossChestTimer = -1f;
+        bool m_HasBossDeath;
+        Vector3 m_BossDeathPosition;
+
+        /// <summary>Le prefab du coffre, repris par les caisses de l'ingénieur (<c>Building/CrystalSpawner</c>, 27 octobre).</summary>
+        public Chest ChestPrefab => m_ChestPrefab;
+
+        /// <summary>Les emplacements des coffres (la grille de construction n'y pose pas d'emplacement, 27 octobre).</summary>
+        public IReadOnlyList<Transform> SpawnPoints => m_SpawnPoints;
 
         void Start()
         {
@@ -107,10 +122,12 @@ namespace Archery.Chests
             m_Waves.WaveStarted += OnWaveStarted;
             m_Waves.WaveEnded += OnWaveEnded;
             m_Waves.GameOver += ClearAll;
+            Boss.Defeated += OnBossDefeated;
         }
 
         void OnDestroy()
         {
+            Boss.Defeated -= OnBossDefeated;
             if (m_Waves == null)
                 return;
 
@@ -119,9 +136,20 @@ namespace Archery.Chests
             m_Waves.GameOver -= ClearAll;
         }
 
+        // L'endroit où le boss de la vague meurt (le dernier, s'il y en a plusieurs) : son coffre y tombera.
+        void OnBossDefeated(Boss boss)
+        {
+            if (boss == null)
+                return;
+
+            m_HasBossDeath = true;
+            m_BossDeathPosition = boss.transform.position;
+        }
+
         void OnWaveStarted(int wave)
         {
             m_Pending.Clear();
+            m_HasBossDeath = false;
 
             // Pas de coffre pendant la vague du boss final : la carte est vide.
             if (m_Waves.IsFinalBossWave)
@@ -203,7 +231,9 @@ namespace Archery.Chests
             return chest;
         }
 
-        // Le coffre du boss tombe près du joueur, où qu'il soit, tourné vers lui.
+        // Le coffre du boss tombe là où le boss est mort (27 octobre au soir, demandé par le joueur : il faut aller le chercher,
+        // signalé par son rayon de lumière), tourné vers le joueur. Sans boss mort pendant la vague (raccourci X), ou sans sol
+        // sous lui : près du joueur, où qu'il soit, comme avant.
         void SpawnBossChest()
         {
             m_BossChestTimer = -1f;
@@ -212,13 +242,67 @@ namespace Archery.Chests
                 return;
 
             var feet = rig.BodyPosition;
+            var place = Vector3.zero;
+            var atDeath = m_HasBossDeath && TryFindDeathChestPlace(m_BossDeathPosition, out place);
+            m_HasBossDeath = false;
+            if (atDeath)
+            {
+                SpawnAt(place, feet).MakeBossChest();
+                HeadMessages.Show("Le boss a laissé un coffre là où il est tombé !\n<size=60%>Un objet à choisir</size>", m_MessageColor, 4f);
+                return;
+            }
+
             var head = rig.Head != null ? rig.Head.position : feet + Vector3.up * 1.6f;
             SpawnAt(FindBossChestPlace(feet, head, rig.HeadYaw), feet).MakeBossChest();
             HeadMessages.Show("Le boss a laissé un coffre !\n<size=60%>Un objet à choisir</size>", m_MessageColor, 4f);
         }
 
-        // Devant le joueur à droite si possible, sur le même sol que lui (le haut de la tour, ou la carte), à une place libre
-        // qu'il voit ; sinon juste devant lui.
+        // Le sol sous l'endroit où le boss est mort (son corps et les ennemis ne comptent pas), puis la première place libre : là
+        // même, sinon sur deux cercles autour.
+        bool TryFindDeathChestPlace(Vector3 death, out Vector3 place)
+        {
+            place = death;
+            var count = Physics.RaycastNonAlloc(death + Vector3.up * 3f, Vector3.down, s_GroundHits, 60f, Physics.DefaultRaycastLayers,
+                                                QueryTriggerInteraction.Ignore);
+            var found = false;
+            var best = float.MaxValue;
+            for (var i = 0; i < count; i++)
+            {
+                var hit = s_GroundHits[i];
+                if (hit.distance >= best || ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<Enemy>() != null)
+                    continue;
+
+                best = hit.distance;
+                place = hit.point;
+                found = true;
+            }
+
+            if (!found)
+                return false;
+
+            var ground = place;
+            if (IsFree(ground))
+                return true;
+
+            foreach (var radius in k_DeathChestRings)
+            {
+                for (var i = 0; i < 8; i++)
+                {
+                    var direction = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward;
+                    if (TryGround(ground + direction * radius, ground.y, out var candidate) && IsFree(candidate))
+                    {
+                        place = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            place = ground;
+            return true;
+        }
+
+        // Juste devant le joueur si possible, entre la boutique et l'atelier, sur le même sol que lui (le haut de la tour, ou la
+        // carte), à une place libre qu'il voit ; sinon juste devant lui quand même.
         Vector3 FindBossChestPlace(Vector3 feet, Vector3 head, Quaternion yaw)
         {
             foreach (var scale in k_BossChestDistanceScales)
@@ -246,8 +330,8 @@ namespace Archery.Chests
             return true;
         }
 
-        // Rien à la place du coffre (le joueur, son arc et les ennemis qui s'enfuient ne comptent pas), et le joueur le voit.
-        static bool IsFreeAndVisible(Vector3 ground, Vector3 head)
+        // Rien à la place du coffre (le joueur, son arc et les ennemis qui s'enfuient ne comptent pas).
+        static bool IsFree(Vector3 ground)
         {
             var center = ground + Vector3.up * (k_BossChestHalfExtents.y + 0.12f);
             var count = Physics.OverlapBoxNonAlloc(center, k_BossChestHalfExtents, s_Overlaps, Quaternion.identity, Physics.DefaultRaycastLayers,
@@ -258,6 +342,16 @@ namespace Archery.Chests
                     return false;
             }
 
+            return true;
+        }
+
+        // Rien à la place du coffre, et le joueur le voit.
+        static bool IsFreeAndVisible(Vector3 ground, Vector3 head)
+        {
+            if (!IsFree(ground))
+                return false;
+
+            var center = ground + Vector3.up * (k_BossChestHalfExtents.y + 0.12f);
             return !Physics.Linecast(head, center, out var hit, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) ||
                    ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<Enemy>() != null;
         }

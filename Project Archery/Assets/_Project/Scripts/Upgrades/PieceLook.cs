@@ -101,6 +101,16 @@ namespace Archery.Upgrades
             { UpgradeEffect.GlassPact, new Color(1f, 0.25f, 0.4f) },
             { UpgradeEffect.Engineer, new Color(1f, 0.78f, 0.3f) },
             { UpgradeEffect.Duelist, new Color(0.9f, 0.9f, 0.95f) },
+            { UpgradeEffect.SuperGrenade, new Color(1f, 0.42f, 0.1f) },
+
+            // Le troisième lot (26 octobre au soir).
+            { UpgradeEffect.Siege, new Color(1f, 0.88f, 0.45f) },
+            { UpgradeEffect.Rain, new Color(0.55f, 0.8f, 1f) },
+            { UpgradeEffect.Ghost, new Color(0.7f, 1f, 1f) },
+            { UpgradeEffect.Dive, new Color(1f, 0.6f, 0.25f) },
+            { UpgradeEffect.Recall, new Color(0.4f, 0.85f, 1f) },
+            { UpgradeEffect.Sentinel, new Color(0.95f, 0.85f, 0.45f) },
+            { UpgradeEffect.Miser, new Color(1f, 0.85f, 0.15f) },
         };
 
         // La corde bat d'or tant qu'un duo est actif (étape 5) : sa couleur, la vitesse du battement (battements par seconde).
@@ -148,6 +158,7 @@ namespace Archery.Upgrades
         {
             Instance = this;
             ArrowPool.Taken += Apply;
+            Arrow.PlainChanged += Apply;
         }
 
         void OnDisable()
@@ -155,6 +166,7 @@ namespace Archery.Upgrades
             if (Instance == this)
                 Instance = null;
             ArrowPool.Taken -= Apply;
+            Arrow.PlainChanged -= Apply;
             if (m_Upgrades != null)
                 m_Upgrades.Changed -= Refresh;
             m_Upgrades = null;
@@ -269,10 +281,11 @@ namespace Archery.Upgrades
             if (tip == null && fins == null && runes == null && !m_Parts.ContainsKey(arrow))
                 return;
 
+            // Une flèche en version simple (le budget d'effets de la flèche, 27 octobre au soir) garde sa pointe, sans plumes ni runes.
             var parts = PartsOf(arrow);
             SetPart(parts.Tip, tip, true);
-            SetPart(parts.Fins, fins, false);
-            SetPart(parts.Runes, runes, false);
+            SetPart(parts.Fins, arrow.Plain ? null : fins, false);
+            SetPart(parts.Runes, arrow.Plain ? null : runes, false);
         }
 
         // Allumée de la couleur de la pièce, plus grande à chaque niveau (la pointe partout, les plumes et les runes en largeur).

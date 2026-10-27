@@ -139,7 +139,7 @@ namespace Archery.Building
             var bestDistance = range * range;
             foreach (var enemy in Enemy.Alive)
             {
-                if (enemy == null || !enemy.IsAlive)
+                if (enemy == null || !enemy.IsAlive || enemy.IsTrainingDummy)
                     continue;
 
                 var distance = (enemy.Center - muzzle).sqrMagnitude;

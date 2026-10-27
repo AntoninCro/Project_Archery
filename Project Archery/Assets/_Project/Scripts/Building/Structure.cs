@@ -138,23 +138,68 @@ namespace Archery.Building
 
         /// <summary>
         /// Surchargé (26 octobre : une flèche du joueur avec le talisman de l'ingénieur) : la baliste tire deux fois plus vite,
-        /// la baliste et la tour de givre portent 50 % plus loin.
+        /// la baliste et la tour de givre portent deux fois plus loin (depuis le 27 octobre, réglage du joueur ; 50 % avant).
         /// </summary>
         public bool IsOvercharged => m_OverchargeTimer > 0f;
 
-        /// <summary>Multiplie la cadence de tir pendant la surcharge.</summary>
-        public float OverchargeRate => IsOvercharged ? 2f : 1f;
+        /// <summary>Multiplie la cadence de tir pendant la surcharge (×2, ×4, ×6 selon le niveau du talisman : 26 octobre).</summary>
+        public float OverchargeRate => IsOvercharged ? m_OverchargeRate : 1f;
 
         /// <summary>Multiplie la portée pendant la surcharge.</summary>
-        public float OverchargeRange => IsOvercharged ? 1.5f : 1f;
+        public float OverchargeRange => IsOvercharged ? 2f : 1f;
 
-        /// <summary>Surcharge le bâtiment construit pendant <paramref name="duration"/> s (prolonge une surcharge en cours).</summary>
-        public void Overcharge(float duration)
+        float m_OverchargeRate = 2f;
+
+        // La surcharge se voit (27 octobre, demandé par le joueur) : le bâtiment rougit un peu, en battant. Une teinte par matériau
+        // (MaterialPropertyBlock), retirée à la fin ; pas pendant une construction (le plan bleu remplace les matériaux).
+        static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int k_ColorId = Shader.PropertyToID("_Color");
+        static readonly Color k_OverchargeTint = new Color(1f, 0.15f, 0.1f);
+        const float k_OverchargeTintShare = 0.35f;
+
+        struct TintedRenderer
+        {
+            public Renderer Renderer;
+            public Material[] Materials;
+        }
+
+        readonly List<TintedRenderer> m_Tinted = new List<TintedRenderer>();
+        MaterialPropertyBlock m_TintBlock;
+        bool m_TintOn;
+
+        // Le volume du bâtiment pour les flèches (ArrowBounds) et quand le recalculer.
+        Bounds m_ArrowBounds;
+        float m_NextArrowBounds;
+
+        /// <summary>
+        /// Le volume visible du bâtiment, recalculé toutes les 2 s au plus (27 octobre : la baliste et la tour de givre n'ont pas de
+        /// collider ; le talisman de l'ingénieur regarde si le trajet d'une flèche traverse ce volume).
+        /// </summary>
+        public Bounds ArrowBounds
+        {
+            get
+            {
+                if (Time.time >= m_NextArrowBounds)
+                {
+                    m_NextArrowBounds = Time.time + 2f;
+                    m_ArrowBounds = ComputeBounds();
+                }
+
+                return m_ArrowBounds;
+            }
+        }
+
+        /// <summary>
+        /// Surcharge le bâtiment construit pendant <paramref name="duration"/> s (prolonge une surcharge en cours), sa cadence
+        /// multipliée par <paramref name="rate"/> (la plus forte des deux si une surcharge est en cours).
+        /// </summary>
+        public void Overcharge(float duration, float rate = 2f)
         {
             if (!IsBuilt || duration <= 0f)
                 return;
 
             var was = IsOvercharged;
+            m_OverchargeRate = was ? Mathf.Max(m_OverchargeRate, rate) : Mathf.Max(1f, rate);
             m_OverchargeTimer = Mathf.Max(m_OverchargeTimer, duration);
             if (!was)
                 OnRangeChanged();
@@ -169,6 +214,8 @@ namespace Archery.Building
                     OnRangeChanged();
             }
 
+            UpdateOverchargeTint();
+
             if (!IsUnderConstruction || m_Blueprint == null)
                 return;
 
@@ -176,6 +223,51 @@ namespace Archery.Building
             m_Fill = Mathf.MoveTowards(m_Fill, m_FillTarget, deltaTime * 2.5f);
             m_Flash = Mathf.MoveTowards(m_Flash, 0f, deltaTime * 3f);
             ApplyBlueprint();
+        }
+
+        void UpdateOverchargeTint()
+        {
+            var on = IsOvercharged && !IsUnderConstruction;
+            if (!on && !m_TintOn)
+                return;
+
+            if (m_TintBlock == null)
+                m_TintBlock = new MaterialPropertyBlock();
+            if (on && !m_TintOn)
+            {
+                m_Tinted.Clear();
+                foreach (var renderer in GetComponentsInChildren<Renderer>())
+                {
+                    if ((renderer is MeshRenderer || renderer is SkinnedMeshRenderer) && IsBlueprintPart(renderer))
+                        m_Tinted.Add(new TintedRenderer { Renderer = renderer, Materials = renderer.sharedMaterials });
+                }
+            }
+
+            m_TintOn = on;
+            var share = on ? k_OverchargeTintShare * (0.75f + 0.25f * Mathf.Sin(Time.time * 6f)) : 0f;
+            foreach (var tinted in m_Tinted)
+            {
+                if (tinted.Renderer == null)
+                    continue;
+
+                for (var i = 0; i < tinted.Materials.Length; i++)
+                {
+                    var material = tinted.Materials[i];
+                    m_TintBlock.Clear();
+                    if (on && material != null)
+                    {
+                        if (material.HasProperty(k_BaseColorId))
+                            m_TintBlock.SetColor(k_BaseColorId, Color.Lerp(material.GetColor(k_BaseColorId), k_OverchargeTint, share));
+                        else if (material.HasProperty(k_ColorId))
+                            m_TintBlock.SetColor(k_ColorId, Color.Lerp(material.GetColor(k_ColorId), k_OverchargeTint, share));
+                    }
+
+                    tinted.Renderer.SetPropertyBlock(m_TintBlock, i);
+                }
+            }
+
+            if (!on)
+                m_Tinted.Clear();
         }
 
         protected virtual void OnDestroy()
@@ -202,13 +294,27 @@ namespace Archery.Building
         protected static int ValueFor(int[] values, int level, int fallback) =>
             values == null || values.Length == 0 ? fallback : values[Mathf.Clamp(level - 1, 0, values.Length - 1)];
 
-        /// <summary>Ennemis vivants, copiés dans une liste réutilisée : on peut les blesser (et les tuer) en la parcourant.</summary>
+        /// <summary>
+        /// Ennemis vivants, copiés dans une liste réutilisée : on peut les blesser (et les tuer) en la parcourant. Sans les
+        /// mannequins du centre d'entraînement (26 octobre) : les tourelles ne tirent pas dessus.
+        /// </summary>
         protected static List<Enemy> AliveEnemies()
         {
             s_Enemies.Clear();
-            s_Enemies.AddRange(Enemy.Alive);
+            foreach (var enemy in Enemy.Alive)
+            {
+                if (enemy != null && !enemy.IsTrainingDummy)
+                    s_Enemies.Add(enemy);
+            }
+
             return s_Enemies;
         }
+
+        /// <summary>Les pièces des niveaux 2 et 3 (l'hologramme de pose les montre selon le niveau : BuildPlacement, 27 octobre).</summary>
+        internal GameObject[] LevelParts => m_LevelParts;
+
+        /// <summary>Ce rendu fait partie du bâtiment montré en plan bleu (l'hologramme de pose reprend les mêmes).</summary>
+        internal bool IsPreviewPart(Renderer renderer) => IsBlueprintPart(renderer);
 
         internal void Setup(StructureDefinition definition, BuildSocket socket)
         {

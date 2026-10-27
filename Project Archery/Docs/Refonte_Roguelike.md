@@ -8,6 +8,17 @@ réécrit.
 
 **Le joueur a choisi la proposition B, « la flèche en pièces » (25 octobre).**
 
+**Corrections du 27 octobre, codées, pas encore testées au casque** (après les tests du joueur ; le détail : GDD, section 6,
+« Corrections du 27 octobre » ; tests : `Checklist_Demo.md`) : plus d'effet réservé aux tirs parfaits (`Editor/RoguelikeAllShotsBaker`),
+l'anneau entièrement vert quand le tir suivant est parfait d'office, le rappel qui blesse ce qu'il frôle, le piqué qui pique
+sur l'ennemi visé, le boomerang que la main de l'arc ne rattrape plus, le ricochet qui suit sa cible, le billard en chaîne,
+la pluie qui porte les pièces, l'ingénieur qui surcharge en traversant le bâtiment (qui rougit), le rayon du fût suspendu,
+l'aide à la visée de la corde fantôme, l'étoile filante en couronne de 6 / 12 / 18 flèches, Glacier revu, et six duos du
+rebond (patrouille, chausse-trappes, haute tension, flipper, fragmentation, patinoire). Les duos qui rendraient compatibles
+d'autres paires de pièces sont proposés au joueur (partie 15) ; il les a tous choisis, codés le même jour : six du boomerang
+(retour de flamme, tourbillon, escorte, fil électrique, semeur, mitraille), nuage, retour explosif et averse ; et le rappel
+laisse en place ce que faisaient les flèches plantées.
+
 **Étape 1, codée le 25 octobre, pas encore testée au casque** (GDD, sections 6, 7 et 13 ; tests : `Checklist_Demo.md`,
 « Refonte roguelike, étape 1 ») :
 - les objets (14) ne se prennent qu'une fois ; les statistiques passent dans 3 parchemins (Force +12 % de dégâts, Adresse
@@ -23,9 +34,10 @@ réécrit.
 - le catalogue est converti une fois par `Editor/RoguelikeStep1Baker` ; `Scripts/Upgrades/Upgrade.cs` (genres, déclencheur,
   parchemins), `PlayerUpgrades`, `SpecialArrows`, `Shop/*`, `Chests/*`, le katana et ses failles, `Core/DemoBoost` (F).
 
-**Pas encore fait, à décider par le joueur : les effets au tir parfait.** Le code est prêt (réglage *Trigger* de chaque carte
-du catalogue, et la carte affiche « tir parfait »), mais aucun objet ne l'utilise : il faut changer leurs valeurs, et donc
-leurs descriptions, que le joueur réécrit lui-même. Proposition, avec un seul exemplaire de chaque objet :
+**Les effets au tir parfait : décidés par le joueur le 26 octobre au soir** (partie « Réglages du joueur » plus bas, et GDD,
+section 6) : la foudre, la chaîne d'éclairs, la glace et le déluge à chaque tir parfait ; l'explosion, le perçage, le multitir
+et l'écho à chaque tir. Les descriptions des cartes restent à réécrire par le joueur. Première proposition, gardée pour
+mémoire :
 
 | Objet | Aujourd'hui | Proposé (valeur, déclencheur) |
 |---|---|---|
@@ -99,10 +111,52 @@ roguelike, étape 4 ») :
 télékinésie faisait toujours monter la flèche (elle suivait l'avant du modèle de l'arc) : elle est maintenant guidée par
 rapport à la main (à l'appui, la main sert de référence, puis la flèche tourne comme elle, deux fois plus).
 
-**Ensuite** : tout tester au casque ; régler les pièces et leurs couleurs (constantes en tête de `ArrowPieces.cs`,
-`ArrowPieces.Lot2.cs` et `PieceLook.cs`) et la taille des cartes de l'atelier (en tête d'`ArrowWorkshop.cs`) ; reprendre la
-courbe des ennemis ; décider du tir parfait pour les anciens objets (tableau ci-dessus) ; puis l'étape 6 (des pièces débloquées
-par les succès, une réserve par source).
+**Réglages du joueur, le 26 octobre au soir** (après avoir essayé chaque amélioration au casque ; codés, pas encore testés au
+casque ; le détail, avant et après, est dans le tableau du GDD, section 6 ; tests : `Checklist_Demo.md`, « Réglages du
+26 octobre au soir ») :
+- **plus de dés** : la foudre (50/100/150 % des dégâts), la chaîne d'éclairs (25/50/75 %), la glace (40/50/60 % plus lents,
+  3/4/5 m) et le déluge (1/2/3 flèches) jouent à chaque tir parfait ; l'explosion (100/150/200 %, 4/5/6 m), le perçage (2/4/99
+  ennemis) et le multitir (2/3/4 flèches) à chaque tir ; l'écho garde un dé (50/100/150 %) mais part de la flèche, là où elle
+  est rendue. Valeurs par niveau sur l'objet *Special Arrows* de la scène (champs « … By Level ») ;
+- les pièces : chasseur de têtes et pointe de chasseur plus forts, boomerang refait (demi-tour à plat, retour sur le décor,
+  plus lent, il attend devant le joueur), télékinésie (160 °/s, la flèche ralentit), rebond, plume, aimants (9), arcs (12),
+  pieux (20, 2 m, deux fois moins forts), suspendu (vers la main), faucon sans recharge, acrobate (et sa glissade),
+  ingénieur (×2/4/6, et la réparation des barricades), bourreau (37/50 %, et les boss) ; l'empennage spectral est retiré ;
+  Grenade sauvage et Grenade rapide deviennent le talisman légendaire « Super grenade » ;
+- les parchemins ne montaient plus avec les vagues (remis le soir même) ; les cartes nomment la pièce partenaire d'un duo ; le trou noir a son
+  visuel ; les mannequins du centre d'entraînement comptent comme des ennemis entre les vagues (6 mannequins, dont un groupe
+  de 3) ;
+- le catalogue et les mannequins changent une fois par `Editor/RoguelikeTuningBaker` (la scène est à enregistrer).
+
+**Remarque** : beaucoup de tests du joueur ont été faits sur les mannequins, qui n'étaient pas des ennemis avant ce soir :
+la foudre, l'explosion, la marque, le bourreau, l'aimant… n'avaient rien à toucher. Les retours sur ces pièces sont à revoir
+avec les nouveaux mannequins.
+
+**Le troisième lot et les choix du joueur, le 26 octobre au soir, suite** (parmi les propositions de la partie 14 ; codés,
+pas encore testés au casque ; détail : GDD, section 6, après le tableau « Avant / Depuis » ; tests : `Checklist_Demo.md`,
+« Troisième lot ») :
+- **gardé tel que proposé** : le tirage par emplacement (14.1), les déplacements (14.2), les 7 pièces de 14.3 (corde de siège,
+  qui charge aussi le laser de l'arc cosmique ; corde de pluie, qui multiplie la pluie de l'arc légendaire ; corde fantôme ;
+  empennage piqué ; empennage de rappel ; fût-sentinelle ; talisman de l'avare) et les 11 duos de 14.4 (le lance-grenades
+  explose au rayon de la mèche, demandé par le joueur) ; `Scripts/Upgrades/ArrowPieces.Lot3.cs`, `Editor/RoguelikePiecesBaker` ;
+- **une vraie explosion** (feu, fumée épaisse, poussière, étincelles : `Scripts/Upgrades/ExplosionFx.cs`), demandée par le
+  joueur à la place des petits éclairs orange ;
+- **l'équilibre (14.5)** : l'explosion affaiblie (75/100/125 %, 3,5/4/4,5 m) ; le multitir resserré (2°) et la corde triple
+  élargie (9°) ; le déluge passe en rare ; le prix des parchemins remonte avec les vagues ; le bourreau sur MK à 5/7,5/10 % ;
+  laissés tels quels, voulus par le joueur : l'ingénieur (« fun »), le faucon, la super grenade (« des lags satisfaisants, si
+  c'est bien dosé »), le pacte de verre (pas de réponse).
+
+**Ensuite** (mis à jour le 27 octobre au soir) :
+- **Fait** : les textes, les raretés et les icônes des cartes sont refaits par le joueur (GDD, section 6, « Les cartes refaites
+  par le joueur »). Le joueur a **à peu près tout testé au casque** ; le reste des combinaisons le sera en jouant, au fil des
+  séances de test.
+- **Plus de pièces par partie** (demandé par le joueur, pour plus de liberté dans le build) : chaque coffre de la carte propose
+  toujours un objet, un parchemin et un bonus temporaire (GDD, section 13). Les objets sortent à 50 % communs, 35 % rares,
+  15 % légendaires.
+- **Reste** : la courbe des ennemis. En Normal, le build moyen doit un peu galérer à la vague 5, sans plus. La mesure se fait
+  avec le compteur de dégâts des mannequins, dont les PV sont ×100 (GDD, section 6, les mannequins).
+- **Mis de côté** : l'étape 6 (des pièces débloquées par les succès, une réserve par source, une pièce moins proposée si on l'a
+  prise à la partie d'avant). Le joueur ne pense pas qu'elle soit bonne pour le jeu ; peut-être plus tard.
 
 ## 1. Le diagnostic du joueur
 
@@ -418,3 +472,125 @@ Points techniques :
 4. Le premier lot de pièces : la liste de l'étape 3 est une proposition.
 5. Une pièce prise sur un emplacement occupé : l'ancienne est perdue, ou revendue (or, parchemin) ? **Réponse du joueur (26 octobre)** : ni l'un ni
    l'autre, elle attend dans l'atelier, où l'on choisit la pièce équipée.
+
+## 14. Propositions du 26 octobre au soir (demandées par le joueur, après ses réglages)
+
+Des propositions de Claude. **Le joueur les a presque toutes gardées le soir même, et elles sont codées** (partie
+« Avancement ») : 14.1 à 14.4 telles quelles, 14.5 en partie (voir « Avancement »). Les nombres sont des points de départ.
+
+### 14.1 Pourquoi on trouve une pointe une fois sur deux
+
+La boutique tire d'abord une **rareté** (20 / 60 / 20 %), puis une pièce de cette rareté. Or la seule pièce commune est
+**Chasseur de têtes, une pointe** : une carte sur cinq est donc toujours la même pointe. Avec les 8 pointes rares sur 23 rares,
+une carte a environ **44 %** de chances d'être une pointe (11 pointes sur 36 pièces). Deux remèdes, qui s'additionnent :
+- **tirer d'abord l'emplacement** (une chance sur cinq chacun), puis la rareté parmi les pièces de cet emplacement : chaque partie
+  de la flèche revient aussi souvent, quel que soit son nombre de pièces (le plus efficace ; une demi-journée) ;
+- **déplacer quelques pointes** (14.2) et donner des pièces communes aux autres emplacements.
+
+### 14.2 Déplacer des pièces
+
+| Pièce | De → vers | Pourquoi |
+|---|---|---|
+| Perçage | Pointe → **Fût** | traverser, c'est le fût qui passe ; le duo Faux (boomerang + perçage) reste possible |
+| Flèche de glace | Pointe → **Fût** (« Fût givrant ») | la glace se pose au sol, comme un fût planté ; et elle se combine alors avec la pointe de givre |
+| Vampirisme | Pointe → **Talisman** | une règle du jeu (se soigner), pas un impact ; dans la pointe, il n'est jamais pris |
+| Chasseur de têtes | Pointe → **Corde** (« Corde tendue ») | la corde a le moins de pièces ; et elle n'aurait plus la seule commune |
+
+Ensuite : pointe 7, empennage 7, fût 8, corde 6, talisman 8 (avec les pièces de 14.3 : 7, 9, 8, 9, 8).
+
+### 14.3 Pièces nouvelles (surtout la corde et l'empennage)
+
+| Pièce | Emplacement | Effet | Coût |
+|---|---|---|---|
+| Corde de siège | Corde | passé le vert, l'anneau ne baisse plus les dégâts, il les monte : garder la tension charge la flèche (jusqu'à ×2,5 et +3 ennemis traversés en 2 s), elle grossit et brille. L'inverse de la transe : la patience contre le rythme | P |
+| Corde de pluie | Corde | un tir vers le ciel (plus de 45° vers le haut) éclate à son sommet en 8 flèches qui retombent en pluie autour du point visé (la pluie de l'arc légendaire, en petit) | P |
+| Corde fantôme | Corde | dans la seconde après un tir, tirer la corde à vide et la lâcher décoche une flèche fantôme (60 % des dégâts, avec les pièces) : le geste rapide est récompensé | M |
+| Empennage piqué | Empennage | tirée vers le haut, au sommet de sa course, la flèche repère l'ennemi le plus proche de son point de chute et pique dessus (dégâts ×1,5) : le tir en cloche devient une frappe | P |
+| Empennage de rappel | Empennage | fermer le poing de la main libre rappelle toutes tes flèches plantées : elles reviennent vers toi en traversant les ennemis sur leur chemin (comme la hache de *God of War*) | M |
+| Fût-sentinelle | Fût | plantée au sol, la flèche tire une petite flèche sur l'ennemi le plus proche chaque seconde pendant 5 s (4 au plus) : un pont avec la refonte des tourelles | M |
+| Talisman de l'avare | Talisman | +1 % de dégâts par tranche de 20 or gardés (au plus +100 %) : dépenser, ou garder ? | P |
+
+### 14.4 Duos nouveaux
+
+Toujours entre deux emplacements différents (avec les déplacements de 14.2, ou sans quand c'est précisé).
+
+| Duo | Pièces | Pouvoir |
+|---|---|---|
+| Orage magnétique | Fût aimant + Flèche de foudre | à la fin de l'aspiration, un éclair frappe chaque ennemi attiré |
+| Lance-grenades | Empennage rebond + Pointe à mèche | une petite explosion à chaque rebond, puis la mèche |
+| Supernova | Corde de transe + Flèche explosive | au 5ᵉ tir parfait d'affilée, la flèche dorée explose en supernova (rayon et dégâts ×2) |
+| Chasse à l'homme | Pointe de chasseur + Talisman du bourreau | l'ennemi marqué s'exécute sous un seuil doublé, et la marque saute aussitôt |
+| Pluie de fer | Empennage de plomb + Fût-pieu | chaque onde de choc du plomb plante 3 pieux autour d'elle |
+| Billard | Fût détonateur + Tir ricochet | chaque flèche du détonateur ricoche une fois |
+| Clôture de givre | Fût conducteur + Pointe de givre | les arcs électriques gèlent ce qui les traverse (1 s), prêt à éclater |
+| Réseau | Fût conducteur + Talisman de l'ingénieur | un arc électrique peut relier une flèche plantée à ta baliste : elle reste surchargée tant que le lien dure |
+| Étoile filante | Talisman d'acrobate + Corde triple | en l'air, la volée part en couronne vers le bas, tout autour du point visé |
+| Rail | Empennage plume + Perçage | la flèche devient un trait de lumière, trois fois plus rapide, qui traverse tout et laisse une traînée qui blesse 1 s |
+| Glacier (avec 14.2) | Fût givrant + Pointe de givre | un ennemi sur la glace gèle au premier tir, même pas parfait |
+
+### 14.5 Ce qui semble déséquilibré
+
+1. **L'explosion à chaque tir** (jusqu'à 200 % sur 6 m), surtout avec le multitir (4 flèches) ou l'écho : 4 à 8 explosions par tir
+   sur un groupe. Elle écrase les autres pointes, et pèsera sur le Quest. Piste : 5 m au niveau 3, ou le bonus de niveau aux
+   seuls tirs parfaits.
+2. **Multitir et corde triple** sont maintenant presque la même pièce (deux cordes, à chaque tir), et la triple donne plus de
+   flèches (3/5/7 contre 2/3/4). Piste : le multitir en **rafale** (les flèches partent l'une après l'autre, à 0,1 s, dans la
+   direction visée à ce moment) pour qu'il ait son geste.
+3. **Le déluge** (légendaire) ne joue plus qu'aux tirs parfaits, avec une flèche de plus au niveau 1 : moins fort que le multitir
+   (rare, à chaque tir). Piste : 2/3/4 flèches, ou à chaque tir.
+4. **Les dégâts se multiplient** : pacte de verre (×3), marque du chasseur (×3), chasseur de têtes (×2,5 à la tête), transe
+   (+125 %) et la Force se cumulent en ×50 et plus. Et **les parchemins ne montent plus avec les vagues** alors que l'or, lui,
+   monte : en fin de partie, la Force devient presque gratuite. Piste : *Own Scroll Price Increase* de 10 à 20 %.
+5. **Le pacte de verre** ne coûte que sur un tir rouge : pour un bon tireur, ×2 à ×3 presque gratuits. Piste : le coût monte avec
+   le niveau, ou il touche aussi les tirs orange.
+6. **L'ingénieur à ×6 pendant 9 s**, relancé à chaque flèche : il suffit de tirer dans sa baliste toutes les 9 s pour qu'elle tire
+   six fois plus vite tout le temps. Piste : une surcharge au plus toutes les 15 s par bâtiment, ou ×2/×3/×4.
+7. **Le faucon sans recharge** ralentit le temps à chaque tension, et l'anneau ralentit avec lui : le tir parfait devient facile,
+   donc tout ce qui joue au parfait (foudre, glace, givre, déluge, transe). C'est la pièce qui rend toutes les autres plus fortes.
+   Piste : l'anneau garde sa vitesse pendant le ralenti.
+8. **Le bourreau à 50 %** (et 20 % sur les boss), avec les dégâts de la flèche comptés : au niveau 3, toute tête à mi-vie meurt,
+   et la fin des boss, MK compris, devient très courte. Piste : boss à 10/12/15 %.
+9. **La super grenade au niveau 3** : 64 flèches par grenade, rechargée 70 % plus vite ; avec l'explosion à chaque tir, 64
+   explosions. Lourd pour le Quest. Piste : les flèches de la grenade sans l'explosion de la pointe, ou 8/16/24.
+10. **Le vampirisme** (2/4/6 PV par tir à la tête) ne pèse rien face aux autres pointes : il n'est jamais pris (14.2 : talisman).
+11. **La courbe des ennemis** (PV ×0,85 à ×2,85 des vagues 1 à 5) avait été faite pour l'ancien flot d'améliorations : à revoir
+    au casque, une fois ces réglages essayés.
+
+### 14.6 Textes proposés pour les anciennes cartes
+
+Leurs descriptions parlent encore de pourcentages de chance. Le joueur les réécrit ; propositions (la carte dit déjà « tir
+parfait » dans son sous-titre quand il le faut) :
+
+| Carte | Texte proposé |
+|---|---|
+| Flèche de foudre | La foudre frappe la cible (50 % des dégâts) |
+| Chaîne d'éclairs | Un éclair qui rebondit sur 3 ennemis (25 % des dégâts chacun) |
+| Flèche de glace | Le sol gèle sous la cible : 40 % plus lents |
+| Flèche explosive | Chaque flèche explose (4 m) |
+| Perçage | La flèche traverse 2 ennemis |
+| Chasseur de têtes | +50 % de dégâts à la tête |
+| Déluge | En vol, la flèche se divise en deux |
+| Multitir | 2 flèches à chaque tir |
+| Tir écho | 50 % de chance que la flèche se répète, là où elle est |
+
+## 15. Les pièces qui ne marchent pas ensemble (27 octobre, demandé par le joueur)
+
+Relevé en relisant le code (pas encore au casque). Les pièces d'un même emplacement ne se combinent jamais : les cas
+ci-dessous sont entre emplacements différents. Pour chacun, un duo qui les ferait marcher ensemble ; **le joueur les a tous
+choisis le 27 octobre, et ils sont codés** (GDD, section 6). Correction : la mèche, l'aimant et les arcs du conducteur
+restaient déjà en place après un rappel ; seuls la sentinelle, le pieu et le détonateur s'effaçaient.
+
+| Pièces | Ce qui coince | Duo proposé |
+|---|---|---|
+| Empennage boomerang + fûts qui agissent plantés (sentinelle, pieu, conducteur, aimant, détonateur) et Pointe à mèche | la flèche boomerang ne se plante presque jamais : le décor la renvoie, et elle ne se plante dans un ennemi qu'une fois son perçage épuisé (la sentinelle, le pieu et le conducteur exigent le décor : jamais) | **codés le 27 octobre**, comme pour le rebond, un effet **au demi-tour** : « Retour de flamme » (mèche : explosion), « Tourbillon » (aimant au sol sous la flèche), « Escorte » (petites flèches de sentinelle), « Fil électrique » (un arc du demi-tour au point de départ), « Semeur » (trois pieux au sol), « Mitraille » (une volée du détonateur) |
+| Empennage plume + Corde de pluie | presque sans gravité, une flèche tirée vers le ciel n'atteint jamais son sommet : pas de pluie (elle se perd en l'air) | « Nuage » : la flèche plume s'arrête dans le ciel au bout d'1 s et y fait pleuvoir des flèches pendant 2 à 3 s |
+| Empennage de rappel + pièces plantées (mèche, aimant, conducteur, pieu, détonateur, sentinelle) | rappeler les flèches plantées efface leur effet en cours (une mèche qui n'a pas explosé, un détonateur jamais déclenché, une sentinelle qui tirait encore) | « Retour explosif » (rappel + mèche ou détonateur : la flèche rappelée explose ou détone là où elle était, puis revient) ; pour les autres, un simple réglage : l'effet reste en place après le rappel |
+| Fût suspendu + Corde de pluie | la pluie éclate quand la flèche ne monte plus : arrêtée en l'air, la flèche suspendue éclate tout de suite, au mauvais endroit | « Averse » : relâchées, les flèches suspendues éclatent chacune en une petite pluie sur le point visé |
+| Corde de pluie + Empennage boomerang ou rebond | pas cassé, mais lourd : jusqu'à 16 flèches de pluie (64 avec l'arc légendaire) qui reviennent vers le joueur ou rebondissent 7 fois ; le plafond de flèches suivies (250) protège le Quest | à voir au casque : si c'est trop, les flèches de pluie ne reviennent pas et ne rebondissent pas |
+| Corde de siège + Akimbow ou Katana | la charge n'existe que pour l'arc (et le laser de l'arc cosmique) | aucun duo : depuis le 27 octobre (demandé par le joueur), la boutique et les coffres ne la proposent pas avec ces armes |
+| Corde fantôme + Akimbow ou Katana | la fenêtre ne s'ouvre qu'après un tir de l'arc | aucun duo : depuis le 27 octobre, la boutique et les coffres ne la proposent pas avec ces armes |
+
+Ce qui a été **corrigé** plutôt que proposé (GDD, section 6, « Corrections du 27 octobre ») : les flèches de pluie sans les
+pièces, l'ingénieur sans effet sur les bâtiments, le rappel sans dégâts, le piqué introuvable, le ricochet qui ratait les
+ennemis en marche, le billard au hasard, l'étoile filante invisible, Glacier masqué par le tir parfait, la charge du siège
+perdue quand un tir devient parfait d'office, le rebond limité à la mèche (six duos).

@@ -31,6 +31,10 @@ namespace Archery.UI
 
         void OnDamaged(Health health, DamageInfo info)
         {
+            // Le budget d'effets (27 octobre au soir) : sous une marée de flèches, les chiffres attendent qu'il y ait de la place.
+            if (FloatingText.Crowded)
+                return;
+
             var tuning = m_ShotTuning != null ? m_ShotTuning : ShotTuning.Fallback;
             m_Builder.Clear();
             m_Builder.Append(Mathf.RoundToInt(info.Amount));

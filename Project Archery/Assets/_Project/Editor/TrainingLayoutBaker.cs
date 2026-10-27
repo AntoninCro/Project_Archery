@@ -160,6 +160,29 @@ namespace Archery.EditorTools
                       string.Join(", ", log) + ". Enregistre la scène (Ctrl+S).");
         }
 
+        /// <summary>Le groupe des cibles d'entraînement de la scène (« Training »), ou null.</summary>
+        internal static Transform GroupOf(Scene scene) => FindGroup(scene);
+
+        /// <summary>
+        /// Pose de nouveaux éléments du groupe (26 octobre : des mannequins en plus, <c>RoguelikeTuningBaker</c>) sur un sol libre
+        /// près de leur place (distance à la tour, décalage sur le côté), dans l'axe actuel du groupe, sans toucher aux autres.
+        /// </summary>
+        internal static void PlaceNew(Scene scene, Transform group, IList<Transform> items, IList<Vector2> slots)
+        {
+            Physics.SyncTransforms();
+            var tower = Object.FindObjectsByType<Tower>(FindObjectsInactive.Include)
+                .FirstOrDefault(t => t.gameObject.scene == scene);
+            var origin = tower != null ? tower.transform.position : group.position;
+            origin.y = group.position.y;
+
+            var ignored = new HashSet<Collider>(group.GetComponentsInChildren<Collider>(true));
+            var map = new Obstacles(scene, ignored);
+            var yaw = group.eulerAngles.y;
+            for (var i = 0; i < items.Count && i < slots.Count; i++)
+                Place(items[i], slots[i], origin, yaw, map, null);
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
         // Cherche, autour de la place prévue, le point valable le plus proche ; la cible regarde dans l'axe, comme avant.
         static Vector3 Place(Transform item, Vector2 slot, Vector3 origin, float yaw, Obstacles map, Vector3? moverOffset)
         {

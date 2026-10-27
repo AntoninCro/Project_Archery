@@ -67,6 +67,15 @@ namespace Archery.Bows
         /// <summary>Multiplie les dégâts du coup de flèche au corps à corps (26 octobre : le talisman du duelliste).</summary>
         public static float MeleeDamageMultiplier { get; set; } = 1f;
 
+        /// <summary>La flèche vole en version simple (le budget d'effets : sans traînée, sans ombre, sans plumes ni runes).</summary>
+        public bool Plain => m_Plain;
+
+        /// <summary>Les flèches en vol avec tous leurs détails (pour <c>Core/PerfProbe</c>).</summary>
+        public static int DetailedInFlight => s_DetailedInFlight;
+
+        /// <summary>Une flèche passe en version simple ou retrouve ses détails : <c>PieceLook</c> éteint ou rallume ses plumes et ses runes.</summary>
+        public static event Action<Arrow> PlainChanged;
+
         [Header("Pièces")]
         [Tooltip("Pointe de la flèche. La racine de l'objet est l'encoche.")]
         [SerializeField]
@@ -74,6 +83,20 @@ namespace Archery.Bows
 
         [SerializeField]
         TrailRenderer m_Trail;
+
+        // Le budget d'effets (27 octobre au soir) : jusqu'à 1000 flèches en vol (choix du joueur, la marée de flèches est voulue),
+        // mais seules les k_DetailedArrows premières gardent tous leurs détails. Au-delà, une flèche en plus (multitir, triple,
+        // écho, déluge, pluie…) vole en version simple : sans traînée, sans ombre, sans ses plumes ni ses runes lumineuses (sa
+        // pointe garde la couleur de la pièce). La flèche de l'arc les garde toujours ; les dégâts et les pièces ne changent pas.
+        const int k_DetailedArrows = 120;
+        static int s_DetailedInFlight;
+        bool m_CountedDetailed;
+        bool m_Plain;
+        MeshRenderer[] m_OwnRenderers;
+        UnityEngine.Rendering.ShadowCastingMode[] m_OwnShadows;
+
+        // Le volume du sifflement réglé sur le prefab (l'Akimbow le baisse de moitié, 27 octobre au soir).
+        float m_FlightVolume = 1f;
 
         [Tooltip("Sifflement en boucle pendant le vol.")]
         [SerializeField]
@@ -199,6 +222,18 @@ namespace Archery.Bows
         /// </summary>
         public bool PassesThroughScenery { get; set; }
 
+        /// <summary>
+        /// La flèche ne touche que les ennemis (leurs zones de touche) et traverse tout le reste, le gong et les menus compris
+        /// (26 octobre au soir : les flèches rappelées de l'empennage de rappel). Remis à faux quand elle revient au pool.
+        /// </summary>
+        public bool HitsOnlyEnemies { get; set; }
+
+        /// <summary>
+        /// La flèche ne touche rien : ses dégâts passent par un autre chemin (27 octobre : les flèches rappelées de l'empennage de
+        /// rappel blessent tout ennemi qu'elles frôlent, ArrowPieces.Lot3). Remis à faux quand elle revient au pool.
+        /// </summary>
+        public bool Intangible { get; set; }
+
         /// <summary>La flèche est arrêtée en l'air (26 octobre : le fût suspendu), sans tomber ni rien toucher.</summary>
         public bool IsHovering => m_Hovering;
 
@@ -226,13 +261,65 @@ namespace Archery.Bows
             m_Body = GetComponent<Rigidbody>();
             if (m_Tip != null)
                 m_Length = Mathf.Max(0.1f, m_Tip.localPosition.z);
+
+            if (m_FlightAudio != null)
+                m_FlightVolume = m_FlightAudio.volume;
+
+            // Les renderers du modèle (les pièces de PieceLook viennent après, sans ombre) : le budget d'effets leur retire l'ombre.
+            m_OwnRenderers = GetComponentsInChildren<MeshRenderer>(true);
+            m_OwnShadows = new UnityEngine.Rendering.ShadowCastingMode[m_OwnRenderers.Length];
+            for (var i = 0; i < m_OwnRenderers.Length; i++)
+                m_OwnShadows[i] = m_OwnRenderers[i].shadowCastingMode;
             ResetState();
         }
 
         protected override void OnDisable()
         {
             s_HeldArrows.Remove(this);
+            LeaveDetailBudget();
             base.OnDisable();
+        }
+
+        // Le budget d'effets (voir k_DetailedArrows) : la flèche de l'arc a toujours ses détails ; une flèche en plus, s'il en
+        // reste de la place.
+        void EnterDetailBudget(bool extra)
+        {
+            if (!m_CountedDetailed && (!extra || s_DetailedInFlight < k_DetailedArrows))
+            {
+                m_CountedDetailed = true;
+                s_DetailedInFlight++;
+            }
+
+            SetPlain(!m_CountedDetailed, true);
+        }
+
+        // La flèche ne vole plus (plantée, rangée, détruite) : sa place se libère. Elle garde son allure jusqu'au prochain tir.
+        void LeaveDetailBudget()
+        {
+            if (!m_CountedDetailed)
+                return;
+
+            m_CountedDetailed = false;
+            s_DetailedInFlight = Mathf.Max(0, s_DetailedInFlight - 1);
+        }
+
+        void SetPlain(bool plain, bool notify)
+        {
+            if (m_Plain == plain)
+                return;
+
+            m_Plain = plain;
+            if (m_OwnRenderers != null)
+            {
+                for (var i = 0; i < m_OwnRenderers.Length; i++)
+                {
+                    if (m_OwnRenderers[i] != null)
+                        m_OwnRenderers[i].shadowCastingMode = plain ? UnityEngine.Rendering.ShadowCastingMode.Off : m_OwnShadows[i];
+                }
+            }
+
+            if (notify)
+                PlainChanged?.Invoke(this);
         }
 
         // On ne peut ni survoler ni attraper une flèche : seul le carquois la met dans la main.
@@ -465,10 +552,11 @@ namespace Archery.Bows
             m_Body.linearVelocity = launch.Velocity;
             m_Body.angularVelocity = Vector3.zero;
 
+            EnterDetailBudget(launch.IsExtra);
             if (m_Trail != null)
             {
                 m_Trail.Clear();
-                m_Trail.emitting = launch.IsShot;
+                m_Trail.emitting = launch.IsShot && !m_Plain;
             }
 
             SetTrailColor(launch.TrailColor);
@@ -477,6 +565,7 @@ namespace Archery.Bows
             if (m_FlightAudio != null && launch.IsShot && !launch.IsExtra)
             {
                 m_FlightAudio.pitch = UnityEngine.Random.Range(0.9f, 1.1f);
+                m_FlightAudio.volume = m_FlightVolume * (launch.FlightVolume > 0f ? launch.FlightVolume : 1f);
                 m_FlightAudio.Play();
             }
         }
@@ -649,7 +738,7 @@ namespace Archery.Bows
             m_Body.linearVelocity = Vector3.zero;
             m_Body.angularVelocity = Vector3.zero;
             if (m_Trail != null)
-                m_Trail.emitting = !hover && m_IsShot;
+                m_Trail.emitting = !hover && m_IsShot && !m_Plain;
         }
 
         /// <summary>Déplace la flèche arrêtée en l'air (l'essaim du fût suspendu tourne autour du joueur).</summary>
@@ -739,6 +828,9 @@ namespace Archery.Bows
         bool TryFindHit(Vector3 origin, Vector3 direction, float distance, out RaycastHit closest)
         {
             closest = default;
+            if (Intangible)
+                return false;
+
             var found = false;
             var bestDistance = float.MaxValue;
             var count = Physics.RaycastNonAlloc(origin, direction, s_RaycastHits, distance, m_HitMask, QueryTriggerInteraction.Ignore);
@@ -748,6 +840,8 @@ namespace Archery.Bows
                 if (hit.collider == null || ArrowIgnore.IsIgnored(hit.collider) || m_Pierced.Contains(PierceKey(hit)))
                     continue;
                 if (PassesThroughScenery && hit.collider.GetComponentInParent<IArrowHitHandler>() == null)
+                    continue;
+                if (HitsOnlyEnemies && hit.collider.GetComponentInParent<IArrowHitPriority>() == null)
                     continue;
 
                 if (hit.distance < bestDistance)
@@ -842,11 +936,11 @@ namespace Archery.Bows
                 return;
             }
 
+            // Elle traverse sans perdre de dégâts (27 octobre, réglage du joueur : avant, 20 % de moins à chaque ennemi traversé).
             if (hitLivingThing && m_PierceLeft > 0)
             {
                 m_PierceLeft--;
                 m_Pierced.Add(PierceKey(raycastHit));
-                m_Damage *= 0.8f;
                 return;
             }
 
@@ -913,6 +1007,7 @@ namespace Archery.Bows
                 m_Trail.emitting = false;
             if (m_FlightAudio != null)
                 m_FlightAudio.Stop();
+            LeaveDetailBudget();
             if (Pool != null)
                 Pool.NotifyStuck(this);
 
@@ -944,8 +1039,12 @@ namespace Archery.Bows
             m_BouncePending = false;
             m_Hovering = false;
             PassesThroughScenery = false;
+            HitsOnlyEnemies = false;
+            Intangible = false;
             IsExtra = false;
             m_GravityScale = 1f;
+            LeaveDetailBudget();
+            SetPlain(false, false);
             Extinguish();
 
             if (m_Body != null)
@@ -980,6 +1079,8 @@ namespace Archery.Bows
             ShotEnded = null;
             Stuck = null;
             MeleeDamageMultiplier = 1f;
+            s_DetailedInFlight = 0;
+            PlainChanged = null;
         }
     }
 }

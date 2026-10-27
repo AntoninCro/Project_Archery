@@ -36,10 +36,16 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | City Kit (Commercial) (2.1) | Kenney | `kenney_city-kit-commercial` | Toit cyberpunk : les immeubles de la ville |
 | Glove (gant low-poly) | Quaternius | `Glove by Quaternius - l1zv4LaA4I` | Les mains gantées du joueur (squelette ajouté par le jeu) |
 | Modular Dungeon (porte en arche) | Quaternius | `_Project/Resources/Lair` | La porte de l'antre (coupée en double porte par le jeu) |
+| LowPoly Modular Dungeon Pack, version de mai 2019 (*Chest*, https://opengameart.org/content/lowpoly-modular-dungeon-pack, aussi sur https://poly.pizza/m/O72u4Drp8k) | Quaternius | `_Project/Art/Chests/Chest_Quaternius.fbx` | Les coffres, depuis le 27 octobre (matériaux refaits aux couleurs du modèle, couvercle ouvert et coffre animé par le jeu) |
 | Cyberpunk Game Kit (via Poly Pizza, version FBX) | Quaternius | `Quaternius_Cyberpunk-Game-Kit` | Toit cyberpunk : objets des toits (climatiseurs, antennes, câbles, enseignes, écrans) |
 | *Bomb* (https://poly.pizza/m/qGUAks6IHQ) | Quaternius | `Bomb by Quaternius - qGUAks6IHQ` | La grenade à flèches (réduite à 11 cm, matériaux refaits, mèche allumée par des particules) |
 | *Katana* (https://poly.pizza/m/15A7InejC7) | Pichuliru | `Katana by Pichuliru - 15A7InejC7` | Le katana (remis dans le repère du jeu, 85 cm jusqu'à la pointe, lame néon refaite) |
 | Seamless Space Backgrounds (*Purple Nebula 1*) | Screaming Brain Studios (screamingbrainstudios.itch.io/seamless-space-backgrounds, aussi sur OpenGameArt) | `_Project/Art/Bows/Cosmique/Nebuleuse_Violette.png` | La nébuleuse vue à travers le corps de l'arc cosmique |
+| *Ultimate Fantasy RTS* (https://quaternius.com/packs/ultimatefantasyrts.html ; 37 FBX gardés sur 128 : tours d'archerie et de guet, casernes, entrepôts, murs, tours de rempart, moulins, tours-maisons, tonneau ; le fichier de licence du dossier porte par erreur l'en-tête « Ultimate Platformer Pack », CC0) | Quaternius | `construction/Ultimate Fantasy RTS by Quaternius` (renommé, le téléchargement s'appelait `FBX-20261027T…`) | Refonte du tower defense (27 octobre) : constructions aux niveaux 1, 2 et 3 ; pas encore utilisé |
+| *Landmine* (https://poly.pizza/m/PtqkseZo9O), *Exploding Barrel* (https://poly.pizza/m/1orHe0kCc1), *Ghost* (https://poly.pizza/m/Iip30bDHmu), *Ghost Skull* (https://poly.pizza/m/TX8r9WBXpe), *Watch Tower* (https://poly.pizza/m/cMxuj2gt7D), *Archery Towers* (https://poly.pizza/m/IA5qOjIAiT) | Quaternius | `construction/… by Quaternius - …` | Refonte du tower defense : mine, esprit gardien, phare ; pas encore utilisé (les deux tours sont aussi dans *Ultimate Fantasy RTS*) |
+| *Mirror* (https://poly.pizza/m/2WQIUVj5qr) | Isa Lousberg | `construction/Mirror by Isa Lousberg - 2WQIUVj5qr` | Refonte du tower defense : le miroir ; pas encore utilisé |
+| *Mirror* (https://poly.pizza/m/HIeVDCNgbA) | MilkAndBanana | `construction/Mirror by MilkAndBanana - HIeVDCNgbA` | Refonte du tower defense : le miroir ; pas encore utilisé |
+| *Crossbow* (https://poly.pizza/m/kHb0kA11oD) | CreativeTrio | `construction/Crossbow by CreativeTrio - kHb0kA11oD` | Refonte du tower defense : arbalète à répétition, lance-filet ; pas encore utilisé |
 
 ### Licences CC-BY 3.0 et 4.0 (créditer l'auteur : c'est fait dans le README et ici)
 
@@ -49,6 +55,11 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | *Sci fi crossbow* (https://sketchfab.com/3d-models/sci-fi-crossbow-b2890154cfdf4c1caf2780c50280b26b), **CC-BY 4.0** | **oarfish** (Sketchfab, https://sketchfab.com/oarfish54) | `_Project/Art/Cyber/Arbalete.obj` | Les arbalètes jumelles du toit cyberpunk. **Modifié** : converti de glTF en OBJ, recentré sur la poignée, tourné et réduit (55 cm) ; matériau refait (silhouette sombre au contour néon) |
 | *Bowblade – DAE WeaponCraft – WoW Styled Bow* (https://sketchfab.com/3d-models/bowblade-dae-weaponcraft-wow-styled-bow-a57fb07e6b254947b1e036f5aa7b7cec), **CC-BY 4.0** | **Tijmen Matthys** (Sketchfab, https://sketchfab.com/tijmenmatthys) | `_Project/Art/Bows/Legendaire/` | Le modèle de l'arc légendaire, avec sa texture peinte à la main. **Modifié** : converti de FBX en OBJ, corde retirée (le jeu dessine la sienne), recentré sur la poignée et mis à l'échelle ; la texture sert aussi de lueur |
 | *Enchanted Bow* (https://poly.pizza/m/9j2Tcybxue), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `_Project/Art/Bows/Cosmique/Arc_Enchante.obj` | Le modèle de l'arc cosmique. **Modifié** : converti de glTF en OBJ, corde retirée (le jeu dessine la sienne), matériaux refaits (corps « fenêtre sur l'espace », ailettes violettes lumineuses) |
+| *Giant Crossbow* (https://poly.pizza/m/5XoZ_5sp13S), **CC-BY 3.0** | **Aimé Tribolet** (Poly Pizza) | `construction/Giant Crossbow by Aime Tribolet - 5XoZ_5sp13S` (accent retiré du nom du dossier) | Refonte du tower defense : arbalète à répétition, lance-filet ; pas encore utilisé |
+| *Spike Mine* (https://poly.pizza/m/4VRVeCH1sHm), **CC-BY 3.0** | **Aaron Clifford** (Poly Pizza) | `construction/Spike Mine by Aaron Clifford - 4VRVeCH1sHm` | Refonte du tower defense : mine, pendule ; pas encore utilisé |
+| *Mirror* (https://poly.pizza/m/fQZYQYysyU), **CC-BY 3.0** | **Zsky** (Poly Pizza) | `construction/Mirror by Zsky - fQZYQYysyU` | Refonte du tower defense : le miroir ; pas encore utilisé |
+| *Shark Gun* (https://poly.pizza/m/TQMWsUDw8B), **CC-BY 3.0** | **theking1322** (Poly Pizza) | `construction/Shark Gun by theking1322 - TQMWsUDw8B` | Refonte du tower defense : le harpon ; pas encore utilisé |
+| *Large Electric Generator* (https://poly.pizza/m/ZPlQHwiqTp), **CC-BY 3.0** | **miro_art_studio** (Poly Pizza) | `construction/Large Electric Generator by miro_art_studio - ZPlQHwiqTp` | Refonte du tower defense : la tour de foudre ; pas encore utilisé |
 
 ### Polices (SIL Open Font License 1.1)
 
@@ -69,7 +80,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Four Evil Dragons PBR | Dungeon Mason | `FourEvilDragonsPBR` | MK, le boss final (le dragon rouge ; les trois autres couleurs, inutilisées, supprimées le 25 octobre) |
 | Low Poly Style Bows & Quivers, Shields, 1H Swords, Staffs, Warglaives (Part 1) | Dimasjk Studio | `Dimasjk Studio` | L'arc et la flèche de base ; décor de l'antre |
 | Stylized Mechanized Hammer | AgeSoft | `AgeSoft` | Les marteaux de construction |
-| Animated PBR Chest Demo | à confirmer | `Animated PBR Chest Demo` | Les coffres |
+| Animated PBR Chest Demo | à confirmer | `Animated PBR Chest Demo` | La lueur à l'ouverture des coffres (son coffre, le modèle des coffres jusqu'au 27 octobre, n'est plus utilisé) |
 | Toon RTS Units – Demo | à confirmer | `_Project/Art/Monsters`, animations `WK_…` dans `_Project/Animations` | Le chevalier, ennemi au sol |
 
 ### Paquets de Unity (Unity Companion License)
@@ -97,6 +108,6 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 
 ### Fait pour le projet
 
-Le code (`_Project/Scripts`, `_Project/Editor`), les 20 shaders (`_Project/Shaders`), les icônes de la boutique (`_Project/UI/Icones`, dessinées par script), les décors fabriqués par le code (arène de MK, dimension du portail, fissures de lave), les données et les scènes. Une partie du code et de la documentation a été écrite avec l'aide de l'IA (Claude, d'Anthropic), comme indiqué dans le README et le rapport.
+Le code (`_Project/Scripts`, `_Project/Editor`), les 20 shaders (`_Project/Shaders`), les icônes de la boutique et les symboles du texte des cartes (`_Project/UI/Icones`, dessinés par script), les décors fabriqués par le code (arène de MK, dimension du portail, fissures de lave), les données et les scènes. Une partie du code et de la documentation a été écrite avec l'aide de l'IA (Claude, d'Anthropic), comme indiqué dans le README et le rapport.
 
 À confirmer : `_Project/Art/Textures/TargetFace.png` (la cible d'entraînement), présente depuis le premier prototype.

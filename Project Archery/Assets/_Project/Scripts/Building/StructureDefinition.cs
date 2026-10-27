@@ -11,6 +11,15 @@ namespace Archery.Building
 
         /// <summary>Au bord de la voie : baliste, tour de givre.</summary>
         Roadside,
+
+        /// <summary>
+        /// En hauteur, sur une terrasse ou une falaise au-dessus d'une voie (refonte du 27 octobre, zones de la grille) : les
+        /// bâtiments du bord de la voie s'y posent aussi.
+        /// </summary>
+        Height,
+
+        /// <summary>Sur la tour (refonte du 27 octobre) : le seau d'huile, la baliste sur la tour (constructions à venir).</summary>
+        Tower,
     }
 
     public enum StructureKind
@@ -22,8 +31,10 @@ namespace Archery.Building
     }
 
     /// <summary>
-    /// Un bâtiment du tower defense (GDD, section 9) : son nom, son emplacement, son prefab et le prix de chaque niveau,
-    /// en matériaux. Un asset par bâtiment, listé dans le <see cref="BuildManager"/>.
+    /// Un bâtiment du tower defense (GDD, section 9) : son nom, son emplacement, son prefab et le texte de chaque niveau.
+    /// Un asset par bâtiment, listé dans le <see cref="BuildManager"/>. Depuis la refonte du 27 octobre
+    /// (<c>Docs/Refonte_TowerDefense.md</c>), on ne le paie plus en matériaux : un plan par construction ou par niveau, trouvé
+    /// dans les caisses de l'ingénieur, par lots (<see cref="LotSize"/>).
     /// </summary>
     [CreateAssetMenu(fileName = "Structure", menuName = "Archery/Structure Definition")]
     public class StructureDefinition : ScriptableObject
@@ -31,7 +42,7 @@ namespace Archery.Building
         [Serializable]
         public class Level
         {
-            [Tooltip("Prix en matériaux.")]
+            [Tooltip("Prix en matériaux : plus utilisé depuis la refonte du 27 octobre (un plan par niveau).")]
             public int cost;
 
             [TextArea]
@@ -56,7 +67,18 @@ namespace Archery.Building
         [Tooltip("Un élément par niveau : construction, niveau 2, niveau 3.")]
         public Level[] levels = { new Level(), new Level(), new Level() };
 
+        [Tooltip("Plans donnés par un lot de la caisse de l'ingénieur (refonte du 27 octobre : les bâtiments communs viennent par " +
+                 "lots). 0 : selon le bâtiment, 2 pour la barricade et les piques, 1 pour la tour de givre et la baliste.")]
+        [Min(0)]
+        public int lotSize;
+
         public int MaxLevel => levels != null ? levels.Length : 0;
+
+        /// <summary>Ce bâtiment se pose-t-il sur un emplacement de cette sorte ? Ceux du bord de la voie vont aussi en hauteur.</summary>
+        public bool Fits(BuildSlot zone) => slot == zone || (slot == BuildSlot.Roadside && zone == BuildSlot.Height);
+
+        /// <summary>Plans d'un lot de la caisse de l'ingénieur.</summary>
+        public int LotSize => lotSize > 0 ? lotSize : kind == StructureKind.Barricade || kind == StructureKind.Spikes ? 2 : 1;
 
         /// <summary>Prix du niveau donné (1 = construction), en matériaux.</summary>
         public int CostFor(int level) => level >= 1 && level <= MaxLevel ? Mathf.Max(0, levels[level - 1].cost) : 0;

@@ -27,6 +27,12 @@ namespace Archery.Enemies
         /// </summary>
         public virtual bool ControlsAnimator => false;
 
+        /// <summary>
+        /// Un mannequin du centre d'entraînement (26 octobre, <c>Training/TrainingDummy</c>) : il ne compte ni pour le score, ni
+        /// pour les succès, ni pour les tourelles, et à sa mort il se relève au lieu de disparaître (<see cref="Enemy.Revive"/>).
+        /// </summary>
+        public virtual bool IsTrainingDummy => false;
+
         protected virtual void Awake() => Enemy = GetComponent<Enemy>();
 
         /// <summary>Une image de jeu, tant que l'ennemi est en vie et ne s'enfuit pas : déplacement et attaque.</summary>

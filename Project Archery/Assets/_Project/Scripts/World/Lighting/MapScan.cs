@@ -87,6 +87,14 @@ namespace Archery.World
             return scan;
         }
 
+        /// <summary>Seulement le chemin des ennemis de chaque voie (la grille de construction, 27 octobre : <c>Building/BuildGrid</c>).</summary>
+        public static MapScan RunLanes()
+        {
+            var scan = new MapScan();
+            scan.FindLanes();
+            return scan;
+        }
+
         // Les modèles du kit Nature gardent le nom de leur fichier dans la scène (tree_oak, mushroom_red (3)…).
         void FindModels()
         {

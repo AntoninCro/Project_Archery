@@ -62,20 +62,23 @@ MonoBehaviour:
         Deux coups de gong pendant le chrono le font venir plus t\xF4t, pour plus
         d'or."
     - title: La montre
-      text: "Regarde ton poignet : tes PV, la vague, le chrono, tes mat\xE9riaux
-        et tes bonus en cours."
+      text: 'Regarde ton poignet : tes PV, la vague, le chrono, tes plans de construction
+        et tes bonus en cours.'
   - title: Construction
     videoPrefix: Construction
     icon: {fileID: 21300000, guid: 3763e4295dfd486cafa11f69f5bfeda7, type: 3}
     windows:
-    - title: "R\xE9colter les cristaux"
-      text: "Pendant les vagues, des gisements de cristaux poussent dans la jungle.
-        Vise-les et appuie sur la g\xE2chette (ou la g\xE2chette de prise) : ils
-        \xE9clatent en mat\xE9riaux."
+    - title: "Ouvrir les caisses de l'ing\xE9nieur"
+      text: "Pendant les vagues, des caisses de l'ing\xE9nieur tombent dans la jungle,
+        sous un rayon violet. Vise-en une et appuie sur la g\xE2chette (ou la g\xE2chette
+        de prise) : choisis un lot de plans de construction."
     - title: "Choisir un b\xE2timent"
-      text: "Vise un cercle bleu au sol et appuie sur la g\xE2chette de prise : choisis
-        un b\xE2timent et paie-le en mat\xE9riaux. Barricade et pi\xE8ges sur la
-        voie, baliste et tour de givre au bord."
+      text: "Touche le bouton \xAB Plans \xBB de ta montre avec l'autre main : l'hologramme
+        d'un b\xE2timent suit le rayon de ta main. Joystick : gauche et droite le
+        tournent, haut et bas changent de plan ; g\xE2chette : le poser l\xE0 o\xF9
+        les runes s'allument (orange sur la voie, bleues au bord, vertes en hauteur)
+        ; poign\xE9e : annuler. Pose-le sur un b\xE2timent pareil pour le faire monter
+        de niveau ; entre les vagues, le panneau d'un b\xE2timent propose de le d\xE9placer."
     - title: Construire
       text: "Un marteau appara\xEEt dans chaque main. Frappe trois fois le plan bleu
         pour construire le b\xE2timent."

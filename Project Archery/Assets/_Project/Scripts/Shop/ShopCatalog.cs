@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Archery.BowClasses;
 using Archery.Upgrades;
 using UnityEngine;
 
@@ -42,9 +43,11 @@ namespace Archery.Shop
 
         [Tooltip("Chances des raretés des objets (boutique, coffres). Une seule ligne : les mêmes chances toute la partie. " +
                  "On peut ajouter des lignes pour les faire changer à partir d'une vague.")]
+        // 50 / 35 / 15 depuis le 27 octobre au soir (choix du joueur) : une légendaire précise sortait aussi souvent qu'une commune
+        // précise (20 / 60 / 20 avant).
         public List<RarityOdds> rarityOdds = new List<RarityOdds>
         {
-            new RarityOdds(1, 20f, 60f, 20f),
+            new RarityOdds(1, 50f, 35f, 15f),
         };
 
         [Tooltip("Part minimale des cartes communes, même avec beaucoup d'améliorations Chance (0,4 = 40 %).")]
@@ -164,8 +167,25 @@ namespace Archery.Shop
         public static string StorageLine(Upgrade occupant) =>
             occupant == null ? "" : $"<color=#9FD3FF>Rangée dans l'atelier (équipée : « {occupant.displayName} »)</color>";
 
-        /// <summary>« Duo possible : Trou noir » (vide sans duo), en couleur, pour un texte TMP.</summary>
-        public static string DuoLine(ArrowDuos.Duo duo) => duo == null ? "" : $"<color=#FFD54F>Duo possible : {duo.Name}</color>";
+        /// <summary>
+        /// « Duo possible avec « Fût aimant » : Trou noir » (vide sans duo), en couleur, pour un texte TMP. Depuis le 26 octobre
+        /// (demandé par le joueur), la ligne nomme la pièce déjà possédée qui forme le duo avec celle-ci.
+        /// </summary>
+        public static string DuoLine(ArrowDuos.Duo duo, Upgrade partner)
+        {
+            if (duo == null)
+                return "";
+            return partner != null
+                ? $"<color=#FFD54F>Duo possible avec « {partner.displayName} » : {duo.Name}</color>"
+                : $"<color=#FFD54F>Duo possible : {duo.Name}</color>";
+        }
+
+        /// <summary>La ligne du duo que <paramref name="piece"/> formerait avec une pièce de <paramref name="owned"/> (vide sinon).</summary>
+        public static string DuoLine(Upgrade piece, PlayerUpgrades owned)
+        {
+            var duo = ArrowDuos.Completes(piece, owned);
+            return DuoLine(duo, ArrowDuos.PartnerOf(duo, piece, owned));
+        }
 
         /// <summary>Les lignes non vides, l'une sous l'autre.</summary>
         public static string Lines(string first, string second, string third = "")
@@ -198,7 +218,8 @@ namespace Archery.Shop
         }
 
         /// <summary>
-        /// Prix d'un parchemin dans la boutique qui suit cette vague, arrondi à 5.
+        /// Prix d'un parchemin dans la boutique qui suit cette vague, arrondi à 5 (la hausse par vague, retirée puis remise le
+        /// 26 octobre au soir, à la demande du joueur).
         /// <paramref name="purchases"/> : nombre de parchemins déjà achetés en boutique pendant la partie, tous confondus ;
         /// <paramref name="ownPurchases"/> : combien de celui-ci (26 octobre).
         /// </summary>
@@ -207,6 +228,75 @@ namespace Archery.Shop
             var purchaseFactor = Mathf.Pow(1f + priceIncreasePerPurchase, Mathf.Max(0, purchases)) *
                                  Mathf.Pow(1f + ownScrollPriceIncrease, Mathf.Max(0, ownPurchases));
             return RoundPrice(scrollPrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
+        }
+
+        static readonly List<Upgrade> s_Candidates = new List<Upgrade>();
+        static readonly List<ArrowSlot> s_Slots = new List<ArrowSlot>();
+
+        /// <summary>
+        /// Tire un objet (26 octobre au soir, demandé par le joueur : l'emplacement d'abord). Parmi les emplacements de la flèche
+        /// qui ont encore une pièce à prendre, un au hasard, chacun avec la même chance, quel que soit son nombre de pièces (une
+        /// pointe sortait une fois sur deux) ; de préférence un emplacement pas encore montré (<paramref name="shownSlots"/> : les
+        /// 3 objets d'une boutique, les 2 du coffre de boss) ; puis la rareté (chance comprise), et une pièce de cette rareté dans
+        /// cet emplacement (une autre rareté s'il n'en a pas). <paramref name="excluded"/> : les objets déjà proposés. Null s'il ne
+        /// reste rien.
+        /// </summary>
+        public Upgrade PickObject(int wave, PlayerUpgrades owned, Func<Upgrade, bool> excluded, ICollection<ArrowSlot> shownSlots)
+        {
+            s_Slots.Clear();
+            var freshSlot = false;
+            foreach (var upgrade in upgrades)
+            {
+                if (!IsCandidate(upgrade, owned, excluded) || s_Slots.Contains(upgrade.slot))
+                    continue;
+                s_Slots.Add(upgrade.slot);
+                freshSlot |= shownSlots == null || !shownSlots.Contains(upgrade.slot);
+            }
+
+            if (freshSlot && shownSlots != null)
+                s_Slots.RemoveAll(slot => shownSlots.Contains(slot));
+            if (s_Slots.Count == 0)
+                return null;
+
+            var chosen = s_Slots[UnityEngine.Random.Range(0, s_Slots.Count)];
+            var rarity = RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f);
+            s_Candidates.Clear();
+            foreach (var upgrade in upgrades)
+            {
+                if (IsCandidate(upgrade, owned, excluded) && upgrade.slot == chosen && upgrade.rarity == rarity)
+                    s_Candidates.Add(upgrade);
+            }
+
+            if (s_Candidates.Count == 0)
+            {
+                foreach (var upgrade in upgrades)
+                {
+                    if (IsCandidate(upgrade, owned, excluded) && upgrade.slot == chosen)
+                        s_Candidates.Add(upgrade);
+                }
+            }
+
+            return s_Candidates.Count > 0 ? s_Candidates[UnityEngine.Random.Range(0, s_Candidates.Count)] : null;
+        }
+
+        static bool IsCandidate(Upgrade upgrade, PlayerUpgrades owned, Func<Upgrade, bool> excluded) =>
+            upgrade != null && upgrade.kind == UpgradeKind.Object && (owned == null || owned.CanTake(upgrade)) &&
+            (excluded == null || !excluded(upgrade)) && FitsWeapon(upgrade);
+
+        /// <summary>
+        /// La pièce agit avec l'arme choisie (27 octobre, demandé par le joueur) : la corde fantôme (la corde à vide) n'existe qu'avec
+        /// un arc ; avec les Akimbow ou le katana, la boutique et les coffres ne la proposent pas. Les raccourcis de test (R, Tab, F)
+        /// la donnent quand même. La corde de siège marche avec toutes les armes depuis le 27 octobre (les arbalètes se chargent au
+        /// bout de leur anneau, les failles du katana mûrissent).
+        /// </summary>
+        public static bool FitsWeapon(Upgrade upgrade)
+        {
+            if (upgrade == null || upgrade.effect != UpgradeEffect.Ghost)
+                return true;
+
+            var loadout = BowLoadout.Instance;
+            var weapon = loadout != null ? loadout.Selected : null;
+            return weapon == null || (!weapon.akimbo && !weapon.katana);
         }
 
         /// <summary>Hausse des prix due aux vagues : +10 % par vague, en se cumulant.</summary>

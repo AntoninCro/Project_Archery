@@ -57,17 +57,19 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **N** | Hors vague : lance la vague suivante. Pendant le chrono : fait venir le boss. Pendant le boss : le tue. À la vague 6 : entre dans l'arène, passe l'intro, puis tue MK. |
 | **K** | Le joueur meurt (fin de partie) |
 | **M** | +500 or |
-| **B** | +50 matériaux |
+| **B** | 2 plans de chaque bâtiment (depuis le 27 octobre ; +50 matériaux avant) |
 | **H** | Termine la construction en cours |
 | **C** | Un coffre devant le joueur |
-| **X** | Un coffre de boss près du joueur, devant lui à droite (2 objets au choix ; refonte roguelike du 25 octobre) |
-| **R** | La pièce nouvelle suivante de la flèche (les 24 des étapes 3 et 5 : de la corde triple au talisman du bourreau), un niveau de plus, équipée tout de suite (26 octobre) |
-| **V** | Un gisement de cristaux devant le joueur |
+| **X** | Un coffre de boss près du joueur, juste devant lui (2 objets au choix ; refonte roguelike du 25 octobre). En jeu, depuis le 27 octobre au soir, le vrai coffre de boss tombe là où le boss est mort |
+| **Tab** | Toutes les pièces de la flèche au niveau 1 ; **Tab** encore : niveau 2, puis 3 (la première de chaque emplacement équipée, les autres dans l'atelier ; ni parchemins ni tourelles ; autant de fois qu'on veut ; 26 octobre au soir) |
+| **R** | La pièce nouvelle suivante de la flèche (celles des étapes 3 et 5, la super grenade et le troisième lot : de la corde triple au talisman de l'avare), un niveau de plus, équipée tout de suite (26 octobre) ; sans casque, la corde fantôme se tire au **clic du milieu** et l'empennage de rappel à **Ctrl gauche** |
+| **V** | Une caisse de l'ingénieur devant le joueur (depuis le 27 octobre ; un gisement de cristaux avant) |
+| **F2** | Sans casque : sort un plan (son hologramme suit le viseur), puis passe au suivant, puis le range ; molette : tourner, **E** : poser (27 octobre ; au casque, c'est le bouton « Plans » de la montre) |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
 | **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |
 | **5 à 9, 0, ), =** | Équipe le 1er au 8e arc de la liste, s'il est débloqué (avant la première vague) ; **9** : l'arc cosmique, **0** : l'arc légendaire, **)** (à droite du 0) : les Akimbow, **=** : le katana (après U) |
-| **F** | **Pour faire affronter MK au prof** : toutes les pièces de la flèche au niveau 3 (la première de chaque emplacement équipée, les autres dans l'atelier), les objets de la grenade et 5 exemplaires de chaque parchemin (depuis les 25 et 26 octobre ; avant, 2 exemplaires de chaque amélioration), et tous les emplacements de tourelle (au bord de la voie) remplis de tourelles **niveau 2** (balistes et tours de givre en alternance ; une tourelle déjà là monte au niveau 2). Une fois par partie ; les barricades et pièges ne changent pas |
+| **F** | **Pour faire affronter MK au prof** : toutes les pièces de la flèche au niveau 3 (la première de chaque emplacement équipée, les autres dans l'atelier), les objets de la grenade et 5 exemplaires de chaque parchemin (depuis les 25 et 26 octobre ; avant, 2 exemplaires de chaque amélioration), et tous les emplacements de tourelle (au bord de la voie) remplis de tourelles **niveau 2** (balistes et tours de givre en alternance ; une tourelle déjà là monte au niveau 2 ; depuis le 27 octobre, sans socles : les 6 emplacements au bord de la voie les plus proches de la tour, à 8 m au moins les uns des autres). Une fois par partie ; les barricades et pièges ne changent pas |
 | **O** | Équipe tout de suite le katana (même verrouillé, même pendant une vague) ; **O** encore : l'arme d'avant. Au casque : une taille de katana ouvre une faille au bout de la lame, un coup de poing du gant de la matrice lance une onde de choc qui la propulse ; deux failles qui se croisent fusionnent. Au clavier : clic gauche, un coup de katana qui ouvre une faille (deux coups de suite se croisent et fusionnent) ; clic droit, une onde de choc droit devant |
 | **L** | Un fragment d'arc légendaire (au 3e, l'arc est débloqué et arrive en main) |
 | **U** | Débloque tous les succès, donc tous les arcs |

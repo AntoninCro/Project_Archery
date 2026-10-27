@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 087d9161621415942ae4e439855329e7, type: 3}
+  m_Name: Enemy_Mannequin
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
+  displayName: Mannequin
+  maxHealth: 110
+  moveSpeed: 0
+  attackDamage: 0
+  attackRange: 1.2
+  attackInterval: 1.5
+  attackWindup: 0.4
+  playerAggroRange: 0
+  targetsPlayer: 0
+  points: 0

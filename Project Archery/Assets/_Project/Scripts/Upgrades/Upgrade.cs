@@ -165,6 +165,34 @@ namespace Archery.Upgrades
 
         /// <summary>Talisman du duelliste : les coups de flèche au corps à corps frappent fort, portent la pointe et rendent le tir suivant parfait.</summary>
         Duelist,
+
+        // Les réglages du joueur du 26 octobre : Grenade sauvage et Grenade rapide réunies en un talisman (elles sont retirées).
+
+        /// <summary>Talisman de la super grenade : la grenade projette 12 flèches de plus par niveau et recharge 50/60/70 % plus vite.</summary>
+        SuperGrenade,
+
+        // Le troisième lot (choisi par le joueur le 26 octobre au soir ; ArrowPieces.Lot3). value = 1 par niveau.
+
+        /// <summary>Corde de siège : au bout de l'anneau, garder la tension charge le tir (flèche ou laser de l'arc cosmique).</summary>
+        Siege,
+
+        /// <summary>Corde de pluie : un tir vers le ciel éclate en pluie de flèches ; multiplie la pluie de l'arc légendaire.</summary>
+        Rain,
+
+        /// <summary>Corde fantôme : juste après un tir, tirer la corde à vide décoche une flèche fantôme.</summary>
+        Ghost,
+
+        /// <summary>Empennage piqué : tirée vers le haut, la flèche pique à son sommet sur l'ennemi le plus proche de sa chute.</summary>
+        Dive,
+
+        /// <summary>Empennage de rappel : fermer le poing de la main libre rappelle les flèches plantées, qui traversent les ennemis.</summary>
+        Recall,
+
+        /// <summary>Fût-sentinelle : la flèche plantée au sol tire de petites flèches sur l'ennemi le plus proche.</summary>
+        Sentinel,
+
+        /// <summary>Talisman de l'avare : plus de dégâts selon l'or gardé.</summary>
+        Miser,
     }
 
     /// <summary>
@@ -218,14 +246,79 @@ namespace Archery.Upgrades
         PerfectShot,
     }
 
+    /// <summary>
+    /// Le texte des cartes (27 octobre au soir, demandé par le joueur). « {a|b|c} » donne la valeur du niveau (la dernière
+    /// au-delà) ; en passant d'un niveau à l'autre, « avant → après ». « ➶ » devient le symbole des dégâts d'une flèche de base,
+    /// et « → » une flèche : la police Cinzel n'a pas ces caractères, ce sont deux sprites de
+    /// <c>Resources/Sprite Assets/Symboles</c> (faits par <c>Editor/RoguelikeCardsBaker</c>), de la couleur du texte.
+    /// </summary>
+    public static class CardText
+    {
+        /// <summary>Les dégâts d'une flèche de base, dans les textes des cartes.</summary>
+        public const string ArrowDamage = "➶";
+
+        const string k_ArrowSprite = "<sprite=\"Symboles\" name=\"fleche\" tint=1>";
+        const string k_ToSprite = "<sprite=\"Symboles\" name=\"vers\" tint=1>";
+
+        static readonly System.Text.StringBuilder s_Builder = new System.Text.StringBuilder();
+
+        /// <param name="change">Montrer « avant → après » pour chaque valeur qui change en arrivant à ce niveau.</param>
+        public static string Render(string template, int level, bool change)
+        {
+            if (string.IsNullOrEmpty(template))
+                return "";
+
+            s_Builder.Clear();
+            var index = Mathf.Max(0, level - 1);
+            for (var i = 0; i < template.Length; i++)
+            {
+                var end = template[i] == '{' ? template.IndexOf('}', i + 1) : -1;
+                if (end < 0)
+                {
+                    s_Builder.Append(template[i]);
+                    continue;
+                }
+
+                var values = template.Substring(i + 1, end - i - 1).Split('|');
+                var now = values[Mathf.Min(index, values.Length - 1)];
+                var before = values[Mathf.Min(Mathf.Max(0, index - 1), values.Length - 1)];
+                if (change && index > 0 && before != now)
+                    s_Builder.Append(before).Append(" → ").Append(now);
+                else
+                    s_Builder.Append(now);
+                i = end;
+            }
+
+            return Symbols(s_Builder.ToString());
+        }
+
+        /// <summary>Les symboles d'un texte déjà prêt (« ➶ », « → »), pour un texte TMP.</summary>
+        public static string Symbols(string text) =>
+            string.IsNullOrEmpty(text) ? "" : text.Replace(ArrowDamage, k_ArrowSprite).Replace("→", k_ToSprite);
+    }
+
     /// <summary>Une amélioration proposée en boutique (GDD, section 6).</summary>
     [Serializable]
     public class Upgrade
     {
         public string displayName = "Amélioration";
 
+        [Tooltip("Le texte de la carte. « {50 %|100 %|150 %} » : la valeur aux niveaux 1, 2, 3 (la dernière au-delà) ; « ➶ » : " +
+                 "les dégâts d'une flèche de base (un symbole en jeu). Voir CardText.")]
         [TextArea(2, 4)]
         public string description = "";
+
+        [Tooltip("Ce que dit la carte quand on la reprend (niveau 2, 3…), depuis le 27 octobre au soir : ce qui change, par exemple " +
+                 "« {50 %|100 %|150 %} ➶ », qui devient « 50 % → 100 % ➶ » au niveau 2. Vide : la description.")]
+        [TextArea(1, 3)]
+        public string levelUpText = "";
+
+        /// <summary>Le texte de la carte au niveau donné (1, 2, 3…), pour un texte TMP (voir <see cref="CardText"/>).</summary>
+        public string DescriptionAt(int level) => CardText.Render(description, level, false);
+
+        /// <summary>Ce qui change en passant au niveau donné (« 50 % → 100 % ➶ ») ; au niveau 1, la description.</summary>
+        public string LevelUpAt(int level) =>
+            level <= 1 ? DescriptionAt(1) : CardText.Render(string.IsNullOrEmpty(levelUpText) ? description : levelUpText, level, true);
 
         [Tooltip("Objet (change le tir), parchemin (statistique, sans limite) ou retirée (jamais proposée).")]
         public UpgradeKind kind;
@@ -244,10 +337,11 @@ namespace Archery.Upgrades
 
         [Tooltip("Valeur par exemplaire, cumulée sans limite. Bonus (0,1 = +10 %) : Damage, ArrowSpeed, QuickCharge, Precision, HeadHunter, Luck. " +
                  "Points de conversion en or (0,05 = +5 points) : Loot. PV : Vitality, Vampirism. " +
-                 "Chance (0,25 = 25 % ; au-delà de 100 %, l'effet devient plus fort) : Lightning, Explosive, Frost. " +
-                 "Nombre moyen (0,5 = 50 % de chance d'un de plus ; 1,5 = un sûr + 50 %) : Multishot, Deluge, Echo, Piercing. " +
+                 "Nombre moyen (0,5 = 50 % de chance d'un de plus ; 1,5 = un sûr + 50 %) : Multishot (flèches en plus), Deluge, Echo. " +
                  "Nombre de rebonds : ChainLightning, Ricochet. Degrés par seconde : Homing. " +
-                 "Parchemins : bonus de dégâts (Strength), d'anneau (Dexterity), PV (Vigor).")]
+                 "Parchemins : bonus de dégâts (Strength), d'anneau (Dexterity), PV (Vigor). " +
+                 "Depuis le 26 octobre, la foudre, la glace, l'explosion et le perçage ont leurs valeurs par niveau dans Special Arrows " +
+                 "(scène) : 1 par exemplaire ; les pièces nouvelles, dans les constantes d'ArrowPieces : 1 par exemplaire.")]
         public float value;
 
         [Tooltip("Nombre maximal d'exemplaires (0 = illimité, la règle par défaut).")]

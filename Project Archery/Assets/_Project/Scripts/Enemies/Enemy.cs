@@ -114,6 +114,12 @@ namespace Archery.Enemies
         public bool IsAlive => m_State != State.Dead;
         public bool IsFleeing => m_State == State.Fleeing;
 
+        /// <summary>
+        /// Un mannequin du centre d'entraînement (26 octobre) : les flèches et leurs améliorations le traitent comme un ennemi,
+        /// mais il ne rapporte rien (score, or, succès), les tourelles l'ignorent, et il se relève à sa mort.
+        /// </summary>
+        public bool IsTrainingDummy => m_Behaviour != null && m_Behaviour.IsTrainingDummy;
+
         /// <summary>Centre du corps : là où visent la visée automatique, les éclairs et les explosions.</summary>
         public Vector3 Center => transform.TransformPoint(0f, m_CenterHeight, 0f);
 
@@ -192,7 +198,9 @@ namespace Archery.Enemies
             if (m_Definition == null)
                 Debug.LogError("Enemy : aucune Enemy Definition assignée, valeurs par défaut utilisées.", this);
 
-            WarnAboutCollidersWithoutHitbox();
+            // Le poteau et le socle d'un mannequin n'ont pas de zone de touche, exprès.
+            if (!IsTrainingDummy)
+                WarnAboutCollidersWithoutHitbox();
 
             // Difficulté, puis renforcement selon la vague (courbe exponentielle).
             var difficulty = DifficultyManager.Current;
@@ -472,6 +480,35 @@ namespace Archery.Enemies
         /// <summary>Retire l'ennemi de la partie sans le tuer (fin de sa fuite).</summary>
         public void Despawn() => Destroy(gameObject);
 
+        /// <summary>
+        /// Relève un ennemi mort, debout et avec tous ses PV, ceux d'un ennemi qui apparaîtrait maintenant (difficulté et vague) :
+        /// les mannequins du centre d'entraînement (26 octobre), qui ne disparaissent pas.
+        /// </summary>
+        public void Revive()
+        {
+            if (m_State != State.Dead)
+                return;
+
+            m_State = State.Moving;
+            transform.rotation = m_DeathRotation;
+            foreach (var collider in m_Colliders)
+            {
+                if (collider != null)
+                    collider.enabled = true;
+            }
+
+            m_FrozenTimer = 0f;
+            m_SlowTimer = 0f;
+            m_SlowMultiplier = 1f;
+            m_FadingAge = m_FadingDuration;
+            m_Push = Vector3.zero;
+            if (m_Animator != null)
+                m_Animator.speed = 1f;
+            m_Health.ResetHealth(Def.maxHealth * DifficultyManager.Current.enemyHealth * EnemyScaling.Health);
+            if (isActiveAndEnabled && !s_Alive.Contains(this))
+                s_Alive.Add(this);
+        }
+
         void Stop()
         {
             if (m_Agent == null)
@@ -698,6 +735,10 @@ namespace Archery.Enemies
                 var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(m_DeathTime / 0.5f));
                 transform.rotation = m_DeathRotation * Quaternion.Euler(-80f * t, 0f, 0f);
             }
+
+            // Un mannequin d'entraînement reste là : il se relève (TrainingDummy, puis Revive).
+            if (IsTrainingDummy)
+                return;
 
             // Puis le corps s'enfonce dans le sol et disparaît.
             if (m_DeathTime > m_CorpseLifetime - 1f)

@@ -430,18 +430,21 @@ namespace Archery.World
         // ---------------------------------------------------------------- emplacements de construction
 
         // Un cercle de runes au sol des emplacements libres : il tourne doucement et respire ; il disparaît quand on y
-        // construit. Les emplacements qui apparaissent en cours de partie en reçoivent un (toutes les 2 s).
+        // construit. Les emplacements qui apparaissent en cours de partie en reçoivent un (toutes les 0,5 s). Depuis la refonte du
+        // 27 octobre (étape 3), ceux de la grille de construction ne se montrent que pendant la pose d'un plan, autour du joueur,
+        // là où le bâtiment peut aller, colorés selon leur sorte (BuildSocket.ShowsRune, RuneColor) ; celui que vise l'hologramme
+        // brille plus (IsHighlighted). Leur rune n'est créée qu'à ce moment-là, pas des centaines d'un coup.
         void UpdateRunes(float lamps)
         {
             if (Time.time >= m_NextSocketScan)
             {
-                m_NextSocketScan = Time.time + 2f;
+                m_NextSocketScan = Time.time + 0.5f;
                 var runes = Find(transform, k_Runes);
                 if (runes != null)
                 {
                     foreach (var socket in BuildSocket.All)
                     {
-                        if (m_RuneSockets.Contains(socket))
+                        if (m_RuneSockets.Contains(socket) || !socket.ShowsRune)
                             continue;
                         m_RuneSockets.Add(socket);
                         var renderer = CreateRune(runes, socket);
@@ -457,19 +460,19 @@ namespace Archery.World
                 if (rune.Renderer == null)
                     continue;
 
-                var free = rune.Socket != null && rune.Socket.isActiveAndEnabled && rune.Socket.Structure == null;
+                var free = rune.Socket != null && rune.Socket.isActiveAndEnabled && rune.Socket.Structure == null && rune.Socket.ShowsRune;
                 rune.Renderer.enabled = free;
                 if (!free)
                     continue;
 
                 // Visées par le rayon de la main, elles grossissent un peu et brillent plus (comme les anciens repères).
-                rune.Hover = Mathf.Lerp(rune.Hover, rune.Socket.isHovered ? 1f : 0f, 1f - Mathf.Exp(-10f * Time.deltaTime));
+                rune.Hover = Mathf.Lerp(rune.Hover, rune.Socket.IsHighlighted ? 1f : 0f, 1f - Mathf.Exp(-10f * Time.deltaTime));
                 var runeTransform = rune.Renderer.transform;
                 runeTransform.rotation = spin * runeTransform.rotation;
                 runeTransform.localScale = Vector3.one * (rune.Radius * (1f + 0.12f * rune.Hover));
                 var breath = 0.75f + 0.25f * Mathf.Sin(Time.time * 1.6f + rune.Phase);
                 m_Block.Clear();
-                m_Block.SetColor(k_ColorId, EffectBuild.GlowColor(rune.Renderer));
+                m_Block.SetColor(k_ColorId, rune.Socket.RuneColor ?? EffectBuild.GlowColor(rune.Renderer));
                 m_Block.SetFloat(k_IntensityId, Mathf.Lerp(0.6f, 1.7f, lamps) * Mathf.Lerp(breath, 1.8f, rune.Hover));
                 rune.Renderer.SetPropertyBlock(m_Block);
             }

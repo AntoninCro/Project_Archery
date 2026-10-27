@@ -1,5 +1,10 @@
 # Guide : les coffres
 
+> **Depuis le 27 octobre, le modèle a changé** : le coffre low-poly de Quaternius (CC0, `Art/Chests/Chest_Quaternius.fbx`)
+> remplace celui d'*Animated PBR Chest Demo*. `Editor/ChestModelBaker` l'a mis dans le prefab `Chest` : `ChestMotion` refait la
+> chute, les sauts et l'écrasement, et `ChestLid` ouvre le couvercle sans Animator. Les sections de ce guide sur le modèle animé
+> et son Animator ne servent plus ; le reste (le spawner, les orbes, le rayon de lumière) est toujours vrai.
+
 Ce guide ajoute les coffres du GDD (section 13) à la scène `Prototype_Tir`, avec le modèle animé du pack **Animated PBR Chest Demo** :
 
 - pendant chaque vague, **1 ou 2 coffres** apparaissent loin de la tour, à 15–30 m, avec le message « Un coffre est apparu ! ». Ils **tombent du ciel**, rebondissent, puis sautillent sur place ;

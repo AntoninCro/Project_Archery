@@ -35,6 +35,9 @@ namespace Archery.Core
         bool m_Used;
         int m_NextPiece;
 
+        // Le niveau que la touche Tab a donné à toutes les pièces pendant cette partie (0 : pas encore).
+        int m_AllLevel;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Create()
         {
@@ -51,7 +54,10 @@ namespace Archery.Core
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (mode == LoadSceneMode.Single)
+            {
                 m_Used = false;
+                m_AllLevel = 0;
+            }
         }
 
         void Update()
@@ -62,6 +68,8 @@ namespace Archery.Core
 
             if (keyboard.rKey.wasPressedThisFrame)
                 GiveNextNewPiece();
+            if (keyboard.tabKey.wasPressedThisFrame)
+                GiveAllNextLevel();
             if (!keyboard.fKey.wasPressedThisFrame)
                 return;
 
@@ -100,6 +108,43 @@ namespace Archery.Core
             player.Equip(piece);
             var level = player.Level(piece.effect);
             HeadMessages.Show($"Essai : {piece.displayName}\n<size=60%>{ShopCatalog.NameOf(piece.slot)} · niveau {level}</size>", k_Color, 2.5f);
+        }
+
+        // Raccourci de test (26 octobre au soir, demandé par le joueur) : Tab donne toutes les pièces de la flèche au niveau 1,
+        // un deuxième appui au niveau 2, un troisième au niveau 3 (la première de chaque emplacement s'équipe, les autres
+        // attendent dans l'atelier). Pas les parchemins ni les tourelles (F les donne) ; autant de fois qu'on veut.
+        void GiveAllNextLevel()
+        {
+            var player = PlayerUpgrades.Instance;
+            var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
+            if (player == null || catalog == null)
+                return;
+
+            var level = m_AllLevel + 1;
+            var given = 0;
+            var pieces = 0;
+            foreach (var upgrade in catalog.upgrades)
+            {
+                if (upgrade == null || upgrade.kind != UpgradeKind.Object)
+                    continue;
+
+                pieces++;
+                while (player.Level(upgrade.effect) < level && player.CanTake(upgrade))
+                {
+                    player.Add(upgrade);
+                    given++;
+                }
+            }
+
+            if (given == 0 && level > 1)
+            {
+                HeadMessages.Show("Essai : toutes les pièces sont déjà au niveau maximal", k_Color, 2.5f);
+                return;
+            }
+
+            m_AllLevel = level;
+            HeadMessages.Show($"Essai : les {pieces} pièces au niveau {level}\n<size=60%>Tab encore : niveau suivant · l'atelier pour équiper</size>",
+                              k_Color, 3f);
         }
 
         static int GiveUpgrades()
@@ -141,12 +186,15 @@ namespace Archery.Core
             if (choices.Count == 0)
                 return 0;
 
-            // Dans l'ordre autour de la tour : les balistes et les tours de givre alternent sur la carte.
+            // Dans l'ordre autour de la tour : les balistes et les tours de givre alternent sur la carte. Depuis la refonte du
+            // 27 octobre (étape 3), les 6 emplacements au bord de la voie les plus proches de la tour, à 8 m au moins les uns des
+            // autres (avant : les 6 socles au bord de la voie posés à la main).
             var center = Tower.Instance != null ? Tower.Instance.transform.position : Vector3.zero;
-            var sockets = new List<BuildSocket>();
+            var grid = BuildGrid.Instance;
+            var sockets = grid != null && grid.IsReady ? grid.PickSpread(BuildSlot.Roadside, 6, 8f) : new List<BuildSocket>();
             foreach (var socket in BuildSocket.All)
             {
-                if (socket != null && socket.isActiveAndEnabled && socket.Slot == BuildSlot.Roadside)
+                if (socket != null && socket.isActiveAndEnabled && !socket.IsCandidate && socket.Slot == BuildSlot.Roadside)
                     sockets.Add(socket);
             }
 

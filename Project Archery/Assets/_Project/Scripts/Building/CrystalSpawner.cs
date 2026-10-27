@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Chests;
 using Archery.Core;
 using Archery.Defense;
 using Archery.Player;
@@ -12,39 +13,46 @@ using UnityEngine.InputSystem;
 namespace Archery.Building
 {
     /// <summary>
-    /// Fait apparaître les gisements de cristaux de chaque vague (GDD, sections 3 bis et 9) sur des emplacements choisis,
-    /// loin de la tour, en deux séries : au début de l'accalmie, puis au début de la montée. 3 gisements par série,
-    /// un de plus toutes les 2 vagues. Ce qui n'est pas récolté disparaît à la fin de la vague.
+    /// Fait apparaître les caisses de l'ingénieur de chaque vague (refonte du tower defense du 27 octobre,
+    /// <c>Docs/Refonte_TowerDefense.md</c>, partie 2) sur des emplacements choisis, loin de la tour, au début de l'accalmie :
+    /// 3 caisses, une de plus toutes les 2 vagues. Une caisse s'ouvre comme un coffre et propose des lots de plans de
+    /// construction. Celles qui ne sont pas ouvertes disparaissent à la fin de la vague.
     /// </summary>
+    /// <remarks>
+    /// Le nom vient des gisements de cristaux qu'il faisait apparaître avant la refonte (GDD, section 9), aux mêmes
+    /// emplacements et en même nombre ; les matériaux sont retirés. Une caisse est le coffre de la scène (celui du
+    /// <see cref="ChestSpawner"/>) transformé par <see cref="Chest.MakeEngineerCrate"/>, en attendant son propre modèle.
+    /// </remarks>
     [DisallowMultipleComponent]
     public class CrystalSpawner : MonoBehaviour
     {
+        [Tooltip("Prefab de la caisse : un coffre (Chest). Vide : celui du Chest Spawner de la scène.")]
         [SerializeField]
-        CrystalDeposit m_DepositPrefab;
+        Chest m_CratePrefab;
 
         [Tooltip("Emplacements possibles (objets vides, dans la jungle et sur les terrasses).")]
         [SerializeField]
         List<Transform> m_Spots = new List<Transform>();
 
         [Header("Nombre")]
-        [Tooltip("Gisements par série, à la vague 1.")]
+        [Tooltip("Caisses par série, à la vague 1.")]
         [SerializeField]
         int m_BaseCount = 3;
 
-        [Tooltip("Un gisement de plus par série toutes les N vagues.")]
+        [Tooltip("Une caisse de plus par série toutes les N vagues.")]
         [Min(1)]
         [SerializeField]
         int m_WavesPerExtra = 2;
 
-        [Tooltip("Gisements par série, au plus.")]
+        [Tooltip("Caisses par série, au plus.")]
         [SerializeField]
         int m_MaxCount = 6;
 
-        [Tooltip("Une deuxième série de gisements au début de la montée (ou à l'arrivée du boss s'il est appelé plus tôt).")]
+        [Tooltip("Une deuxième série de caisses au début de la montée (ou à l'arrivée du boss s'il est appelé plus tôt).")]
         [SerializeField]
         bool m_SecondBatch = true;
 
-        [Tooltip("Distance minimale (m) entre la tour et un gisement.")]
+        [Tooltip("Distance minimale (m) entre la tour et une caisse.")]
         [SerializeField]
         float m_MinTowerDistance = 15f;
 
@@ -52,24 +60,19 @@ namespace Archery.Building
         [SerializeField]
         float m_SpawnDelay = 3f;
 
-        [Header("Matériaux")]
-        [Tooltip("Matériaux d'un gisement à la vague 1.")]
-        [SerializeField]
-        int m_BaseAmount = 20;
-
-        [Tooltip("Matériaux en plus par vague.")]
-        [SerializeField]
-        int m_AmountPerWave = 6;
-
         [Header("Retours")]
-        [Tooltip("Optionnel : son de l'apparition des gisements.")]
+        [Tooltip("Couleur du rayon et de la caisse : le violet des anciens cristaux, la couleur de la construction.")]
+        [SerializeField]
+        Color m_CrateColor = new Color(0.62f, 0.4f, 1f);
+
+        [Tooltip("Optionnel : son de l'apparition des caisses.")]
         [SerializeField]
         AudioClip m_AppearClip;
 
         [SerializeField]
         Color m_MessageColor = new Color(0.72f, 0.55f, 1f);
 
-        readonly List<CrystalDeposit> m_Deposits = new List<CrystalDeposit>();
+        readonly List<Chest> m_Crates = new List<Chest>();
         readonly List<Transform> m_FreeSpots = new List<Transform>();
         WaveManager m_Waves;
         float m_SpawnTimer = -1f;
@@ -77,15 +80,18 @@ namespace Archery.Building
 
         public static CrystalSpawner Instance { get; private set; }
 
-        /// <summary>Gisements encore à récolter sur la carte.</summary>
+        /// <summary>Les emplacements des caisses (la grille de construction n'y pose pas d'emplacement).</summary>
+        public IReadOnlyList<Transform> Spots => m_Spots;
+
+        /// <summary>Caisses encore à ouvrir sur la carte.</summary>
         public int Remaining
         {
             get
             {
                 var count = 0;
-                foreach (var deposit in m_Deposits)
+                foreach (var crate in m_Crates)
                 {
-                    if (deposit != null && !deposit.IsHarvested)
+                    if (crate != null && !crate.IsOpened)
                         count++;
                 }
 
@@ -102,26 +108,30 @@ namespace Archery.Building
 
         void Start()
         {
+            if (m_CratePrefab == null)
+            {
+                var chests = FindAnyObjectByType<ChestSpawner>();
+                m_CratePrefab = chests != null ? chests.ChestPrefab : null;
+            }
+
+            if (m_CratePrefab == null)
+                Debug.LogWarning("CrystalSpawner : aucun prefab de caisse (ni de coffre dans le Chest Spawner).", this);
+
             m_Waves = WaveManager.Instance;
             if (m_Waves == null)
             {
-                Debug.LogWarning("CrystalSpawner : aucun Wave Manager, les cristaux n'apparaîtront jamais.", this);
+                Debug.LogWarning("CrystalSpawner : aucun Wave Manager, les caisses n'apparaîtront jamais.", this);
                 return;
             }
-
-            if (m_DepositPrefab == null)
-                Debug.LogWarning("CrystalSpawner : aucun prefab de gisement.", this);
 
             m_Waves.WaveStarted += OnWaveStarted;
             m_Waves.WaveEnded += OnWaveEnded;
             m_Waves.StageChanged += OnStageChanged;
             m_Waves.GameOver += ClearAll;
-            CrystalDeposit.Harvested += OnHarvested;
         }
 
         void OnDestroy()
         {
-            CrystalDeposit.Harvested -= OnHarvested;
             if (Instance == this)
                 Instance = null;
             if (m_Waves == null)
@@ -135,7 +145,7 @@ namespace Archery.Building
 
         void OnWaveStarted(int wave)
         {
-            // Pas de gisement pendant la vague du boss final : la carte est vide.
+            // Pas de caisse pendant la vague du boss final : la carte est vide.
             if (m_Waves.IsFinalBossWave)
                 return;
 
@@ -159,13 +169,13 @@ namespace Archery.Building
         {
             m_SpawnTimer = -1f;
             m_SecondBatchPending = false;
-            foreach (var deposit in m_Deposits)
+            foreach (var crate in m_Crates)
             {
-                if (deposit != null && !deposit.IsHarvested)
-                    deposit.Vanish();
+                if (crate != null)
+                    crate.Vanish();
             }
 
-            m_Deposits.Clear();
+            m_Crates.Clear();
         }
 
         void Update()
@@ -184,7 +194,7 @@ namespace Archery.Building
 
         void SpawnWave(int wave)
         {
-            if (m_DepositPrefab == null)
+            if (m_CratePrefab == null)
                 return;
 
             var count = Mathf.Min(m_MaxCount, m_BaseCount + (wave - 1) / m_WavesPerExtra);
@@ -204,7 +214,7 @@ namespace Archery.Building
                 var index = Random.Range(0, m_FreeSpots.Count);
                 var spot = m_FreeSpots[index];
                 m_FreeSpots.RemoveAt(index);
-                SpawnAt(spot.position, AmountFor(wave));
+                SpawnAt(spot.position, tower);
                 spawned++;
             }
 
@@ -216,53 +226,50 @@ namespace Archery.Building
 
             if (m_AppearClip != null)
                 Sfx.Play(m_AppearClip, PlayerPosition() + Vector3.up, 0.8f, 1f, 0f);
-            Announce(spawned == 1 ? "Un gisement de cristaux est apparu !" : $"{spawned} gisements de cristaux sont apparus !");
+            var title = spawned == 1 ? "Une caisse de l'ingénieur est apparue !" : $"{spawned} caisses de l'ingénieur sont apparues !";
+            Announce(title + "\n<size=70%>Des plans de construction à prendre</size>");
         }
 
-        // Un gisement de la série précédente, pas encore récolté, occupe déjà cet emplacement.
+        // Une caisse de la série précédente, pas encore ouverte, occupe déjà cet emplacement.
         bool IsOccupied(Vector3 position)
         {
-            foreach (var deposit in m_Deposits)
+            foreach (var crate in m_Crates)
             {
-                if (deposit != null && !deposit.IsHarvested && (deposit.transform.position - position).sqrMagnitude < 1f)
+                if (crate != null && !crate.IsOpened && (crate.transform.position - position).sqrMagnitude < 1f)
                     return true;
             }
 
             return false;
         }
 
-        int AmountFor(int wave) => m_BaseAmount + m_AmountPerWave * Mathf.Max(0, wave - 1);
-
-        CrystalDeposit SpawnAt(Vector3 position, int amount)
+        // La caisse est tournée vers la tour, comme les coffres : on arrive par l'avant.
+        Chest SpawnAt(Vector3 position, Vector3 lookAt)
         {
-            var deposit = Instantiate(m_DepositPrefab, position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
-            deposit.Amount = amount;
-            m_Deposits.Add(deposit);
-            return deposit;
+            var toTarget = lookAt - position;
+            toTarget.y = 0f;
+            var rotation = toTarget.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toTarget) : Quaternion.identity;
+
+            var crate = Instantiate(m_CratePrefab, position, rotation);
+            crate.name = "Caisse de l'ingénieur";
+            crate.MakeEngineerCrate(m_CrateColor);
+            m_Crates.Add(crate);
+            return crate;
         }
 
-        void OnHarvested(CrystalDeposit deposit)
-        {
-            var remaining = Remaining;
-            var text = $"+{deposit.Amount} matériaux";
-            if (m_Waves != null && m_Waves.Phase == WavePhase.Wave && m_Deposits.Contains(deposit))
-                text += remaining == 0 ? "\n<size=70%>Tous les gisements sont récoltés</size>" : $"\n<size=70%>Encore {remaining} gisement{(remaining > 1 ? "s" : "")}</size>";
-            Announce(text);
-        }
-
-        // Raccourci de test au clavier (éditeur) : V pose un gisement 3 m devant le joueur.
+        // Raccourci de test au clavier (éditeur) : V pose une caisse de l'ingénieur 3 m devant le joueur (un gisement de
+        // cristaux avant le 27 octobre).
         void UpdateDebugKey()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             var keyboard = Keyboard.current;
             var rig = PlayerRig.Instance;
-            if (keyboard == null || !keyboard.vKey.wasPressedThisFrame || rig == null || m_DepositPrefab == null)
+            if (keyboard == null || !keyboard.vKey.wasPressedThisFrame || rig == null || m_CratePrefab == null)
                 return;
 
             var position = rig.BodyPosition + rig.HeadYaw * Vector3.forward * 3f;
             if (Physics.Raycast(position + Vector3.up * 2f, Vector3.down, out var hit, 6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
                 position = hit.point;
-            SpawnAt(position, AmountFor(m_Waves != null ? Mathf.Max(1, m_Waves.WaveNumber) : 1));
+            SpawnAt(position, rig.BodyPosition);
 #endif
         }
 

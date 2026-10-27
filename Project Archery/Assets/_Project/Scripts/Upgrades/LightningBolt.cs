@@ -12,10 +12,15 @@ namespace Archery.Upgrades
     {
         const int k_Segments = 14;
 
+        // Le budget d'effets (27 octobre au soir, jusqu'à 1000 flèches en vol) : tant d'éclairs affichés au plus ; au-delà, l'éclair
+        // ne se dessine pas (les dégâts sont faits ailleurs, ils ne changent pas).
+        const int k_MaxBolts = 96;
+
         static readonly Stack<LightningBolt> s_Pool = new Stack<LightningBolt>();
         static readonly Vector3[] s_Points = new Vector3[k_Segments + 1];
         static Transform s_Root;
         static Material s_DefaultMaterial;
+        static int s_Created;
 
         LineRenderer m_Glow;
         LineRenderer m_Core;
@@ -46,11 +51,23 @@ namespace Archery.Upgrades
         /// <param name="material">Matériau au shader « Archery/UnlitVertexColor » ; vide = créé en jeu.</param>
         public static void Spawn(Vector3 from, Vector3 to, Color color, Material material = null, float width = 0.07f, float duration = 0.3f)
         {
+            // Une nouvelle scène a détruit les éclairs : on recompte.
+            if (s_Root == null)
+            {
+                s_Pool.Clear();
+                s_Created = 0;
+            }
+
             LightningBolt bolt = null;
             while (bolt == null && s_Pool.Count > 0)
                 bolt = s_Pool.Pop();
             if (bolt == null)
+            {
+                if (s_Created >= k_MaxBolts)
+                    return;
                 bolt = Create();
+                s_Created++;
+            }
 
             bolt.Show(from, to, color, material != null ? material : DefaultMaterial, width, duration);
         }
@@ -181,6 +198,7 @@ namespace Archery.Upgrades
         {
             s_Pool.Clear();
             s_Root = null;
+            s_Created = 0;
         }
     }
 }

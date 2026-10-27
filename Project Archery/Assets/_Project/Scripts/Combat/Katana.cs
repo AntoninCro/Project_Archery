@@ -454,6 +454,8 @@ namespace Archery.Combat
             if (m_Hidden)
                 return;
 
+            UpdateRiftCharge();
+
             // En pause (menu ouvert en cours de partie), on ne coupe rien et la main ne lance rien. Au casque, les vitesses de
             // la lame et de la main se mesurent en temps réel : pendant un ralenti (un lancer parfait, un coffre), un geste
             // lent ne devient pas un coup.
@@ -989,6 +991,36 @@ namespace Archery.Combat
             m_Rifts.Clear();
         }
 
+        // La corde de siège (27 octobre, choisi par le joueur) : une faille ouverte mûrit tant qu'elle attend la main, de plus en
+        // plus dorée ; à pleine charge (2 s), « Chargée ! ». Ses dégâts au lancer : ArrowPieces.RiftCharge.
+        void UpdateRiftCharge()
+        {
+            var pieces = ArrowPieces.Instance;
+            if (pieces == null || !pieces.SiegeEquipped)
+            {
+                m_ChargedRifts.Clear();
+                return;
+            }
+
+            m_ChargedRifts.RemoveWhere(s_NotOpen);
+            var full = pieces.RiftCharge(float.MaxValue);
+            foreach (var rift in m_Rifts)
+            {
+                if (rift == null || !rift.IsOpen)
+                    continue;
+
+                var charge = full > 1f ? Mathf.Clamp01((pieces.RiftCharge(rift.Age) - 1f) / (full - 1f)) : 1f;
+                var color = rift.StrandCount > 1 ? k_FusionColor : Tuning.Get(GradeOf(rift)).color;
+                rift.SetTint(Color.Lerp(color, k_RiftChargeColor, charge));
+                if (charge >= 1f && m_ChargedRifts.Add(rift))
+                    FloatingText.Spawn(rift.transform.position + Vector3.up * 0.2f, "Chargée !", k_RiftChargeColor, 0.45f, 0.7f);
+            }
+        }
+
+        static readonly System.Predicate<MatrixRift> s_NotOpen = rift => rift == null || !rift.IsOpen;
+        static readonly Color k_RiftChargeColor = new Color(1f, 0.85f, 0.35f);
+        readonly HashSet<MatrixRift> m_ChargedRifts = new HashSet<MatrixRift>();
+
         // La qualité selon la taille : plus le coup est long, meilleur est le tir ; des failles fusionnées sont parfaites.
         ShotGrade GradeOf(MatrixRift rift)
         {
@@ -1157,7 +1189,8 @@ namespace Archery.Combat
                 var modifiers = Tuning.Get(grade);
                 var fusions = rift.StrandCount - 1;
                 var speed = Mathf.Max(k_MinRiftSpeed, m_Definition.arrowSpeed * modifiers.speed * (m_Bow != null ? m_Bow.SpeedMultiplier : 1f));
-                var damage = m_Definition.damage * modifiers.damage * DamageMultiplier * (1f + k_FusionBonus * fusions);
+                var damage = m_Definition.damage * modifiers.damage * DamageMultiplier * (1f + k_FusionBonus * fusions) *
+                             (ArrowPieces.Instance != null ? ArrowPieces.Instance.RiftCharge(rift.Age) : 1f);
                 var origin = rift.transform.position;
                 // La corde triple (26 octobre) ajoute ses copies comme le multitir : vers d'autres ennemis, en éventail sinon.
                 var volley = 1 + (upgrades != null
@@ -1259,7 +1292,7 @@ namespace Archery.Combat
                 Color = color,
                 HitClip = m_Definition.katanaHitClip,
                 IsExtra = extra,
-                Pierce = upgrades != null ? PlayerUpgrades.RollCount(upgrades.PierceAverageFor(grade)) : 0,
+                Pierce = SpecialArrows.Instance != null ? SpecialArrows.Instance.PierceFor(grade) : 0,
                 Ricochets = upgrades != null ? upgrades.RicochetCount : 0,
                 Reacquire = upgrades != null && upgrades.HomingTurnRate > 0f,
                 Splits = !extra && upgrades != null ? PlayerUpgrades.RollCount(upgrades.DelugeAverageFor(grade)) : 0,

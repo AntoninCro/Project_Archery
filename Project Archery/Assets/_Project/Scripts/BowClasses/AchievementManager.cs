@@ -180,6 +180,10 @@ namespace Archery.BowClasses
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)
         {
+            // Les mannequins du centre d'entraînement (26 octobre) ne comptent pas.
+            if (enemy != null && enemy.IsTrainingDummy)
+                return;
+
             Add(AchievementType.EnemiesKilled, 1);
 
             // Une flèche qui tue plusieurs ennemis (perçage, ricochet).
@@ -199,7 +203,7 @@ namespace Archery.BowClasses
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
-            if (info.Zone != HitZone.Head || !(info.Source is Arrow))
+            if (info.Zone != HitZone.Head || !(info.Source is Arrow) || (enemy != null && enemy.IsTrainingDummy))
                 return;
 
             Add(AchievementType.Headshots, 1);

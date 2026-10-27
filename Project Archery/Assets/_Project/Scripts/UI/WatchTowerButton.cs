@@ -76,6 +76,17 @@ namespace Archery.UI
 
         void Awake() => m_Rect = (RectTransform)transform;
 
+        // Son apparence, reprise par le bouton « Plans » de la montre (WatchPlansButton, refonte du tower defense du 27 octobre).
+        public GameObject Visual => m_Visual;
+        public Image Background => m_Background;
+        public Image Fill => m_Fill;
+        public TMP_Text Label => m_Label;
+        public Color ReadyColor => m_ReadyColor;
+        public Color DisabledColor => m_DisabledColor;
+        public AudioClip PressClip => m_PressClip;
+        public AudioClip DeniedClip => m_DeniedClip;
+        public float TouchRadius => m_TouchRadius;
+
         /// <summary>Couleurs du fond quand le bouton est prêt et quand il ne l'est pas (réglées par le thème des menus).</summary>
         public void SetColors(Color ready, Color disabled)
         {

@@ -103,11 +103,31 @@ namespace Archery.Upgrades
 
         // Les anciennes cartes de statistiques (retirées de la boutique le 25 octobre) et les parchemins s'additionnent ; le
         // pacte de verre (26 octobre) multiplie le tout (×2 au niveau 1, +0,5 par niveau).
-        public float DamageMultiplier => (1f + Total(UpgradeEffect.Damage) + Total(UpgradeEffect.Strength)) * GlassPactMultiplier;
+        // Le talisman de l'avare (26 octobre au soir) multiplie aussi, selon l'or gardé (MiserBonus).
+        public float DamageMultiplier => (1f + Total(UpgradeEffect.Damage) + Total(UpgradeEffect.Strength)) * GlassPactMultiplier * (1f + m_MiserBonus);
 
-        // L'empennage plume (26 octobre) : la flèche va aussi 10 % plus vite par niveau.
+        // Le talisman de l'avare : l'or pour 1 % de dégâts en plus, et le bonus au plus, aux niveaux 1, 2 et 3.
+        static readonly Vector3 k_MiserGoldPerPercent = new Vector3(20f, 15f, 10f);
+        static readonly Vector3 k_MiserMax = new Vector3(1f, 1.5f, 2f);
+        float m_MiserBonus;
+
+        /// <summary>Le bonus de dégâts du talisman de l'avare en ce moment (0,35 = +35 %), selon l'or gardé.</summary>
+        public float MiserBonus => m_MiserBonus;
+
+        float ComputeMiser()
+        {
+            var level = Stacks(UpgradeEffect.Miser);
+            var score = ScoreManager.Instance;
+            if (level == 0 || score == null)
+                return 0f;
+
+            var percents = Mathf.Floor(score.Money / Mathf.Max(1f, SpecialArrows.ByLevel(k_MiserGoldPerPercent, level)));
+            return Mathf.Min(SpecialArrows.ByLevel(k_MiserMax, level), percents * 0.01f);
+        }
+
+        // L'empennage plume (26 octobre) : la flèche va aussi plus vite, de 25 % par niveau (26 octobre, réglage du joueur ; 10 % avant).
         public float ArrowSpeedMultiplier =>
-            1f + Total(UpgradeEffect.ArrowSpeed) + k_StrengthSpeedShare * Total(UpgradeEffect.Strength) + 0.1f * Total(UpgradeEffect.Feather);
+            1f + Total(UpgradeEffect.ArrowSpeed) + k_StrengthSpeedShare * Total(UpgradeEffect.Strength) + 0.25f * Total(UpgradeEffect.Feather);
 
         public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge) + Total(UpgradeEffect.Dexterity);
 
@@ -160,33 +180,17 @@ namespace Archery.Upgrades
         /// <summary>Échos du tir, en moyenne.</summary>
         public float EchoAverage => Total(UpgradeEffect.Echo);
 
-        /// <summary>Ennemis traversés en plus par flèche, en moyenne (perçage).</summary>
-        public float PierceAverage => Total(UpgradeEffect.Piercing);
-
         /// <summary>Flèches en plus quand une flèche se divise en vol, en moyenne (déluge).</summary>
         public float DelugeAverage => Total(UpgradeEffect.Deluge);
 
-        // Chances par flèche (de 0 à 1). Ce qui dépasse 100 % renforce l'effet : voir les « Overflow ».
-
-        public float LightningChance => Mathf.Clamp01(Total(UpgradeEffect.Lightning));
-        public float ExplosiveChance => Mathf.Clamp01(Total(UpgradeEffect.Explosive));
-        public float FrostChance => Mathf.Clamp01(Total(UpgradeEffect.Frost));
-
-        /// <summary>Part de la chance de foudre au-delà de 100 % (0,4 = 140 %) : éclairs plus forts.</summary>
-        public float LightningOverflow => Mathf.Max(0f, Total(UpgradeEffect.Lightning) - 1f);
-
-        public float ExplosiveOverflow => Mathf.Max(0f, Total(UpgradeEffect.Explosive) - 1f);
-        public float FrostOverflow => Mathf.Max(0f, Total(UpgradeEffect.Frost) - 1f);
+        // La foudre, la glace, l'explosion et le perçage n'ont plus de chance depuis le 26 octobre : leurs valeurs par niveau sont
+        // dans SpecialArrows.
 
         // Pour un tir de cette qualité : un objet qui ne joue qu'aux tirs parfaits ne compte pas pour les autres tirs.
 
         public float MultishotAverageFor(ShotGrade grade) => Total(UpgradeEffect.Multishot, grade);
         public float EchoAverageFor(ShotGrade grade) => Total(UpgradeEffect.Echo, grade);
-        public float PierceAverageFor(ShotGrade grade) => Total(UpgradeEffect.Piercing, grade);
         public float DelugeAverageFor(ShotGrade grade) => Total(UpgradeEffect.Deluge, grade);
-
-        /// <summary>Chance (de 0 à 1) qu'un tir de cette qualité porte cet effet (foudre, explosion, glace).</summary>
-        public float ChanceFor(UpgradeEffect effect, ShotGrade grade) => Mathf.Clamp01(Total(effect, grade));
 
         /// <summary>L'objet de cet effet ne joue qu'aux tirs parfaits (refonte du 25 octobre).</summary>
         public bool IsPerfectOnly(UpgradeEffect effect) => m_PerfectOnly[(int)effect];
@@ -270,6 +274,14 @@ namespace Archery.Upgrades
             // Mis de côté (épreuve du portail), les bonus temporaires attendent le retour.
             if (m_Suspended)
                 return;
+
+            // L'avare : les dégâts suivent l'or, repoussés vers l'arc quand ils changent d'au moins 1 %.
+            var miser = ComputeMiser();
+            if (Mathf.Abs(miser - m_MiserBonus) >= 0.005f)
+            {
+                m_MiserBonus = miser;
+                Apply();
+            }
 
             var expired = false;
             for (var i = 0; i < m_BuffTimers.Length; i++)
@@ -430,8 +442,10 @@ namespace Archery.Upgrades
                 bow.RingSpeedMultiplier = RingSpeedMultiplier * (fastRing ? m_BuffRingSpeedMultiplier : 1f) * (1f + m_BonusRingSpeed);
                 bow.BandWidthMultiplier = BandWidthMultiplier * (fastRing ? m_BuffRingBandMultiplier : 1f);
 
-                // Tirs parfaits : l'anneau devient presque entièrement vert, et tout tir à pleine tension compte comme parfait.
-                bow.GoldWidthMultiplier = GoldWidthMultiplier * (perfectShots ? 20f : 1f);
+                // Tirs parfaits : tout tir à pleine tension compte comme parfait, et l'anneau s'affiche entièrement vert
+                // (Bow.NextShotPerfect, 27 octobre ; avant, le vert était élargi 20 fois : il restait un liseré rouge, et le vert
+                // clair de la corde de siège et de l'arc cosmique disparaissait).
+                bow.GoldWidthMultiplier = GoldWidthMultiplier;
                 bow.ForcePerfect = perfectShots;
             }
 

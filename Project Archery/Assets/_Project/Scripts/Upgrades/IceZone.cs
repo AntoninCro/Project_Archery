@@ -14,8 +14,49 @@ namespace Archery.Upgrades
         const float k_TickInterval = 0.2f;
 
         static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly System.Collections.Generic.List<IceZone> s_Active = new System.Collections.Generic.List<IceZone>();
         static Mesh s_Disc;
         static Material s_DefaultMaterial;
+
+        /// <summary>
+        /// Ce point (au sol, sous un ennemi) est sur une zone de glace en ce moment (26 octobre au soir : le duo « Glacier »).
+        /// </summary>
+        public static bool IsOnIce(Vector3 position) => At(position) != null;
+
+        /// <summary>La zone de glace sous ce point (au sol, sous un ennemi), ou null (27 octobre : le duo « Glacier » revu).</summary>
+        public static IceZone At(Vector3 position)
+        {
+            foreach (var zone in s_Active)
+            {
+                if (zone != null && zone.Contains(position))
+                    return zone;
+            }
+
+            return null;
+        }
+
+        /// <summary>Ce point (au sol, sous un ennemi) est sur cette zone.</summary>
+        public bool Contains(Vector3 position)
+        {
+            var offset = position - transform.position;
+            if (Mathf.Abs(offset.y) > 1f)
+                return false;
+            offset.y = 0f;
+            return offset.sqrMagnitude <= m_Radius * m_Radius;
+        }
+
+        // Les zones de glace au plus en même temps (27 octobre : la flèche de glace joue à chaque flèche, plus seulement aux tirs
+        // parfaits ; avec le multitir, la corde triple et l'écho, des dizaines de disques transparents se recouvraient sur le
+        // Quest). Une zone presque au même endroit est prolongée au lieu d'en poser une nouvelle ; au-delà, la plus ancienne fond.
+        const int k_MaxZones = 16;
+        const float k_MergeShare = 0.5f;
+
+        void OnEnable() => s_Active.Add(this);
+
+        void OnDisable() => s_Active.Remove(this);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => s_Active.Clear();
 
         MeshRenderer m_Renderer;
         MaterialPropertyBlock m_PropertyBlock;
@@ -98,6 +139,40 @@ namespace Archery.Upgrades
         /// <param name="material">Matériau au shader « Archery/UnlitVertexColor » ; vide = créé en jeu.</param>
         public static IceZone Spawn(Vector3 groundPoint, float radius, float duration, float slow, Color color, Material material = null)
         {
+            foreach (var existing in s_Active)
+            {
+                if (existing == null || existing.m_Radius < radius * 0.99f)
+                    continue;
+                var offset = groundPoint - existing.transform.position;
+                if (Mathf.Abs(offset.y) > 1f)
+                    continue;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > radius * radius * k_MergeShare * k_MergeShare)
+                    continue;
+
+                // Prolongée : elle repart pour toute sa durée (sans réapparaître).
+                existing.m_Age = Mathf.Min(existing.m_Age, 0.15f);
+                existing.m_Duration = Mathf.Max(existing.m_Duration, duration);
+                existing.m_Slow = Mathf.Min(existing.m_Slow, slow);
+                return existing;
+            }
+
+            if (s_Active.Count >= k_MaxZones)
+            {
+                IceZone oldest = null;
+                foreach (var existing in s_Active)
+                {
+                    if (existing != null && (oldest == null || existing.m_Age > oldest.m_Age))
+                        oldest = existing;
+                }
+
+                if (oldest != null)
+                {
+                    oldest.enabled = false;
+                    Destroy(oldest.gameObject);
+                }
+            }
+
             var go = new GameObject("Ice Zone");
             go.transform.SetPositionAndRotation(groundPoint + Vector3.up * 0.03f, Quaternion.identity);
             go.transform.localScale = new Vector3(radius, 1f, radius);

@@ -33,6 +33,9 @@ namespace Archery.Grenades
     [RequireComponent(typeof(XRGrabInteractable))]
     public class ArrowGrenade : MonoBehaviour
     {
+        // Le talisman de la super grenade (26 octobre) : les flèches en plus par niveau.
+        const int k_SuperGrenadeArrows = 12;
+
         [Header("Flèches projetées")]
         [Tooltip("Nombre de flèches, avant l'amélioration « Grenade sauvage » (14 jusqu'au 22 octobre).")]
         [Min(1)]
@@ -455,10 +458,11 @@ namespace Archery.Grenades
                 return;
             }
 
+            // Grenade sauvage (retirée le 26 octobre) et le talisman de la super grenade : 12 flèches de plus par niveau.
             var upgrades = PlayerUpgrades.Instance;
             var count = m_ArrowCount;
             if (upgrades != null)
-                count += Mathf.RoundToInt(upgrades.Total(UpgradeEffect.GrenadeArrows));
+                count += Mathf.RoundToInt(upgrades.Total(UpgradeEffect.GrenadeArrows)) + k_SuperGrenadeArrows * upgrades.Stacks(UpgradeEffect.SuperGrenade);
 
             count = Mathf.Max(1, Mathf.RoundToInt(count * multiplier));
             var damage = ArrowDamage(upgrades);

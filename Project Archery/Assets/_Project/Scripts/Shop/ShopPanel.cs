@@ -19,8 +19,9 @@ namespace Archery.Shop
     /// Le panneau de la boutique (Canvas en World Space). Il affiche les offres du <see cref="ShopManager"/>
     /// pendant les pauses et transmet les clics. Les sons partent du panneau.
     /// Pendant la pause, il suit le joueur, devant lui à gauche, sans jamais rentrer dans un mur.
-    /// Son bouton « Retour à la tour » ramène le joueur en haut de la tour. À sa droite, l'atelier
-    /// (<see cref="ArrowWorkshop"/>, 26 octobre), qu'il construit au lancement.
+    /// Son bouton « Retour à la tour » ramène le joueur en haut de la tour. Il construit au lancement l'atelier
+    /// (<see cref="ArrowWorkshop"/>, 26 octobre) ; depuis le 27 octobre au soir (demandé par le joueur : les deux panneaux côte à
+    /// côte lui cachaient la vue), l'atelier se place à part, à l'opposé, devant le joueur à droite, et le devant reste libre.
     /// </summary>
     /// <remarks>
     /// Pour cliquer au rayon de la manette, le Canvas a besoin d'un <c>Tracked Device Graphic Raycaster</c>,
@@ -74,9 +75,10 @@ namespace Archery.Shop
         [SerializeField]
         bool m_FollowPlayer = true;
 
-        [Tooltip("Place préférée du panneau par rapport à la tête du joueur (X à droite, Y en haut, Z devant) : devant à gauche.")]
+        [Tooltip("Place préférée du panneau par rapport à la tête du joueur (X à droite, Y en haut, Z devant) : devant à gauche " +
+                 "(à 55° depuis le 27 octobre au soir, demandé par le joueur ; 41° avant : -1,4 ; -0,4 ; 1,6).")]
         [SerializeField]
-        Vector3 m_OffsetFromHead = new Vector3(-1.4f, -0.4f, 1.6f);
+        Vector3 m_OffsetFromHead = new Vector3(-1.75f, -0.4f, 1.25f);
 
         [Tooltip("Inclinaison (°) du haut du panneau vers l'arrière, pour le lire sans baisser la tête.")]
         [SerializeField]
@@ -95,17 +97,23 @@ namespace Archery.Shop
         float m_FollowSmoothing = 0.35f;
 
         [Header("L'atelier (26 octobre)")]
-        [Tooltip("À droite du panneau, l'atelier où l'on équipe les pièces de la flèche (une flèche 3D qui tourne, un cadre par " +
-                 "partie), construit au lancement avec des copies des cartes, du titre et des textes de la boutique (ArrowWorkshop). " +
-                 "Sa taille et la flèche se règlent en tête d'ArrowWorkshop.cs.")]
+        [Tooltip("L'atelier où l'on équipe les pièces de la flèche (une flèche 3D qui tourne, un cadre par partie), construit au " +
+                 "lancement avec des copies des cartes, du titre et des textes de la boutique (ArrowWorkshop). Sa taille et la flèche " +
+                 "se règlent en tête d'ArrowWorkshop.cs.")]
         [SerializeField]
         bool m_ShowWorkshop = true;
 
-        [Tooltip("Écart (px) entre le panneau de la boutique et l'atelier.")]
+        [Tooltip("Place préférée de l'atelier par rapport à la tête du joueur (X à droite, Y en haut, Z devant) : à l'opposé de la " +
+                 "boutique, devant à droite (27 octobre au soir, demandé par le joueur). Il suit le joueur comme la boutique et évite " +
+                 "les murs de son côté.")]
+        [SerializeField]
+        Vector3 m_WorkshopOffsetFromHead = new Vector3(1.75f, -0.4f, 1.25f);
+
+        [Tooltip("Sans suivi du joueur (Follow Player décoché) : écart (px) entre le panneau de la boutique et l'atelier, à sa droite.")]
         [SerializeField]
         float m_WorkshopGap = 40f;
 
-        [Tooltip("Angle (°) dont l'atelier est tourné vers le joueur, autour de son bord gauche.")]
+        [Tooltip("Sans suivi du joueur : angle (°) dont l'atelier est tourné vers le joueur, autour de son bord gauche.")]
         [SerializeField]
         float m_WorkshopAngle = 25f;
 
@@ -139,6 +147,15 @@ namespace Archery.Shop
         Vector3 m_TargetPosition;
         Quaternion m_TargetRotation;
         float m_NextFollowCheck;
+
+        // L'atelier placé à part (le centre de son panneau, dans le monde) : sa place visée, et sa place du moment, qui glisse vers
+        // elle. Il reste enfant du contenu de la boutique (il s'ouvre et se ferme avec elle), mais on pose sa place à chaque image.
+        Vector3 m_WorkshopTargetPosition;
+        Quaternion m_WorkshopTargetRotation;
+        Vector3 m_WorkshopPosition;
+        Quaternion m_WorkshopRotation;
+
+        bool WorkshopApart => m_FollowPlayer && m_Workshop != null;
 
         void Awake()
         {
@@ -242,7 +259,8 @@ namespace Archery.Shop
                 m_Workshop.Refresh();
         }
 
-        // L'atelier, à droite du contenu du panneau : copies d'une carte (la dernière), du titre (l'enfant « Title »,
+        // L'atelier, enfant du contenu du panneau (à sa droite ; posé à part par MoveNextTo quand le panneau suit le joueur) :
+        // copies d'une carte (la dernière), du titre (l'enfant « Title »,
         // sinon le montant d'or), de la liste des pièces (sinon du message), du fond et du cadre du contenu.
         void CreateWorkshop()
         {
@@ -300,8 +318,11 @@ namespace Archery.Shop
             var headPosition = head.position;
             if (Time.unscaledTime >= m_NextFollowCheck)
             {
+                // Le joueur peut regarder la boutique ou l'atelier : ils ne reviennent que s'il ne voit plus ni l'un ni l'autre.
                 var moved = headPosition - m_AnchorPosition;
-                var lookAway = Vector3.Angle(rig.HeadYaw * Vector3.forward, Flat(m_TargetPosition - headPosition)) > m_FollowAngle;
+                var forward = rig.HeadYaw * Vector3.forward;
+                var lookAway = Vector3.Angle(forward, Flat(m_TargetPosition - headPosition)) > m_FollowAngle &&
+                               (!WorkshopApart || Vector3.Angle(forward, Flat(m_WorkshopTargetPosition - headPosition)) > m_FollowAngle);
                 if (Flat(moved).magnitude > m_FollowDeadZone || Mathf.Abs(moved.y) > 0.6f || lookAway)
                 {
                     MoveNextTo(headPosition, rig.HeadYaw, false);
@@ -312,26 +333,61 @@ namespace Archery.Shop
             var t = 1f - Mathf.Exp(-Time.unscaledDeltaTime / Mathf.Max(0.01f, m_FollowSmoothing));
             transform.SetPositionAndRotation(Vector3.Lerp(transform.position, m_TargetPosition, t),
                                              Quaternion.Slerp(transform.rotation, m_TargetRotation, t));
+            if (WorkshopApart)
+            {
+                m_WorkshopPosition = Vector3.Lerp(m_WorkshopPosition, m_WorkshopTargetPosition, t);
+                m_WorkshopRotation = Quaternion.Slerp(m_WorkshopRotation, m_WorkshopTargetRotation, t);
+                ApplyWorkshopPlace();
+            }
         }
 
         void MoveNextTo(Vector3 head, Quaternion yaw, bool snap)
         {
             m_AnchorPosition = head;
-            FindPlace(head, yaw, out m_TargetPosition, out m_TargetRotation);
+            var halfExtents = HalfExtents();
+            FindPlace(head, yaw, m_OffsetFromHead, 1f, halfExtents, null, out m_TargetPosition, out m_TargetRotation);
 
-            // À l'ouverture, ou après une téléportation, il apparaît directement à sa place.
+            // L'atelier, à l'opposé : il cherche sa place de son côté (les angles en miroir), sans toucher la boutique.
+            if (WorkshopApart)
+            {
+                var workshopHalfExtents = WorkshopHalfExtents();
+                var shop = m_TargetPosition;
+                var gap = halfExtents.x + workshopHalfExtents.x + 0.1f;
+                FindPlace(head, yaw, m_WorkshopOffsetFromHead, -1f, workshopHalfExtents, candidate => Flat(candidate - shop).magnitude >= gap,
+                          out m_WorkshopTargetPosition, out m_WorkshopTargetRotation);
+            }
+
+            // À l'ouverture, ou après une téléportation, ils apparaissent directement à leur place.
             if (snap || (transform.position - m_TargetPosition).sqrMagnitude > 36f)
+            {
                 transform.SetPositionAndRotation(m_TargetPosition, m_TargetRotation);
+                if (WorkshopApart)
+                {
+                    m_WorkshopPosition = m_WorkshopTargetPosition;
+                    m_WorkshopRotation = m_WorkshopTargetRotation;
+                    ApplyWorkshopPlace();
+                }
+            }
         }
 
-        // La place préférée (devant à gauche), sinon la plus proche autour du joueur où le panneau ne rentre
-        // dans rien (mur de la tour, arbre…) et reste visible. Si aucune n'est libre : la place préférée.
-        void FindPlace(Vector3 head, Quaternion yaw, out Vector3 position, out Quaternion rotation)
+        // L'atelier à sa place du moment : son pivot est au milieu de son bord gauche, sa place est celle de son centre.
+        void ApplyWorkshopPlace()
         {
-            var flat = Flat(m_OffsetFromHead);
+            var rect = m_Workshop.Rect;
+            var halfWidth = rect.rect.width * 0.5f * rect.lossyScale.x;
+            rect.SetPositionAndRotation(m_WorkshopPosition - m_WorkshopRotation * Vector3.right * halfWidth, m_WorkshopRotation);
+        }
+
+        // La place préférée (<paramref name="offset"/> : devant à gauche pour la boutique, devant à droite pour l'atelier), sinon la
+        // plus proche autour du joueur où le panneau ne rentre dans rien (mur de la tour, arbre…) et reste visible. Les angles
+        // essayés partent de son côté (<paramref name="side"/> : 1 pour la boutique, -1 en miroir pour l'atelier) ;
+        // <paramref name="accept"/> : une condition de plus. Si aucune place ne va : la place préférée.
+        void FindPlace(Vector3 head, Quaternion yaw, Vector3 offset, float side, Vector3 halfExtents, Func<Vector3, bool> accept,
+                       out Vector3 position, out Quaternion rotation)
+        {
+            var flat = Flat(offset);
             var distance = Mathf.Max(0.5f, flat.magnitude);
             var baseAngle = Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
-            var halfExtents = HalfExtents();
             position = default;
             rotation = default;
             var first = true;
@@ -339,8 +395,8 @@ namespace Archery.Shop
             {
                 foreach (var scale in k_DistanceScales)
                 {
-                    var direction = yaw * Quaternion.Euler(0f, baseAngle + step, 0f) * Vector3.forward;
-                    var candidate = AboveGround(head + direction * (distance * scale) + Vector3.up * m_OffsetFromHead.y, halfExtents.y);
+                    var direction = yaw * Quaternion.Euler(0f, baseAngle + step * side, 0f) * Vector3.forward;
+                    var candidate = AboveGround(head + direction * (distance * scale) + Vector3.up * offset.y, halfExtents.y);
                     var candidateRotation = Quaternion.LookRotation(direction) * Quaternion.Euler(m_Tilt, 0f, 0f);
                     if (first)
                     {
@@ -349,7 +405,7 @@ namespace Archery.Shop
                         first = false;
                     }
 
-                    if (IsFree(head, candidate, candidateRotation, halfExtents) && WorkshopFits(candidate, candidateRotation))
+                    if (IsFree(head, candidate, candidateRotation, halfExtents) && (accept == null || accept(candidate)))
                     {
                         position = candidate;
                         rotation = candidateRotation;
@@ -363,6 +419,14 @@ namespace Archery.Shop
         Vector3 HalfExtents()
         {
             var size = transform is RectTransform rect ? Vector2.Scale(rect.rect.size, transform.lossyScale) : new Vector2(1.4f, 1.3f);
+            return new Vector3(size.x * 0.5f, size.y * 0.5f, 0.05f);
+        }
+
+        // Moitié de la taille de l'atelier dans le monde.
+        Vector3 WorkshopHalfExtents()
+        {
+            var rect = m_Workshop.Rect;
+            var size = Vector2.Scale(rect.rect.size, rect.lossyScale);
             return new Vector3(size.x * 0.5f, size.y * 0.5f, 0.05f);
         }
 
@@ -396,28 +460,6 @@ namespace Archery.Shop
             for (var i = 0; i < count; i++)
             {
                 if (IsObstacle(s_Hits[i].collider))
-                    return false;
-            }
-
-            return true;
-        }
-
-        // L'atelier, à droite du panneau, ne rentre dans rien non plus (le panneau placé ici, tourné ainsi).
-        bool WorkshopFits(Vector3 position, Quaternion rotation)
-        {
-            if (m_Workshop == null)
-                return true;
-
-            var rect = m_Workshop.Rect;
-            var center = transform.InverseTransformPoint(rect.TransformPoint(rect.rect.center));
-            var size = Vector2.Scale(rect.rect.size, rect.lossyScale);
-            var workshopRotation = rotation * (Quaternion.Inverse(transform.rotation) * rect.rotation);
-            var count = Physics.OverlapBoxNonAlloc(position + rotation * Vector3.Scale(center, transform.lossyScale),
-                                                   new Vector3(size.x * 0.5f, size.y * 0.5f, 0.05f), s_Overlaps, workshopRotation,
-                                                   Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
-            for (var i = 0; i < count; i++)
-            {
-                if (IsObstacle(s_Overlaps[i]))
                     return false;
             }
 

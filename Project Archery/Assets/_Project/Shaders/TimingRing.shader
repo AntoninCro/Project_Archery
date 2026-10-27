@@ -18,6 +18,7 @@ Shader "Archery/TimingRing"
         _HeldColor ("Vert pastel (très bon)", Color) = (0.62, 0.95, 0.72, 0.95)
         _ApproachColor ("Cercle d'approche", Color) = (1, 1, 1, 1)
         _FlashColor ("Couleur du résultat", Color) = (0, 0, 0, 0)
+        _AllPerfect ("Tout parfait (le prochain tir l'est d'office)", Range(0, 1)) = 0
     }
 
     SubShader
@@ -61,6 +62,7 @@ Shader "Archery/TimingRing"
                 half4 _HeldColor;
                 half4 _ApproachColor;
                 half4 _FlashColor;
+                float _AllPerfect;
             CBUFFER_END
 
             struct Attributes
@@ -99,6 +101,10 @@ Shader "Archery/TimingRing"
                 color = lerp(color, _PerfectColor, smoothstep(_PerfectInner - aa, _PerfectInner + aa, r));
                 color = lerp(color, _GoodColor, smoothstep(_PerfectOuter - aa, _PerfectOuter + aa, r));
                 color = lerp(color, _RedColor, smoothstep(_GoodOuter - aa, _GoodOuter + aa, r));
+
+                // Le prochain tir est parfait d'office (duelliste, boomerang rattrapé, acrobate, bonus de coffre ; 27 octobre) :
+                // tout l'anneau prend la couleur du parfait. Seulement l'affichage : les bandes ne changent pas.
+                color = lerp(color, _PerfectColor, _AllPerfect);
 
                 // Teinte du résultat après le tir.
                 color.rgb = lerp(color.rgb, _FlashColor.rgb, _FlashColor.a * 0.65);

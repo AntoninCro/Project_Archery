@@ -36,6 +36,10 @@ namespace Archery.Bows
         // Après un tir, le résultat reste un instant dans l'anneau, qui repart ensuite du bord.
         const float k_RingRestart = 0.15f;
 
+        // Le bruit des flèches (le tir de l'arbalète et le sifflement en vol), à moitié depuis le 27 octobre au soir (demandé par le
+        // joueur) : les deux arbalètes tirent sans arrêt. Le son du tir parfait ne change pas.
+        const float k_ArrowVolume = 0.5f;
+
         // Diamètre (m) de l'anneau, et sa place à côté de l'arbalète (côté extérieur, au-dessus), dans le repère du modèle.
         const float k_RingSize = 0.07f;
         static readonly Vector3 k_RingOffset = new Vector3(0.2f, 0.16f, 0.05f);
@@ -465,6 +469,13 @@ namespace Archery.Bows
                 if (slot.Crossbow == null)
                     continue;
 
+                // L'anneau tout vert quand le prochain tir est parfait d'office (comme celui de l'arc, 27 octobre).
+                if (slot.Ring != null && slot.Ring.IsRunning)
+                {
+                    slot.Ring.AllPerfect = m_Bow != null && m_Bow.NextShotPerfect;
+                    slot.Ring.GoldenPerfect = Bow.GoldenPerfectNow;
+                }
+
                 var ready = m_Desktop || Held(slot);
                 slot.Kick = Mathf.MoveTowards(slot.Kick, 0f, deltaTime * 0.2f);
                 if (ready && slot.Restart >= 0f && (slot.Restart -= deltaTime) < 0f)
@@ -685,7 +696,10 @@ namespace Archery.Bows
             if (m_Bow != null)
                 m_Bow.BeginRing(slot.Ring, m_Definition);
             else
+            {
+                slot.Ring.AllPerfect = false;
                 slot.Ring.Begin(m_Definition.ringDuration, m_Definition.goldHalfWidth * DifficultyManager.Current.goldBandWidth, m_Definition.goodWidth);
+            }
         }
 
         ShotTuning Tuning => m_Bow != null ? m_Bow.ShotTuning : ShotTuning.Fallback;
@@ -696,13 +710,36 @@ namespace Archery.Bows
             if (slot.Ring == null)
                 return ShotGrade.Good;
             var grade = slot.Ring.CurrentGrade;
-            if (m_Bow != null && m_Bow.ForcePerfect && grade != ShotGrade.None)
+            if (m_Bow != null && grade != ShotGrade.None && m_Bow.NextShotPerfect)
                 grade = ShotGrade.Perfect;
             return grade;
         }
 
         float Speed(ShotGrade grade) =>
             m_Definition.arrowSpeed * Tuning.Get(grade).speed * (m_Bow != null && !m_Trial ? m_Bow.SpeedMultiplier : 1f);
+
+        /// <summary>Le nombre d'arbalètes (0 tant qu'elles ne sont pas fabriquées).</summary>
+        public int CrossbowCount => m_Slots.Count;
+
+        /// <summary>
+        /// La corde de siège (27 octobre) : l'arbalète <paramref name="index"/> attend au bout de son anneau depuis
+        /// <paramref name="held"/> s ; <paramref name="tip"/> : son bout. Faux si elle ne se charge pas.
+        /// </summary>
+        public bool TryGetHeld(int index, out Vector3 tip, out float held)
+        {
+            tip = default;
+            held = 0f;
+            if (index < 0 || index >= m_Slots.Count || m_Hidden || m_Definition == null)
+                return false;
+
+            var slot = m_Slots[index];
+            if (slot.Crossbow == null || slot.Ring == null)
+                return false;
+
+            held = slot.Ring.HeldDuration;
+            tip = slot.Crossbow.TransformPoint(m_Definition.akimboTip);
+            return held > 0f;
+        }
 
         void TryFire(Slot slot)
         {
@@ -712,13 +749,26 @@ namespace Archery.Bows
                 return;
 
             ShotGrade grade;
+            var held = 0f;
+            var charge = 1f;
             if (slot.Ring != null)
             {
                 if (!slot.Ring.IsRunning)
                     return;
+
+                // La corde de siège (27 octobre, demandé par le joueur) : l'arbalète qui attend au bout de son anneau se charge,
+                // comme l'arc (Bow.HeldChargeMultiplier) ; un tir chargé rendu parfait d'office garde sa charge.
+                held = slot.Ring.HeldDuration;
                 grade = slot.Ring.Release();
+                if (grade != ShotGrade.Held || m_Trial)
+                    held = 0f;
+                charge = held > 0f && Bow.HeldChargeMultiplier != null ? Mathf.Max(1f, Bow.HeldChargeMultiplier(held)) : 1f;
                 if (m_Bow != null && m_Bow.MakesPerfect(grade))
+                {
+                    if (grade == ShotGrade.Held && charge > 1f)
+                        charge = Mathf.Max(1f, charge * Tuning.Get(ShotGrade.Held).damage / Mathf.Max(0.01f, Tuning.Get(ShotGrade.Perfect).damage));
                     grade = ShotGrade.Perfect;
+                }
             }
             else
             {
@@ -727,7 +777,7 @@ namespace Archery.Bows
 
             var modifiers = Tuning.Get(grade);
             var speed = Speed(grade);
-            var damage = m_Trial ? m_TrialDamage : m_Definition.damage * modifiers.damage * (m_Bow != null ? m_Bow.DamageMultiplier : 1f);
+            var damage = m_Trial ? m_TrialDamage : m_Definition.damage * modifiers.damage * (m_Bow != null ? m_Bow.DamageMultiplier : 1f) * charge;
             var origin = slot.Crossbow.TransformPoint(m_Definition.akimboTip);
             var direction = slot.Crossbow.forward;
 
@@ -743,6 +793,7 @@ namespace Archery.Bows
                 IsShot = true,
                 IsExtra = m_Trial,
                 GravityScale = Bow.ArrowGravity(m_Definition.arrowGravity),
+                FlightVolume = k_ArrowVolume,
             });
 
             if (slot.Ring != null)
@@ -750,7 +801,7 @@ namespace Archery.Bows
             slot.Restart = k_RingRestart;
             slot.Kick = 0.025f;
 
-            Sfx.Play(m_Definition.akimboFireClip, origin, 0.8f, Random.Range(1.25f, 1.4f));
+            Sfx.Play(m_Definition.akimboFireClip, origin, 0.8f * k_ArrowVolume, Random.Range(1.25f, 1.4f));
             if (grade == ShotGrade.Perfect && m_Bow != null)
                 Sfx.Play(m_Bow.PerfectClip, origin, 0.4f, 1.15f);
             if (!m_Desktop)
@@ -769,6 +820,7 @@ namespace Archery.Bows
                     Direction = direction,
                     Aim = slot.Crossbow,
                     Hand = m_Desktop ? null : slot.Holder,
+                    HeldTime = held,
                 });
             }
 

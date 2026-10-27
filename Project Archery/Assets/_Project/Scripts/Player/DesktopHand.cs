@@ -155,6 +155,16 @@ namespace Archery.Player
                 return;
             }
 
+            // La pose d'un plan (F2, refonte du 27 octobre) : l'hologramme suit le viseur et E le pose (BuildPlacement).
+            var placement = BuildPlacement.Instance;
+            if (placement != null && placement.IsActive)
+            {
+                m_Target = null;
+                SetHovered(null);
+                m_Crosshair.SetPrompt(placement.DesktopPrompt, placement.CanPlace);
+                return;
+            }
+
             var keyboard = Keyboard.current;
             var pressed = keyboard != null && keyboard.eKey.wasPressedThisFrame;
             var held = keyboard != null && keyboard.eKey.isPressed;
@@ -230,6 +240,11 @@ namespace Archery.Player
 
                 if (interactionManager != null && interactionManager.TryGetInteractableForCollider(collider, out var found))
                 {
+                    // Les emplacements vides de la grille de construction (27 octobre) ne se visent pas (on y pose l'hologramme d'un
+                    // plan, F2) : on regarde au travers, comme le sol.
+                    if (found is BuildSocket candidate && candidate.IsCandidate && candidate.Structure == null)
+                        continue;
+
                     // L'arc, les flèches et le marteau se tiennent, ils ne se « visent » pas : on regarde au travers.
                     if (found is IXRSelectInteractable selectable && !(found is XRGrabInteractable) && !(found is Arrow))
                     {

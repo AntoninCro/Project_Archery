@@ -76,6 +76,12 @@ namespace Archery.Player
         /// <summary>Vrai quand on joue au clavier et à la souris.</summary>
         public bool IsActive { get; private set; }
 
+        /// <summary>
+        /// Sans casque, le joueur est en l'air (le saut à Espace) : le talisman d'acrobate le compte (27 octobre), pour essayer le
+        /// ralenti et le duo « Étoile filante » dans l'éditeur.
+        /// </summary>
+        public bool IsAirborne => IsActive && m_Body != null && m_Body.enabled && !m_Body.isGrounded;
+
         /// <summary>Le jeu reçoit la souris (curseur bloqué au centre) : on peut regarder, tirer et interagir.</summary>
         public bool HasFocus => IsActive && (!m_LockCursor || Cursor.lockState == CursorLockMode.Locked);
 

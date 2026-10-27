@@ -3,7 +3,6 @@ using System.Text;
 using Archery.Bows;
 using Archery.Combat;
 using Archery.Core;
-using Archery.Economy;
 using Archery.Enemies;
 using Archery.Player;
 using Archery.Shop;
@@ -20,14 +19,18 @@ using UnityEngine.InputSystem;
 namespace Archery.Building
 {
     /// <summary>
-    /// Constructions du tower defense (GDD, section 9). À l'achat sur un <see cref="BuildSocket"/>, le bâtiment
-    /// apparaît en plan bleu, l'arc se range et un marteau apparaît dans chaque main, sans rien attraper. Trois coups
-    /// sur le plan, avec l'un ou l'autre, le construisent ; les marteaux disparaissent et l'arc revient. Une
-    /// amélioration se fait de la même façon.
+    /// Constructions du tower defense (GDD, section 9). Sur un <see cref="BuildSocket"/>, le bâtiment apparaît en plan bleu,
+    /// l'arc se range et un marteau apparaît dans chaque main, sans rien attraper. Trois coups sur le plan, avec l'un ou
+    /// l'autre, le construisent ; les marteaux disparaissent et l'arc revient. Une amélioration se fait de la même façon.
     /// </summary>
     /// <remarks>
     /// À placer sur l'objet <c>Game</c>. Une seule construction à la fois. Elle se termine d'elle-même si le joueur
     /// s'éloigne (téléporteur de la tour) ou si la partie se termine : la construction n'est jamais un obstacle.
+    /// Depuis la refonte du 27 octobre (<c>Docs/Refonte_TowerDefense.md</c>, étape 2), plus de matériaux : le joueur garde ici
+    /// ses <b>plans</b>, gagnés par lots dans les caisses de l'ingénieur. Un plan construit le bâtiment, un autre plan du même
+    /// bâtiment le fait monter d'un niveau. Depuis l'étape 3, on construit sur les emplacements de la <see cref="BuildGrid"/>, en
+    /// posant l'hologramme d'un plan sorti de la montre (<see cref="BuildPlacement"/>), et un bâtiment se déplace gratuitement
+    /// entre les vagues (<see cref="MoveTo"/>). Les deux sont créés ici si la scène ne les a pas.
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildManager : MonoBehaviour
@@ -86,6 +89,7 @@ namespace Archery.Building
         float m_StructureDamage;
         int m_StructureKills;
 
+        readonly Dictionary<StructureDefinition, int> m_Plans = new Dictionary<StructureDefinition, int>();
         Structure m_Current;
         readonly List<BuildHammer> m_Hammers = new List<BuildHammer>();
         Bow m_Bow;
@@ -108,6 +112,49 @@ namespace Archery.Building
 
         public int StrikesToBuild => m_StrikesToBuild;
 
+        /// <summary>Le matériau du plan bleu (repris par l'hologramme de pose).</summary>
+        public Material BlueprintMaterial => m_BlueprintMaterial;
+
+        /// <summary>Les plans du joueur ont changé (caisse de l'ingénieur, construction).</summary>
+        public event System.Action PlansChanged;
+
+        /// <summary>Plans de ce bâtiment que le joueur a en poche.</summary>
+        public int PlansOf(StructureDefinition definition) =>
+            definition != null && m_Plans.TryGetValue(definition, out var count) ? count : 0;
+
+        /// <summary>Tous les plans du joueur, tous bâtiments confondus (la montre).</summary>
+        public int TotalPlans
+        {
+            get
+            {
+                var total = 0;
+                foreach (var count in m_Plans.Values)
+                    total += count;
+                return total;
+            }
+        }
+
+        /// <summary>Ajoute des plans d'un bâtiment (un lot de la caisse de l'ingénieur).</summary>
+        public void AddPlans(StructureDefinition definition, int count)
+        {
+            if (definition == null || count <= 0)
+                return;
+
+            m_Plans[definition] = PlansOf(definition) + count;
+            PlansChanged?.Invoke();
+        }
+
+        bool TrySpendPlan(StructureDefinition definition)
+        {
+            var count = PlansOf(definition);
+            if (count <= 0)
+                return false;
+
+            m_Plans[definition] = count - 1;
+            PlansChanged?.Invoke();
+            return true;
+        }
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -120,6 +167,12 @@ namespace Archery.Building
                 Debug.LogWarning("BuildManager : aucun matériau de plan (Resources/Blueprint).", this);
             if (m_HammerPrefab == null)
                 Debug.LogWarning("BuildManager : aucun prefab de marteau.", this);
+
+            // Les zones constructibles et la pose à l'hologramme (refonte du 27 octobre, étape 3) : rien à poser dans la scène.
+            if (GetComponent<BuildGrid>() == null && FindAnyObjectByType<BuildGrid>() == null)
+                gameObject.AddComponent<BuildGrid>();
+            if (GetComponent<BuildPlacement>() == null && FindAnyObjectByType<BuildPlacement>() == null)
+                gameObject.AddComponent<BuildPlacement>();
         }
 
         void Start()
@@ -158,22 +211,58 @@ namespace Archery.Building
                 Instance = null;
         }
 
-        /// <summary>Les bâtiments qu'on peut construire sur ce type de socle.</summary>
+        /// <summary>Les bâtiments qu'on peut construire sur ce type de socle (en hauteur : ceux du bord de la voie).</summary>
         public void GetChoices(BuildSlot slot, List<StructureDefinition> result)
         {
             result.Clear();
             foreach (var definition in m_Structures)
             {
-                if (definition != null && definition.slot == slot && definition.prefab != null)
+                if (definition != null && definition.Fits(slot) && definition.prefab != null)
                     result.Add(definition);
             }
         }
 
+        // ---- Déplacer un bâtiment (refonte du 27 octobre, étape 3) : gratuit, entre les vagues, à l'hologramme (BuildPlacement).
+
+        /// <summary>On peut déplacer un bâtiment en ce moment : entre les vagues, sans construction en cours.</summary>
+        public bool CanMove => !IsBuilding && (m_Waves == null || m_Waves.Phase != WavePhase.Wave);
+
         /// <summary>
-        /// Achète la construction d'un bâtiment sur un socle vide, ou le niveau suivant de celui qui y est.
-        /// Le marteau apparaît près de la main donnée (celle qui a ouvert le panneau).
+        /// Pose ce bâtiment sur cet emplacement libre, de la bonne sorte, tourné de <paramref name="localRotation"/> par rapport à
+        /// l'emplacement.
         /// </summary>
-        public ShopResult TryBuild(BuildSocket socket, StructureDefinition definition, XRBaseInputInteractor hand)
+        public ShopResult MoveTo(Structure structure, BuildSocket socket, Quaternion localRotation)
+        {
+            if (structure == null || socket == null)
+                return ShopResult.Failed("Aucun emplacement");
+            if (!CanMove)
+                return ShopResult.Failed("On déplace les bâtiments entre les vagues");
+
+            var definition = structure.Definition;
+            var from = structure.Socket;
+            if (socket.Structure != null && socket.Structure != structure)
+                return ShopResult.Failed("Cet emplacement est déjà pris");
+            if (definition != null && !definition.Fits(socket.Slot))
+                return ShopResult.Failed($"Pas ici : {definition.displayName} se pose {BuildSocket.NameOf(definition.slot).ToLowerInvariant()}");
+
+            if (from != null && from != socket)
+                from.Detach();
+            if (from != socket)
+                socket.Attach(structure);
+            structure.transform.localRotation = localRotation;
+            structure.Setup(definition, socket);
+
+            Sfx.Play(m_CompleteClip, socket.transform.position, 0.8f);
+            FloatingText.Spawn(socket.transform.position + Vector3.up * 2f, $"{structure.DisplayName} déplacé", m_MessageColor, 1f, 1.5f);
+            return ShopResult.Done($"{structure.DisplayName} déplacé", m_MessageColor);
+        }
+
+        /// <summary>
+        /// Construit un bâtiment sur un socle vide, ou le niveau suivant de celui qui y est, avec un plan de ce bâtiment.
+        /// Le marteau apparaît près de la main donnée (celle qui a ouvert le panneau). Un nouveau bâtiment peut être tourné de
+        /// <paramref name="localRotation"/> par rapport au socle (l'hologramme tourné au joystick, 27 octobre).
+        /// </summary>
+        public ShopResult TryBuild(BuildSocket socket, StructureDefinition definition, XRBaseInputInteractor hand, Quaternion? localRotation = null)
         {
             if (socket == null)
                 return ShopResult.Failed("Aucun emplacement");
@@ -190,13 +279,16 @@ namespace Archery.Building
             if (level > definition.MaxLevel)
                 return ShopResult.Failed("Niveau maximal atteint");
 
-            var cost = definition.CostFor(level);
-            var score = ScoreManager.Instance;
-            if (score == null || !score.TrySpendMaterials(cost))
-                return ShopResult.Failed("Pas assez de matériaux");
+            // Refonte du 27 octobre : un plan du bâtiment à la place des matériaux, pour le construire comme pour l'améliorer.
+            if (!TrySpendPlan(definition))
+                return ShopResult.Failed($"Il te faut un plan : {definition.displayName}");
 
             if (structure == null)
+            {
                 structure = socket.Place(definition);
+                if (localRotation.HasValue)
+                    structure.transform.localRotation = localRotation.Value;
+            }
 
             structure.BeginConstruction(level, m_BlueprintMaterial);
             m_Current = structure;
@@ -339,6 +431,10 @@ namespace Archery.Building
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
+            // Les mannequins du centre d'entraînement (26 octobre) n'entrent pas dans le bilan de la vague.
+            if (enemy != null && enemy.IsTrainingDummy)
+                return;
+
             m_WaveDamage += info.Amount;
             if (!(info.Source is Structure structure))
                 return;
@@ -350,7 +446,7 @@ namespace Archery.Building
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)
         {
-            if (!(info.Source is Structure structure))
+            if (!(info.Source is Structure structure) || (enemy != null && enemy.IsTrainingDummy))
                 return;
 
             m_StructureKills++;
@@ -376,7 +472,8 @@ namespace Archery.Building
             Debug.Log(m_Builder.ToString(), this);
         }
 
-        // Raccourcis de test au clavier (éditeur) : B donne 50 matériaux, H termine la construction en cours.
+        // Raccourcis de test au clavier (éditeur) : B donne 2 plans de chaque bâtiment (50 matériaux avant le 27 octobre), H termine
+        // la construction en cours.
         void UpdateDebugKey()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -384,8 +481,16 @@ namespace Archery.Building
             if (keyboard == null)
                 return;
 
-            if (keyboard.bKey.wasPressedThisFrame && ScoreManager.Instance != null)
-                ScoreManager.Instance.AddMaterials(50);
+            if (keyboard.bKey.wasPressedThisFrame)
+            {
+                foreach (var definition in m_Structures)
+                {
+                    if (definition != null && definition.prefab != null)
+                        AddPlans(definition, 2);
+                }
+
+                Announce("Test : 2 plans de chaque bâtiment");
+            }
             if (keyboard.hKey.wasPressedThisFrame)
                 FinishNow();
 #endif

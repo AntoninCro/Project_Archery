@@ -615,7 +615,9 @@ namespace Archery.Shop
             offer.Upgrade = piece;
             offer.Title = level > 1 ? $"{piece.displayName} {ShopCatalog.LevelName(level)}" : piece.displayName;
             offer.Subtitle = piece.trigger == UpgradeTrigger.PerfectShot ? subtitle + " · tir parfait" : subtitle;
-            offer.Description = duo != null ? $"{piece.description}\n<color=#FFD54F>Duo : {duo.Name}</color>" : piece.description;
+            // Le texte au niveau de la pièce (27 octobre au soir : ses dégâts, sa zone, sa vitesse… de maintenant).
+            var description = piece.DescriptionAt(level);
+            offer.Description = duo != null ? $"{description}\n<color=#FFD54F>Duo : {duo.Name}</color>" : description;
             offer.Color = catalog != null ? catalog.ColorOf(piece) : Color.white;
             offer.Icon = piece.icon;
             offer.PriceText = equipped ? "Équipée" : "Équiper";

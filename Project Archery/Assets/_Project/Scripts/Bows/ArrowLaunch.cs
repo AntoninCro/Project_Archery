@@ -20,6 +20,9 @@ namespace Archery.Bows
 
         /// <summary>Gravité de la flèche, en multiple de la normale (arc légendaire : elle tombe plus vite). 0 : normale.</summary>
         public float GravityScale;
+
+        /// <summary>Volume du sifflement en vol, en multiple du normal (l'Akimbow : 0,5, il tire sans arrêt). 0 : normal.</summary>
+        public float FlightVolume;
     }
 
     /// <summary>
@@ -45,5 +48,11 @@ namespace Archery.Bows
 
         /// <summary>La main qui tient l'arme (sa gâchette guide la flèche de l'empennage télékinésie). Vide sans casque.</summary>
         public IXRSelectInteractor Hand;
+
+        /// <summary>
+        /// Temps (s) passé au bout de l'anneau, dans le vert clair, avant le lâcher (0 sinon) : la corde de siège (26 octobre
+        /// au soir) en tire la charge du tir.
+        /// </summary>
+        public float HeldTime;
     }
 }

@@ -10,9 +10,18 @@ namespace Archery.UI
     /// </summary>
     public class FloatingText : MonoBehaviour
     {
+        // Le budget d'effets (27 octobre au soir, jusqu'à 1000 flèches en vol) : tant de textes affichés au plus ; et les chiffres
+        // de dégâts se taisent dès que la moitié est prise, pour laisser la place aux autres (points, « Chargée ! », « Parfait ! »).
+        const int k_MaxTexts = 48;
+        const int k_CrowdedTexts = 24;
+
         static readonly Stack<FloatingText> s_Pool = new Stack<FloatingText>();
         static Transform s_Root;
         static Camera s_Camera;
+        static int s_Created;
+
+        /// <summary>Beaucoup de textes à l'écran : les chiffres de dégâts (<see cref="DamagePopups"/>) attendent.</summary>
+        public static bool Crowded => s_Root != null && s_Created - s_Pool.Count >= k_CrowdedTexts;
 
         TextMeshPro m_Text;
         Color m_Color;
@@ -24,11 +33,23 @@ namespace Archery.UI
 
         public static void Spawn(Vector3 position, string text, Color color, float size = 1f, float duration = 1.2f)
         {
+            // Une nouvelle scène a détruit les textes : on recompte.
+            if (s_Root == null)
+            {
+                s_Pool.Clear();
+                s_Created = 0;
+            }
+
             FloatingText item = null;
             while (item == null && s_Pool.Count > 0)
                 item = s_Pool.Pop();
             if (item == null)
+            {
+                if (s_Created >= k_MaxTexts)
+                    return;
                 item = Create();
+                s_Created++;
+            }
 
             item.Show(position, text, color, size, duration);
         }
@@ -128,6 +149,7 @@ namespace Archery.UI
             s_Pool.Clear();
             s_Root = null;
             s_Camera = null;
+            s_Created = 0;
         }
     }
 }

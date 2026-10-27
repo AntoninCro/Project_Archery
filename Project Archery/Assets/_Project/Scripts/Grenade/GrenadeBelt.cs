@@ -87,14 +87,21 @@ namespace Archery.Grenades
 
         public bool IsReady => m_Remaining <= 0f && m_Held == null;
 
-        /// <summary>Recharge actuelle, amélioration « Grenade rapide » comprise.</summary>
+        // Le talisman de la super grenade (26 octobre) : la recharge raccourcie de 50 % au niveau 1, et de 10 % de plus par niveau.
+        const float k_SuperGrenadeCooldown = 0.5f;
+        const float k_SuperGrenadeCooldownPerLevel = 0.1f;
+
+        /// <summary>Recharge actuelle, améliorations « Grenade rapide » (retirée) et « Super grenade » comprises.</summary>
         public float Cooldown
         {
             get
             {
                 var upgrades = PlayerUpgrades.Instance;
-                var reduction = upgrades != null ? Mathf.Clamp01(upgrades.Total(UpgradeEffect.GrenadeCooldown)) : 0f;
-                return Mathf.Max(m_MinCooldown, m_BaseCooldown * (1f - reduction));
+                var reduction = upgrades != null ? upgrades.Total(UpgradeEffect.GrenadeCooldown) : 0f;
+                var super = upgrades != null ? upgrades.Stacks(UpgradeEffect.SuperGrenade) : 0;
+                if (super > 0)
+                    reduction = Mathf.Max(reduction, k_SuperGrenadeCooldown + k_SuperGrenadeCooldownPerLevel * (super - 1));
+                return Mathf.Max(m_MinCooldown, m_BaseCooldown * (1f - Mathf.Clamp01(reduction)));
             }
         }
 

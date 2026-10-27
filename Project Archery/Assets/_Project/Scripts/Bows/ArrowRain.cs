@@ -12,9 +12,46 @@ namespace Archery.Bows
     /// (celui que montre l'aide à la visée) ; à l'arrivée, une zone brûlante reste au sol (<see cref="RainZone"/>). Si la
     /// flèche se plante avant son sommet (tir tendu), la pluie tombe du ciel sur ce point.
     /// </summary>
-    /// <remarks>Créé tout seul au premier tir d'un arc à pluie (<see cref="Track"/>).</remarks>
+    /// <remarks>
+    /// Créé tout seul au premier tir d'un arc à pluie (<see cref="Track"/>). Depuis le 26 octobre au soir, la corde de pluie
+    /// s'en sert aussi (<see cref="TrackRain"/> : sa propre pluie, sans zone brûlante), et multiplie celle de l'arc légendaire
+    /// (<see cref="Multiply"/>).
+    /// </remarks>
     public class ArrowRain : MonoBehaviour
     {
+        /// <summary>
+        /// Une flèche de la pluie vient de partir (la flèche, ses dégâts, la qualité du tir) : les pièces de la flèche s'y
+        /// appliquent (27 octobre ; le joueur : « la corde de pluie ne marche pas avec beaucoup de synergies » : avant, ses flèches
+        /// sortaient de la réserve sans rien porter).
+        /// </summary>
+        public static event System.Action<Arrow, float, ShotGrade> RainArrowLaunched;
+
+        /// <summary>Ce que fait une pluie : ses flèches, le rayon de son cercle, leur part des dégâts, leur couleur, la zone brûlante, les sons.</summary>
+        public struct RainSettings
+        {
+            public int Arrows;
+            public float Radius;
+            public float Damage;
+            public Color Color;
+            public float ZoneDuration;
+            public float ZoneDamage;
+            public AudioClip SplitClip;
+            public AudioClip ZoneClip;
+        }
+
+        /// <summary>La pluie d'un arc à pluie (l'arc légendaire), d'après sa fiche.</summary>
+        public static RainSettings SettingsOf(BowDefinition bow) => new RainSettings
+        {
+            Arrows = bow.rainArrows,
+            Radius = bow.rainRadius,
+            Damage = bow.rainDamage,
+            Color = bow.rainColor,
+            ZoneDuration = bow.rainZoneDuration,
+            ZoneDamage = bow.rainZoneDamage,
+            SplitClip = bow.rainSplitClip,
+            ZoneClip = bow.rainZoneClip,
+        };
+
         // Pas de division sous le nez du joueur : la flèche vole au moins ce temps (s).
         const float k_MinFlightTime = 0.12f;
 
@@ -34,7 +71,7 @@ namespace Archery.Bows
 
         class Shot
         {
-            public BowDefinition Bow;
+            public RainSettings Rain;
             public float Damage;
             public ShotGrade Grade;
             public float Time;
@@ -45,7 +82,7 @@ namespace Archery.Bows
         {
             public float Time;
             public Vector3 Point;
-            public BowDefinition Bow;
+            public RainSettings Rain;
             public float Damage;
         }
 
@@ -58,11 +95,69 @@ namespace Archery.Bows
         /// <param name="damage">Dégâts du tir (qualité comprise) : la pluie et la zone en prennent une part.</param>
         public static void Track(Arrow arrow, BowDefinition bow, float damage, ShotGrade grade)
         {
-            if (arrow == null || bow == null)
+            if (bow != null)
+                TrackRain(arrow, SettingsOf(bow), damage, grade);
+        }
+
+        /// <summary>Suit cette flèche : elle se divisera au sommet de sa course en cette pluie (la corde de pluie).</summary>
+        public static void TrackRain(Arrow arrow, RainSettings rain, float damage, ShotGrade grade)
+        {
+            if (arrow == null || rain.Arrows <= 0)
                 return;
             if (s_Instance == null)
                 s_Instance = new GameObject("Pluie de flèches").AddComponent<ArrowRain>();
-            s_Instance.m_Shots[arrow] = new Shot { Bow = bow, Damage = damage, Grade = grade, Time = Time.time, Gravity = arrow.GravityScale };
+            s_Instance.m_Shots[arrow] = new Shot { Rain = rain, Damage = damage, Grade = grade, Time = Time.time, Gravity = arrow.GravityScale };
+        }
+
+        /// <summary>
+        /// Une pluie qui tombe tout de suite du ciel sur ce point (27 octobre : le duo « Averse », les flèches suspendues relâchées),
+        /// comme celle d'une flèche plantée avant son sommet. Sans zone brûlante si <paramref name="rain"/> n'en a pas.
+        /// </summary>
+        public static void RainAt(Vector3 point, RainSettings rain, float damage, ShotGrade grade)
+        {
+            if (rain.Arrows <= 0)
+                return;
+            if (s_Instance == null)
+                s_Instance = new GameObject("Pluie de flèches").AddComponent<ArrowRain>();
+            s_Instance.RainFromSky(point, new Shot { Rain = rain, Damage = damage, Grade = grade, Time = Time.time, Gravity = 1f });
+        }
+
+        /// <summary>
+        /// Des flèches qui tombent de ce point en l'air sur le sol en dessous, dans le cercle de la pluie, sans son (27 octobre : le
+        /// duo « Nuage », la flèche plume arrêtée dans le ciel, qui pleut un moment).
+        /// </summary>
+        public static void RainFromCloud(Vector3 cloud, RainSettings rain, float damage, ShotGrade grade)
+        {
+            if (rain.Arrows <= 0)
+                return;
+
+            var shot = new Shot { Rain = rain, Damage = damage, Grade = grade, Time = Time.time, Gravity = 1f };
+            var ground = GroundBelow(cloud);
+            var height = Mathf.Max(1f, cloud.y - ground.y);
+            var time = Mathf.Clamp(Mathf.Sqrt(2f * height / Mathf.Max(0.1f, -Physics.gravity.y)), 0.3f, 3f);
+            for (var i = 0; i < rain.Arrows; i++)
+            {
+                var from = cloud + Disc(0.6f);
+                Launch(from, Ballistic(from, ground + Disc(rain.Radius), time * Random.Range(0.9f, 1.1f), Gravity(shot)), shot);
+            }
+        }
+
+        /// <summary>
+        /// Une seule flèche de pluie, de ce point, à cette vitesse (27 octobre : la corde de pluie revue, des flèches lâchées tout le
+        /// long de la traînée) ; ses dégâts : <paramref name="damage"/> × la part de <paramref name="rain"/>.
+        /// </summary>
+        public static void Drop(Vector3 from, Vector3 velocity, RainSettings rain, float damage, ShotGrade grade) =>
+            Launch(from, velocity, new Shot { Rain = rain, Damage = damage, Grade = grade, Time = Time.time, Gravity = 1f });
+
+        /// <summary>La flèche est déjà suivie : elle fera une pluie.</summary>
+        public static bool IsTracked(Arrow arrow) => s_Instance != null && arrow != null && s_Instance.m_Shots.ContainsKey(arrow);
+
+        /// <summary>Multiplie le nombre de flèches de la pluie que fera cette flèche (la corde de pluie avec l'arc légendaire).</summary>
+        public static void Multiply(Arrow arrow, float factor)
+        {
+            if (s_Instance == null || arrow == null || !s_Instance.m_Shots.TryGetValue(arrow, out var shot))
+                return;
+            shot.Rain.Arrows = Mathf.Max(1, Mathf.RoundToInt(shot.Rain.Arrows * Mathf.Max(0f, factor)));
         }
 
         void OnEnable() => Arrow.ShotEnded += OnShotEnded;
@@ -126,29 +221,29 @@ namespace Archery.Bows
             if (!PredictLanding(start, arrow.Velocity, Gravity(shot), out var landing, out var time))
                 return;
 
-            var bow = shot.Bow;
-            for (var i = 0; i < bow.rainArrows; i++)
+            var rain = shot.Rain;
+            for (var i = 0; i < rain.Arrows; i++)
             {
                 var from = start + Random.insideUnitSphere * 0.25f;
                 var flight = Mathf.Max(0.15f, time * Random.Range(0.9f, 1.1f));
-                Launch(from, Ballistic(from, landing + Disc(bow.rainRadius), flight, Gravity(shot)), shot);
+                Launch(from, Ballistic(from, landing + Disc(rain.Radius), flight, Gravity(shot)), shot);
             }
 
-            Sfx.Play(bow.rainSplitClip, start, 0.9f, Random.Range(1.05f, 1.2f));
+            Sfx.Play(rain.SplitClip, start, 0.9f, Random.Range(1.05f, 1.2f));
             Schedule(landing, time, shot);
         }
 
         void RainFromSky(Vector3 point, Shot shot)
         {
-            var bow = shot.Bow;
+            var rain = shot.Rain;
             var ground = GroundBelow(point);
-            for (var i = 0; i < bow.rainArrows; i++)
+            for (var i = 0; i < rain.Arrows; i++)
             {
-                var from = ground + Vector3.up * k_SkyHeight + Disc(bow.rainRadius * 0.5f);
-                Launch(from, Ballistic(from, ground + Disc(bow.rainRadius), k_SkyFallTime * Random.Range(0.9f, 1.1f), Gravity(shot)), shot);
+                var from = ground + Vector3.up * k_SkyHeight + Disc(rain.Radius * 0.5f);
+                Launch(from, Ballistic(from, ground + Disc(rain.Radius), k_SkyFallTime * Random.Range(0.9f, 1.1f), Gravity(shot)), shot);
             }
 
-            Sfx.Play(bow.rainSplitClip, ground + Vector3.up * 4f, 0.9f, Random.Range(1.05f, 1.2f));
+            Sfx.Play(rain.SplitClip, ground + Vector3.up * 4f, 0.9f, Random.Range(1.05f, 1.2f));
             Schedule(ground, k_SkyFallTime, shot);
         }
 
@@ -164,28 +259,29 @@ namespace Archery.Bows
             arrow.Launch(new ArrowLaunch
             {
                 Velocity = velocity,
-                Damage = shot.Damage * Mathf.Max(0f, shot.Bow.rainDamage),
+                Damage = shot.Damage * Mathf.Max(0f, shot.Rain.Damage),
                 Grade = shot.Grade,
                 Pierce = 0,
-                TrailColor = shot.Bow.rainColor,
+                TrailColor = shot.Rain.Color,
                 IsShot = true,
                 IsExtra = true,
                 GravityScale = shot.Gravity,
             });
+            RainArrowLaunched?.Invoke(arrow, shot.Damage * Mathf.Max(0f, shot.Rain.Damage), shot.Grade);
         }
 
         static Vector3 Gravity(Shot shot) => Physics.gravity * (shot.Gravity > 0f ? shot.Gravity : 1f);
 
         void Schedule(Vector3 landing, float time, Shot shot)
         {
-            if (shot.Bow.rainZoneDuration <= 0f)
+            if (shot.Rain.ZoneDuration <= 0f)
                 return;
 
             m_Zones.Add(new PendingZone
             {
                 Time = Time.time + time,
                 Point = GroundBelow(landing),
-                Bow = shot.Bow,
+                Rain = shot.Rain,
                 Damage = shot.Damage,
             });
         }
@@ -199,9 +295,8 @@ namespace Archery.Bows
                     continue;
 
                 m_Zones.RemoveAt(i);
-                var bow = zone.Bow;
-                RainZone.Spawn(zone.Point, bow.rainRadius, bow.rainZoneDuration, zone.Damage * Mathf.Max(0f, bow.rainZoneDamage),
-                               bow.rainColor, bow.rainZoneClip);
+                var rain = zone.Rain;
+                RainZone.Spawn(zone.Point, rain.Radius, rain.ZoneDuration, zone.Damage * Mathf.Max(0f, rain.ZoneDamage), rain.Color, rain.ZoneClip);
             }
         }
 
@@ -277,6 +372,10 @@ namespace Archery.Bows
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => s_Instance = null;
+        static void ResetStatics()
+        {
+            s_Instance = null;
+            RainArrowLaunched = null;
+        }
     }
 }

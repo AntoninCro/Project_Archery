@@ -28,7 +28,6 @@ namespace Archery.Shop
 
         // Les cartes, dans l'ordre du panneau : les parchemins (ligne du haut), puis les objets (ligne du bas).
         readonly List<ShopOffer> m_UpgradeOffers = new List<ShopOffer>();
-        readonly List<Upgrade> m_Candidates = new List<Upgrade>();
         WaveManager m_Waves;
         PlayerUpgrades m_Upgrades;
         int m_Wave;
@@ -176,12 +175,21 @@ namespace Archery.Shop
 
         /// <summary>
         /// « Multitir niveau 2 ! », « Flèche de foudre ! (rangée dans l'atelier) » quand son emplacement était déjà pris
-        /// (<paramref name="occupant"/>, 26 octobre : on l'équipe dans l'atelier).
+        /// (<paramref name="occupant"/>, 26 octobre : on l'équipe dans l'atelier). À appeler une fois la pièce prise : si elle
+        /// forme un duo avec une pièce possédée sans qu'il soit actif (l'une des deux est rangée), le message le dit et nomme
+        /// l'autre pièce (26 octobre) ; un duo qui se forme tout de suite s'annonce à part (ArrowPieces).
         /// </summary>
         public static string PurchaseMessage(Upgrade upgrade, Upgrade occupant, int level)
         {
             var name = upgrade.kind == UpgradeKind.Object && level > 1 ? $"{upgrade.displayName} niveau {level}" : upgrade.displayName;
-            return occupant != null ? name + " ! (rangée dans l'atelier)" : name + " !";
+            var text = occupant != null ? name + " ! (rangée dans l'atelier)" : name + " !";
+
+            var owned = PlayerUpgrades.Instance;
+            var duo = ArrowDuos.Completes(upgrade, owned);
+            var partner = ArrowDuos.PartnerOf(duo, upgrade, owned);
+            if (partner != null)
+                text += $"\n<size=60%><color=#FFD54F>Duo {duo.Name} avec « {partner.displayName} » : équipe les deux dans l'atelier</color></size>";
+            return text;
         }
 
         // Tous les parchemins du catalogue, puis les objets tirés au sort.
@@ -199,7 +207,7 @@ namespace Archery.Shop
                     Kind = ShopOfferKind.Upgrade,
                     Upgrade = upgrade,
                     Title = upgrade.displayName,
-                    Description = upgrade.description,
+                    Description = upgrade.DescriptionAt(1),
                     Color = m_Catalog.ColorOf(upgrade),
                     Icon = upgrade.icon,
                 });
@@ -207,45 +215,20 @@ namespace Archery.Shop
 
             RefreshScrollOffers(owned);
 
-            var luck = owned != null ? owned.LuckMultiplier : 1f;
+            // L'emplacement d'abord, de préférence un autre à chaque carte (26 octobre au soir : ShopCatalog.PickObject).
+            m_ShownSlots.Clear();
             for (var i = 0; i < m_Catalog.objectOffers; i++)
             {
-                var upgrade = PickObject(m_Catalog.RollRarity(m_Wave, luck), owned);
+                var upgrade = m_Catalog.PickObject(m_Wave, owned, IsOffered, m_ShownSlots);
+                if (upgrade != null)
+                    m_ShownSlots.Add(upgrade.slot);
                 m_UpgradeOffers.Add(upgrade != null
                     ? ObjectOffer(upgrade)
                     : ShopOffer.Info("Rupture de stock", "Tu as déjà tous les objets.", m_Catalog.commonColor));
             }
         }
 
-        // La rareté tirée d'abord ; s'il ne reste aucun objet de cette rareté, une autre.
-        Upgrade PickObject(UpgradeRarity rarity, PlayerUpgrades owned)
-        {
-            var upgrade = PickObjectOf(rarity, owned);
-            if (upgrade != null)
-                return upgrade;
-
-            foreach (UpgradeRarity other in Enum.GetValues(typeof(UpgradeRarity)))
-            {
-                upgrade = PickObjectOf(other, owned);
-                if (upgrade != null)
-                    return upgrade;
-            }
-
-            return null;
-        }
-
-        Upgrade PickObjectOf(UpgradeRarity rarity, PlayerUpgrades owned)
-        {
-            m_Candidates.Clear();
-            foreach (var upgrade in m_Catalog.upgrades)
-            {
-                if (upgrade != null && upgrade.kind == UpgradeKind.Object && upgrade.rarity == rarity &&
-                    (owned == null || owned.CanTake(upgrade)) && !IsOffered(upgrade))
-                    m_Candidates.Add(upgrade);
-            }
-
-            return m_Candidates.Count > 0 ? m_Candidates[UnityEngine.Random.Range(0, m_Candidates.Count)] : null;
-        }
+        readonly List<ArrowSlot> m_ShownSlots = new List<ArrowSlot>();
 
         // Le prix et le niveau des parchemins, après chaque achat de l'un d'eux : chacun a son prix (26 octobre).
         void RefreshScrollOffers(PlayerUpgrades owned)
@@ -297,16 +280,16 @@ namespace Archery.Shop
             return offer;
         }
 
-        // « Pointe · niveau 2 », et sous la description (inchangée), le duo qu'elle pourrait former et, si son emplacement est
-        // pris, qu'elle ira dans l'atelier. Une pièce montée au niveau maximal entre-temps (par le coffre du boss) ne s'achète plus.
+        // « Pointe · niveau 2 », et dessous la description (au niveau 2 et plus, ce qui change : « 50 % → 100 % ➶ », depuis le
+        // 27 octobre au soir), le duo qu'elle pourrait former et, si son emplacement est pris, qu'elle ira dans l'atelier. Une pièce
+        // montée au niveau maximal entre-temps (par le coffre du boss) ne s'achète plus.
         void UpdateObjectOffer(ShopOffer offer)
         {
             var upgrade = offer.Upgrade;
             var level = (m_Upgrades != null ? m_Upgrades.Level(upgrade.effect) : 0) + 1;
             var occupant = m_Upgrades != null ? m_Upgrades.Occupant(upgrade) : null;
             offer.Subtitle = ShopCatalog.SubtitleOf(upgrade, level);
-            offer.Description = ShopCatalog.Lines(upgrade.description, ShopCatalog.DuoLine(ArrowDuos.Completes(upgrade, m_Upgrades)),
-                                                  ShopCatalog.StorageLine(occupant));
+            offer.Description = ShopCatalog.Lines(upgrade.LevelUpAt(level), ShopCatalog.DuoLine(upgrade, m_Upgrades), ShopCatalog.StorageLine(occupant));
             offer.Price = m_Catalog.ObjectPriceOf(upgrade.rarity, m_Wave, WavesToWin, m_ObjectsBought);
             if (m_Upgrades != null && !m_Upgrades.CanTake(upgrade))
             {

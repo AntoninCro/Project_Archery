@@ -17,6 +17,10 @@ namespace Archery.Building
     /// Le socle a besoin d'un collider plat à sa racine (la plaque visée par le rayon de la main). Une fois construit,
     /// les colliders du bâtiment s'y ajoutent : viser le bâtiment ouvre aussi le panneau.
     /// L'avant du socle (axe Z, bleu) compte pour les barricades : il doit pointer vers la forêt, d'où viennent les ennemis.
+    /// Depuis la refonte du 27 octobre (étape 3), les 12 socles posés à la main sont remplacés par les emplacements de la
+    /// <see cref="BuildGrid"/>, un par case constructible de la carte (<see cref="IsCandidate"/>). Vides, ils sont invisibles et
+    /// ne se visent pas : on y pose l'hologramme d'un plan (<see cref="BuildPlacement"/>), et leurs runes ne s'allument que
+    /// pendant la pose. Construits, ils se visent comme avant (panneau : améliorer, déplacer).
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildSocket : XRBaseInteractable
@@ -56,11 +60,42 @@ namespace Archery.Building
         /// <summary>Le bâtiment construit (ou en construction) sur ce socle, ou null.</summary>
         public Structure Structure { get; private set; }
 
-        public string DisplayName => !string.IsNullOrEmpty(m_DisplayName) ? m_DisplayName
-            : m_Slot == BuildSlot.Lane ? "Sur la voie" : "Au bord de la voie";
+        public string DisplayName => !string.IsNullOrEmpty(m_DisplayName) ? m_DisplayName : NameOf(m_Slot);
 
         /// <summary>Une construction est en cours sur ce socle.</summary>
         public bool IsBusy => Structure != null && Structure.IsUnderConstruction;
+
+        /// <summary>Emplacement créé par la <see cref="BuildGrid"/> (refonte du 27 octobre), et non socle posé à la main.</summary>
+        public bool IsCandidate { get; private set; }
+
+        /// <summary>Visé par le rayon de la main, ou par l'hologramme de la pose : ses runes grossissent et brillent plus.</summary>
+        public bool IsHighlighted => isHovered || (BuildPlacement.Instance != null && BuildPlacement.Instance.Target == this);
+
+        /// <summary>
+        /// Les runes de l'emplacement s'affichent (<c>MapGameplayLights</c>) : toujours pour un socle posé à la main ; pour un
+        /// emplacement de la grille, pendant la pose, autour du joueur, là où le bâtiment peut aller.
+        /// </summary>
+        public bool ShowsRune => !IsCandidate || (BuildPlacement.Instance != null && BuildPlacement.Instance.Reveals(this));
+
+        /// <summary>
+        /// La couleur des runes d'un emplacement de la grille, selon sa sorte : orange sur la voie, vert en hauteur, doré sur la
+        /// tour ; null (le bleu habituel des runes) au bord de la voie et pour un socle posé à la main.
+        /// </summary>
+        public Color? RuneColor => !IsCandidate ? (Color?)null : m_Slot switch
+        {
+            BuildSlot.Lane => new Color(1f, 0.55f, 0.2f),
+            BuildSlot.Height => new Color(0.4f, 1f, 0.45f),
+            BuildSlot.Tower => new Color(1f, 0.85f, 0.35f),
+            _ => null,
+        };
+
+        public static string NameOf(BuildSlot slot) => slot switch
+        {
+            BuildSlot.Lane => "Sur la voie",
+            BuildSlot.Height => "En hauteur",
+            BuildSlot.Tower => "Sur la tour",
+            _ => "Au bord de la voie",
+        };
 
         protected override void Awake()
         {
@@ -91,7 +126,9 @@ namespace Archery.Building
             m_PlateColliders = colliders.ToArray();
             ArrowIgnore.Register(m_PlateColliders);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            CheckGround();
+            // Les emplacements de la grille ont déjà été choisis sur un sol plat.
+            if (!IsCandidate)
+                CheckGround();
 #endif
         }
 
@@ -99,6 +136,14 @@ namespace Archery.Building
         {
             ArrowIgnore.Unregister(m_PlateColliders);
             base.OnDestroy();
+        }
+
+        /// <summary>En fait un emplacement de la grille, de cette sorte et de cette taille. Appelé par la grille, juste après sa création.</summary>
+        internal void SetupCandidate(BuildSlot slot, Vector2 size)
+        {
+            IsCandidate = true;
+            m_Slot = slot;
+            m_Size = size;
         }
 
         void Update()
@@ -112,9 +157,19 @@ namespace Archery.Building
             m_Marker.localScale = m_MarkerScale * Mathf.Lerp(current, target, 1f - Mathf.Exp(-10f * Time.deltaTime));
         }
 
+        // Un emplacement vide de la grille ne se vise pas au rayon (on y pose un hologramme) : sinon le rayon de la main
+        // s'accrocherait au sol partout.
+        public override bool IsHoverableBy(IXRHoverInteractor interactor) =>
+            base.IsHoverableBy(interactor) && (!IsCandidate || Structure != null);
+
         public override bool IsSelectableBy(IXRSelectInteractor interactor)
         {
-            if (!base.IsSelectableBy(interactor) || IsBusy || !IsInReach(interactor))
+            if (!base.IsSelectableBy(interactor) || IsBusy || !IsInReach(interactor) || (IsCandidate && Structure == null))
+                return false;
+
+            // Pendant la pose d'un plan, la poignée annule la pose : elle n'ouvre pas de panneau.
+            var placement = BuildPlacement.Instance;
+            if (placement != null && placement.IsActive)
                 return false;
 
             // Le panneau ouvert sur ce socle le relâche aussitôt : la main reste libre pour cliquer.
@@ -159,11 +214,22 @@ namespace Archery.Building
             var structure = Instantiate(definition.prefab, transform.position, transform.rotation, transform);
             structure.name = definition.prefab.name;
             structure.Setup(definition, this);
+            Attach(structure);
+            return structure;
+        }
+
+        /// <summary>
+        /// Le bâtiment se pose sur ce socle, centré et tourné comme lui (construction, ou déplacement depuis un autre socle).
+        /// Ses colliders rejoignent ceux du socle : le viser ouvre le panneau d'amélioration.
+        /// </summary>
+        internal void Attach(Structure structure)
+        {
+            structure.transform.SetParent(transform, false);
+            structure.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             Structure = structure;
             if (m_Marker != null)
                 m_Marker.gameObject.SetActive(false);
 
-            // Les colliders du bâtiment rejoignent ceux du socle : le viser ouvre le panneau d'amélioration.
             // XRI ne relit la liste qu'à l'enregistrement, d'où la désactivation le temps de l'ajout.
             enabled = false;
             foreach (var collider in structure.GetComponentsInChildren<Collider>(true))
@@ -173,6 +239,23 @@ namespace Archery.Building
             }
 
             enabled = true;
+        }
+
+        /// <summary>Le bâtiment quitte ce socle (déplacement) : ses colliders aussi, et le socle redevient libre.</summary>
+        internal Structure Detach()
+        {
+            var structure = Structure;
+            if (structure == null)
+                return null;
+
+            enabled = false;
+            foreach (var collider in structure.GetComponentsInChildren<Collider>(true))
+                colliders.Remove(collider);
+            enabled = true;
+
+            Structure = null;
+            if (m_Marker != null)
+                m_Marker.gameObject.SetActive(true);
             return structure;
         }
 
@@ -225,7 +308,12 @@ namespace Archery.Building
 
         void OnDrawGizmos()
         {
-            Gizmos.color = m_Slot == BuildSlot.Lane ? new Color(1f, 0.6f, 0.2f, 0.8f) : new Color(0.3f, 0.85f, 1f, 0.8f);
+            Gizmos.color = m_Slot switch
+            {
+                BuildSlot.Lane => new Color(1f, 0.6f, 0.2f, 0.8f),
+                BuildSlot.Height => new Color(0.4f, 1f, 0.4f, 0.8f),
+                _ => new Color(0.3f, 0.85f, 1f, 0.8f),
+            };
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
             Gizmos.DrawWireCube(Vector3.up * 0.05f, new Vector3(m_Size.x, 0.1f, m_Size.y));
             Gizmos.DrawLine(Vector3.up * 0.1f, new Vector3(0f, 0.1f, m_Size.y * 0.5f + 1f));

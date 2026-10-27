@@ -127,7 +127,9 @@ s'allume pour te voir (comme dans *Kinito Pet*).
 ### Encore ouvert
 
 - **Pistes** : peut-être 3 easter eggs avant le changement d'acte ; le 3e débloquerait le katana, qui trancherait les
-  panneaux de fin après MK pour ouvrir un portail vers un vrai boss.
+  panneaux de fin après MK pour ouvrir un portail vers un vrai boss. **Pistes du joueur pour le 3e easter egg (26 octobre)** :
+  le katana en sera l'arme ; son monde est fait presque entièrement de 0 et 1. Le boss d'après MK fait la transition entre
+  l'acte 1 et l'acte 2.
 - **Plus tard** : la condition d'apparition des runes, ce qui change le reflet et les fins, le 3e easter egg, le genre de
   l'acte 2.
 

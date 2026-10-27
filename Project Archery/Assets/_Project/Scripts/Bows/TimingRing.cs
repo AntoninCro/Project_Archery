@@ -27,6 +27,10 @@ namespace Archery.Bows
         static readonly int k_FlashColorId = Shader.PropertyToID("_FlashColor");
         static readonly int k_PerfectColorId = Shader.PropertyToID("_PerfectColor");
         static readonly int k_ApproachColorId = Shader.PropertyToID("_ApproachColor");
+        static readonly int k_AllPerfectId = Shader.PropertyToID("_AllPerfect");
+
+        // La vitesse (par seconde) du passage à l'anneau tout vert, et du retour aux bandes.
+        const float k_AllPerfectFadeSpeed = 8f;
 
         // Le bord extérieur de l'anneau : les bandes s'arrêtent juste avant.
         const float k_OuterEdge = 0.98f;
@@ -98,8 +102,30 @@ namespace Archery.Bows
         float m_SecondPassTimer = -1f;
         Color m_DefaultPerfectColor = new Color(0.3f, 0.92f, 0.35f, 1f);
         Color m_DefaultApproachColor = Color.white;
+        float m_AllPerfectBlend;
+        float m_HeldSince = -1f;
 
         public bool IsRunning { get; private set; }
+
+        /// <summary>
+        /// Depuis combien de temps (s) le cercle attend au bout de l'anneau, dans le vert clair (0 sinon) : la charge de la corde de
+        /// siège pour les arbalètes des Akimbow (27 octobre). À lire avant <see cref="Release"/>.
+        /// </summary>
+        public float HeldDuration => IsRunning && m_HeldSince >= 0f ? Time.time - m_HeldSince : 0f;
+
+        /// <summary>
+        /// Le prochain tir sera parfait quoi qu'il arrive (27 octobre, demandé par le joueur : un parfait en réserve du duelliste
+        /// ou du boomerang, le talisman d'acrobate en l'air, le bonus de coffre) : l'anneau s'affiche entièrement dans la couleur du
+        /// parfait. Seulement l'affichage : les bandes, <see cref="CurrentGrade"/> et le vert pastel ne changent pas (la corde de
+        /// siège et le deuxième cercle de l'arc cosmique en dépendent). L'arc le met à chaque image (<c>Bow.NextShotPerfect</c>).
+        /// </summary>
+        public bool AllPerfect { get; set; }
+
+        /// <summary>
+        /// La zone du parfait est dorée au lieu de verte (27 octobre, demandé par le joueur : la corde de transe, à partir de la
+        /// cinquième flèche parfaite d'affilée, celle qui traverse tout). Seulement la couleur ; l'arc le met à chaque image.
+        /// </summary>
+        public bool GoldenPerfect { get; set; }
 
         /// <summary>
         /// Le dernier tir a été lâché dans le doré ou le vert pastel du deuxième cercle (arc à surcharge) : c'est le laser.
@@ -167,6 +193,7 @@ namespace Archery.Bows
             m_Approach = 1f;
             m_WasInGold = false;
             m_WasHeld = false;
+            m_HeldSince = -1f;
             m_FlashColor = Color.clear;
             m_Overcharge = overchargeDuration > 0f;
             m_OverchargeDuration = Mathf.Max(0.1f, overchargeDuration);
@@ -174,6 +201,7 @@ namespace Archery.Bows
             m_SecondPassTimer = -1f;
             Overcharged = false;
             IsRunning = true;
+            m_AllPerfectBlend = AllPerfect ? 1f : 0f;
         }
 
         public void Cancel()
@@ -236,7 +264,15 @@ namespace Archery.Bows
 
                 var held = grade == ShotGrade.Held;
                 if (held && !m_WasHeld)
+                {
+                    m_HeldSince = Time.time;
                     HoldEntered?.Invoke();
+                }
+                else if (!held)
+                {
+                    m_HeldSince = -1f;
+                }
+
                 m_WasHeld = held;
 
                 // Surcharge : le premier cercle a fini sa course ; un instant plus tard, le deuxième part du bord.
@@ -247,6 +283,11 @@ namespace Archery.Bows
                     else if ((m_SecondPassTimer -= deltaTime) <= 0f)
                         StartSecondPass();
                 }
+
+                // Tout vert : le deuxième cercle de l'arc cosmique garde ses bandes (la fenêtre du laser dépend de la vraie bande).
+                // Après le lâcher, la valeur reste figée : le résultat reste vert pendant le fondu.
+                m_AllPerfectBlend = Mathf.MoveTowards(m_AllPerfectBlend, AllPerfect && !m_SecondPass ? 1f : 0f,
+                                                      k_AllPerfectFadeSpeed * Time.unscaledDeltaTime);
             }
 
             var visible = IsRunning || Time.time < m_VisibleUntil;
@@ -271,7 +312,8 @@ namespace Archery.Bows
             m_PropertyBlock.SetFloat(k_ApproachThicknessId, m_ApproachThickness);
             m_PropertyBlock.SetFloat(k_AlphaId, m_Alpha);
             m_PropertyBlock.SetColor(k_FlashColorId, m_FlashColor);
-            m_PropertyBlock.SetColor(k_PerfectColorId, m_Overcharge ? m_OverchargeColor : m_DefaultPerfectColor);
+            m_PropertyBlock.SetFloat(k_AllPerfectId, m_AllPerfectBlend);
+            m_PropertyBlock.SetColor(k_PerfectColorId, m_Overcharge || GoldenPerfect ? m_OverchargeColor : m_DefaultPerfectColor);
             m_PropertyBlock.SetColor(k_ApproachColorId, m_Overcharge && m_SecondPass ? m_OverchargeColor : m_DefaultApproachColor);
             m_Renderer.SetPropertyBlock(m_PropertyBlock);
         }

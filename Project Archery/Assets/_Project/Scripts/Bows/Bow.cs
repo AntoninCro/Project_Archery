@@ -35,10 +35,39 @@ namespace Archery.Bows
 
         /// <summary>
         /// Demandé à chaque tir lâché dans l'anneau, quand il n'est pas déjà forcé parfait (26 octobre, pièces de la flèche :
-        /// une flèche boomerang rattrapée, le talisman d'acrobate en l'air) : vrai si ce tir doit compter comme parfait.
+        /// le talisman d'acrobate en l'air, un parfait en réserve du duelliste ; depuis le 27 octobre, la flèche boomerang
+        /// rattrapée elle-même) : vrai si ce tir doit compter comme parfait. La flèche tirée est passée (null pour une arbalète).
         /// Celui qui répond consomme ce qu'il accorde.
         /// </summary>
-        public static Func<bool> ClaimPerfectShot;
+        public static Func<Arrow, bool> ClaimPerfectShot;
+
+        /// <summary>
+        /// Sans rien consommer : <see cref="ClaimPerfectShot"/> accorderait-il le tir de cette flèche (celle encochée, ou null) ? Le
+        /// pendant de ClaimPerfectShot, pour l'anneau tout vert et l'aide à la visée (27 octobre, demandé par le joueur).
+        /// </summary>
+        public static Func<Arrow, bool> PerfectPending;
+
+        /// <summary>
+        /// Le prochain tir lâché dans l'anneau sera parfait quoi qu'il arrive (bonus de coffre, parfait en réserve, acrobate, flèche
+        /// boomerang rattrapée encochée) : l'anneau s'affiche alors entièrement vert (<see cref="TimingRing.AllPerfect"/>).
+        /// </summary>
+        public bool NextShotPerfect => ForcePerfect || (PerfectPending != null && PerfectPending(m_Nocked));
+
+        /// <summary>
+        /// La zone du parfait de l'anneau est dorée (27 octobre : la corde de transe, un tir parfait maintenant serait la flèche
+        /// dorée) ; null : verte.
+        /// </summary>
+        public static Func<bool> GoldenPerfectZone;
+
+        /// <summary>La zone du parfait doit-elle être dorée en ce moment (<see cref="GoldenPerfectZone"/>) ?</summary>
+        public static bool GoldenPerfectNow => GoldenPerfectZone != null && GoldenPerfectZone();
+
+        /// <summary>
+        /// La charge d'un tir lâché au bout de l'anneau, dans le vert clair (26 octobre au soir : la corde de siège) : le
+        /// multiplicateur de ses dégâts selon le temps (s) passé là ; null ou 1 : rien. Vaut aussi pour le laser de l'arc cosmique,
+        /// lâché au bout de son deuxième cercle.
+        /// </summary>
+        public static Func<float, float> HeldChargeMultiplier;
 
         /// <summary>
         /// Multiplie la gravité des flèches tirées, et l'aide à la visée suit (26 octobre : l'empennage plume, presque 0 ;
@@ -51,8 +80,8 @@ namespace Archery.Bows
             Mathf.Max(0.001f, (definitionGravity > 0f ? definitionGravity : 1f) * GravityMultiplier);
 
         /// <summary>Ce tir de qualité <paramref name="grade"/> devient-il parfait ? (forcé, ou accordé par <see cref="ClaimPerfectShot"/>).</summary>
-        public bool MakesPerfect(ShotGrade grade) =>
-            grade != ShotGrade.None && (ForcePerfect || (ClaimPerfectShot != null && ClaimPerfectShot()));
+        public bool MakesPerfect(ShotGrade grade, Arrow arrow = null) =>
+            grade != ShotGrade.None && (ForcePerfect || (ClaimPerfectShot != null && ClaimPerfectShot(arrow)));
 
         [Header("Arc")]
         [SerializeField]
@@ -225,8 +254,30 @@ namespace Archery.Bows
         public float DrawRatio => m_DrawRatio;
         public bool HasArrow => m_Nocked != null;
 
+        /// <summary>La flèche encochée, ou null.</summary>
+        public Arrow NockedArrow => m_Nocked;
+
+        // Le moment où l'anneau est arrivé au bout, dans le vert clair (-1 : pas en ce moment).
+        float m_HeldSince = -1f;
+
+        /// <summary>Temps (s) que la flèche encochée passe au bout de l'anneau, dans le vert clair (0 sinon) : la corde de siège.</summary>
+        public float HeldTime =>
+            m_Nocked != null && m_HeldSince >= 0f && m_TimingRing != null && m_TimingRing.IsRunning &&
+            m_TimingRing.CurrentGrade == ShotGrade.Held
+                ? Time.time - m_HeldSince
+                : 0f;
+
+        /// <summary>L'encoche de la corde au repos, dans le monde (la corde fantôme s'y attrape) ; la position de l'arc sans modèle.</summary>
+        public Vector3 StringPoint => m_Model != null ? m_Model.TransformPoint(NockLocal(0f)) : transform.position;
+
+        /// <summary>La direction où vise l'arc en ce moment.</summary>
+        public Vector3 AimForward => m_Model != null ? m_Model.forward : transform.forward;
+
         /// <summary>Arc rangé pendant une construction au marteau (GDD, section 9) : invisible et impossible à prendre.</summary>
         public bool IsStowed => m_Stowed;
+
+        /// <summary>La main qui tient l'arc (null s'il est posé) : elle ne rattrape pas la flèche boomerang (27 octobre).</summary>
+        public IXRSelectInteractor BowHand => m_BowHand;
 
         /// <summary>Sans casque : l'arc est tenu devant la caméra par le <see cref="DesktopArcher"/>.</summary>
         public bool IsDesktopHeld => m_DesktopHeld;
@@ -486,9 +537,21 @@ namespace Archery.Bows
             StopCreak();
             StopCharge();
 
+            // Le temps passé au bout de l'anneau (corde de siège), avant que l'anneau ne s'arrête.
+            var held = HeldTime;
+            m_HeldSince = -1f;
             var grade = m_TimingRing != null && m_TimingRing.IsRunning ? m_TimingRing.Release() : ShotGrade.None;
-            if (canFire && ratio >= Def.minDrawToFire && MakesPerfect(grade))
+            if (grade != ShotGrade.Held)
+                held = 0f;
+            var charge = held > 0f && HeldChargeMultiplier != null ? Mathf.Max(1f, HeldChargeMultiplier(held)) : 1f;
+            if (canFire && ratio >= Def.minDrawToFire && MakesPerfect(grade, arrow))
+            {
+                // Un tir chargé au bout de l'anneau (corde de siège) devenu parfait d'office garde sa charge (27 octobre : avant, elle
+                // était perdue) ; la charge part des dégâts du vert clair, ramenée à ceux du parfait.
+                if (grade == ShotGrade.Held && charge > 1f)
+                    charge = Mathf.Max(1f, charge * Tuning.Get(ShotGrade.Held).damage / Mathf.Max(0.01f, Tuning.Get(ShotGrade.Perfect).damage));
                 grade = ShotGrade.Perfect;
+            }
             if (!canFire || ratio < Def.minDrawToFire)
             {
                 if (m_TimingRing != null)
@@ -500,14 +563,14 @@ namespace Archery.Bows
             // Arc cosmique : lâché dans le doré du deuxième cercle (ou dans le vert clair, après), le tir devient un laser.
             if (Def.overcharge && m_TimingRing != null && m_TimingRing.Overcharged)
             {
-                FireLaser(arrow, ratio, drawHand, grade == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held);
+                FireLaser(arrow, ratio, drawHand, grade == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held, charge, held);
                 return;
             }
 
             var modifiers = Tuning.Get(grade);
             var power = Def.drawToPower.Evaluate(ratio);
             var speed = Def.arrowSpeed * power * modifiers.speed * SpeedMultiplier;
-            var damage = Def.damage * power * modifiers.damage * DamageMultiplier;
+            var damage = Def.damage * power * modifiers.damage * DamageMultiplier * charge;
             var origin = arrow.transform.position;
             var trailColor = grade == ShotGrade.None ? new Color(1f, 1f, 1f, 0.5f) : modifiers.color;
 
@@ -550,18 +613,19 @@ namespace Archery.Bows
                 Direction = m_AimDirection,
                 Aim = m_Model,
                 Hand = m_BowHand,
+                HeldTime = held,
             });
         }
 
         // Le laser de la surcharge : la flèche le tire et disparaît (Arrow.FireLaser), le rayon et sa traînée de particules
         // s'affichent (LaserBeam). Lâché dans le doré, il compte comme un tir parfait ; dans le vert clair, comme un tir
         // « très bon » (avec les réglages actuels, 80 % des dégâts).
-        void FireLaser(Arrow arrow, float ratio, IXRSelectInteractor drawHand, ShotGrade grade)
+        void FireLaser(Arrow arrow, float ratio, IXRSelectInteractor drawHand, ShotGrade grade, float charge, float held)
         {
             var def = Def;
             var modifiers = Tuning.Get(grade);
             var power = def.drawToPower.Evaluate(ratio);
-            var damage = def.damage * power * modifiers.damage * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier);
+            var damage = def.damage * power * modifiers.damage * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier) * charge;
             var direction = m_AimDirection;
             var start = arrow.TipPosition;
 
@@ -593,6 +657,7 @@ namespace Archery.Bows
                 Direction = direction,
                 Aim = m_Model,
                 Hand = m_BowHand,
+                HeldTime = held,
             });
         }
 
@@ -1129,7 +1194,11 @@ namespace Archery.Bows
             return distance > m_BraceHeight && Vector3.Angle(root.forward, toRest) > m_MaxPullAngle;
         }
 
-        void StartRing() => BeginRing(m_TimingRing, Def);
+        void StartRing()
+        {
+            m_HeldSince = -1f;
+            BeginRing(m_TimingRing, Def);
+        }
 
         /// <summary>
         /// Lance un anneau avec les réglages de <paramref name="def"/>, les améliorations et la difficulté (largeur du vert) :
@@ -1142,6 +1211,8 @@ namespace Archery.Bows
             var widthScale = Mathf.Max(0.1f, BandWidthMultiplier);
             var goldScale = Mathf.Max(0.1f, GoldWidthMultiplier) * DifficultyManager.Current.goldBandWidth;
             var speed = Mathf.Max(0.1f, RingSpeedMultiplier);
+            ring.AllPerfect = NextShotPerfect;
+            ring.GoldenPerfect = GoldenPerfectNow;
             ring.Begin(
                 def.ringDuration / speed,
                 def.goldHalfWidth * widthScale * goldScale,
@@ -1251,6 +1322,13 @@ namespace Archery.Bows
 
             if (m_TimingRing != null)
             {
+                // Suivi à chaque image : un coup du duelliste ou un saut d'acrobate en pleine tension, l'atterrissage.
+                if (m_TimingRing.IsRunning)
+                {
+                    m_TimingRing.AllPerfect = NextShotPerfect;
+                    m_TimingRing.GoldenPerfect = GoldenPerfectNow;
+                }
+
                 if (m_DesktopRingAnchor != null)
                 {
                     // Sans casque : près du viseur, là où le place le DesktopArcher.
@@ -1295,7 +1373,7 @@ namespace Archery.Bows
             }
 
             var grade = m_TimingRing != null ? m_TimingRing.CurrentGrade : ShotGrade.None;
-            if (ForcePerfect && grade != ShotGrade.None)
+            if (grade != ShotGrade.None && NextShotPerfect)
                 grade = ShotGrade.Perfect;
 
             var modifiers = Tuning.Get(grade);
@@ -1356,6 +1434,8 @@ namespace Archery.Bows
         // Arc cosmique : le deuxième cercle, doré, part du bord. La charge qui monte, dans les deux mains.
         void OnOverchargeStarted()
         {
+            // La charge de la corde de siège repart du bout du deuxième cercle.
+            m_HeldSince = -1f;
             if (m_Nocked != null)
                 Haptics.Pulse(m_Nocked.Hand, 0.5f, 0.15f);
             Haptics.Pulse(m_BowHand, 0.5f, 0.15f);
@@ -1389,6 +1469,7 @@ namespace Archery.Bows
         // Le vert est passé : le cercle finit sa course dans le vert pastel et y attend.
         void OnRingHeld()
         {
+            m_HeldSince = Time.time;
             if (m_Nocked != null)
                 Haptics.Pulse(m_Nocked.Hand, 0.12f, 0.02f);
             Sfx.Play(m_RingLoopClip, m_TimingRing.transform.position, 0.35f);
@@ -1399,6 +1480,9 @@ namespace Archery.Bows
         {
             ShotFired = null;
             ClaimPerfectShot = null;
+            PerfectPending = null;
+            GoldenPerfectZone = null;
+            HeldChargeMultiplier = null;
             GravityMultiplier = 1f;
         }
     }

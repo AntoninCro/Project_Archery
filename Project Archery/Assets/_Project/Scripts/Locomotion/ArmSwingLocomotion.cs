@@ -215,6 +215,12 @@ namespace Archery.Locomotion
 
         public bool IsSliding => m_SlideTimeLeft > 0f;
 
+        /// <summary>
+        /// Le slide s'arrête quand la vitesse est tombée à cette part de celle du départ (0 : il va jusqu'au bout). Le talisman
+        /// d'acrobate (26 octobre, demandé par le joueur) la met à 0,5 : au ralenti, le slide durait trop longtemps.
+        /// </summary>
+        public float SlideEndSpeedShare { get; set; }
+
         /// <summary>Le joueur est en l'air : un saut aux bras, ou une chute (26 octobre : le talisman d'acrobate).</summary>
         public bool IsAirborne => isActiveAndEnabled && !IsGrounded();
 
@@ -495,6 +501,10 @@ namespace Archery.Locomotion
             m_SlideTimeLeft = Mathf.Max(0f, m_SlideTimeLeft - deltaTime);
             var progress = 1f - m_SlideTimeLeft / Mathf.Max(0.1f, m_SlideTime);
             m_Velocity = m_SlideDirection * (m_SlideStartSpeed * (1f - progress * progress));
+
+            // Le talisman d'acrobate (26 octobre) : le slide s'arrête quand la vitesse est tombée à cette part de celle du départ.
+            if (SlideEndSpeedShare > 0f && 1f - progress * progress <= SlideEndSpeedShare)
+                m_SlideTimeLeft = 0f;
 
             if (m_SlideTimeLeft <= 0f)
                 m_SlideCooldownTimer = m_SlideCooldown;

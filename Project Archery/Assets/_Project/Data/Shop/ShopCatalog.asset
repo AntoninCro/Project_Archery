@@ -15,6 +15,7 @@ MonoBehaviour:
   upgrades:
   - displayName: "D\xE9g\xE2ts"
     description: "+10 % de d\xE9g\xE2ts"
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -25,6 +26,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "Fl\xE8ches rapides"
     description: "+8 % de vitesse des fl\xE8ches"
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -35,6 +37,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
   - displayName: Charge rapide
     description: Anneau 15 % plus rapide
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -45,6 +48,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
   - displayName: "Pr\xE9cision"
     description: Bande verte 15 % plus large
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -55,6 +59,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
   - displayName: "Vitalit\xE9"
     description: +15 PV max
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -65,6 +70,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
   - displayName: Butin
     description: +20 % d'or
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -74,17 +80,19 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 15910d99da8d4b4faa1d9b05956a7665, type: 3}
   - displayName: "Chasseur de t\xEAtes"
-    description: "+25 % de d\xE9g\xE2ts \xE0 la t\xEAte"
+    description: "{+50 %|+100 %|+150 %} \u27B6 \xE0 la t\xEAte"
+    levelUpText: "{+50 %|+100 %|+150 %} \u27B6 \xE0 la t\xEAte"
     kind: 0
-    slot: 1
+    slot: 4
     rarity: 0
     effect: 6
     trigger: 0
-    value: 0.25
+    value: 0.5
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b47fa108c8ba4dd894f1a881f0ae0bde, type: 3}
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
   - displayName: Chance
     description: "Plus de cartes rares et l\xE9gendaires"
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 0
@@ -95,6 +103,7 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 2136d06e116f4fbc83a3d35eaa55b573, type: 3}
   - displayName: Puissance
     description: "+25 % de d\xE9g\xE2ts"
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 1
@@ -104,67 +113,75 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: Multitir
-    description: "+50 % de chance de tirer une fl\xE8che suppl\xE9mentaire"
+    description: "{+1 fl\xE8che|+2 fl\xE8ches|+3 fl\xE8ches} \xE0 chaque tir"
+    levelUpText: "{+1 fl\xE8che|+2 fl\xE8ches|+3 fl\xE8ches} \xE0 chaque tir"
     kind: 0
     slot: 4
     rarity: 1
     effect: 7
     trigger: 0
-    value: 0.5
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
-  - displayName: "Fl\xE8che de foudre"
-    description: 20 % de chance d'appeler la foudre
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: Foudroiement
+    description: "Fait appara\xEEtre un \xE9clair : {50 %|100 %|150 %} \u27B6"
+    levelUpText: "{50 %|100 %|150 %} \u27B6"
     kind: 0
     slot: 1
-    rarity: 1
+    rarity: 0
     effect: 8
     trigger: 0
-    value: 0.2
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 80004f1f07f44a90b07481b2be179056, type: 3}
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
   - displayName: "Per\xE7age"
-    description: 25 % de chance de traverser un ennemi
+    description: "La fl\xE8che traverse {deux ennemis|quatre ennemis|tous les ennemis}"
+    levelUpText: "{2|4|tous les} ennemis travers\xE9s"
     kind: 0
-    slot: 1
-    rarity: 1
+    slot: 3
+    rarity: 0
     effect: 9
     trigger: 0
-    value: 0.25
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 597e992213ca4445a54400a0ce167384, type: 3}
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
   - displayName: Vampirisme
-    description: "+2 PV par tir \xE0 la t\xEAte"
+    description: "{+3|+6|+9} PV par tir \xE0 la t\xEAte"
+    levelUpText: "{+3|+6|+9} PV par tir \xE0 la t\xEAte"
     kind: 0
-    slot: 1
+    slot: 5
     rarity: 1
     effect: 10
     trigger: 0
-    value: 2
+    value: 3
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b316b8f1a1c248e7923d15874c4c211c, type: 3}
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   - displayName: "Tir \xE9cho"
-    description: "25 % de chance de r\xE9p\xE9ter le tir"
+    description: "R\xE9p\xE8te le tir {1 fois|2 fois|3 fois} apr\xE8s un court d\xE9lai"
+    levelUpText: "{1 \xE9cho|2 \xE9chos|3 \xE9chos}"
     kind: 0
     slot: 4
-    rarity: 1
+    rarity: 2
     effect: 15
     trigger: 0
-    value: 0.25
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
-  - displayName: "Fl\xE8che de glace"
-    description: 25 % de chance de geler le sol
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: "Mar\xE9e de glace"
+    description: "G\xE8le le sol : {40 %|50 %|60 %} de ralentissement, sur {3|4|5}
+      m"
+    levelUpText: '{40 %|50 %|60 %} de ralentissement ; zone de {3 m|4 m|5 m}'
     kind: 0
-    slot: 1
-    rarity: 1
+    slot: 3
+    rarity: 0
     effect: 16
     trigger: 0
-    value: 0.25
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
   - displayName: "Force du g\xE9ant"
     description: "+60 % de d\xE9g\xE2ts"
+    levelUpText: 
     kind: 2
     slot: 0
     rarity: 2
@@ -174,17 +191,20 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
   - displayName: "D\xE9luge"
-    description: "50 % de chance que la fl\xE8che se divise"
+    description: "La fl\xE8che se divise en vol en {1 autre fl\xE8che|2 autres fl\xE8ches|3
+      autres fl\xE8ches}"
+    levelUpText: "{+1 fl\xE8che|+2 fl\xE8ches|+3 fl\xE8ches} en vol"
     kind: 0
     slot: 3
-    rarity: 2
+    rarity: 1
     effect: 11
     trigger: 0
-    value: 0.5
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
   - displayName: "Cha\xEEne d'\xE9clairs"
-    description: La foudre rebondit sur 3 ennemis
+    description: "Un \xE9clair rebondit sur {3|6|9} ennemis : {30 %|60 %|90 %} \u27B6"
+    levelUpText: "{3|6|9} ennemis ; {30 %|60 %|90 %} \u27B6"
     kind: 0
     slot: 1
     rarity: 2
@@ -192,19 +212,23 @@ MonoBehaviour:
     trigger: 0
     value: 3
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
-  - displayName: "Fl\xE8che explosive"
-    description: 25 % de chance d'exploser
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
+  - displayName: Tir explosif
+    description: "La fl\xE8che explose : {75 %|100 %|125 %} \u27B6 dans un rayon
+      de {3,5|4|4,5} m"
+    levelUpText: "{75 %|100 %|125 %} \u27B6 ; rayon {3,5 m|4 m|4,5 m}"
     kind: 0
     slot: 1
     rarity: 2
     effect: 13
     trigger: 0
-    value: 0.25
+    value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
   - displayName: "Auto-vis\xE9e"
-    description: "Les fl\xE8ches visent l'ennemi proche"
+    description: "Les fl\xE8ches se tournent vers l'ennemi proche, jusqu'\xE0 {12|15|18}
+      m"
+    levelUpText: "Port\xE9e {12 m|15 m|18 m} ; virage {30|60|90} \xB0/s"
     kind: 0
     slot: 2
     rarity: 2
@@ -212,9 +236,11 @@ MonoBehaviour:
     trigger: 0
     value: 30
     maxStacks: 3
-    icon: {fileID: 21300000, guid: e867723acec6472c96c3ac662429b174, type: 3}
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
   - displayName: Tir ricochet
-    description: "La fl\xE8che rebondit sur un autre ennemi"
+    description: "La fl\xE8che rebondit sur {un autre ennemi|2 autres ennemis|3 autres
+      ennemis}"
+    levelUpText: '{1 ricochet|2 ricochets|3 ricochets}'
     kind: 0
     slot: 2
     rarity: 2
@@ -222,10 +248,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
   - displayName: Grenade sauvage
     description: "La grenade \xE0 fl\xE8ches en projette 12 de plus."
-    kind: 0
+    levelUpText: 
+    kind: 2
     slot: 0
     rarity: 1
     effect: 19
@@ -235,7 +262,8 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Grenade rapide
     description: "La grenade \xE0 fl\xE8ches recharge 30 % plus vite."
-    kind: 0
+    levelUpText: 
+    kind: 2
     slot: 0
     rarity: 1
     effect: 20
@@ -244,7 +272,8 @@ MonoBehaviour:
     maxStacks: 1
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Force
-    description: "+12 % de d\xE9g\xE2ts, fl\xE8ches un peu plus rapides"
+    description: "+12 % \u27B6, fl\xE8ches un peu plus rapides"
+    levelUpText: "+12 % \u27B6 de plus, fl\xE8ches un peu plus rapides"
     kind: 1
     slot: 0
     rarity: 0
@@ -252,9 +281,10 @@ MonoBehaviour:
     trigger: 0
     value: 0.12
     maxStacks: 0
-    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
+    icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Adresse
     description: Anneau 10 % plus rapide, bande verte 10 % plus large
+    levelUpText: Anneau 10 % plus rapide, bande verte 10 % plus large
     kind: 1
     slot: 0
     rarity: 0
@@ -262,20 +292,22 @@ MonoBehaviour:
     trigger: 0
     value: 0.1
     maxStacks: 0
-    icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
+    icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Vigueur
-    description: +15 PV max
+    description: +25 PV max
+    levelUpText: +25 PV max de plus
     kind: 1
     slot: 0
     rarity: 0
     effect: 23
     trigger: 0
-    value: 15
+    value: 25
     maxStacks: 0
-    icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
-  - displayName: Corde triple
-    description: "3 fl\xE8ches en \xE9ventail, dans le plan de l'arc : penche l'arc
-      pour le tourner"
+    icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
+  - displayName: Tir triple
+    description: "{3 fl\xE8ches|5 fl\xE8ches|7 fl\xE8ches} en \xE9ventail, dans le
+      plan de l'arc : penche l'arc pour le tourner"
+    levelUpText: "{3|5|7} fl\xE8ches en \xE9ventail"
     kind: 0
     slot: 4
     rarity: 1
@@ -283,9 +315,12 @@ MonoBehaviour:
     trigger: 0
     value: 2
     maxStacks: 3
-    icon: {fileID: 21300000, guid: c69bfe83d7a845d08da838c24272ff95, type: 3}
-  - displayName: Empennage boomerang
-    description: "La fl\xE8che revient vers toi ; rattrape-la : tir suivant parfait"
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: Boomerang
+    description: "La fl\xE8che revient vers toi ; attrape-la pour faire un tir parfait.
+      Elle traverse {1 ennemi|2 ennemis|3 ennemis} \xE0 chaque passage"
+    levelUpText: "{1 ennemi travers\xE9|2 ennemis travers\xE9s|3 ennemis travers\xE9s}
+      \xE0 chaque passage"
     kind: 0
     slot: 2
     rarity: 1
@@ -293,20 +328,23 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
-  - displayName: "Empennage t\xE9l\xE9kin\xE9sie"
-    description: "Garde la g\xE2chette de la main de l'arc : la fl\xE8che suit ton
-      arc"
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: "T\xE9l\xE9kin\xE9sie"
+    description: "Garder la g\xE2chette de la main de l'arc appuy\xE9e permet de
+      contr\xF4ler la fl\xE8che (elle ralentit \xE0 {50 %|40 %|30 %} de sa vitesse)"
+    levelUpText: "Vitesse sous contr\xF4le : {50 %|40 %|30 %}"
     kind: 0
     slot: 2
-    rarity: 2
+    rarity: 1
     effect: 26
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: e867723acec6472c96c3ac662429b174, type: 3}
-  - displayName: "F\xFBt aimant"
-    description: "La fl\xE8che plant\xE9e attire les ennemis autour d'elle"
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: Aimant
+    description: "La fl\xE8che plant\xE9e attire les ennemis autour d'elle ({6|7,5|9}
+      m, pendant {2,5|3|3,5} s)"
+    levelUpText: Rayon {6 m|7,5 m|9 m} ; {2,5 s|3 s|3,5 s}
     kind: 0
     slot: 3
     rarity: 1
@@ -314,10 +352,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 800b1b0233fa4bd58124bbb5bba421b2, type: 3}
-  - displayName: "F\xFBt conducteur"
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: Arc conducteur
     description: "Deux fl\xE8ches plant\xE9es proches : un arc \xE9lectrique entre
-      elles"
+      elles, {80 %|120 %|160 %} \u27B6 par seconde pendant {6|7,5|9} s"
+    levelUpText: "{80 %|120 %|160 %} \u27B6 par seconde ; {6 s|7,5 s|9 s}"
     kind: 0
     slot: 3
     rarity: 2
@@ -325,9 +364,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 7136f5965d87433abae7076294f9d969, type: 3}
-  - displayName: "Pointe \xE0 m\xE8che"
-    description: "La fl\xE8che plant\xE9e explose une seconde plus tard"
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: "Tir d\xE9tonant"
+    description: "La fl\xE8che explose une seconde plus tard : {100 %|125 %|150 %}
+      \u27B6 au centre, rayon {3,5|4,25|5} m"
+    levelUpText: "{100 %|125 %|150 %} \u27B6 ; rayon {3,5 m|4,25 m|5 m}"
     kind: 0
     slot: 1
     rarity: 1
@@ -335,10 +376,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
-  - displayName: Pointe de givre
-    description: "Tir parfait : l'ennemi g\xE8le. Touch\xE9 gel\xE9, il \xE9clate
-      en glace"
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
+  - displayName: Tir de givre
+    description: "L'ennemi touch\xE9 g\xE8le {1,5|2|2,5} s. Touch\xE9 gel\xE9, il
+      \xE9clate en glace : {80 %|110 %|140 %} \u27B6"
+    levelUpText: "Gel {1,5 s|2 s|2,5 s} ; \xE9clat {80 %|110 %|140 %} \u27B6"
     kind: 0
     slot: 1
     rarity: 1
@@ -346,20 +388,23 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
-  - displayName: Talisman d'acrobate
-    description: 'En l''air ou en glissade : ralenti, et chaque tir est parfait'
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
+  - displayName: "Le style, \xE7a compte aussi"
+    description: "En l'air ou en glissade : le temps ralentit ({\xD70,5|\xD70,4|\xD70,3}),
+      et chaque tir est parfait"
+    levelUpText: "Temps {\xD70,5|\xD70,4|\xD70,3} en l'air"
     kind: 0
     slot: 5
-    rarity: 2
+    rarity: 0
     effect: 31
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
-  - displayName: "Pointe \xE9clat\xE9e"
-    description: "\xC0 l'impact, la fl\xE8che se brise en 4 \xE9clats qui filent
-      derri\xE8re l'ennemi"
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
+  - displayName: "Fl\xE8che \xE0 fragmentation"
+    description: "\xC0 l'impact, la fl\xE8che se brise en {4|5|6} \xE9clats qui filent
+      derri\xE8re l'ennemi : {40 %|50 %|60 %} \u27B6 chacun"
+    levelUpText: "{4|5|6} \xE9clats ; {40 %|50 %|60 %} \u27B6 chacun"
     kind: 0
     slot: 1
     rarity: 1
@@ -367,52 +412,57 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 35b668e9115d47f98cba7e9260b15f32, type: 3}
-  - displayName: Pointe de chasseur
-    description: "Marque la cible : elle prend double d\xE9g\xE2ts. \xC0 sa mort,
-      la marque saute"
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
+  - displayName: Pointe du chasseur
+    description: "Marque la cible : elle prend {200 %|250 %|300 %} \u27B6. \xC0 sa
+      mort, la marque saute"
+    levelUpText: "{200 %|250 %|300 %} \u27B6 sur la cible marqu\xE9e"
     kind: 0
     slot: 1
-    rarity: 1
+    rarity: 0
     effect: 33
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b47fa108c8ba4dd894f1a881f0ae0bde, type: 3}
-  - displayName: Empennage rebond
-    description: "La fl\xE8che rebondit 2 fois sur le sol et les murs"
+    icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
+  - displayName: Tir rebondissant
+    description: "La fl\xE8che rebondit {3|5|7} fois sur le sol et les murs"
+    levelUpText: '{3|5|7} rebonds'
     kind: 0
     slot: 2
-    rarity: 1
+    rarity: 0
     effect: 35
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
-  - displayName: Empennage plume
-    description: "La fl\xE8che ne tombe plus, et va plus vite"
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: Poids plume
+    description: "La fl\xE8che ne tombe plus et va {25 %|50 %|75 %} plus vite"
+    levelUpText: '{+25 %|+50 %|+75 %} de vitesse'
     kind: 0
     slot: 2
-    rarity: 1
+    rarity: 0
     effect: 36
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 914aa350ab434e46af2c229c54374e78, type: 3}
-  - displayName: Empennage de plomb
-    description: "Fl\xE8che lourde : une onde de choc l\xE0 o\xF9 elle touche le
-      d\xE9cor"
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: 1 tonne
+    description: "La fl\xE8che tombe plus vite et provoque une onde de choc : {60
+      %|80 %|100 %} \u27B6 sur {2,5|3|3,5} m"
+    levelUpText: "{60 %|80 %|100 %} \u27B6 ; rayon {2,5 m|3 m|3,5 m}"
     kind: 0
     slot: 2
-    rarity: 1
+    rarity: 0
     effect: 37
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b070f6fe023c42f98a2c2fa898dad3e9, type: 3}
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
   - displayName: Empennage spectral
     description: "La fl\xE8che traverse les murs et le d\xE9cor"
-    kind: 0
+    levelUpText: 
+    kind: 2
     slot: 2
     rarity: 2
     effect: 38
@@ -420,9 +470,11 @@ MonoBehaviour:
     value: 1
     maxStacks: 3
     icon: {fileID: 21300000, guid: 597e992213ca4445a54400a0ce167384, type: 3}
-  - displayName: "F\xFBt-pieu"
+  - displayName: "Sol pi\xE9g\xE9"
     description: "Plant\xE9e au sol, elle blesse et ralentit les ennemis qui passent
-      dessus"
+      \xE0 proximit\xE9 : {17,5 %|25 %|32,5 %} \u27B6 toutes les 0,3 s, pendant {8|10|12}
+      s"
+    levelUpText: "{17,5 %|25 %|32,5 %} \u27B6 toutes les 0,3 s ; {8 s|10 s|12 s}"
     kind: 0
     slot: 3
     rarity: 1
@@ -430,10 +482,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 8beff2f2271a423d809c37e9325cea1c, type: 3}
-  - displayName: "F\xFBt d\xE9tonateur"
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: "Fl\xE8che \xE0 d\xE9tonation"
     description: "Tire sur une de tes fl\xE8ches plant\xE9es : elle \xE9clate en
-      6 fl\xE8ches"
+      {6|8|10} fl\xE8ches ({60 %|80 %|100 %} \u27B6 chacune)"
+    levelUpText: "{6|8|10} fl\xE8ches ; {60 %|80 %|100 %} \u27B6 chacune"
     kind: 0
     slot: 3
     rarity: 2
@@ -441,42 +494,46 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: ad11b711ea8c46958e97065a504df2bb, type: 3}
-  - displayName: "F\xFBt suspendu"
-    description: "La fl\xE8che s'arr\xEAte en l'air ; la g\xE2chette de l'autre main
-      les rel\xE2che"
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: ZA WARUDO
+    description: "La fl\xE8che s'arr\xEAte en l'air ({3|4|5} s au plus) ; la g\xE2chette
+      de l'autre main les envoie l\xE0 o\xF9 elle vise"
+    levelUpText: 'Attente : {3 s|4 s|5 s}'
     kind: 0
     slot: 3
-    rarity: 1
+    rarity: 2
     effect: 41
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 29389ea99bec4cb4ae2ce80733dca9c0, type: 3}
-  - displayName: Corde de transe
-    description: "Chaque tir parfait d'affil\xE9e frappe plus fort ; au 5e, la fl\xE8che
-      traverse tout"
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: Transe
+    description: "Chaque tir parfait d'affil\xE9e frappe plus fort ({+15 %|+20 %|+25
+      %} \u27B6, 5 fois au plus) ; \xE0 partir du 5e, les fl\xE8ches traversent tout"
+    levelUpText: "{+15 %|+20 %|+25 %} \u27B6 par tir parfait d'affil\xE9e"
     kind: 0
     slot: 4
-    rarity: 1
+    rarity: 0
     effect: 42
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 1572c2ffe09447a8ba237f594618bbcc, type: 3}
-  - displayName: Corde du faucon
-    description: "\xC0 pleine tension, le temps ralentit (toutes les 8 s)"
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: Patience
+    description: "\xC0 pleine tension, le temps ralentit pendant {1,5|2|2,5} s"
+    levelUpText: 'Ralenti : {1,5 s|2 s|2,5 s}'
     kind: 0
     slot: 4
-    rarity: 1
+    rarity: 0
     effect: 43
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: 407dc7496bae403a955f53755d1bb0a5, type: 3}
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
   - displayName: Talisman du sniper
-    description: "+2 % de d\xE9g\xE2ts par m\xE8tre au-del\xE0 de 15 m, moiti\xE9
-      moins tout pr\xE8s"
+    description: "{+2 %|+3 %|+4 %} \u27B6 par m\xE8tre au-del\xE0 de 15 m, mais 50
+      % \u27B6 sous 10 m"
+    levelUpText: "{+2 %|+3 %|+4 %} \u27B6 par m\xE8tre au-del\xE0 de 15 m"
     kind: 0
     slot: 5
     rarity: 1
@@ -484,9 +541,11 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: f5451cef9ad247c4960997e915323f22, type: 3}
-  - displayName: Pacte de verre
-    description: "D\xE9g\xE2ts \xD72, mais chaque tir rat\xE9 co\xFBte 5 PV"
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
+  - displayName: Canon de verre
+    description: "\u27B6 {\xD72|\xD72,5|\xD73}, mais chaque tir rat\xE9 co\xFBte
+      5 PV"
+    levelUpText: "\u27B6 {\xD72|\xD72,5|\xD73}"
     kind: 0
     slot: 5
     rarity: 2
@@ -494,10 +553,13 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: e373f3ff55894f58be84ae2de9679c1e, type: 3}
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   - displayName: "Talisman de l'ing\xE9nieur"
-    description: "Une fl\xE8che dans ta baliste ou ta tour de givre la surcharge
-      5 s"
+    description: "Une fl\xE8che dans ta baliste la fait tirer {2|4|6} fois plus vite
+      pendant {5|7|9} s ; un tir dans la barricade la r\xE9pare de {10 %|15 %|20
+      %}"
+    levelUpText: "Cadence {\xD72|\xD74|\xD76} pendant {5 s|7 s|9 s} ; r\xE9paration
+      {10 %|15 %|20 %}"
     kind: 0
     slot: 5
     rarity: 1
@@ -505,21 +567,23 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: f22b715492004f108efe8a2c08f2b14c, type: 3}
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   - displayName: Talisman du duelliste
-    description: "Coup de fl\xE8che au corps \xE0 corps \xD74, et le tir suivant
-      est parfait"
+    description: "Coup de fl\xE8che au corps \xE0 corps : {\xD74|\xD78|\xD712} \u27B6,
+      et le tir suivant est parfait"
+    levelUpText: "Corps \xE0 corps {\xD74|\xD78|\xD712} \u27B6"
     kind: 0
     slot: 5
-    rarity: 1
+    rarity: 0
     effect: 47
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b1175f9240304a2796837454d0c1f438, type: 3}
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   - displayName: Talisman du bourreau
-    description: "Tir \xE0 la t\xEAte sous 25 % de PV : l'ennemi meurt net (pas les
-      boss)"
+    description: "Un tir \xE0 la t\xEAte qui laisse l'ennemi sous {25 %|37 %|50 %}
+      de ses PV le tue net (un boss sous {10 %|15 %|20 %})"
+    levelUpText: Seuil {25 %|37 %|50 %} (boss {10 %|15 %|20 %})
     kind: 0
     slot: 5
     rarity: 2
@@ -527,12 +591,110 @@ MonoBehaviour:
     trigger: 0
     value: 1
     maxStacks: 3
-    icon: {fileID: 21300000, guid: b316b8f1a1c248e7923d15874c4c211c, type: 3}
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
+  - displayName: Super grenade
+    description: "La grenade \xE0 fl\xE8ches en projette {12|24|36} de plus et recharge
+      {50 %|60 %|70 %} plus vite"
+    levelUpText: "{+12|+24|+36} fl\xE8ches ; recharge {50 %|60 %|70 %} plus rapide"
+    kind: 0
+    slot: 5
+    rarity: 1
+    effect: 48
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
+  - displayName: Surcharge
+    description: "Garde la tension au bout de l'anneau : le tir se charge, jusqu'\xE0
+      {\xD72,5|\xD73|\xD73,5}, et traverse {3|4|5} ennemis"
+    levelUpText: "Charge {\xD72,5|\xD73|\xD73,5} ; {3|4|5} ennemis travers\xE9s"
+    kind: 0
+    slot: 4
+    rarity: 1
+    effect: 49
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: "Pluie de fl\xE8ches"
+    description: "En vol, la fl\xE8che s\xE8me des fl\xE8ches tout le long de sa
+      tra\xEEn\xE9e : une tous les {4|3|2} m (jusqu'\xE0 {16|24|32}), 35 % \u27B6
+      chacune"
+    levelUpText: "Une fl\xE8che tous les {4 m|3 m|2 m} ; {16|24|32} au plus"
+    kind: 0
+    slot: 4
+    rarity: 2
+    effect: 50
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: "Corde fant\xF4me"
+    description: "Juste apr\xE8s un tir, tire la corde \xE0 vide : une fl\xE8che
+      fant\xF4me part ({120 %|150 %|200 %} \u27B6)"
+    levelUpText: "{120 %|150 %|200 %} \u27B6"
+    kind: 0
+    slot: 4
+    rarity: 1
+    effect: 51
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
+  - displayName: Death from the sky
+    description: "Tir\xE9e vers le ciel, la fl\xE8che pique sur l'ennemi le plus
+      proche (jusqu'\xE0 {40|50|60} m) : {150 %|175 %|200 %} \u27B6"
+    levelUpText: "{150 %|175 %|200 %} \u27B6 ; port\xE9e {40 m|50 m|60 m}"
+    kind: 0
+    slot: 2
+    rarity: 1
+    effect: 52
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: "Rappel de fl\xE8che"
+    description: "Ferme le poing : tes fl\xE8ches plant\xE9es reviennent et blessent
+      les ennemis travers\xE9s ({80 %|100 %|120 %} \u27B6)"
+    levelUpText: "{80 %|100 %|120 %} \u27B6 au retour"
+    kind: 0
+    slot: 2
+    rarity: 2
+    effect: 53
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 7bdefa4af261410f9aa91b9ab513078b, type: 3}
+  - displayName: "Fl\xE8che sentinelle"
+    description: "Plant\xE9e au sol, la fl\xE8che tire sur l'ennemi le plus proche
+      : {30 %|40 %|50 %} \u27B6 par seconde, pendant {5|6,5|8} s"
+    levelUpText: "{30 %|40 %|50 %} \u27B6 par tir ; {5 s|6,5 s|8 s}"
+    kind: 0
+    slot: 3
+    rarity: 1
+    effect: 54
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 5a0767f53774488ea5d923402ec6d42f, type: 3}
+  - displayName: Talisman de l'avare
+    description: "+1 % \u27B6 par tranche de {20|15|10} or gard\xE9s (jusqu'\xE0
+      {+100 %|+150 %|+200 %})"
+    levelUpText: "+1 % \u27B6 par {20|15|10} or ; jusqu'\xE0 {+100 %|+150 %|+200
+      %}"
+    kind: 0
+    slot: 5
+    rarity: 0
+    effect: 55
+    trigger: 0
+    value: 1
+    maxStacks: 3
+    icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   rarityOdds:
   - fromWave: 1
-    common: 20
-    rare: 60
-    legendary: 20
+    common: 50
+    rare: 35
+    legendary: 15
   minCommonShare: 0.4
   objectOffers: 3
   objectsPerShop: 3

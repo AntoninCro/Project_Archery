@@ -89,7 +89,7 @@ namespace Archery.UI
         // Dernières valeurs affichées : on ne reconstruit un texte que s'il change.
         int m_Score = -1;
         int m_Money = -1;
-        int m_Materials = -1;
+        int m_Plans = -1;
         int m_Combo = -1;
         int m_PlayerHealth = -1;
         int m_TowerHealth = -1;
@@ -215,13 +215,16 @@ namespace Archery.UI
                 m_ScoreText.text = "Score " + FormatNumber(m_Score);
             }
 
-            // Les matériaux (GDD, section 9) suivent l'or sur la même ligne, dès qu'il y a des cristaux sur la carte.
-            if (m_MoneyText != null && (score.Money != m_Money || score.Materials != m_Materials))
+            // Les plans de construction (refonte du tower defense du 27 octobre ; les matériaux avant) suivent l'or sur la même ligne,
+            // dès qu'il y a des caisses de l'ingénieur sur la carte.
+            var builds = BuildManager.Instance;
+            var plans = builds != null ? builds.TotalPlans : 0;
+            if (m_MoneyText != null && (score.Money != m_Money || plans != m_Plans))
             {
                 m_Money = score.Money;
-                m_Materials = score.Materials;
-                var materials = m_Materials > 0 || CrystalSpawner.Instance != null ? " · Mat. " + FormatNumber(m_Materials) : "";
-                m_MoneyText.text = "Or " + FormatNumber(m_Money) + materials;
+                m_Plans = plans;
+                var plansText = m_Plans > 0 || CrystalSpawner.Instance != null ? " · Plans " + FormatNumber(m_Plans) : "";
+                m_MoneyText.text = "Or " + FormatNumber(m_Money) + plansText;
             }
 
             if (m_ComboText != null && score.Combo != m_Combo)

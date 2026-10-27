@@ -6,6 +6,123 @@
 
 Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la console ouverte : aucune ligne rouge, et le moins possible de lignes « Image lente ».
 
+**La boutique à gauche, l'atelier à droite, le 27 octobre au soir (GDD, sections 6 et 7)**
+- [ ] À l'ouverture de Unity : « Confort du 27 octobre (scène Prototype_Tir) : la boutique s'ouvre plus à gauche, l'atelier à droite du joueur. Enregistre la scène » (**Ctrl+S**).
+- [ ] À la fin d'une vague : la boutique devant à gauche, l'atelier devant à droite, rien juste devant ; on vise et on clique les deux sans gêne.
+- [ ] Tourner la tête vers l'atelier, puis vers la boutique : aucun des deux ne bouge ; se retourner complètement ou s'éloigner : les deux reviennent, chacun de son côté.
+- [ ] Près d'un mur de la tour : chaque panneau cherche une place libre de son côté, sans se chevaucher.
+- [ ] Le coffre de boss (raccourci X) tombe juste devant, entre les deux panneaux, et ses orbes ne sont cachées par aucun.
+- [ ] **Un vrai boss tué** : son coffre tombe là où il est mort, sur le sol (même s'il volait), avec son rayon de lumière ; « Le boss a laissé un coffre là où il est tombé ! » ; il reste jusqu'à la fin de la vague suivante.
+
+**Les coffres de la carte, le 27 octobre au soir (GDD, section 13)**
+- [ ] Chaque coffre de vague propose toujours un objet (à gauche, avec son emplacement : « POINTE », « CORDE »…), un parchemin et un bonus temporaire ; le fragment de l'arc légendaire prend parfois la place du parchemin.
+- [ ] Une pièce déjà prise apparaît au niveau suivant (« 50 % → 100 % ➶ » sous son nom) ; toutes les pièces au niveau 3 : deux parchemins.
+
+**Le nouveau coffre de Quaternius, le 27 octobre (GDD, section 13)**
+- [ ] À l'ouverture de Unity, la console : « Nouveau coffre (27 octobre) : le prefab Chest prend le coffre de Quaternius… » (rien à enregistrer : c'est le prefab).
+- [ ] Un coffre de vague et un coffre de boss (X) : bois brun et ferrures sombres, serrure tournée vers le joueur, posé sur le sol (ni enfoncé ni flottant) ; il tombe du ciel, s'écrase, puis sautille en attendant.
+- [ ] À l'ouverture : le couvercle bascule vers l'arrière autour de son arête arrière (sans traverser la caisse), la lueur dorée sort, les 3 orbes montent au-dessus.
+- [ ] On l'ouvre en visant la caisse comme le couvercle ; ses colliders suivent le modèle (rien de touché dans le vide autour).
+
+**Le compteur de dégâts des mannequins, le 27 octobre au soir (GDD, section 6, les mannequins)**
+- [ ] Entre les vagues, tirer sur un mannequin : au-dessus de lui, « … /s » et « Total … en … s », lisibles de loin, toujours tournés vers soi.
+- [ ] Les dégâts de la foudre, des explosions, des pieux et des sentinelles s'ajoutent au total.
+- [ ] 3 s sans coup : le résultat pâlit et reste affiché, le mannequin reprend tous ses PV ; le coup suivant ouvre une nouvelle série.
+- [ ] Les mannequins tiennent une longue série (PV ×100) ; pendant une vague, le compteur disparaît.
+- [ ] Mesurer le build moyen (10 améliorations) en Normal : environ 200 /s sur un mannequin seul d'après les estimations du GDD.
+
+**Les cartes refaites par le joueur, le 27 octobre au soir (GDD, section 6, même titre)**
+- [ ] À l'ouverture de Unity : « Cartes du 27 octobre : le sprite des symboles… est créé », puis « … (catalogue) : 46 cartes refaites… ». Aucune ligne rouge de TextMeshPro (« sprite asset »).
+- [ ] **Boutique** : les noms nouveaux (Foudroiement, ZA WARUDO, Le style, ça compte aussi…), sans faute ; le symbole flèche à la place de « dégâts », de la couleur du texte, à la bonne taille ; l'icône de la catégorie sur chaque carte (pointe, empennage, fût, corde, talisman ; parchemin pour les 3 parchemins).
+- [ ] **Reprendre une carte** (Tab pour monter tout d'un niveau, puis la boutique) : la carte de niveau 2 dit « 50 % → 100 % ➶ » pour le foudroiement, avec une flèche « → » lisible ; au niveau 3, « 100 % → 150 % ➶ ». Pareil dans l'orbe du coffre de boss (X).
+- [ ] **Atelier** : une pièce de niveau 2 ou 3 affiche les chiffres de son niveau (le foudroiement niveau 3 : 150 % ➶).
+- [ ] **Raretés** : le foudroiement et la transe sortent en blanc (commune), ZA WARUDO et la pluie de flèches en doré.
+- [ ] **Chances** (console à l'ouverture : « … les objets sortent à 50 % communs, 35 % rares, 15 % légendaires ») : sur une dizaine de boutiques, surtout des cartes blanches, une carte dorée environ une boutique sur trois.
+- [ ] **Duos** : l'annonce dit « Duo : Donut ! », « Duo : Focus ! »… ; dans l'atelier, la ligne du duo a le nouveau nom.
+- [ ] **Tir explosif** : un ennemi au bord de l'explosion prend autant qu'au centre.
+
+**Équilibrage du 27 octobre au soir (GDD, section 6, même titre)**
+- [ ] À l'ouverture de Unity : « Équilibrage du 27 octobre (catalogue) : le Tir écho devient légendaire », « … (ShotTuning) : le tir parfait, dégâts ×2,5, points et or ×3 », « … (scène Prototype_Tir) : 1000 flèches en vol au plus. Enregistre la scène » (**Ctrl+S**).
+- [ ] **Tir parfait** : le chiffre de dégâts d'un parfait au corps vaut 2,5 fois la base de l'arme (×2 avant) ; un ennemi tué d'un parfait rapporte plus d'or qu'avant.
+- [ ] **Budget d'effets** (F, puis corde triple, déluge et pluie, ou les Akimbow) : sous une marée de flèches, celles en plus perdent leur traînée et leurs plumes au-delà de 120 en vol ; les sons ne saturent pas ; les chiffres de dégâts s'espacent ; le jeu reste fluide (console : peu de « Image lente »). Les dégâts ne changent pas.
+- [ ] **Akimbow** : le tir et le sifflement des flèches sont deux fois moins forts ; le son du parfait reste.
+- [ ] **Pluie** : les flèches de pluie font 35 % (chiffres plus petits qu'avant). **Chasse à l'homme** : une tête marquée ne meurt plus d'un coup au-dessus de 75 % de PV (bourreau niveau 3).
+- [ ] La boutique propose le **Tir écho** en légendaire (couleur dorée).
+
+**Deuxième tour du 27 octobre : le patch note rempli (GDD, section 6, même titre)**
+- [ ] À l'ouverture de Unity : « … deuxième tour (catalogue) : Tir écho…, Vampirisme…, Vigueur… », « … (scène Prototype_Tir) : la chaîne d'éclairs à 30 / 60 / 90 %, le ricochet à 100 % de la vitesse. Enregistre la scène » (**Ctrl+S**), et « textes revus : Corde du faucon…, Vigueur… ».
+- [ ] **Détonateur** planté dans un mannequin : tirer juste à côté de la flèche la fait éclater. **Billard** : la chaîne part à chaque fois.
+- [ ] **Mèche** : plus de 100 mèches (avec la pluie) : les plus anciennes explosent pour faire de la place.
+- [ ] **Boomerang** : au demi-tour, elle revient droit sur toi, sans arc de cercle. **Télékinésie** avec la pluie ou le multitir : seule la flèche de l'arc tourne.
+- [ ] **Transe** : à la 5e flèche parfaite d'affilée, la zone du parfait de l'anneau devient dorée ; les tirs parfaits suivants traversent tout (et explosent fort avec la supernova) ; un tir raté : elle redevient verte.
+- [ ] **Siège avec les Akimbow** : une arbalète gardée au bout de son anneau fait des étincelles, « Chargée ! » au bout de 2 s, et frappe plus fort.
+- [ ] **Siège avec le katana** (O pour l'équiper) : une faille ouverte se dore en 2 s (« Chargée ! ») ; lancée tout de suite elle frappe normalement (sa qualité suit la longueur du coup), lancée chargée bien plus fort. La boutique propose la corde de siège avec le katana.
+- [ ] **Œil de faucon** : pendant le ralenti, des cadres dorés brillants sur les points faibles ; un point faible touché prend ×1,5.
+- [ ] **Rebond + pluie** : les flèches de la pluie rebondissent. **Perçage** : les ennemis traversés prennent tous les mêmes dégâts.
+
+**Réglages du joueur du 27 octobre, après la liste des tests (GDD, section 6, même titre)**
+- [ ] À l'ouverture de Unity : « Réglages roguelike du 27 octobre, textes revus : Empennage boomerang… ; Corde de pluie… ».
+- [ ] **Boomerang** : la flèche revient et attend ; sans rien presser, elle n'est pas prise. Presser la poignée de la main des flèches près d'elle : elle arrive dans la main ; encochée, l'anneau est tout vert, et le tir est parfait ; le tir d'après ne l'est pas. Deux flèches devant soi : une pression n'en prend qu'une. La main de l'arc ne prend rien.
+- [ ] **Corde de pluie** : un tir à plat sème des flèches le long de sa traînée, plus serrées au niveau 3 ; rien les 4 premiers mètres. Avec l'empennage piqué : la pluie suit le piqué jusque sur la cible. Le nuage (plume) et l'averse (fût suspendu) marchent comme avant.
+- [ ] **Rappel** : plus de 24 flèches plantées reviennent toutes (jusqu'à 100). **Conducteur** : beaucoup de flèches reliées sans que les premières s'effacent ; pas de saccade au Quest ?
+- [ ] À l'ouverture de Unity : « … 100 flèches plantées au plus dans la réserve (40 avant). Enregistre la scène » ; **Ctrl+S**.
+- [ ] **Faux** (boomerang + perçage) : revenue, la flèche attend une demi-seconde devant toi, puis repart.
+- [ ] **Pluie + boomerang** : les flèches de pluie reviennent et disparaissent devant toi, sans s'arrêter ; la poignée ne les prend pas.
+- [ ] **Pluie + sentinelle** : les flèches de pluie plantées au sol tirent toutes (jusqu'à 100 sentinelles) ; plusieurs tirs de suite : les premières tirent encore. Pas de saccade au Quest ?
+- [ ] **Fil électrique** : l'arc part à 1 m devant le joueur, plus sous ses yeux. **Fût suspendu** : les flèches s'arrêtent plus près. **Corde fantôme** : la flèche fantôme frappe plus fort que le tir (120 / 150 / 200 %).
+
+**Corrections du 27 octobre (après les tests du joueur ; GDD, section 6, « Corrections du 27 octobre »)**
+- [ ] À l'ouverture de Unity : « Réglages roguelike du 27 octobre : plus d'effet réservé aux tirs parfaits… ». Les cartes Flèche de foudre, Chaîne d'éclairs, Flèche de glace et Déluge n'affichent plus « · tir parfait ».
+- [ ] Un tir **raté** avec la Flèche de foudre, la Flèche de glace, la Pointe de givre : la foudre, la zone de glace, le gel (puis l'éclat au tir suivant). Au Quest, avec le multitir et la corde triple : pas de saccade ?
+- [ ] **Anneau vert** : un coup au corps à corps avec le duelliste, puis l'anneau suivant entièrement vert ; un boomerang rattrapé ; une glissade avec l'acrobate (vert en l'air, des bandes après) ; le coffre « Tirs parfaits » (plus de liseré rouge, la corde de siège charge encore) ; les Akimbow ; l'arc cosmique (le deuxième cercle garde ses bandes).
+- [ ] **Rappel** : des flèches au sol derrière les mannequins, et une plantée dans un mannequin ; poing fermé (ou Ctrl gauche) : des dégâts sur les mannequins frôlés, et sur celui qui avait la flèche.
+- [ ] **Piqué** : un tir un peu vers le haut (plus de 15°) en direction d'un mannequin : la flèche pique dessus, traînée orange.
+- [ ] **Boomerang** : la main de l'arc ne le rattrape pas, l'autre oui.
+- [ ] **Ricochet** sur un groupe de mannequins (et sur des ennemis qui marchent) : la flèche déviée touche à chaque fois. **Billard** (détonateur + ricochet) : 3 ou 4 détonateurs plantés à moins de 15 m, en faire éclater un : les autres suivent.
+- [ ] **Corde de pluie** avec une pointe (foudre, mèche, givre…) : ses flèches portent l'effet.
+- [ ] **Ingénieur** : tirer à travers une baliste ou une tour de givre : « Surchargée ! », elle rougit un peu en battant, puis reprend ses couleurs.
+- [ ] **Fût suspendu** : le rayon de la main libre et son cercle tant que des flèches attendent ; elles partent bien vers le cercle.
+- [ ] **Corde fantôme** : la trajectoire du tir fantôme pendant qu'on tire la corde à vide.
+- [ ] **Étoile filante** (acrobate + corde triple, à équiper dans l'atelier : Tab et F ne le font pas) : en glissade, une couronne de 6 / 12 / 18 flèches autour du point visé à 20-30 m. Sans casque : Espace, puis tirer en l'air.
+- [ ] **Glacier** (Flèche de glace + Pointe de givre, à la main dans l'atelier) : des mannequins sur la glace ; en faire éclater un : « Glacier ! ×… », les autres gèlent.
+- [ ] **Les duos du rebond** (rebond + sentinelle, pieu, conducteur, aimant, détonateur, Flèche de glace) : l'effet à chaque rebond ; l'annonce « Duo : … ! ».
+- [ ] **Nuage** (plume + corde de pluie) : un tir vers le ciel s'arrête, devient un nuage qui avance et pleut 2,5 s, puis se dissipe. **Averse** (fût suspendu + corde de pluie) : un tir vers le ciel reste suspendu sans éclater ; à la gâchette, une pluie tombe sur le cercle du rayon. **Retour explosif** (rappel + mèche ou détonateur) : rappeler fait exploser les mèches et éclater les détonateurs, puis les flèches reviennent.
+- [ ] **Akimbow ou katana** choisi au menu des armes : sur plusieurs boutiques et coffres, jamais la corde de siège ni la corde fantôme ; avec un arc, elles reviennent.
+- [ ] **Le rappel laisse les effets** : une sentinelle ou un pieu planté, puis rappeler : la sentinelle tire encore, le pieu blesse encore ; un détonateur rappelé crépite encore 6 s et éclate si une flèche passe.
+- [ ] **Les duos du boomerang** (boomerang + mèche, aimant, sentinelle, conducteur, pieu, détonateur) : l'effet au demi-tour, en l'air au bout de la course et contre un mur ; avec le perçage (la faux), à chacun des deux demi-tours ; le fil électrique suit bien la ligne du tir. Avec la corde triple : pas de saccade ?
+
+**Réglages du 26 octobre au soir (après les tests du joueur ; GDD, section 6, le tableau « Avant / Depuis »)**
+- [ ] À l'ouverture de Unity : la console écrit « Réglages roguelike du 26 octobre : catalogue de la boutique modifié… », « … le mannequin d'entraînement compte comme un ennemi… » et « … 4 mannequin(s) ajouté(s) au centre d'entraînement… Enregistre la scène » ; **Ctrl+S**. Pas de ligne rouge. Dans `Data/Shop/ShopCatalog` : Spectral, Grenade sauvage et Grenade rapide en *Retired*, « Super grenade » à la fin.
+- [ ] Le centre d'entraînement : 6 mannequins, dont 3 serrés et un loin (45 m) ; aucun dans une voie, un mur ou la rivière (sinon, les déplacer à la main).
+- [ ] Avant la première vague : un mannequin touché montre ses dégâts ; tué, il tombe en arrière puis se relève ; il ne rapporte ni points ni or ; les balistes ne tirent pas dessus. La foudre, l'explosion, l'aimant (il est attiré puis revient à sa place), le gel, la marque, le bourreau marchent dessus. Pendant une vague, il redevient invulnérable et l'auto-visée l'ignore.
+- [ ] Foudre, chaîne d'éclairs, glace, déluge : seulement aux tirs parfaits, à chaque fois ; explosion, perçage, multitir (2 flèches au niveau 1) : à chaque tir ; écho : la copie part de là où est la flèche, pas de l'arc.
+- [ ] Boomerang : il fait demi-tour sur le côté, sans piquer vers le sol, même tiré à plat ; tiré dans le sol ou un mur, il revient aussi ; il ralentit en approchant et s'arrête devant toi 1,5 s ; facile à rattraper ?
+- [ ] Télékinésie : à l'appui, la flèche ralentit de moitié et tourne comme la main (160 °/s).
+- [ ] Fût suspendu : la gâchette de l'autre main envoie les flèches là où elle vise.
+- [ ] Faucon : le ralenti à chaque tension, une fois par tension (pas tout le temps quand on reste tendu).
+- [ ] Acrobate : temps ×0,5 ; la glissade s'arrête plus tôt (à mi-vitesse).
+- [ ] Ingénieur : la baliste surchargée tire 2 fois plus vite (4, 6 aux niveaux 2 et 3) ; un tir parfait à travers une barricade abîmée : « Réparée +… PV ».
+- [ ] Bourreau : une tête qui laisse l'ennemi sous 25 % meurt net ; un boss sous 10 %.
+- [ ] Super grenade (talisman) : plus de flèches, recharge plus courte.
+- [ ] Trou noir (fût aimant + pointe à mèche) : une sphère noire avec son anneau et ses disques, qui aspire 1,5 s, se referme et explose large. Lisible ? Pas d'image lente ?
+- [ ] Une carte de pièce qui formerait un duo dit avec quelle pièce ; rangée dans l'atelier, le message d'achat le rappelle.
+- [ ] ~~Parchemins : même prix après la vague 3 qu'après la vague 1~~ : la hausse par vague est remise le soir même.
+
+**Troisième lot, le 26 octobre au soir, suite (GDD, section 6 ; `Docs/Refonte_Roguelike.md`, parties « Avancement » et 14 ; R pour les essayer)**
+- [ ] À l'ouverture de Unity : « Refonte roguelike, troisième lot : pièces déplacées… » et « … (scène Prototype_Tir) : la vraie explosion… Enregistre la scène » ; **Ctrl+S**. Dans `Data/Shop/ShopCatalog` : Perçage et Flèche de glace au fût, Vampirisme au talisman, Chasseur de têtes à la corde, Déluge rare, les 7 pièces nouvelles à la fin.
+- [ ] La boutique : 3 objets de 3 emplacements différents, à chaque pause ; les pointes ne reviennent plus une fois sur deux. Le coffre de boss : 2 emplacements différents.
+- [ ] La vraie explosion (flèche explosive, mèche, trou noir) : un flash, une boule de feu, une fumée épaisse qui monte et s'étale, de la poussière au sol, des étincelles. Belle ? Pas trop lourde au Quest avec beaucoup d'explosions ?
+- [ ] Multitir : les flèches serrées ; corde triple : l'éventail plus large qu'avant.
+- [ ] Corde de siège : laisser l'anneau aller au bout (vert clair) et garder la tension : des étincelles dorées grossissent à la pointe, la manette vibre de plus en plus, « Chargée ! » au bout de 2 s ; le tir fait bien plus mal et traverse. Avec l'arc cosmique : le laser, chargé au bout du deuxième cercle, fait bien plus mal.
+- [ ] Corde de pluie : un tir vers le ciel éclate à son sommet en pluie de flèches ; avec l'arc légendaire, sa pluie a deux fois plus de flèches.
+- [ ] Corde fantôme : juste après un tir, attraper la corde à vide (la poignée, près de l'encoche), la tirer, la lâcher : un fil pâle pendant qu'on tire, puis « Fantôme ! » et une flèche part là où vise l'arc. Le geste se fait-il naturellement ? Sans casque : clic du milieu.
+- [ ] Empennage piqué : tirer en cloche vers un groupe : au sommet, la flèche vire orange et fond sur un ennemi.
+- [ ] Empennage de rappel : planter plusieurs flèches, puis fermer le poing de la main libre devant soi : elles reviennent en traversant les ennemis, puis disparaissent près de toi. Rien quand on prend une flèche au carquois, la grenade à la hanche ou le marteau. Sans casque : Ctrl gauche.
+- [ ] Fût-sentinelle : une flèche plantée au sol tire de petites flèches sur l'ennemi le plus proche pendant 5 s.
+- [ ] Talisman de l'avare : avec beaucoup d'or, les dégâts montent (+1 % par 20 or) ; ils baissent après un achat.
+- [ ] Les duos nouveaux (GDD, section 6) : orage magnétique, lance-grenades (une explosion de la taille de la mèche à chaque rebond), supernova, chasse à l'homme, pluie de fer, billard (des détonateurs en chaîne), clôture de givre, réseau (un arc électrique jusqu'à la baliste, qui tire plus vite), étoile filante (en l'air, une couronne de flèches), rail (un trait de lumière qui laisse une traînée), glacier.
+- [ ] Bourreau sur MK : une tête qui le laisse sous 5 % le tue (7,5 et 10 % aux niveaux 2 et 3).
+
 **Refonte roguelike, étape 1 (25 octobre ; GDD, sections 6, 7 et 13 ; `Docs/Refonte_Roguelike.md`)**
 - [ ] À l'ouverture de Unity : la console écrit « Refonte roguelike, étape 1 : catalogue de la boutique converti », avec la liste des objets, des cartes retirées et des parchemins ajoutés ; aucune ligne rouge. Dans `Data/Shop/ShopCatalog`, chaque amélioration a son genre (*Kind*), les objets ont *Max Stacks* à 1, et les trois parchemins (Force, Adresse, Vigueur) sont à la fin, avec leur icône.
 - [ ] Retouche du soir, à l'ouverture de Unity : la console écrit « Boutique : 3 objets par pause… » et « Boutique (scène Prototype_Tir) : 6 cartes sur 3 colonnes… Enregistre la scène » ; **Ctrl+S**. Dans la scène, le panneau de la boutique n'a plus de bouton « Relancer » ni de carte des arcs ; « Ligne parchemins » et « Ligne objets » sont à gauche des deux lignes de cartes.
@@ -27,6 +144,7 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] Coffres : au-dessus de l'orbe, « POINTE », « EMPENNAGE », « FÛT » ou « CORDE » (« OBJET » pour la grenade) ; sous le nom, le niveau (et depuis l'étape 5, le duo possible et « Rangée dans l'atelier ») ; la prendre fait pareil qu'en boutique.
 - [ ] La ligne du bas de la boutique : « Pointe : … · Corde : … — Parchemins : … », mise à jour après chaque achat et après le coffre du boss.
 - [ ] Raccourci **F** : toutes les pièces au niveau 3 (depuis l'étape 5 : la première de chaque emplacement équipée, les autres dans l'atelier), les objets de la grenade et 5 de chaque parchemin.
+- [ ] Raccourci **Tab** (26 octobre au soir) : « Essai : les … pièces au niveau 1 » ; encore : niveau 2, puis 3 ; un quatrième appui : « déjà au niveau maximal ». L'atelier les montre toutes ; aucun parchemin ni tourelle donné.
 
 **Refonte roguelike, étape 3 : les pièces nouvelles (26 octobre ; GDD, section 6 ; R pour les essayer une à une)**
 - [ ] À l'ouverture de Unity : « Refonte roguelike, étape 3 : les pièces nouvelles ajoutées au catalogue » ; les 8 cartes sont à la fin de `Data/Shop/ShopCatalog`, avec leur emplacement et une icône.
@@ -59,6 +177,34 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] **Parchemins** : acheter 3 Force de suite : la Force monte bien plus vite que l'Adresse et la Vigueur. Seule la Vigueur fait monter les PV max (plus de « +5 PV max » sous la Force et l'Adresse).
 - [ ] Les 16 pièces, une à une avec **R** : éclats derrière l'ennemi ; anneau doré de la marque (double dégâts, elle saute à sa mort) ; rebonds ; plume (plus de chute, l'aide à la visée droite) ; plomb (tir très courbe, onde de choc au sol) ; spectral (à travers un mur) ; pieu (les ennemis ralentis dessus) ; détonateur (tirer sur une flèche plantée : 6 flèches) ; suspendu (la flèche s'arrête ; la gâchette de l'autre main ou le clic droit la relâche) ; transe (« Transe 1… 5 », la flèche dorée) ; faucon (pleine tension : ralenti) ; sniper (dégâts plus forts de loin) ; pacte de verre (dégâts ×2, un tir rouge coûte 5 PV) ; ingénieur (une flèche dans sa baliste : elle tire deux fois plus vite) ; duelliste (un coup de flèche à la main : « Touché ! Tir parfait ») ; bourreau (une tête sous 25 % de PV : mort nette).
 - [ ] Katana : la pointe de givre, de chasseur, le bourreau, la mèche et l'aimant marchent sur les failles.
+
+**Refonte du tower defense, étape 2 : les caisses de l'ingénieur et les plans (27 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : la console écrit « Refonte du tower defense, étape 2 : 3 fenêtre(s) du tutoriel… » ; le tutoriel parle des caisses et des plans.
+- [ ] Au début de l'accalmie : « 3 caisses de l'ingénieur sont apparues ! », là où poussaient les cristaux, sous un rayon **violet** ; la caisse (le coffre, teinté de violet en attendant son modèle) se distingue des coffres dorés.
+- [ ] On l'ouvre comme un coffre (gâchette ou poignée) : ralenti, 3 orbes « CONSTRUCTION », 3 bâtiments différents : « 2 plans » pour la barricade et les piques, « 1 plan » pour la tour de givre et la baliste (« tu en as N » si on en a déjà).
+- [ ] Prendre une orbe : « Pièges à piques : 2 plans » ; la montre affiche « Or … · Plans 2 ».
+- [ ] Un socle : le panneau dit « Plans : N », chaque carte « Construction · 2 plans » et son prix « 1 plan » ; sans plan de ce bâtiment, le prix en rouge et « Il te faut un plan : … » au clic.
+- [ ] Construire consomme un plan ; sur un bâtiment construit, le niveau suivant demande un autre plan du même bâtiment.
+- [ ] Plus aucun gisement de cristaux, plus de « Mat. » sur la montre.
+- [ ] Les caisses pas ouvertes disparaissent à la fin de la vague ; aucune pendant la vague de MK.
+- [ ] Raccourcis : **B** donne 2 plans de chaque bâtiment ; **V** pose une caisse devant toi.
+
+**Refonte du tower defense, étape 3 : construire n'importe où (27 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] Au lancement : la console écrit « BuildGrid : N emplacements de construction (… sur la voie, … au bord, … en hauteur) » ; aucune erreur rouge, pas d'à-coup.
+- [ ] Les 12 anciens socles et les 3 barricades de départ ont disparu (la scène, elle, n'a pas changé).
+- [ ] Rien au sol hors de la pose ; le rayon de la main ne s'accroche pas au sol, et le viseur sans casque ne propose pas « Construire » partout.
+- [ ] Avec des plans (**B**) : un bouton « Plans N » sur la montre, à côté du bouton « Tour » (assez loin pour ne pas toucher les deux à la fois ; le toucher ne doit pas téléporter en haut de la tour).
+- [ ] Le toucher avec l'autre main (0,3 s) : l'hologramme bleu d'un bâtiment suit le rayon de la main qui porte la montre, calé sur les cases ; une étiquette au-dessus (nom, plans, « Pas ici : … » en rouge) ; il rougit là où il ne se pose pas. Le bouton dit « Annuler ».
+- [ ] Pendant la pose, autour de toi : runes **orange** sur les voies (barricade, piques), **bleues** au bord, **vertes** sur les terrasses (baliste, tour de givre) ; aucune dans l'eau, sous un arbre, au pied de la tour, sur un mannequin, ni sur l'emplacement d'une caisse ou d'un coffre. Celle visée brille plus.
+- [ ] Joystick de la main qui vise : gauche/droite tourne l'hologramme par crans de 45° (et **ne fait pas tourner le joueur**) ; haut/bas passe à un autre plan. Après la pose, la rotation du joueur au joystick revient.
+- [ ] Gâchette : le bâtiment est posé, tourné comme l'hologramme, puis les marteaux comme avant ; un plan de moins. Poignée : « Pose annulée ».
+- [ ] L'hologramme sur un bâtiment du même type : « Améliorer : niveau 2 », la gâchette lance l'amélioration.
+- [ ] Une barricade posée sans la tourner a l'avant vers la forêt : les ennemis s'arrêtent devant pour la frapper. Tournée de travers, elle les arrête mal (attendu). Les tourelles regardent la voie.
+- [ ] **Déplacer** : entre les vagues, viser un bâtiment, carte « Déplacer » (gratuit) : son hologramme suit le rayon ; gâchette sur un emplacement libre de la même sorte : il s'y pose ; sur sa propre place : il y reste, tourné ; une autre sorte : rouge, « Pas ici… ». Pendant une vague, la carte dit « Entre les vagues seulement ».
+- [ ] Sans casque : **F2** sort un plan (puis le suivant, puis le range), la molette tourne, **E** pose ; le viseur dit ce qui va.
+- [ ] **F** : 6 tourelles niveau 2 sur les emplacements au bord de la voie les plus proches de la tour, espacées.
+- [ ] Tutoriel, Construction, « Choisir un bâtiment » : parle des runes, de la hauteur et du déplacement.
+- [ ] À juger : la carte a-t-elle assez d'emplacements, aux bons endroits ? (Seuils réglables sur le composant *Build Grid*, ajouté à l'objet `Game` en jeu.)
 
 **Nouveautés du 19 au 23 octobre : à vérifier en premier**
 - [ ] Départ : quelle que soit ta place dans la pièce, tu apparais en haut de la tour, tourné vers le menu ; remettre le casque ou le recentrer avant la première vague t'y ramène.

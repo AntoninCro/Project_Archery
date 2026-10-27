@@ -40,10 +40,10 @@ MonoBehaviour:
     label: Parfait !
     color: {r: 0.3, g: 0.92, b: 0.35, a: 1}
     speed: 1.5
-    damage: 2
-    points: 2
+    damage: 2.5
+    points: 3
   m_Held:
-    label: "Très bon"
+    label: "Tr\xE8s bon"
     color: {r: 0.62, g: 0.95, b: 0.72, a: 1}
     speed: 1.5
     damage: 1.6

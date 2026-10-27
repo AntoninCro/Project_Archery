@@ -12,9 +12,15 @@ namespace Archery.Core
     {
         const int k_MaxSources = 24;
 
+        // Le budget d'effets (27 octobre au soir, jusqu'à 1000 flèches en vol) : au plus tant de sons dans l'espace qui commencent
+        // à la même image ; les suivants se tairaient sous les premiers de toute façon. Les sons à plat (interface) passent toujours.
+        const int k_MaxSpatialPerFrame = 6;
+
         static readonly List<AudioSource> s_Sources = new List<AudioSource>();
         static Transform s_Root;
         static int s_Next;
+        static int s_Frame = -1;
+        static int s_PlayedThisFrame;
 
         /// <summary>Groupe du mixer par lequel passent ces sons (volume des effets). Réglé par les paramètres du jeu.</summary>
         public static AudioMixerGroup Output { get; set; }
@@ -23,6 +29,19 @@ namespace Archery.Core
         {
             if (clip == null)
                 return;
+
+            if (spatialBlend > 0.5f)
+            {
+                if (Time.frameCount != s_Frame)
+                {
+                    s_Frame = Time.frameCount;
+                    s_PlayedThisFrame = 0;
+                }
+
+                if (s_PlayedThisFrame >= k_MaxSpatialPerFrame)
+                    return;
+                s_PlayedThisFrame++;
+            }
 
             var source = NextSource();
             source.outputAudioMixerGroup = Output;
@@ -76,6 +95,8 @@ namespace Archery.Core
             s_Sources.Clear();
             s_Root = null;
             s_Next = 0;
+            s_Frame = -1;
+            s_PlayedThisFrame = 0;
             Output = null;
         }
     }

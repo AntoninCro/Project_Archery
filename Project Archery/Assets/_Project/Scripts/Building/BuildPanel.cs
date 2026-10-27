@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Archery.Core;
-using Archery.Economy;
 using Archery.Player;
 using Archery.Shop;
 using TMPro;
@@ -13,8 +12,9 @@ namespace Archery.Building
 {
     /// <summary>
     /// Le petit panneau des socles (GDD, section 9) : un Canvas en World Space, unique dans la scène. Il s'ouvre devant
-    /// le joueur, du côté du socle visé, et propose les bâtiments possibles avec leur prix en matériaux, ou le niveau
-    /// suivant du bâtiment déjà construit. Les cartes sont celles de la boutique (<see cref="ShopCard"/>).
+    /// le joueur, du côté du socle visé, et propose les bâtiments possibles, ou le niveau suivant du bâtiment déjà construit.
+    /// Les cartes sont celles de la boutique (<see cref="ShopCard"/>). Depuis la refonte du 27 octobre, chacune coûte un plan
+    /// de son bâtiment (trouvé dans les caisses de l'ingénieur) au lieu de matériaux, et dit combien on en a.
     /// </summary>
     /// <remarks>
     /// Comme la boutique, le Canvas a besoin d'un <c>Tracked Device Graphic Raycaster</c> pour être cliqué au rayon.
@@ -31,6 +31,7 @@ namespace Archery.Building
         [SerializeField]
         TMP_Text m_TitleText;
 
+        [Tooltip("Les plans du joueur, tous bâtiments confondus (ses matériaux avant le 27 octobre).")]
         [SerializeField]
         TMP_Text m_MaterialsText;
 
@@ -41,7 +42,7 @@ namespace Archery.Building
         [SerializeField]
         Button m_CloseButton;
 
-        [Tooltip("Message après un clic (« Pas assez de matériaux »…).")]
+        [Tooltip("Message après un clic (« Il te faut un plan »…).")]
         [SerializeField]
         TMP_Text m_MessageText;
 
@@ -80,7 +81,8 @@ namespace Archery.Building
 
         readonly List<StructureDefinition> m_Choices = new List<StructureDefinition>();
         StructureDefinition[] m_CardChoices = Array.Empty<StructureDefinition>();
-        ScoreManager m_Score;
+        int m_MoveCard = -1;
+        BuildManager m_Builds;
         XRBaseInputInteractor m_Hand;
         Vector3 m_Anchor;
         float m_MessageTimer;
@@ -113,15 +115,15 @@ namespace Archery.Building
 
         void Start()
         {
-            m_Score = ScoreManager.Instance;
-            if (m_Score != null)
-                m_Score.Changed += Refresh;
+            m_Builds = BuildManager.Instance;
+            if (m_Builds != null)
+                m_Builds.PlansChanged += Refresh;
         }
 
         void OnDestroy()
         {
-            if (m_Score != null)
-                m_Score.Changed -= Refresh;
+            if (m_Builds != null)
+                m_Builds.PlansChanged -= Refresh;
             if (Instance == this)
                 Instance = null;
         }
@@ -195,9 +197,9 @@ namespace Archery.Building
             if (!IsOpen)
                 return;
 
-            var materials = m_Score != null ? m_Score.Materials : 0;
+            var builds = BuildManager.Instance;
             if (m_MaterialsText != null)
-                m_MaterialsText.text = "Matériaux : " + materials;
+                m_MaterialsText.text = "Plans : " + (builds != null ? builds.TotalPlans : 0);
 
             var structure = Socket.Structure;
             if (m_TitleText != null)
@@ -206,41 +208,47 @@ namespace Archery.Building
 
             for (var i = 0; i < m_CardChoices.Length; i++)
                 m_CardChoices[i] = null;
+            m_MoveCard = -1;
 
+            // Un bâtiment : son niveau suivant, et à côté, le déplacer (refonte du 27 octobre, étape 3 : gratuit, entre les vagues).
             if (structure != null)
             {
-                ShowCard(0, UpgradeOffer(structure), structure.Definition, materials);
-                for (var i = 1; i < m_Cards.Length; i++)
-                    ShowCard(i, null, null, materials);
+                ShowCard(0, UpgradeOffer(structure, builds), structure.Definition, builds);
+                var movable = builds != null && structure.IsBuilt && !structure.IsUnderConstruction && m_Cards.Length > 1;
+                if (movable)
+                    m_MoveCard = 1;
+                ShowCard(1, movable ? MoveOffer(structure, builds.CanMove) : null, null, builds);
+                for (var i = 2; i < m_Cards.Length; i++)
+                    ShowCard(i, null, null, builds);
                 return;
             }
 
-            var manager = BuildManager.Instance;
-            if (manager != null)
-                manager.GetChoices(Socket.Slot, m_Choices);
+            if (builds != null)
+                builds.GetChoices(Socket.Slot, m_Choices);
             else
                 m_Choices.Clear();
 
             for (var i = 0; i < m_Cards.Length; i++)
             {
                 var definition = i < m_Choices.Count ? m_Choices[i] : null;
-                ShowCard(i, definition != null ? BuildOffer(definition, 1) : null, definition, materials);
+                ShowCard(i, definition != null ? BuildOffer(definition, 1, builds) : null, definition, builds);
             }
 
             if (m_Choices.Count > m_Cards.Length)
                 Debug.LogWarning($"BuildPanel : {m_Choices.Count} bâtiments possibles pour {m_Cards.Length} cartes.", this);
         }
 
-        void ShowCard(int index, ShopOffer offer, StructureDefinition definition, int materials)
+        // La carte compare le prix (un plan) aux plans qu'on a de ce bâtiment : sans plan, son prix passe dans la couleur « trop cher ».
+        void ShowCard(int index, ShopOffer offer, StructureDefinition definition, BuildManager builds)
         {
             if (index >= m_Cards.Length || m_Cards[index] == null)
                 return;
 
             m_CardChoices[index] = definition;
-            m_Cards[index].Show(offer, materials);
+            m_Cards[index].Show(offer, builds != null ? builds.PlansOf(definition) : 0);
         }
 
-        static ShopOffer UpgradeOffer(Structure structure)
+        static ShopOffer UpgradeOffer(Structure structure, BuildManager builds)
         {
             var definition = structure.Definition;
             if (definition == null)
@@ -254,20 +262,38 @@ namespace Archery.Building
                 return info;
             }
 
-            return BuildOffer(definition, structure.Level + 1);
+            return BuildOffer(definition, structure.Level + 1, builds);
         }
 
-        static ShopOffer BuildOffer(StructureDefinition definition, int level) => new ShopOffer
+        // Un plan par construction ou par niveau (refonte du 27 octobre) ; le sous-titre dit combien on en a.
+        static ShopOffer BuildOffer(StructureDefinition definition, int level, BuildManager builds)
         {
-            Kind = ShopOfferKind.Build,
-            // La carte de la boutique n'a pas toujours de sous-titre : le niveau est aussi dans le titre.
-            Title = level == 1 ? definition.displayName : $"{definition.displayName} · niveau {level}",
-            Subtitle = level == 1 ? "Construction" : "Amélioration",
-            Description = definition.DescriptionFor(level),
-            Color = definition.color,
-            Icon = definition.icon,
-            Price = definition.CostFor(level),
-            PriceUnit = "mat.",
+            var plans = builds != null ? builds.PlansOf(definition) : 0;
+            var owned = plans == 0 ? "aucun plan" : plans == 1 ? "1 plan" : plans + " plans";
+            return new ShopOffer
+            {
+                Kind = ShopOfferKind.Build,
+                // La carte de la boutique n'a pas toujours de sous-titre : le niveau est aussi dans le titre.
+                Title = level == 1 ? definition.displayName : $"{definition.displayName} · niveau {level}",
+                Subtitle = (level == 1 ? "Construction" : "Amélioration") + " · " + owned,
+                Description = definition.DescriptionFor(level),
+                Color = definition.color,
+                Icon = definition.icon,
+                Price = 1,
+                PriceUnit = "plan",
+            };
+        }
+
+        static ShopOffer MoveOffer(Structure structure, bool now) => new ShopOffer
+        {
+            Kind = now ? ShopOfferKind.Build : ShopOfferKind.Unavailable,
+            Title = "Déplacer",
+            Subtitle = structure.DisplayName,
+            Description = now ? "Son hologramme suit ton rayon : pose-le sur un emplacement libre de la même sorte." : "Entre les vagues seulement.",
+            Color = new Color(0.55f, 0.8f, 1f),
+            Icon = structure.Definition != null ? structure.Definition.icon : null,
+            PriceText = now ? "Gratuit" : "",
+            Verb = "Déplacer",
         };
 
         void OnCardClicked(ShopCard card)
@@ -277,7 +303,11 @@ namespace Archery.Building
             if (!IsOpen || index < 0 || manager == null || card.Offer == null || !card.Offer.CanBuy)
                 return;
 
-            var result = manager.TryBuild(Socket, m_CardChoices[index], m_Hand);
+            // Déplacer : l'hologramme du bâtiment suit ensuite le rayon de la main, comme un plan sorti de la montre.
+            var placement = BuildPlacement.Instance;
+            var result = index != m_MoveCard ? manager.TryBuild(Socket, m_CardChoices[index], m_Hand)
+                : placement != null ? placement.BeginMove(Socket.Structure, m_Hand)
+                : ShopResult.Failed("Déplacement impossible");
             if (!result.Success)
             {
                 Sfx.Play(m_ErrorClip, transform.position, 0.9f);

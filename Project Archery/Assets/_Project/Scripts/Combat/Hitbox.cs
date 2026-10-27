@@ -34,6 +34,9 @@ namespace Archery.Combat
         /// <summary>Bonus de dégâts à la tête, pour toutes les zones « Head » (amélioration Chasseur de têtes).</summary>
         public static float HeadDamageMultiplier { get; set; } = 1f;
 
+        /// <summary>Bonus de dégâts sur les points faibles (27 octobre : le duo « Œil de faucon », ×1,5).</summary>
+        public static float WeakPointDamageMultiplier { get; set; } = 1f;
+
         public HitZone Zone => m_Zone;
         public Health Owner => m_Owner;
 
@@ -115,7 +118,8 @@ namespace Archery.Combat
 
             if (hit.IsShot)
             {
-                var zoneMultiplier = m_DamageMultiplier * (m_Zone == HitZone.Head ? HeadDamageMultiplier : 1f);
+                var zoneMultiplier = m_DamageMultiplier * (m_Zone == HitZone.Head ? HeadDamageMultiplier :
+                                                           m_Zone == HitZone.WeakPoint ? WeakPointDamageMultiplier : 1f);
                 m_Owner.TakeDamage(new DamageInfo
                 {
                     Amount = hit.Damage * zoneMultiplier,
@@ -134,6 +138,10 @@ namespace Archery.Combat
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => HeadDamageMultiplier = 1f;
+        static void ResetStatics()
+        {
+            HeadDamageMultiplier = 1f;
+            WeakPointDamageMultiplier = 1f;
+        }
     }
 }

@@ -16,9 +16,9 @@ namespace Archery.Bows
         [SerializeField]
         int m_Prewarm = 12;
 
-        [Tooltip("Au-delà, les flèches plantées les plus anciennes disparaissent.")]
+        [Tooltip("Au-delà, les flèches plantées les plus anciennes disparaissent (100 depuis le 27 octobre, réglage du joueur ; 40 avant).")]
         [SerializeField]
-        int m_MaxStuckArrows = 40;
+        int m_MaxStuckArrows = 100;
 
         static ArrowPool s_Instance;
 
@@ -74,7 +74,11 @@ namespace Archery.Bows
         public Arrow[] AllArrows() => GetComponentsInChildren<Arrow>(true);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => Taken = null;
+        static void ResetStatics()
+        {
+            Taken = null;
+            StuckArrowReclaimed = null;
+        }
 
         public void Release(Arrow arrow)
         {
@@ -88,6 +92,12 @@ namespace Archery.Bows
                 m_Free.Push(arrow);
         }
 
+        /// <summary>
+        /// Une flèche plantée va être reprise parce qu'il y en a trop (la plus ancienne) : les pièces de la flèche laissent son effet
+        /// en place (27 octobre : avec la corde de pluie, les sentinelles disparaissaient avec leur flèche).
+        /// </summary>
+        public static event System.Action<Arrow> StuckArrowReclaimed;
+
         internal void NotifyStuck(Arrow arrow)
         {
             m_Stuck.Add(arrow);
@@ -95,8 +105,11 @@ namespace Archery.Bows
             {
                 var oldest = m_Stuck[0];
                 m_Stuck.RemoveAt(0);
-                if (oldest != null)
-                    oldest.Despawn();
+                if (oldest == null)
+                    continue;
+
+                StuckArrowReclaimed?.Invoke(oldest);
+                oldest.Despawn();
             }
         }
 

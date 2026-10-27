@@ -21,7 +21,7 @@ section 24 ; scripts dans `Scripts/Lore`), l'audit de performance pour le Quest 
 « Quest » (`Docs/Audit_Performance_Quest.md`, `Editor/QuestQualityBaker.cs`), le ménage des fichiers inutilisés
 (`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure de performance des
 builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike**, étapes 1 à 5 (partie suivante).
-**Commité le soir du 26 octobre** (`d523f2b`, pas encore poussé) : la troisième version de l'atelier (flèche debout,
+**Commité le soir du 26 octobre** (`d523f2b`, poussé avec `7a69a08`) : la troisième version de l'atelier (flèche debout,
 sceaux animés), les PV des parchemins retirés, la télékinésie guidée par la main.
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
@@ -45,7 +45,53 @@ d'améliorations par partie, presque toujours les mêmes). Il a choisi la propos
 **Premiers retours du joueur** (26 octobre au soir, après quelques tests) : les +5 PV max de la Force et de l'Adresse sont
 retirés ; la télékinésie faisait toujours monter la flèche (elle suivait l'avant du modèle de l'arc) : elle est maintenant
 guidée par rapport à la main (à l'appui, la main sert de référence, puis la flèche tourne comme elle, deux fois plus,
-*k_SteerGain* en tête de `ArrowPieces.cs`). Le reste n'a pas encore de retour : suivre `Checklist_Demo.md`.
+*k_SteerGain* en tête de `ArrowPieces.cs`).
+
+**Réglages du joueur, le 26 octobre au soir** (il a essayé chaque amélioration au casque ; codés, compilent, **pas encore
+testés au casque**, rien n'est commité) : plus de dés (foudre, chaîne, glace, déluge aux tirs parfaits ; explosion, perçage,
+multitir, écho à chaque tir), de nouvelles valeurs pour une vingtaine de pièces, le boomerang refait, l'empennage spectral
+retiré, la super grenade (talisman), le visuel du trou noir, les duos qui nomment la pièce partenaire, et **les mannequins
+du centre d'entraînement qui comptent comme des ennemis** entre les vagues (6, dont un groupe de 3). **Puis, le même soir,
+le troisième lot** choisi par le joueur parmi les propositions de Claude : le tirage par emplacement, des pièces déplacées,
+7 pièces nouvelles (siège, pluie, fantôme, piqué, rappel, sentinelle, avare), 11 duos, une vraie explosion avec de la fumée,
+et l'équilibre (explosion affaiblie, multitir serré, triple large, déluge rare, bourreau sur MK). `Scripts/Upgrades/ArrowPieces.Lot3.cs`,
+`ExplosionFx.cs`, `Editor/RoguelikePiecesBaker`. Détail : GDD, section 6 (tableau « Avant / Depuis ») ; `Refonte_Roguelike.md`, « Avancement », et partie 14
+(les propositions de Claude : le tirage de la boutique, des déplacements, des pièces et des duos nouveaux, l'équilibre) ;
+tests : `Checklist_Demo.md`, « Réglages du 26 octobre au soir » et « Troisième lot ». À l'ouverture de Unity,
+`Editor/RoguelikeTuningBaker` et `Editor/RoguelikePiecesBaker` modifient le catalogue, le prefab du mannequin et la scène
+(l'enregistrer).
+
+**Corrections du 27 octobre** (après de nouveaux tests du joueur ; codées, compilent, **pas encore testées au casque**) : plus
+d'effet réservé aux tirs parfaits (`Editor/RoguelikeAllShotsBaker`, une fois), l'anneau entièrement vert pour un tir parfait
+d'office, et les bugs du rappel, du piqué, du boomerang, du ricochet, du billard, de la pluie, de l'ingénieur, du fût
+suspendu, de la corde fantôme, de l'étoile filante et de Glacier ; six duos du rebond. Détail : GDD, section 6, « Corrections
+du 27 octobre » ; tests : `Checklist_Demo.md`, même titre. Puis, à la demande du joueur, six duos du boomerang (un effet au
+demi-tour avec la mèche et chaque fût qui agit planté), puis les trois derniers duos de compatibilité (nuage, retour explosif,
+averse) ; le rappel laisse en place ce que faisaient les flèches plantées (`Refonte_Roguelike.md`, partie 15). Puis les
+réglages du joueur (GDD, section 6, « Réglages du joueur du 27 octobre, après la liste des tests ») : le boomerang rattrapé à
+la poignée arrive dans la main et c'est lui qui est parfait, la corde de pluie refaite (des flèches semées le long de la
+traînée), rappel et conducteur à 100, fil électrique à 1 m du joueur, fût suspendu deux fois plus tôt, fantôme à
+120 / 150 / 200 % (`Editor/RoguelikeTextsBaker` revoit deux textes de cartes) ; la faux attend 0,5 s devant le joueur, les
+flèches de pluie ne s'arrêtent plus devant lui avec le boomerang, 100 sentinelles et 100 flèches plantées
+(`Editor/RoguelikeStuckArrowsBaker` change la scène : l'enregistrer). Tout est à tester au casque. **Le patch note à remplir** :
+`Docs/Patch_Note_Pieces.xlsx` (une ligne par pièce, duo, parchemin et règle, avec les chiffres du 27 octobre) ; le joueur écrit
+ses modifications dans la colonne jaune, puis Claude les lit (colonne « Code » = le nom de l'effet ou du duo dans le code)
+et les implémente. **Deuxième tour fait** (26 lignes du joueur, codées le 27 octobre : GDD, section 6, « Deuxième tour du 27
+octobre »), et la corde de siège avec le katana (les failles mûrissent ; leur qualité suit toujours la longueur du coup).
+**Équilibrage du 27 octobre au soir** (GDD, section 6, même titre, avec les estimations de DPS) : le tir parfait ×2,5 de dégâts
+et ×3 de points, le tir écho légendaire, la pluie à 35 %, la chasse à l'homme ×1,5, 1000 flèches en vol avec un budget
+d'effets (au-delà de 120, les flèches en plus perdent traînée, ombre, plumes et runes ; sons, éclairs et textes plafonnés),
+le bruit des flèches de l'Akimbow à moitié. **Les cartes refaites par le joueur** (`Docs/Cartes_A_Refaire.xlsx`, codées le
+soir même : GDD, section 6, même titre) : noms, textes qui suivent le niveau (« {50 %|100 %|150 %} »), texte de montée de
+niveau (« 50 % → 100 % ➶ », champ `levelUpText`), le symbole ➶ pour les dégâts d'une flèche de base, les raretés, l'icône
+de la catégorie, les duos renommés, et le tir explosif aux mêmes dégâts sur toute sa zone. Le joueur a **à peu près tout
+testé au casque** le même soir. **Reste** : la courbe des ennemis (en Normal, le build moyen doit un peu galérer à la vague 5,
+sans plus), à mesurer avec le **compteur de dégâts des mannequins**, dont les PV sont ×100 (`Training/TrainingDummy.cs`).
+L'étape 6 de la refonte est mise de côté par le joueur. Les objets sortent à 50 % communs, 35 % rares, 15 % légendaires
+(20 / 60 / 20 avant, `Editor/RoguelikeBalanceBaker`). Chaque coffre de la carte propose toujours un objet, un parchemin et un
+bonus temporaire (un objet une fois sur 4 avant ; GDD, section 13). La boutique s'ouvre plus à gauche, l'atelier à l'opposé,
+à droite du joueur (`Shop/ShopPanel.cs` ; la scène change par `Editor/RoguelikeBalanceBaker`, à enregistrer). Le coffre de boss
+tombe là où le boss est mort (`Chests/ChestSpawner.cs` ; le raccourci X le pose encore juste devant le joueur).
 
 **À l'ouverture de Unity** : cliquer dans la fenêtre ; la console écrit ce que chaque baker a fait (le catalogue de la
 boutique est modifié une seule fois par étape). Si un baker a changé la scène, l'enregistrer (Ctrl+S). Puis les tests :
@@ -64,6 +110,14 @@ boutique est modifié une seule fois par étape). Si un baker a changé la scèn
 | `Scripts/Shop/ArrowWorkshop.cs` | l'atelier : la flèche 3D debout, les sceaux animés et leurs légendes, les pièces à équiper (place, tailles et vitesses en tête du fichier) |
 | `Scripts/Chests/ChestReward.cs`, `Chest.cs`, `ChestSpawner.cs` | les coffres et le coffre de boss |
 | `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs` | les changements du catalogue et de la scène, faits une fois |
+| `Editor/RoguelikeTuningBaker.cs` | les réglages du joueur du 26 octobre au soir (catalogue, mannequin, mannequins en plus), faits une fois |
+| `Editor/RoguelikeAllShotsBaker.cs` | le 27 octobre : les cartes réservées aux tirs parfaits jouent à chaque flèche, fait une fois |
+| `Editor/RoguelikeTextsBaker.cs` | le 27 octobre : les textes de l'empennage boomerang et de la corde de pluie, s'ils sont encore les anciens |
+| `Editor/RoguelikeStuckArrowsBaker.cs` | le 27 octobre : 100 flèches plantées au plus dans la réserve de la scène (si elle a encore 40) |
+| `Editor/RoguelikePatchBaker.cs` | le deuxième tour du 27 octobre : écho, vampirisme, vigueur (catalogue), chaîne et ricochet (scène), si les anciennes valeurs y sont encore |
+| `Editor/RoguelikeCardsBaker.cs` | les cartes refaites par le joueur le 27 octobre au soir : le sprite des symboles (`Resources/Sprite Assets/Symboles`), puis nom, texte par niveau, montée de niveau, rareté et icône de chaque carte qui n'a pas encore de `levelUpText` |
+| `Editor/RoguelikeBalanceBaker.cs` | l'équilibrage du 27 octobre au soir : tir écho légendaire et chances 50 / 35 / 15 (catalogue), tir parfait ×2,5 de dégâts et ×3 de points (`Data/ShotTuning.asset`), 1000 flèches en vol et la boutique plus à gauche (scène), si les anciennes valeurs y sont encore |
+| `Scripts/Training/TrainingDummy.cs`, `Scripts/Upgrades/BlackHole.cs` | le mannequin qui compte comme un ennemi entre les vagues ; le visuel du duo Trou noir |
 | `Scripts/Core/DemoBoost.cs` | les raccourcis F et R |
 
 **En attente du joueur** : quels anciens objets ne jouent qu'aux tirs parfaits (tableau dans `Refonte_Roguelike.md`), la
@@ -122,7 +176,17 @@ L'ancienne version aux traces libres (katana et bouclier) est dans Git, au commi
 
 ## 3. Les autres choses à faire
 
-Dans l'ordre conseillé (aussi dans le GDD, section 21, « À faire ensuite ») :
+**La suite du développement, dans l'ordre** (choisie par le joueur le 26 octobre ; détail dans le GDD, section 21, « La
+suite, dans l'ordre ») :
+1. finir la refonte roguelike (partie 1 et `Refonte_Roguelike.md`) ;
+2. la refonte des tourelles : plus de matériaux, des sortes de coffres qui proposent plusieurs tourelles au choix, beaucoup
+   plus de tourelles et de constructions, construire n'importe où sur les zones constructibles ; brainstorm fait le
+   27 octobre (dans une autre discussion que la refonte roguelike) : `Refonte_TowerDefense.md`, partie « Avancement » ;
+3. le troisième easter egg : le katana en sera l'arme ; un monde fait presque entièrement de 0 et 1 ;
+4. le boss d'après MK, qui fait la transition entre l'acte 1 et l'acte 2 ;
+5. commencer l'acte 2.
+
+Le reste, qui se glisse entre ces étapes, dans l'ordre conseillé (aussi dans le GDD, section 21, « À faire ensuite ») :
 1. **La présentation** : faite le 23 octobre (partie 4) ; il reste à y mettre les captures, puis les répétitions
    (`Demo_Vendredi.md` : pitch, déroulé, raccourcis).
 2. Les tests au casque des nouveautés (`Checklist_Demo.md`).

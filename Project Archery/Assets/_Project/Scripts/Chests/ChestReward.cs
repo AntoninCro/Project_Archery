@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Building;
 using Archery.Shop;
 using Archery.Upgrades;
 using Archery.Waves;
@@ -16,6 +17,9 @@ namespace Archery.Chests
 
         /// <summary>Un morceau de l'arc légendaire.</summary>
         BowPart,
+
+        /// <summary>Un lot de plans de construction (caisse de l'ingénieur, refonte du tower defense du 27 octobre).</summary>
+        Plans,
     }
 
     /// <summary>Ce que donne une orbe de coffre (GDD, section 13).</summary>
@@ -24,6 +28,11 @@ namespace Archery.Chests
         public ChestRewardKind Kind;
         public Upgrade Upgrade;
         public TemporaryBuff Buff;
+
+        /// <summary>Le bâtiment d'un lot de plans, et le nombre de plans du lot.</summary>
+        public StructureDefinition Structure;
+        public int Count;
+
         public string Title;
         public string Subtitle;
         public Color Color;
@@ -36,11 +45,12 @@ namespace Archery.Chests
 
         /// <summary>
         /// Au-dessus de l'orbe : l'emplacement d'une pièce (« POINTE »), « OBJET » hors emplacement, « PARCHEMIN »,
-        /// « TEMPORAIRE », ou « PERMANENT » pour le fragment d'arc.
+        /// « TEMPORAIRE », « CONSTRUCTION » pour un lot de plans, ou « PERMANENT » pour le fragment d'arc.
         /// </summary>
         public string KindLabel => Kind switch
         {
             ChestRewardKind.Buff => "TEMPORAIRE",
+            ChestRewardKind.Plans => "CONSTRUCTION",
             ChestRewardKind.Upgrade when Upgrade != null && Upgrade.kind == UpgradeKind.Scroll => "PARCHEMIN",
             ChestRewardKind.Upgrade when Upgrade != null && Upgrade.slot != ArrowSlot.None => ShopCatalog.NameOf(Upgrade.slot).ToUpperInvariant(),
             ChestRewardKind.Upgrade => "OBJET",
@@ -67,6 +77,13 @@ namespace Archery.Chests
                         PlayerUpgrades.Instance.AddBuff(Buff, buffDuration);
                     return $"{Title} pendant {Mathf.RoundToInt(buffDuration)} s !";
 
+                case ChestRewardKind.Plans:
+                    var builds = BuildManager.Instance;
+                    if (builds != null)
+                        builds.AddPlans(Structure, Count);
+                    var plans = Count > 1 ? Count + " plans" : "1 plan";
+                    return $"{Title} : {plans}\n<size=70%>Vise un socle de construction pour le poser</size>";
+
                 default:
                     var legendary = LegendaryBow.Instance;
                     if (legendary == null)
@@ -84,11 +101,14 @@ namespace Archery.Chests
     {
         static readonly List<Upgrade> s_Candidates = new List<Upgrade>();
         static readonly TemporaryBuff[] s_Buffs = { TemporaryBuff.DoubleDamage, TemporaryBuff.PerfectShots, TemporaryBuff.FastRing };
+        static readonly List<ArrowSlot> s_TakenSlots = new List<ArrowSlot>();
+        static readonly List<StructureDefinition> s_Structures = new List<StructureDefinition>();
 
         /// <summary>
         /// Les récompenses d'un coffre de vague, toujours dans cet ordre (refonte du 25 octobre) : un objet (avec la chance
-        /// <paramref name="objectChance"/>, tiré comme en boutique) ou un parchemin, un autre parchemin, puis un bonus
-        /// temporaire. Un fragment de l'arc légendaire peut remplacer la deuxième orbe.
+        /// <paramref name="objectChance"/>, tiré comme en boutique ; toujours depuis le 27 octobre au soir) ou un parchemin, un
+        /// parchemin, puis un bonus temporaire. Un fragment de l'arc légendaire peut remplacer la deuxième orbe. Plus d'objet à
+        /// donner (tous au niveau maximal) : deux parchemins différents.
         /// </summary>
         public static List<ChestReward> Roll(float buffDuration, ChestColors colors, float objectChance)
         {
@@ -136,6 +156,52 @@ namespace Archery.Chests
             return rewards;
         }
 
+        /// <summary>
+        /// La caisse de l'ingénieur (refonte du tower defense, 27 octobre) : <paramref name="count"/> lots de plans de bâtiments
+        /// différents, un seul à prendre. Un lot donne un ou plusieurs plans du même bâtiment (<see cref="StructureDefinition.LotSize"/> :
+        /// les bâtiments communs viennent par lots). Pour l'instant au hasard parmi les bâtiments du Build Manager ; les raretés
+        /// viendront avec les constructions nouvelles (étape 5).
+        /// </summary>
+        public static List<ChestReward> RollPlans(int count)
+        {
+            var rewards = new List<ChestReward>();
+            var builds = BuildManager.Instance;
+            if (builds == null)
+                return rewards;
+
+            s_Structures.Clear();
+            foreach (var definition in builds.Structures)
+            {
+                if (definition != null && definition.prefab != null && !s_Structures.Contains(definition))
+                    s_Structures.Add(definition);
+            }
+
+            while (rewards.Count < count && s_Structures.Count > 0)
+            {
+                var index = Random.Range(0, s_Structures.Count);
+                var definition = s_Structures[index];
+                s_Structures.RemoveAt(index);
+
+                var lot = definition.LotSize;
+                var owned = builds.PlansOf(definition);
+                var subtitle = lot > 1 ? lot + " plans" : "1 plan";
+                if (owned > 0)
+                    subtitle = ShopCatalog.Lines(subtitle, $"tu en as {owned}");
+                rewards.Add(new ChestReward
+                {
+                    Kind = ChestRewardKind.Plans,
+                    Structure = definition,
+                    Count = lot,
+                    Title = definition.displayName,
+                    Subtitle = subtitle,
+                    Color = definition.color,
+                    Icon = definition.icon,
+                });
+            }
+
+            return rewards;
+        }
+
         // Un objet : comme en boutique, la rareté d'abord (chance comprise), puis un objet de cette rareté. Un parchemin : au hasard.
         static bool TryRollUpgrade(UpgradeKind kind, List<ChestReward> taken, out ChestReward reward)
         {
@@ -148,11 +214,18 @@ namespace Archery.Chests
             Upgrade upgrade;
             if (kind == UpgradeKind.Object)
             {
+                // Comme en boutique (26 octobre au soir) : l'emplacement d'abord, de préférence un autre que ceux déjà dans le coffre.
                 var waves = WaveManager.Instance;
                 var wave = waves != null ? Mathf.Max(1, waves.WaveNumber) : 1;
-                var rarity = catalog.RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f);
-                if (!PickUpgrade(catalog, kind, rarity, owned, taken, true, out upgrade) &&
-                    !PickUpgrade(catalog, kind, rarity, owned, taken, false, out upgrade))
+                s_TakenSlots.Clear();
+                foreach (var reward1 in taken)
+                {
+                    if (reward1.Kind == ChestRewardKind.Upgrade && reward1.Upgrade != null)
+                        s_TakenSlots.Add(reward1.Upgrade.slot);
+                }
+
+                upgrade = catalog.PickObject(wave, owned, candidate => IsTaken(taken, candidate), s_TakenSlots);
+                if (upgrade == null)
                     return false;
             }
             else if (!PickUpgrade(catalog, kind, UpgradeRarity.Common, owned, taken, false, out upgrade))
@@ -160,16 +233,20 @@ namespace Archery.Chests
                 return false;
             }
 
-            // Le niveau qu'elle atteindrait, et dessous, le duo qu'elle pourrait former et si elle irait dans l'atelier.
+            // Le niveau qu'elle atteindrait (au niveau 2 et plus, ce qui change : « 50 % → 100 % ➶ », 27 octobre au soir), et
+            // dessous, le duo qu'elle pourrait former et si elle irait dans l'atelier.
             var level = (owned != null ? owned.Level(upgrade.effect) : 0) + 1;
-            var duo = ShopCatalog.DuoLine(ArrowDuos.Completes(upgrade, owned));
+            var duo = ShopCatalog.DuoLine(upgrade, owned);
             var storage = ShopCatalog.StorageLine(owned != null ? owned.Occupant(upgrade) : null);
+            var subtitle = ShopCatalog.SubtitleOf(upgrade, level);
+            if (level > 1)
+                subtitle = ShopCatalog.Lines(subtitle, upgrade.LevelUpAt(level));
             reward = new ChestReward
             {
                 Kind = ChestRewardKind.Upgrade,
                 Upgrade = upgrade,
                 Title = upgrade.displayName,
-                Subtitle = ShopCatalog.Lines(ShopCatalog.SubtitleOf(upgrade, level), duo, storage),
+                Subtitle = ShopCatalog.Lines(subtitle, duo, storage),
                 Color = catalog.ColorOf(upgrade),
                 Icon = upgrade.icon,
             };

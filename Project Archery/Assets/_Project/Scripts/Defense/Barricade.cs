@@ -156,6 +156,41 @@ namespace Archery.Defense
             return null;
         }
 
+        /// <summary>
+        /// Le trajet de <paramref name="from"/> à <paramref name="to"/> traverse les planches de la barricade debout. Les flèches
+        /// les traversent sans les toucher (ArrowIgnore) : le talisman de l'ingénieur (26 octobre) teste ainsi son tir parfait.
+        /// </summary>
+        public bool Intersects(Vector3 from, Vector3 to)
+        {
+            var offset = to - from;
+            var distance = offset.magnitude;
+            if (!IsStanding || distance < 1e-4f)
+                return false;
+
+            var ray = new Ray(from, offset / distance);
+            foreach (var collider in m_Colliders)
+            {
+                if (collider != null && collider.enabled && collider.gameObject.activeInHierarchy && collider.Raycast(ray, out _, distance))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Répare la barricade debout de cette part de ses PV max (0,1 = 10 %). Renvoie les PV rendus.</summary>
+        public float Repair(float share)
+        {
+            if (!IsStanding || share <= 0f)
+                return 0f;
+
+            var before = m_Health.Current;
+            m_Health.Heal(m_Health.Max * share);
+            var repaired = m_Health.Current - before;
+            if (repaired > 0f)
+                Sfx.Play(m_BuildClip, transform.position + Vector3.up, 0.5f, 1.2f);
+            return repaired;
+        }
+
         /// <summary>Point de la barricade le plus proche : c'est là que les ennemis frappent.</summary>
         public Vector3 ClosestPoint(Vector3 from)
         {

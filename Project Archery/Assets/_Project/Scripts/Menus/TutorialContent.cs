@@ -91,14 +91,16 @@ namespace Archery.Menus
                      "Chaque vague se termine par un boss : vise sa gemme, son point faible. " +
                      "Deux coups de gong pendant le chrono le font venir plus tôt, pour plus d'or."),
                     ("La montre",
-                     "Regarde ton poignet : tes PV, la vague, le chrono, tes matériaux et tes bonus en cours.")),
+                     "Regarde ton poignet : tes PV, la vague, le chrono, tes plans de construction et tes bonus en cours.")),
                 NewSection("Construction", "Construction",
-                    ("Récolter les cristaux",
-                     "Pendant les vagues, des gisements de cristaux poussent dans la jungle. Vise-les et appuie sur la gâchette (ou la gâchette de prise) : " +
-                     "ils éclatent en matériaux."),
+                    ("Ouvrir les caisses de l'ingénieur",
+                     "Pendant les vagues, des caisses de l'ingénieur tombent dans la jungle, sous un rayon violet. Vise-en une et appuie sur la gâchette " +
+                     "(ou la gâchette de prise) : choisis un lot de plans de construction."),
                     ("Choisir un bâtiment",
-                     "Vise un cercle bleu au sol et appuie sur la gâchette de prise : choisis un bâtiment et paie-le en matériaux. " +
-                     "Barricade et pièges sur la voie, baliste et tour de givre au bord."),
+                     "Touche le bouton « Plans » de ta montre avec l'autre main : l'hologramme d'un bâtiment suit le rayon de ta main. Joystick : gauche " +
+                     "et droite le tournent, haut et bas changent de plan ; gâchette : le poser là où les runes s'allument (orange sur la voie, bleues " +
+                     "au bord, vertes en hauteur) ; poignée : annuler. Pose-le sur un bâtiment pareil pour le faire monter de niveau ; entre les " +
+                     "vagues, le panneau d'un bâtiment propose de le déplacer."),
                     ("Construire",
                      "Un marteau apparaît dans chaque main. Frappe trois fois le plan bleu pour construire le bâtiment.")),
             };

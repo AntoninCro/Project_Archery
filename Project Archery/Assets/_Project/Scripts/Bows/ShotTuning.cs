@@ -23,8 +23,9 @@ namespace Archery.Bows
         [SerializeField]
         GradeModifiers m_Good = new GradeModifiers("Bon", new Color(1f, 0.55f, 0.1f), 1.15f, 1.25f, 1.25f);
 
+        // ×2,5 de dégâts et ×3 de points (donc d'or) depuis le 27 octobre au soir, équilibrage du joueur ; ×2 et ×2 avant.
         [SerializeField]
-        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(0.3f, 0.92f, 0.35f), 1.5f, 2f, 2f);
+        GradeModifiers m_Perfect = new GradeModifiers("Parfait !", new Color(0.3f, 0.92f, 0.35f), 1.5f, 2.5f, 3f);
 
         [Tooltip("Vert pastel : le cercle a dépassé le vert et attend au bout de l'anneau. Même portée qu'un tir parfait, " +
                  "dégâts et points entre l'orange et le vert.")]
