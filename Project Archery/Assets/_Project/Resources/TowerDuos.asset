@@ -20,3 +20,66 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: Le boulet fait des tours complets et envoie les ennemis qu'il frappe
       sur la voie voisine.
+  - displayName: Marteau-pilon
+    first: 0
+    second: 1
+    definition: {fileID: 11400000, guid: 7bac18d4d63eccb4bb6b3356de7d885d, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Un marteau g\xE9ant enfonce l'ennemi dans le sol jusqu'au cou :
+      seule sa t\xEAte d\xE9passe."
+  - displayName: Toboggan
+    first: 6
+    second: 2
+    definition: {fileID: 11400000, guid: b4db3df011c0f4047b29e2593ec911bb, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une piste de glace : les ennemis glissent vers la for\xEAt et d\xE9collent
+      en vrille, sous les notes du jury."
+  - displayName: Yo-yo
+    first: 6
+    second: 12
+    definition: {fileID: 11400000, guid: 5ecb14fb69020b644ae60c67672ef31e, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une grue au yo-yo aimant\xE9 : elle hisse un ennemi et le fait
+      claquer au sol trois fois."
+  - displayName: Avalanche
+    first: 9
+    second: 2
+    definition: {fileID: 11400000, guid: 9293170784da49148b1d08dc1086ef16, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une boule de neige roule vers la for\xEAt, grossit et avale les
+      ennemis ; elle \xE9clate au bout, ou sous ta fl\xE8che."
+  - displayName: Feu d'artifice
+    first: 9
+    second: 19
+    definition: {fileID: 11400000, guid: d641518b3d952d048b3c693d32293d93, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Des fus\xE9es \xE9clatent en bouquets : les ennemis dessous sont
+      \xE9blouis et br\xFBl\xE9s ; ta fl\xE8che s'y enflamme."
+  - displayName: "Chant des sir\xE8nes"
+    first: 19
+    second: 16
+    definition: {fileID: 11400000, guid: 4a471d6f080003142952dc4fd85f4f86, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: 'Le faisceau charme un ennemi : dans sa bulle rose, il change de
+      camp et se jette sur les autres.'
+  - displayName: Loupe
+    first: 19
+    second: 3
+    definition: {fileID: 11400000, guid: f23549c3e502b344bb5239d04cd22d23, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Dans le champ de la loupe, les ennemis ont la t\xEAte trois fois
+      plus grosse."
+  - displayName: "Carquois g\xE9ant"
+    first: 3
+    second: 17
+    definition: {fileID: 11400000, guid: 116edafe21decbd428960eaf8f2ae415, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Un grand filet rattrape tes fl\xE8ches rat\xE9es ; \xE0 dix, l'arbal\xE8te
+      te les renvoie en une vol\xE9e."
+  - displayName: "Cha\xEEne de for\xE7ats"
+    first: 12
+    second: 17
+    definition: {fileID: 11400000, guid: 1cba09c70d12a6948acd5ecf1d712a1e, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Des cha\xEEnes aimant\xE9es lient un groupe : chaque coup sur l'un
+      blesse tous les autres."

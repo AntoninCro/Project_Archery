@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Feu_d_artifice
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Feu d'artifice
+  slot: 1
+  prefab: {fileID: 5692512157203248671, guid: 058e5b6d394a18348a4a202ebe6b39cd, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une fus\xE9e \xE9clate en bouquet au-dessus du groupe le plus serr\xE9
+      : \xE9blouis, les ennemis s'arr\xEAtent sous une pluie d'\xE9tincelles qui
+      br\xFBle ; ta fl\xE8che qui traverse le bouquet s'enflamme."
+  - cost: 0
+    plans: 4
+    description: "Des fus\xE9es \xE0 deux \xE9tages : chaque bouquet en fait \xE9clater
+      deux autres, \xE0 c\xF4t\xE9."
+  - cost: 0
+    plans: 4
+    description: "Le bouquet final : vingt fus\xE9es d'un coup sur tous les ennemis
+      \xE0 port\xE9e ; le ciel s'allume, tous sont \xE9blouis et br\xFBl\xE9s."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 3, y: 3}
+  retired: 0

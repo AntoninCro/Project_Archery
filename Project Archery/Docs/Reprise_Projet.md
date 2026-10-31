@@ -68,8 +68,11 @@ En bref, **codé et compilé, rien de testé dans Unity ni au casque, rien de co
   (lot 7).
 - **les duos, le 31 octobre** (le joueur a refait la formule) : un duo est une tour nouvelle, à l'attaque à elle, à 3 niveaux
   (4 plans chacun) ; 13 duos décidés (partie 12.15). Codés : le système de fusion et le **Boulet fou** (compilé, pas encore vu
-  dans Unity) ; partie 12.16. Leur modèle : `Tools/allure_tours/duos.py`, puis `conception.py`. Ensuite : les 12 autres duos,
-  un par un, puis les trios et les ultimes.
+  dans Unity) ; partie 12.16. Leur modèle : `Tools/allure_tours/duos.py`, puis `conception.py`. La nuit du 31 octobre, neuf de
+  plus (Marteau-pilon, Toboggan, Yo-yo, Avalanche, Feu d'artifice, Chant des sirènes, Loupe, Carquois géant, Chaîne de
+  forçats) et les flèches « DUO » entre deux tours qui peuvent fusionner : partie 12.17, compilés, **pas encore vus dans
+  Unity**. La règle du joueur : un duo impressionnant, un niveau 3 dans la démesure. Restent : Boussole folle, Lanceur de
+  baudruches, Boule à neige ; puis les trios et les ultimes.
 Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)

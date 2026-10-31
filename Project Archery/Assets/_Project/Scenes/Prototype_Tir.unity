@@ -40908,6 +40908,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: cbda0551fa74ca747be8ce4a704d862e, type: 3}
   m_CompleteClip: {fileID: 8300000, guid: 46479a5bc66b1a447bfb93dff87f57a3, type: 3}
   m_MessageColor: {r: 0.55, g: 0.8, b: 1, a: 1}
+  m_DuoFromLevel: 3
+  m_DuoClip: {fileID: 0}
   m_ShowWaveReport: 1
 --- !u!1001 &146234247
 PrefabInstance:
@@ -444394,8 +444396,48 @@ MonoBehaviour:
   m_HeadHitPoints: 10
   m_WeakPointHitPoints: 15
   m_HeadshotKillMultiplier: 2
-  m_AirShotMultiplier: 1.5
-  m_AirShotColor: {r: 0.55, g: 0.85, b: 1, a: 1}
+  m_PreparedPointsMultiplier: 1.5
+  m_PreparedCues:
+  - Kind: 1
+    Damage: 2
+    Word: Au vol !
+    Color: {r: 0.55, g: 0.85, b: 1, a: 1}
+    Clip: {fileID: 8300000, guid: 42aa7bed63c68f04c90060ba60f5a36c, type: 3}
+  - Kind: 2
+    Damage: 2
+    Word: "Bris\xE9 !"
+    Color: {r: 0.8, g: 0.97, b: 1, a: 1}
+    Clip: {fileID: 8300000, guid: 907da3aa160af0442b44cb5294b689fa, type: 3}
+  - Kind: 3
+    Damage: 1.75
+    Word: "Clou\xE9 !"
+    Color: {r: 0.95, g: 0.5, b: 0.35, a: 1}
+    Clip: {fileID: 8300000, guid: 3a9c494660eaba945975789c15fd9832, type: 3}
+  - Kind: 4
+    Damage: 1.5
+    Word: Au filet !
+    Color: {r: 0.92, g: 0.82, b: 0.55, a: 1}
+    Clip: {fileID: 8300000, guid: ada38024553d3ab45875cb8aefae0555, type: 3}
+  - Kind: 5
+    Damage: 1.5
+    Word: "Sonn\xE9 !"
+    Color: {r: 1, g: 0.92, b: 0.4, a: 1}
+    Clip: {fileID: 8300000, guid: a571ba1925b5dd245a74f4b6aa9608df, type: 3}
+  - Kind: 6
+    Damage: 1.3
+    Word: "Englu\xE9 !"
+    Color: {r: 0.85, g: 0.6, b: 0.3, a: 1}
+    Clip: {fileID: 8300000, guid: f4ca353acdf1b23428d18d6e4f849fad, type: 3}
+  - Kind: 7
+    Damage: 1.25
+    Word: "Attir\xE9 !"
+    Color: {r: 0.72, g: 0.52, b: 1, a: 1}
+    Clip: {fileID: 8300000, guid: 77ec04eb129dbb04686b3eb9787cf541, type: 3}
+  - Kind: 8
+    Damage: 1.15
+    Word: "Marqu\xE9 !"
+    Color: {r: 1, g: 0.97, b: 0.75, a: 1}
+    Clip: {fileID: 8300000, guid: 7b925ca54cddce94d9d8713429728fda, type: 3}
   m_DistanceBonusFrom: 10
   m_DistanceBonusPerMeter: 0.01
   m_MaxDistanceBonus: 0.5

@@ -183,6 +183,16 @@ namespace Archery.Building
                 gameObject.AddComponent<BuildGrid>();
             if (GetComponent<BuildPlacement>() == null && FindAnyObjectByType<BuildPlacement>() == null)
                 gameObject.AddComponent<BuildPlacement>();
+
+            // Les flèches « DUO » entre deux tours qui peuvent fusionner, entre les vagues (31 octobre).
+            if (GetComponent<DuoHints>() == null)
+                gameObject.AddComponent<DuoHints>();
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // La vitrine (F4, 31 octobre) : chaque bâtiment, puis chaque duo, posé à plusieurs niveaux d'un coup.
+            if (GetComponent<BuildShowcase>() == null)
+                gameObject.AddComponent<BuildShowcase>();
+#endif
         }
 
         void Start()

@@ -439,8 +439,24 @@ namespace Archery.EditorTools
             }
             else if (op.ContainsKey("asset"))
             {
-                // Un asset du projet par son chemin (les sons d'un duo).
-                property.objectReferenceValue = AssetDatabase.LoadAssetAtPath<Object>(Text(op, "asset"));
+                // Un asset du projet par son chemin (les sons d'un duo). Un prefab pour un champ qui attend l'un de ses composants
+                // (le carreau de la Loupe) : ce composant.
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(Text(op, "asset"));
+                var wanted = property.type;
+                if (asset is GameObject prefab && wanted.StartsWith("PPtr<$") && wanted != "PPtr<$GameObject>")
+                {
+                    var typeName = wanted.Substring(6, wanted.Length - 7);
+                    foreach (var component in prefab.GetComponents<Component>())
+                    {
+                        if (component != null && component.GetType().Name == typeName)
+                        {
+                            asset = component;
+                            break;
+                        }
+                    }
+                }
+
+                property.objectReferenceValue = asset;
             }
             else if (op.ContainsKey("vector"))
             {

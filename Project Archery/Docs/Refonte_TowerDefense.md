@@ -46,6 +46,22 @@ complets, rebondissant, et envoie les ennemis sur d'autres voies) : deuxième pr
 qu'on ne trouve dans aucune autre tour. Le joueur trie (12.15) et garde 13 duos ; le prix d'un niveau de duo est de 4 plans.
 Codés le soir même : la fusion refaite pour une tour nouvelle, et le **Boulet fou** (12.16), pas encore vus dans Unity.
 
+**31 octobre (nuit) : neuf duos de plus et les flèches « DUO »** (12.17). Après son essai du Boulet fou, le joueur fixe la règle
+de tous les duos : impressionnants (« il doit avoir de la gueule »), et un **niveau 3 dans la démesure**. Il demande les
+10 premiers de la liste pendant la nuit : Marteau-pilon, Toboggan, Yo-yo, Avalanche, Feu d'artifice, Chant des sirènes, Loupe,
+Carquois géant, Chaîne de forçats (le Boulet fou était fait). Et une grande flèche dorée « DUO » au-dessus de deux tours qui
+peuvent fusionner, seulement entre les vagues. Codés et compilés, modèles vérifiés hors de Unity (rendus, faces superposées) ;
+**rien n'est vu dans Unity ni testé au casque**, rien de commité. Restent : Boussole folle, Lanceur de baudruches, Boule à neige.
+
+**31 octobre : la vitrine, F4** (demandée par le joueur, pour voir chaque tour à chaque niveau sans plans ni marteau ;
+`Scripts/Building/BuildShowcase.cs`, éditeur et builds de développement). Un appui pose une tour : sur la voie, sur les trois
+voies vers 16 m de la tour (niveaux 3, 4, 5 de gauche à droite) ; hors de la voie, au centre des clairières de droite (3) et de
+gauche (4), à mi-chemin entre la voie du milieu et sa voisine, vers 20 m de la tour ; une tour de la tour, sur deux emplacements
+de la tour. L'appui suivant retire ce que la vitrine a posé (jamais les tours du joueur) et pose la suivante, dans l'ordre du menu ;
+après les 10 tours, les duos du catalogue aux niveaux 1, 2, 3 (1 et 2 dans les clairières) ; après le dernier, tout est retiré ;
+Maj + F4 revient en arrière. Chaque tour prend la place libre qui lui convient la plus proche du point visé. Compilé, **pas
+encore essayé dans Unity**.
+
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
 `compile_check_editor.py` sans erreur ni avertissement), **pas encore testées en entier dans Unity ni au casque** (tests :
@@ -1534,3 +1550,57 @@ opposé, à toute vitesse, en prenant de gros dégâts. Fait (pas encore retest�
   `Enemy.Smashed` (le choc d'un vol, contre le décor ou au sol), que d'autres tours pourront reprendre.
 - Le prefab déjà fait est refait par une deuxième passe du baker (marque « Duo 2 du 31 octobre », `rebuild` : son modèle
   repart de zéro) ; les textes des niveaux de `Data/Duos/Duo_Boulet_fou` sont revus s'ils n'ont pas été changés à la main.
+
+### 12.17 Neuf duos de plus, les flèches « DUO » (31 octobre, nuit)
+
+Le joueur, après le Boulet fou : un duo doit être **impressionnant**, et son **niveau 3 dans la démesure**. Ses
+10 premiers duos de la liste sont faits (le Boulet fou, et neuf de plus cette nuit-là) : codés, compilés (le jeu et les outils
+d'éditeur), leurs modèles dessinés hors de Unity et sans faces superposées ; **pas encore vus dans Unity ni testés au casque**.
+À l'ouverture de Unity, le baker (`Editor/TowerDefenseLookBaker`) fait pour chacun le prefab (`Prefabs/Structures/Duos`), la
+définition (`Data/Duos` : 3 niveaux à 4 plans, les textes) et l'entrée du catalogue (`Resources/TowerDuos`) ; la console l'écrit.
+Les réglages sont sur le composant de chaque prefab. Toutes les valeurs sont des propositions, à régler aux tests.
+
+**Les flèches « DUO »** (`Building/DuoHints.cs`, créé par le BuildManager) : entre deux tours qui peuvent fusionner (les deux au
+niveau 3, finies, d'une paire du catalogue), une grande flèche dorée en arc, à double pointe, à 3,5 m au-dessus de la plus haute
+(plus haut si elles sont loin), avec « DUO » et le nom du duo à son sommet, face au joueur. Seulement entre les vagues
+(le joueur : pendant une vague, elles prendraient de la vue). Le matériau est celui des hologrammes de pose, en or qui respire.
+
+**Ce que les duos partagent** (`Building/TowerDuo.cs`) : les ennemis à portée (`EnemiesNear`, `GroundEnemies`), blesser
+(`Hurt`, aux dégâts qui suivent la force des ennemis), renverser (`KnockDown`), la voie la plus proche et le sens de la forêt
+(`LaneNearest`, `ForestwardAt`), une gerbe de particules colorées (`Burst`, le matériau d'effet des flèches), l'explosion des
+flèches (`Explosion`), le sol sous un point (`GroundY`). Côté ennemis : `Enemy.KeepHeld` (tenu plus de 8 s : la boule de
+l'Avalanche), `Enemy.Release(vitesse, mortel, pesanteur)` (le saut à ski), et le **charme** (`Enemies/Enemy.Charm.cs` :
+l'ennemi court où le bâtiment l'envoie, sans attaquer la tour ; le Chant des sirènes). Le baker sait maintenant donner à un
+réglage le composant d'un prefab (le carreau de la baliste pour la Loupe et le Carquois).
+
+| Duo | Niveau 1 | Niveau 2 | Niveau 3 : la démesure | Le modèle |
+|---|---|---|---|---|
+| **Marteau-pilon** (Barricade + Piques, voie, 4 × 3 cases ; `DuoMarteauPilon`) | toutes les 3 s, le marteau glisse au-dessus de l'ennemi et l'enfonce dans le sol jusqu'au cou : planté 4 s, seule sa tête dépasse (« Planté ! », l'ennemi cloué) ; il en sort comme un bouchon, en l'air | l'onde du coup renverse et blesse tout à 5 m | **la forge** : trois marteaux en cadence (gauche, milieu, droite), puis le **grand coup**, les trois ensemble : tout ce qui est à 11 m part en l'air | un portique de forge de 9 m sur deux piliers de pierre cerclés de fer, une enclume dorée ; la chaudière au niveau 2 |
+| **Toboggan** (Tremplin + Tour de givre, voie, 4 × 7 ; `DuoToboggan`) | une piste de glace en pente vers la forêt : l'ennemi qui y monte glisse sur le ventre en tournoyant, renverse ceux qu'il croise et décolle du tremplin en vrille, au ralenti, sous trois notes du jury ; il retombe sonné. **Une glissade par ennemi** | ceux qu'il percute sur la piste glissent aussi ; un saut plus haut, plus long | **le saut à ski** : un grand tremplin les envoie à plus de 20 m de haut, loin vers la forêt, sous un « 10 ! 10 ! 10 ! » ; l'atterrissage les tue | la piste bleue sur sa butte de neige, ses liserés dorés, les bottes de paille, l'estrade du jury ; au niveau 3, le grand tremplin sur pilotis et la tour du jury. Posée à l'envers, la piste se retourne (la voie décide) |
+| **Yo-yo** (Tremplin + Tour-aimant, voie, 4 × 3 ; `DuoYoyo`) | une grue de 13 m : son yo-yo aimanté attrape un ennemi, le hisse à 6 m, le fait claquer au sol trois fois (des dégâts à chaque fois), puis le lâche de tout en haut | il le lance sur le groupe le plus serré, qu'il renverse | **le lustre** : un anneau doré à six fils de plus, qui tourne ; sept ennemis montent et descendent, puis le lustre s'emballe et les jette au loin, où ils s'écrasent (45 % de leurs PV) | la grue au bord de la voie, sa cabine rouge, sa flèche au-dessus de la voie |
+| **Avalanche** (Mortier + Tour de givre, bord ; `DuoAvalanche`) | le mortier de glace tire une boule de neige devant le premier ennemi : elle roule vers la forêt (22 m), grossit et avale ceux qu'elle touche (pris dedans, ils tournent avec elle) ; au bout, ou **sous ta flèche** (moitié plus de dégâts), elle éclate et ils volent en l'air | elle roule plus loin, plus grosse, avale aussi les gros | **l'avalanche** : une boule géante (jusqu'à 9 m) dévale toute la voie jusqu'à la forêt, avale tout et éclate en coûtant la moitié de leurs PV à tous | un gros mortier de glace cerclé d'or sur un socle enneigé, une boule chargée dans la gueule ; au niveau 3, un fût plus large, des cristaux de 4 m |
+| **Feu d'artifice** (Mortier + Phare, bord ; `DuoFeuArtifice`) | toutes les 3 s, une fusée éclate en bouquet au-dessus du groupe le plus serré : éblouis 2 s (« Sonné ! »), sous une pluie d'étincelles qui brûle ; **ta flèche qui traverse le bouquet s'enflamme** | des fusées à deux étages : deux bouquets de plus à côté | **le bouquet final** : vingt fusées d'un coup sur tous les ennemis à portée, le ciel s'allume (un éclair de lumière par bouquet), tous éblouis 3 s et brûlés ; toutes les 14 s | un phare rayé rouge et blanc de 9 m, sa couronne de fusées ; un balcon de fusées à deux étages, puis la batterie et l'étoile dorée |
+| **Chant des sirènes** (Phare + Bulle, bord ; `DuoSirenes`) | le faisceau charme un ennemi 6 s : dans sa bulle rose, il change de camp, se jette sur les autres ennemis, les renverse et les blesse ; sans personne, il repart vers la forêt | deux à la fois ; à la fin, la bulle éclate en deux bulles qui charment deux voisins | **la mêlée** : tout ce qui est à 20 m change de camp 5 s, chacun frappe son voisin ; toutes les 15 s | un phare de nacre rayé de rose, sa lanterne et son faisceau, une sirène de bronze au sommet, des bulles au pied ; la grande conque dorée au niveau 3 |
+| **Loupe** (Phare + Baliste, bord ; `DuoLoupe`) | une loupe de 3 m sur une tour de bois se tourne vers les ennemis : dans son champ (30 m, 76°), leur tête est trois fois plus grosse (sa zone de tir aussi ; le point faible des boss deux fois) | une baliste sur la fourche plante ses carreaux dans les têtes géantes | **la fourmi** : un rayon de soleil sur le plus fort du champ ; il fume, puis prend feu (un tiers de ses PV, un boss 15 %) ; le rayon passe au suivant | la tour de bois, la fourche et l'anneau de laiton, le verre ; des rayons dorés au niveau 3 |
+| **Carquois géant** (Baliste + Lance-filet, bord ; `DuoCarquoisGeant`) | tes flèches ratées (plantées dans le décor à 20 m) sont rattrapées et se rangent dans le filet ; à dix, l'arbalète à six arcs les renvoie en carreaux qui pleuvent sur le groupe le plus serré | chaque carreau explose à l'impact, et brûle si une flèche enflammée a été rattrapée (à la place de « garder leurs pièces », trop lourd à refaire) | **la nuée** : toutes tes flèches ratées, partout sur la carte ; à trente, elles repartent d'un coup, trois carreaux chacune, sur tous les ennemis à portée | un mât de 9,5 m, le filet tendu comme une voile, dix flèches plantées dedans (une par flèche rattrapée), l'arbalète pointée vers le ciel ; au niveau 3, une voile de plus jusqu'à 13 m |
+| **Chaîne de forçats** (Tour-aimant + Lance-filet, bord ; `DuoChaineForcats`) | des chaînes aimantées lient jusqu'à 5 ennemis 8 s : ralentis, ils avancent ensemble ; **chaque dégât reçu par l'un, les autres en reçoivent 60 %** (ta flèche à la tête d'un seul : toute la chaîne) | jusqu'à 8 ; un lié qui meurt fait tomber les autres | **l'écrasement** : jusqu'à 15 ; la chaîne se resserre d'un coup, tous volent les uns contre les autres et s'écrasent au milieu (40 % de leurs PV), sonnés | une tour de fer, deux bobines de chaîne, un gros aimant rouge en fer à cheval ; au niveau 3, une couronne, quatre grosses chaînes jusqu'au sol, un boulet |
+
+Les boss ne sont jamais tenus, plantés, avalés ni charmés (poussés, ralentis ou blessés à la place) ; les volants ne sont
+touchés que par le Feu d'artifice, la Loupe et le Carquois.
+
+**À surveiller aux tests** :
+- **Marteau-pilon** : la profondeur où l'ennemi est planté (sous le bas de sa zone de tête) ; que les flèches touchent bien la
+  tête qui dépasse ; le bouchon.
+- **Toboggan** : le sens de la piste (elle doit descendre vers la forêt) ; l'ennemi couché sur le ventre (il est tourné de 90°
+  autour de ses pieds) ; que la voie ne se bloque jamais.
+- **Yo-yo** : le yo-yo et l'ennemi qui pend dessous ; le lustre (sept fils, l'emballement) ; les ennemis jetés au loin.
+- **Avalanche** : la boule qui suit bien la voie et le sol ; les ennemis pris dans la neige ; la flèche qui la crève.
+- **Feu d'artifice** : les flèches enflammées (la flamme passe par le brasier de la tour, `Brazier.IgniteArrow`, quand une
+  flèche en vol traverse le bouquet : il faut qu'elle ait un collider en vol) ; le bouquet final (le nombre de particules).
+- **Chant des sirènes** : les ennemis charmés qui courent sur les autres (le NavMesh) ; la bulle rose (le matériau des
+  hologrammes) ; « bonjour les bugs », disait le joueur.
+- **Loupe** : la tête qui grossit vraiment (l'os de la tête humanoïde, sinon l'os qui porte la zone de tête, sinon la zone
+  seule) ; qu'elle dégonfle en sortant du champ et à la mort.
+- **Carquois géant** : les flèches ratées comptées (`Arrow.Stuck`, hors ennemis) ; la pluie de carreaux.
+- **Chaîne de forçats** : le partage des dégâts (pas de boucle : ce que la chaîne partage n'est pas repartagé) ; les chaînes
+  (des LineRenderer au fer du modèle).

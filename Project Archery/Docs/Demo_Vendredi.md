@@ -66,6 +66,7 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **V** | Une caisse de l'ingénieur devant le joueur (depuis le 27 octobre ; un gisement de cristaux avant) |
 | **F3** | Projette en l'air les ennemis au sol à moins de 15 m du joueur (test des ennemis projetés, 28 octobre ; un boss est seulement poussé) |
 | **F2** | Sans casque : ouvre le menu des plans, le bâtiment du milieu suit déjà le viseur (molette : changer de bâtiment, **Maj** + molette : tourner, **E** : poser) ; **F2** ferme (28 octobre au soir ; au casque, c'est le bouton « Plans » de la montre) |
+| **F4** | La vitrine des bâtiments (31 octobre) : pose un bâtiment, sans plans ni marteau. Un bâtiment de la voie sur les trois voies (niveau 3 à gauche, 4 au centre, 5 à droite) ; un bâtiment hors de la voie au centre des deux clairières près de la tour (niveau 3 à droite, 4 à gauche ; un bâtiment de la tour, sur la tour). **F4** encore : les retire et pose le suivant ; après les 10 tours, les duos (niveaux 1, 2 et 3 sur les voies, 1 et 2 dans les clairières) ; après le dernier duo, tout est retiré. **Maj + F4** : le précédent. Les bâtiments du joueur restent |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
 | **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |

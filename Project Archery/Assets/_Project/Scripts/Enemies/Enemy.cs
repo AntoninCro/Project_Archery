@@ -289,6 +289,13 @@ namespace Archery.Enemies
                 return;
             }
 
+            // Charmé (le Chant des sirènes, 31 octobre ; Enemy.Charm.cs) : il court où le bâtiment l'envoie.
+            if (UpdateCharm(deltaTime))
+            {
+                UpdateAnimation();
+                return;
+            }
+
             if (m_State == State.Fleeing)
             {
                 if (m_Behaviour != null)
@@ -523,6 +530,7 @@ namespace Archery.Enemies
             m_FadingAge = m_FadingDuration;
             m_Push = Vector3.zero;
             ClearPreparations();
+            m_CharmTimer = 0f;
             if (m_Animator != null)
                 m_Animator.speed = 1f;
             m_Health.ResetHealth(Def.maxHealth * DifficultyManager.Current.enemyHealth * EnemyScaling.Health);

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Carquois_geant
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: "Carquois g\xE9ant"
+  slot: 1
+  prefab: {fileID: 7342511299510209375, guid: 2bf53a06ffb3aaf45bc828e596882284, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Un grand filet rattrape tes fl\xE8ches rat\xE9es ; \xE0 dix, l'arbal\xE8te
+      \xE0 six arcs les renvoie en une vol\xE9e de carreaux qui pleut sur le groupe
+      le plus serr\xE9."
+  - cost: 0
+    plans: 4
+    description: "Chaque carreau renvoy\xE9 explose \xE0 l'impact, et br\xFBle si
+      ta fl\xE8che \xE9tait enflamm\xE9e."
+  - cost: 0
+    plans: 4
+    description: "La nu\xE9e : toutes tes fl\xE8ches rat\xE9es, partout sur la carte,
+      sont gard\xE9es ; \xE0 trente, elles repartent d'un coup, trois carreaux chacune,
+      et pleuvent sur tous les ennemis \xE0 port\xE9e."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 3, y: 3}
+  retired: 0

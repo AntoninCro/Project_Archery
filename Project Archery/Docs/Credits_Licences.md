@@ -32,7 +32,7 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Fantasy UI Borders (1.0) | Kenney | `kenney_fantasy-ui-borders` | Cadres des menus, barres de vie, plaques |
 | Game Icons | Kenney | `kenney_game-icons` | Icônes |
 | Impact Sounds (1.0) | Kenney | `kenney_impact-sounds` | Sons d'impact, pas des monstres de la dimension |
-| Interface Sounds (1.0) | Kenney | `kenney_interfaceSounds` | Sons des menus, du portail des étoiles et des tirs préparés |
+| Interface Sounds (1.0) | Kenney | `kenney_interfaceSounds` | Sons des menus, du portail des étoiles, des tirs préparés et de deux duos (le bouchon du Marteau-pilon, la bulle des sirènes) |
 | RPG Audio | Kenney | `kenney_rpg-audio` | Portes de l'antre, sons divers |
 | City Kit (Commercial) (2.1) | Kenney | `kenney_city-kit-commercial` | Toit cyberpunk : les immeubles de la ville |
 | Glove (gant low-poly) | Quaternius | `Glove by Quaternius - l1zv4LaA4I` | Les mains gantées du joueur (squelette ajouté par le jeu) |

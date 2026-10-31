@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Yoyo
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Yo-yo
+  slot: 0
+  prefab: {fileID: 1002950912240004457, guid: bcfcdba86e7e2d2408fbc0d20bbafd10, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une grue au-dessus de la voie : son yo-yo aimant\xE9 attrape un
+      ennemi, le hisse \xE0 6 m et le fait claquer au sol trois fois, puis le l\xE2che
+      de tout en haut."
+  - cost: 0
+    plans: 4
+    description: "Apr\xE8s les claques, il le lance sur le groupe le plus serr\xE9,
+      qu'il renverse."
+  - cost: 0
+    plans: 4
+    description: "Le lustre : six fils de plus sur un anneau qui tourne ; sept ennemis
+      montent et descendent en cadence, puis le lustre s'emballe et les jette tous
+      au loin, o\xF9 ils s'\xE9crasent."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 3}
+  retired: 0

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Chant_des_sirenes
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: "Chant des sir\xE8nes"
+  slot: 1
+  prefab: {fileID: 5684417052718721242, guid: 5bb1526be3d0cc641b564044be8baa85, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Le faisceau du phare charme un ennemi : enferm\xE9 dans une bulle
+      rose, il change de camp 6 s, se jette sur les autres ennemis, les renverse
+      et les blesse."
+  - cost: 0
+    plans: 4
+    description: "Deux \xE0 la fois ; \xE0 la fin, la bulle \xE9clate en deux bulles
+      qui charment ses voisins."
+  - cost: 0
+    plans: 4
+    description: "La m\xEAl\xE9e : tout ce qui est \xE0 20 m change de camp ; chacun
+      se jette sur son voisin."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 3, y: 3}
+  retired: 0

@@ -299,6 +299,30 @@ namespace Archery.Enemies
             m_FlightPeak = transform.position.y;
         }
 
+        /// <summary>
+        /// Tenu, il le reste : le temps de tenue (8 s au plus, une sécurité) repart de zéro. Pour un bâtiment qui le tient longtemps
+        /// (les duos, 31 octobre : la boule de l'Avalanche roule jusqu'à 15 s ; le lustre du Yo-yo).
+        /// </summary>
+        public void KeepHeld()
+        {
+            if (m_HoldTimer > 0f)
+                m_HoldTimer = k_MaxHoldTime;
+        }
+
+        /// <summary>
+        /// Comme <see cref="Release(Vector3)"/>, avec la pesanteur du vol en part de la vraie et, si <paramref name="lethal"/>, un
+        /// atterrissage qui le tue (les duos, 31 octobre : le saut à ski du Toboggan, le lustre du Yo-yo).
+        /// </summary>
+        public void Release(Vector3 velocity, bool lethal, float gravityScale)
+        {
+            if (m_HoldTimer <= 0f)
+                return;
+
+            Release(velocity);
+            m_FlightGravity = Mathf.Max(0.1f, gravityScale);
+            m_LethalLanding |= lethal;
+        }
+
         /// <summary>Dans une bulle : il monte doucement, et retombe quand elle crève.</summary>
         public bool IsFloating => m_Airborne && m_FloatTimer > 0f;
 
