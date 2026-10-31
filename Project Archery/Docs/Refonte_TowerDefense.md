@@ -59,8 +59,15 @@ voies vers 16 m de la tour (niveaux 3, 4, 5 de gauche à droite) ; hors de la vo
 gauche (4), à mi-chemin entre la voie du milieu et sa voisine, vers 20 m de la tour ; une tour de la tour, sur deux emplacements
 de la tour. L'appui suivant retire ce que la vitrine a posé (jamais les tours du joueur) et pose la suivante, dans l'ordre du menu ;
 après les 10 tours, les duos du catalogue aux niveaux 1, 2, 3 (1 et 2 dans les clairières) ; après le dernier, tout est retiré ;
-Maj + F4 revient en arrière. Chaque tour prend la place libre qui lui convient la plus proche du point visé. Compilé, **pas
-encore essayé dans Unity**.
+Maj + F4 revient en arrière. Chaque tour prend la place libre qui lui convient la plus proche du point visé. Compilé ; essayée
+par le joueur le soir même.
+
+**31 octobre au soir : les trois derniers duos, le Toboggan revu, les premiers bugs** (12.18). Le joueur a essayé les duos
+(vitrine) : le Toboggan est à revoir en entier, la boule de l'Avalanche bugue (ennemis qui sautent, le pont du milieu), la Chaîne
+de forçats fait planter le jeu (deux chaînes se renvoyaient les dégâts). Corrigés ; le Toboggan devient un grand toboggan qui
+enjambe la voie (l'échelle, la piste en l'air, le saut) ; Boussole folle, Lanceur de baudruches et Boule à neige codés : les
+13 duos sont faits. Compilés, modèles vérifiés hors de Unity ; **pas encore vus dans Unity ni testés au casque**. Ensuite : les
+trios et les ultimes.
 
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
@@ -1604,3 +1611,59 @@ touchés que par le Feu d'artifice, la Loupe et le Carquois.
 - **Carquois géant** : les flèches ratées comptées (`Arrow.Stuck`, hors ennemis) ; la pluie de carreaux.
 - **Chaîne de forçats** : le partage des dégâts (pas de boucle : ce que la chaîne partage n'est pas repartagé) ; les chaînes
   (des LineRenderer au fer du modèle).
+
+### 12.18 Les trois derniers duos, le Toboggan revu, les premiers bugs (31 octobre au soir)
+
+Le joueur a essayé les duos dans Unity (avec la vitrine, F4) et noté : le Toboggan est à revoir en entier, la boule de
+l'Avalanche est très buguée, et la Chaîne de forçats fait planter le jeu. Puis : « occupe-toi des dernières tours ». Tout est
+codé et compilé (le jeu et les outils d'éditeur), les modèles dessinés hors de Unity sans faces superposées ; **pas encore vu
+dans Unity ni testé au casque**. Les 13 duos de la partie 12.15 sont maintenant codés.
+
+**Les bugs du premier essai** :
+- **Chaîne de forçats, plantage** (`StackOverflowException`, la vingtième tour de la vitrine) : la vitrine pose deux Chaînes
+  de forçats, et un ennemi lié par les deux se renvoyait les dégâts de l'une à l'autre, sans fin (chacune ne refusait que ses
+  propres dégâts). Maintenant, les dégâts partagés par n'importe quelle chaîne ne se partagent plus, et un partage ne peut pas
+  en lancer un autre.
+- **Avalanche, les ennemis qui sautent partout dans la boule** : la boule cherchait le sol sous elle par un rayon tiré de 6 m
+  plus haut, qui touchait **son propre collider** ; d'une image à l'autre, elle se posait sur le sol puis sur elle-même, et les
+  ennemis avalés sautaient avec elle (selon sa taille : « de temps en temps »). Le sol d'un duo ignore maintenant ce que les
+  duos lancent (`TowerDuo.GroundY`).
+- **Avalanche, sous le pont du milieu** : ce rayon de 6 m touchait aussi le pont, et la boule montait dessus. Pour un point de
+  la voie, il part maintenant de 1,5 m au-dessus (la boule, et les baudruches et la boule à neige).
+
+**Le Toboggan revu** (le joueur : « on ne comprend pas comment les ennemis glissent dessus », et un ennemi qui revenait
+traversait la piste, posée au sol : les bâtiments n'ont pas de collider). C'est maintenant un grand **toboggan de jardin
+d'enfants qui enjambe la voie**, tout au-dessus de la tête des ennemis : un portique de bois, sa plate-forme à 5,6 m, une
+échelle sur son flanc ; de la plate-forme, une piste de glace en l'air descend vers la forêt jusqu'au tremplin, porté par un
+second portique (passage de 2,75 m sous sa traverse). L'ennemi qui passe sous la plate-forme saute au pied de l'échelle, la
+grimpe (4 m/s, le bois craque), fait trois pas sur la plate-forme, glisse sur le ventre en tournoyant et décolle du tremplin en
+vrille, au ralenti, sous les notes du jury ; il retombe sonné, plus loin vers la forêt. Trois à la fois au plus (les autres
+passent dessous). Une seule glissade par ennemi : au deuxième passage, il passe sous le toboggan. Niveau 2 : il saute plus haut
+et retombe sur les autres, qu'il renverse (« Strike ! », les quilles) ; niveau 3 : le saut à ski, inchangé. Le modèle est refait
+par le baker (`rebuild`), les textes des niveaux et du catalogue aussi, **s'ils n'ont pas été changés à la main** (le baker sait
+maintenant revoir le texte du catalogue d'un duo : `descriptionBefore`). Les réglages nouveaux prennent leurs valeurs par défaut
+sur le prefab.
+
+**Les trois derniers duos** :
+
+| Duo | Niveau 1 | Niveau 2 | Niveau 3 : la démesure | Le modèle |
+|---|---|---|---|---|
+| **Boussole folle** (Piques + Tour-aimant, voie, 5 × 5 cases ; `DuoBoussole`) | une rose des vents de laiton de 4,8 m, posée à plat sur la voie et hérissée de pointes : l'ennemi qui y entre **perd le nord** (« Perdu le nord ! ») et tourne en rond 3 s sur les pointes, autour de l'aiguille, blessé ; il ne le reperd pas avant 7 s | il tourne plus longtemps, puis **repart dans le mauvais sens**, vers la forêt, 3 s (« Demi-tour ! ») | **la rose des vents** : toutes les 16 s, l'aiguille s'emballe et **toute la voie perd le nord**, à 45 m de part et d'autre : chacun tourne en rond là où il est 5 s, puis toute la voie repart vers la forêt 5 s | la rose de laiton, ses branches blanches (le nord rouge), ses diagonales noires, ses pointes de fer ; l'aiguille rouge et blanche sur son pilier, qui cherche le nord en tremblant et s'affole ; quatre aimants rouges au niveau 2 ; au niveau 3, deux grands anneaux dorés croisés sur l'aiguille, qui tournent avec elle |
+| **Lanceur de baudruches** (Mortier + Bulle, bord ; `DuoBaudruches`) | la pompe et le canon à air lancent une **baudruche à ton image** (l'archer à la capuche verte, 2 m) devant le premier ennemi : ceux qui sont à 7 m s'arrêtent pour la frapper ; au sixième coup, elle éclate en **confettis piquants** (blessés, renversés) ; **ta flèche la crève avant**, quand tout le monde est autour (moitié plus de dégâts) | tous les trois coups, elle **rebondit** 4 m vers la forêt et sur le côté (« Boing ! ») : ceux qui la frappaient sont entraînés hors de leur chemin | **le char de carnaval** : toutes les 20 s, une baudruche de 7 m que **tous les ennemis à 40 m** viennent frapper ; 40 coups, puis une pluie de confettis à 9 m qui leur coûte 35 % de leurs PV | une estrade de foire à jupe rayée rouge et blanc, la grosse pompe de cuivre à poignée en T, le canon à pavillon de trompette sur sa tourelle, un mât de ballons, la baudruche attachée au-dessus ; au niveau 3, une étoile dorée, des fanions, trois gros ballons |
+| **Boule à neige** (Bulle + Tour de givre, bord ; `DuoBouleNeige`) | une **boule de verre** de 5 m tombe du ciel sur le groupe le plus serré et l'enferme : il y neige, et les ennemis ralentissent jusqu'à **se figer en figurines** (2 s, « Figé ! ») ; **ta flèche brise la boule** : toutes les figurines éclatent (90 de dégâts) ; sinon, au bout de 6 s, elle se fend et les relâche, un peu blessés. Ceux du dehors ne peuvent pas y entrer | à mi-temps, **la boule se secoue** : les figurines dégèlent, tourbillonnent dans la neige et se heurtent (des dégâts à chaque choc), puis se refigent | **la boule immense** : toutes les 18 s, une boule de **18 m** tombe sur toute une voie (au moins 3 ennemis dessous), secouée elle aussi ; **brisée par ta flèche, chaque figurine éclate et meurt** ; fendue d'elle-même, elle leur coûte 40 % de leurs PV | un socle de bois verni à trois étages cerclés d'or, la boule de verre (le matériau de la bulle) où il neige, et dedans la tour du joueur en miniature, des sapins et un bonhomme de neige ; la clé de remontoir au niveau 2 ; au niveau 3, un anneau doré autour de la boule, des cristaux de glace, une étoile de glace |
+
+Ce qu'ils partagent : `Building/DuoShotTarget.cs`, ce qu'un duo lance et que ta flèche peut crever (la baudruche, la boule de
+verre), comme la boule de l'Avalanche. La Boussole et les baudruches se servent du charme (`Enemy.Charm`), la Boule à neige du
+gel (`Enemy.Freeze`) et de la tenue (`Enemy.Hold`). Les boss ne sont ni charmés ni enfermés (ralentis à la place) ; les volants
+ne sont pas touchés.
+
+**À surveiller aux tests** :
+- **Toboggan** : que les ennemis passent bien sous le portique et la traverse (2,75 m) sans la traverser, même les grands ;
+  l'échelle du bon côté ; la glissade sur la piste en l'air ; le saut.
+- **Boussole folle** : les ennemis qui tournent en rond (le charme poursuit un point qui tourne : le NavMesh) ; le demi-tour ;
+  la rose des vents sur toute la voie ; l'aiguille.
+- **Lanceur de baudruches** : les ennemis qui s'arrêtent pour frapper (leur animation d'attaque) ; le rebond ; la flèche qui la
+  crève ; le char de carnaval.
+- **Boule à neige** : le verre transparent (le matériau `Bulle`) ; les figurines figées, le tourbillon ; la flèche qui brise la
+  boule ; la boule immense (18 m : ce qu'elle cache de la vue).
+- **Avalanche** et **Chaîne de forçats** : les bugs ci-dessus, corrigés.

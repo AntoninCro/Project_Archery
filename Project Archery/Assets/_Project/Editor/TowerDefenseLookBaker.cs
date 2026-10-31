@@ -860,6 +860,19 @@ namespace Archery.EditorTools
                 var existing = list.GetArrayElementAtIndex(i);
                 if (existing.FindPropertyRelative("displayName").stringValue != name)
                     continue;
+
+                // Un duo revu (descriptionBefore, le Toboggan du 31 octobre au soir) : son texte change, s'il n'a pas été changé à la main.
+                var description = existing.FindPropertyRelative("description");
+                var before = Text(duo, "descriptionBefore");
+                var now = Text(duo, "description");
+                if (before != null && now != null && description.stringValue == before && before != now)
+                {
+                    description.stringValue = now;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    AssetDatabase.SaveAssetIfDirty(catalog);
+                    Debug.Log("Duos : " + name + ", texte du catalogue revu (" + k_CatalogPath + ").");
+                }
+
                 var definitionProperty = existing.FindPropertyRelative("definition");
                 if (definitionProperty.objectReferenceValue != null)
                     return;

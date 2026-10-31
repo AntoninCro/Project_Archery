@@ -22,12 +22,23 @@ section 24 ; scripts dans `Scripts/Lore`), l'audit de performance pour le Quest 
 (`Docs/Fichiers_Inutilises.md`, `Tools/unused_assets.py` ; 3 726 fichiers supprimés, 740 Mo), la mesure de performance des
 builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie roguelike**, étapes 1 à 5 (partie suivante).
 **Commité le soir du 26 octobre** (`d523f2b`, poussé avec `7a69a08`) : la troisième version de l'atelier (flèche debout,
-sceaux animés), les PV des parchemins retirés, la télékinésie guidée par la main.
+sceaux animés), les PV des parchemins retirés, la télékinésie guidée par la main. **Commité par le joueur du 29 au
+31 octobre** (`1366cff`, `282d5b8`, `7a7efd0`) : la refonte roguelike finie, la refonte du tower defense (les 10 tours de
+base, le tourniquet), la vitrine F4 et les 10 premiers duos. **Commité et poussé le 31 octobre au soir**, avant le
+**changement de PC** : les 3 derniers duos, le Toboggan revu, les bugs du premier essai des duos, et les consignes pour
+Claude (`CLAUDE.md`, à la racine du dépôt) désormais dans le dépôt, avec ce que Claude avait retenu sur le PC d'avant.
+
+**Sur le nouveau PC** (à partir du 31 octobre au soir) : ouvrir Claude dans le dossier du dépôt (`Project_Archery`, où est
+`CLAUDE.md`) ; ouvrir le projet une fois dans Unity 6000.5.10f1 (il génère les `.csproj` dont `Tools/compile_check.py` a besoin,
+avec le SDK .NET) ; revérifier les pièges de la partie « Pièges connus » de `CLAUDE.md` (Git en SSH, le nom de Python). Les
+packs d'assets téléchargés mais pas importés (`projet archery/Assets_TowerDefense/`) étaient hors du dépôt : à recopier à la
+main s'ils servent.
 
 ### Le deuxième chantier : la refonte du tower defense (27 et 28 octobre, dans une autre discussion)
 
 Tout est dans `Refonte_TowerDefense.md` (partie « Avancement » en tête : ce qui est fait, ce qui reste, l'étape suivante).
-En bref, **codé et compilé, rien de testé dans Unity ni au casque, rien de commité** :
+En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à essayer les duos dans Unity le 31 octobre),
+**codé et compilé, rien de testé dans Unity ni au casque** :
 - étape 1, les modèles : 5 packs CC0 dans `projet archery/Assets_TowerDefense/` (hors du dépôt), et ce que le joueur a choisi
   dans `Assets/construction` (pack RTS allégé, modèles Poly Pizza ; crédités) ;
 - étape 2 : les **caisses de l'ingénieur** (à la place des cristaux) donnent des **plans** (à la place des matériaux) ;
@@ -71,9 +82,11 @@ En bref, **codé et compilé, rien de testé dans Unity ni au casque, rien de co
   dans Unity) ; partie 12.16. Leur modèle : `Tools/allure_tours/duos.py`, puis `conception.py`. La nuit du 31 octobre, neuf de
   plus (Marteau-pilon, Toboggan, Yo-yo, Avalanche, Feu d'artifice, Chant des sirènes, Loupe, Carquois géant, Chaîne de
   forçats) et les flèches « DUO » entre deux tours qui peuvent fusionner : partie 12.17, compilés, **pas encore vus dans
-  Unity**. La règle du joueur : un duo impressionnant, un niveau 3 dans la démesure. Restent : Boussole folle, Lanceur de
-  baudruches, Boule à neige ; puis les trios et les ultimes.
-Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches).
+  Unity**. La règle du joueur : un duo impressionnant, un niveau 3 dans la démesure. Le 31 octobre au soir, après le premier
+  essai du joueur (vitrine **F4**) : le Toboggan refait (un toboggan qui enjambe la voie), les bugs de l'Avalanche et de la
+  Chaîne de forçats corrigés, et les trois derniers (Boussole folle, Lanceur de baudruches, Boule à neige) : partie 12.18, les
+  13 duos codés, **pas encore vus dans Unity**. Ensuite : les trios et les ultimes.
+Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, posée à plusieurs niveaux).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
 

@@ -316,26 +316,39 @@ namespace Archery.Building
             Sfx.Play(m_CrushClip, center, 1f, 0.6f);
         }
 
-        // Ce que reçoit un lié, les autres le reçoivent aussi, en part (sauf ce que la chaîne partage elle-même).
+        // Ce que reçoit un lié, les autres le reçoivent aussi, en part (sauf ce qu'une chaîne partage elle-même).
+        // 31 octobre, le premier essai du joueur : deux Chaînes de forçats posées ensemble (la vitrine, F4) et un ennemi lié par les
+        // deux se renvoyaient les dégâts sans fin (StackOverflowException). Les dégâts partagés par n'importe quelle chaîne ne se
+        // partagent plus, et un partage ne peut pas en lancer un autre.
+        static bool s_Sharing;
+
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
-            if (enemy == null || ReferenceEquals(info.Source, this) || info.Amount <= 0f || !m_ChainOf.TryGetValue(enemy, out var chain))
+            if (s_Sharing || enemy == null || info.Source is DuoChaineForcats || info.Amount <= 0f || !m_ChainOf.TryGetValue(enemy, out var chain))
                 return;
 
             m_Shared.Clear();
             m_Shared.AddRange(chain.Members);
-            foreach (var other in m_Shared)
+            s_Sharing = true;
+            try
             {
-                if (other == null || other == enemy || !other.IsAlive)
-                    continue;
-                other.Health.TakeDamage(new DamageInfo
+                foreach (var other in m_Shared)
                 {
-                    Amount = info.Amount * m_Share,
-                    Zone = HitZone.Body,
-                    Point = other.Center,
-                    Direction = Vector3.down,
-                    Source = this,
-                });
+                    if (other == null || other == enemy || !other.IsAlive)
+                        continue;
+                    other.Health.TakeDamage(new DamageInfo
+                    {
+                        Amount = info.Amount * m_Share,
+                        Zone = HitZone.Body,
+                        Point = other.Center,
+                        Direction = Vector3.down,
+                        Source = this,
+                    });
+                }
+            }
+            finally
+            {
+                s_Sharing = false;
             }
         }
 

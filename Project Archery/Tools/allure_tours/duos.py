@@ -57,6 +57,12 @@ PALETTES = {
     'Duo_Carquois': {'pierre': '#8E8A84', 'bois': '#7A5236', 'metal': '#3E4148', 'rouge': '#C23B30', 'accent': GOLD_LIGHT},
     'Duo_Chaine': {'pierre': '#8E8A84', 'metal': '#4A4D55', 'fer': '#2E3036', 'bois': '#7A5236', 'rouge': '#C0352B', 'blanc': '#D8DCE2',
                    'accent': GOLD_LIGHT},
+    'Duo_Boussole': {'laiton': '#B8923A', 'fer': '#3E4148', 'rouge': '#C8392E', 'blanc': '#EEE9DE', 'noir': '#2E3036', 'accent': GOLD_LIGHT},
+    'Duo_Baudruches': {'bois': '#7A5236', 'cuivre': '#B8733A', 'metal': '#3E4148', 'rouge': '#D8423A', 'blanc': '#F0EBE0',
+                       'jaune': '#F2C53A', 'bleu': '#3A86E0', 'vert': '#3FB35A', 'rose': '#E86AAE', 'peau': '#E8B894',
+                       'vert_fonce': '#2F6B3A', 'brun': '#6A4528', 'noir': '#22242A', 'accent': GOLD_LIGHT},
+    'Duo_BouleNeige': {'bois': '#6B3F24', 'pierre': '#9A948A', 'neige': '#F0F5F8', 'glace': '#A8DCF0', 'sapin': '#2F6B4A',
+                       'rouge': '#C8463A', 'noir': '#22242A', 'accent': GOLD_LIGHT},
 }
 
 MARK = 'Duo du 31 octobre'
@@ -210,20 +216,27 @@ def marteau_pilon():
     return ops
 
 # ---------------------------------------------------------------- Toboggan : Tremplin + Tour de givre
-# Une piste de glace de 7,5 m en pente vers la forêt (-z), un tremplin de glace au bout, des bottes de paille, le jury. Le
-# code (DuoToboggan) suit cette glace : la pente de 0,15 m (z = -2,4) à 1 m (z = 5) ; le tremplin jusqu'à z = -3,8, à 0,66 m
-# (0,9 m au niveau 2, 1,3 m au niveau 3).
-TB_LOW = (-2.4, 0.15)   # le bas de la pente (z, hauteur de la glace)
-TB_TOP = (5.0, 1.0)     # le haut
-TB_HALF = 2.7           # la demi-largeur de la glace
+# Revu le 31 octobre au soir (le premier essai du joueur : on ne comprenait pas la glissade, et un ennemi qui revenait traversait
+# la piste posée au sol). Un grand toboggan de jardin d'enfants qui enjambe la voie, tout au-dessus de la tête des ennemis : un
+# portique de bois (quatre poteaux de part et d'autre de la voie), sa plate-forme à 5,6 m, une échelle sur son flanc (+x) ; de la
+# plate-forme, une piste de glace descend en l'air vers la forêt (-z) jusqu'à un tremplin, porté par un second portique. Le code
+# (DuoToboggan) suit cette glace : de (z 1,2 ; 5,6 m) à (z -3 ; 3,3 m), puis les morceaux du tremplin (le grand au niveau 3).
+TB_DECK = 5.6           # le dessus de la plate-forme (m_DeckHeight)
+TB_TOP_Z = 1.2          # le haut de la piste (m_ChuteStartZ)
+TB_END = (-3.0, 3.3)    # le bas de la pente (m_ChuteEndZ, m_ChuteEndHeight)
+TB_W = 1.6              # la largeur de la glace
+TB_POST_X = 1.95        # les poteaux, de part et d'autre de la voie
+TB_LADDER = (2.25, 2.3) # l'échelle (m_LadderX, m_LadderZ)
+TB_KICK = ([-8, 6, 20, 34], [0.45, 0.45, 0.45, 0.45])               # m_KickerAngles, m_KickerLengths
+TB_BIG_KICK = ([-4, 16, 36, 56], [0.5, 0.55, 0.6, 0.7])             # m_BigKickerAngles, m_BigKickerLengths
 
-def tb_segment(parent, name, z0, y0, angle, length, width, role, thick=0.3):
+def tb_segment(parent, name, z0, y0, angle, length, width, role, thick=0.3, x=0.0):
     # Un morceau qui part de (z0, y0) vers -z en montant de angle degrés : sa face du dessus suit la courbe.
     a = math.radians(angle)
     z1, y1 = z0 - math.cos(a) * length, y0 + math.sin(a) * length
     nz, ny = math.sin(a), math.cos(a)
     mz, my = (z0 + z1) / 2, (y0 + y1) / 2
-    return box(parent, name, [0, my - ny * thick / 2, mz - nz * thick / 2], [width, thick, length], role=role, rot=[angle, 0, 0])
+    return box(parent, name, [x, my - ny * thick / 2, mz - nz * thick / 2], [width, thick, length], role=role, rot=[angle, 0, 0])
 
 def tb_ramp(parent, z0, y0, angles, lengths, width, name):
     # Des morceaux de plus en plus raides, qui se chevauchent de 6 cm ; renvoie le bout de la courbe.
@@ -235,72 +248,89 @@ def tb_ramp(parent, z0, y0, angles, lengths, width, name):
         z, y = z - math.cos(a) * length, y + math.sin(a) * length
     return ops, (z, y)
 
+def tb_bale(parent, x, z):
+    return [box(parent, 'Botte', [x, 0.27, z], [0.7, 0.55, 1.1], role='paille'),
+            box(parent, 'Lien', [x, 0.27, z], [0.74, 0.59, 0.08], role='bois', shade=0.7)]
+
 def toboggan():
     ops = [empty('', 'Piste', [0, 0, 0])]
     P = 'Piste'
-    # La pente : la glace, sur une butte de neige ; ses liserés dorés.
-    (z0, y0), (z1, y1) = TB_LOW, TB_TOP
-    length = math.hypot(z1 - z0, y1 - y0)
-    slope = math.degrees(math.atan2(y1 - y0, z1 - z0))
-    mz, my = (z0 + z1) / 2, (y0 + y1) / 2
-    n = (-math.sin(math.radians(slope)), math.cos(math.radians(slope)))   # (z, y) : la normale du dessus
-    ops.append(box(P, 'Glace', [0, my - n[1] * 0.15, mz - n[0] * 0.15], [2 * TB_HALF, 0.3, length], role='glace', rot=[-slope, 0, 0]))
-    ops.append(box(P, 'Butte', [0, my - n[1] * 0.894, mz - n[0] * 0.894], [2 * TB_HALF + 0.2, 1.2, length - 0.2], role='neige',
-                   rot=[-slope, 0, 0]))
+    D = TB_DECK
+    # Le portique de la plate-forme : quatre poteaux, des croisillons sur les côtés.
+    for x in (-TB_POST_X, TB_POST_X):
+        for z in (1.4, 3.2):
+            ops.append(box(P, 'Poteau', [x, (D - 0.25) / 2, z], [0.28, D - 0.25 + 0.012, 0.28], role='bois'))
+        for a, b in (((x, 0.4, 1.4), (x, D - 0.6, 3.2)), ((x, 0.4, 3.2), (x, D - 0.6, 1.4))):
+            ops.append(tie3(P, 'Croisillon', a, b, 'bois', 0.12))
+    # La plate-forme, son liseré doré, sa rambarde rouge (ouverte devant, sur la piste, et sur le côté de l'échelle).
+    ops.append(box(P, 'Plate-forme', [0, D - 0.125, 2.3], [4.3, 0.25, 2.4], role='bois', shade=1.1))
+    ops.append(box(P, 'Liseré', [0, D - 0.2, 2.3], [4.36, 0.08, 2.46], role='accent'))
+    for x, z in ((-2.08, 3.42), (0.0, 3.42), (2.08, 3.42), (-2.08, 2.3), (-2.08, 1.18)):
+        ops.append(cyl(P, 'Balustre', [x, D + 0.447, z], [0.09, 0.906, 0.09], role='rouge'))
+    for y in (D + 0.45, D + 0.85):
+        ops.append(box(P, 'Rambarde', [0, y, 3.42], [4.2, 0.08, 0.08], role='rouge'))
+        ops.append(box(P, 'Rambarde', [-2.08, y, 2.3], [0.08, 0.06, 2.3], role='rouge'))
+    # L'échelle, sur le flanc +x : deux montants, un barreau tous les 40 cm.
+    lx, lz = TB_LADDER
+    for z in (lz - 0.3, lz + 0.3):
+        ops.append(cyl(P, 'Montant', [lx, (D + 0.9 - 0.006) / 2, z], [0.1, D + 0.906, 0.1], role='bois', shade=0.85))
+    for k in range(int(D / 0.4)):
+        ops.append(cyl(P, 'Barreau', [lx, 0.35 + k * 0.4, lz], [0.07, 0.68, 0.07], role='bois', shade=1.15, rot=[90, 0, 0]))
+    # La piste de glace, en l'air, ses bords rouges, et le tremplin au bout.
+    z0, y0 = TB_TOP_Z, D
+    z1, y1 = TB_END
+    angle = math.degrees(math.atan2(y1 - y0, z0 - z1))
+    length = math.hypot(z0 - z1, y1 - y0)
+    ops.append(tb_segment(P, 'Glace', z0, y0, angle, length + 0.06, TB_W, 'glace'))
     for s in (-1, 1):
-        ops.append(box(P, 'Liseré', [s * (TB_HALF + 0.02), my + n[1] * 0.03, mz + n[0] * 0.03], [0.1, 0.12, length], role='accent',
-                       rot=[-slope, 0, 0]))
-    # Le tremplin de glace (trois morceaux de plus en plus raides), des ressorts de cuivre sous son bec.
-    kick, (kz, ky) = tb_ramp(P, z0, y0, [8, 20, 32], [0.5, 0.5, 0.5], 2 * TB_HALF, 'Tremplin')
+        ops.append(tb_segment(P, 'Bord', z0, y0 + 0.22, angle, length, 0.1, 'rouge', thick=0.5, x=s * (TB_W / 2 + 0.06)))
+    kick, (kz, ky) = tb_ramp(P, z1, y1, TB_KICK[0], TB_KICK[1], TB_W, 'Tremplin')
     ops += kick
-    for x in (-1.8, -0.6, 0.6, 1.8):
-        for k in range(3):
-            ops.append(cyl(P, 'Ressort', [x, 0.08 + k * 0.1, -3.7], [0.36, 0.05, 0.36], role='cuivre'))
-    # Les bottes de paille, de chaque côté.
-    for s in (-1, 1):
-        for z in (-1.6, -0.2, 1.2, 2.6, 4.0):
-            ops.append(box(P, 'Botte', [s * (TB_HALF + 0.42), 0.27, z], [0.7, 0.55, 1.2], role='paille'))
-            ops.append(box(P, 'Lien', [s * (TB_HALF + 0.42), 0.27, z], [0.74, 0.59, 0.08], role='bois', shade=0.7))
-    # Les cristaux de givre en haut de la piste, deux fanions dorés sur les bottes du haut.
-    for s in (-1, 1):
-        for k, (dx, h) in enumerate(((0.0, 2.0), (0.45, 1.3), (-0.4, 1.1))):
-            ops.append(sph(P, 'Cristal', [s * (TB_HALF - 0.4) + dx, y1 + h / 2 - 0.1, z1 - 0.3 - k * 0.25], [0.45, h, 0.45],
-                           role='glace', shade=1.15, rot=[0, 0, s * (k - 1) * 12]))
-        ops.append(cyl(P, 'Mât', [s * (TB_HALF + 0.42), 0.55 + 1.5 - 0.006, 4.0], [0.1, 3.0, 0.1], role='bois'))
-        ops.append(box(P, 'Fanion', [s * (TB_HALF + 0.42), 3.3, 4.0 - 0.62], [0.05, 0.6, 1.2], role='accent'))
+    # Le portique du bas de la piste : deux poteaux et une traverse sous la glace.
+    for x in (-TB_POST_X, TB_POST_X):
+        ops.append(box(P, 'Poteau du bas', [x, (2.766 - 0.006) / 2, z1], [0.24, 2.772, 0.24], role='bois'))
+    ops.append(box(P, 'Traverse', [0, 2.88, z1], [4.2, 0.24, 0.26], role='bois', shade=0.85))
+    # Les cristaux de givre sur la plate-forme, deux fanions dorés, des bottes de paille aux pieds des poteaux.
+    for k, (x, h) in enumerate(((-1.6, 1.4), (-1.25, 0.9), (1.25, 1.0), (1.6, 1.5))):
+        ops.append(sph(P, 'Cristal', [x, D + h / 2 - 0.1, 3.05], [0.4, h, 0.4], role='glace', shade=1.15, rot=[0, 0, (k - 1.5) * 10]))
+    for x in (-1.7, 1.7):
+        ops.append(cyl(P, 'Mât', [x, D + 1.0 - 0.006, 3.3], [0.08, 2.0, 0.08], role='bois'))
+        ops.append(box(P, 'Fanion', [x, D + 1.7, 3.3 - 0.5], [0.04, 0.5, 0.9], role='accent'))
+    for x in (-2.6, 2.6):
+        for z in (1.4, 3.2, z1):
+            if not (x > 0 and abs(z - lz) < 1.2):
+                ops += tb_bale(P, x, z)
     # Le jury, à côté du tremplin : une estrade, trois panneaux blancs cerclés d'or.
-    jx = TB_HALF + 1.5
-    ops.append(box(P, 'Estrade', [jx, 0.5, -3.0], [1.3, 0.16, 2.2], role='bois'))
-    for z in (-3.9, -2.1):
+    jx, jz = -3.6, -3.8
+    ops.append(box(P, 'Estrade', [jx, 0.5, jz], [1.3, 0.16, 2.2], role='bois'))
+    for z in (jz - 0.9, jz + 0.9):
         ops.append(box(P, 'Pied', [jx, 0.21, z], [0.14, 0.432, 0.14], role='bois', shade=0.8))
-    for z in (-3.7, -3.0, -2.3):
+    for z in (jz - 0.7, jz, jz + 0.7):
         ops.append(cyl(P, 'Manche', [jx, 0.58 + 0.5 - 0.006, z], [0.06, 1.0, 0.06], role='bois'))
         ops.append(box(P, 'Panneau', [jx, 1.08 + 0.3 - 0.006, z], [0.06, 0.5, 0.5], role='blanc'))
         ops.append(box(P, 'Cadre', [jx, 1.08 + 0.3 - 0.006, z], [0.05, 0.56, 0.56], role='accent'))
-    # Niveau 2 : un bec au tremplin (0,9 m), des fanions rouges le long de la piste.
+    # Niveau 2 : un bec au tremplin, des fanions rouges sur la rambarde.
+    N2 = P + '/Niveau 2'
     ops.append(empty(P, 'Niveau 2', [0, 0, 0]))
-    ops.append(tb_segment(P + '/Niveau 2', 'Bec', kz + math.cos(math.radians(32)) * 0.06, ky - math.sin(math.radians(32)) * 0.06,
-                          45, 0.41, 2 * TB_HALF, 'glace'))
-    for s in (-1, 1):
-        for z in (-0.2, 2.6):
-            ops.append(cyl(P + '/Niveau 2', 'Piquet', [s * (TB_HALF + 0.42), 0.55 + 0.7 - 0.006, z], [0.06, 1.4, 0.06], role='bois'))
-            ops.append(box(P + '/Niveau 2', 'Fanion rouge', [s * (TB_HALF + 0.42), 1.65, z + 0.32], [0.04, 0.4, 0.6], role='rouge'))
-    # Niveau 3, le saut à ski : un grand tremplin sur pilotis (1,3 m au bout), la tour du jury coiffée d'or.
+    ops.append(tb_segment(N2, 'Bec', kz + math.cos(math.radians(34)) * 0.06, ky - math.sin(math.radians(34)) * 0.06, 48, 0.41, TB_W - 0.04,
+                          'glace'))
+    for x in (-1.5, -0.5, 0.5, 1.5):
+        ops.append(box(N2, 'Fanion rouge', [x, D + 0.6, 3.42 + 0.05], [0.4, 0.4, 0.03], role='rouge', rot=[0, 0, 45]))
+    # Niveau 3, le saut à ski : le grand tremplin, la tour du jury coiffée d'or.
+    N3 = P + '/Niveau 3'
     ops.append(empty(P, 'Niveau 3', [0, 0, 0]))
-    big, _ = tb_ramp(P + '/Niveau 3', z0, y0, [14, 38, 58], [0.55, 0.6, 0.75], 2 * TB_HALF - 0.4, 'Grand tremplin')
+    big, _ = tb_ramp(N3, z1, y1, TB_BIG_KICK[0], TB_BIG_KICK[1], TB_W - 0.2, 'Grand tremplin')
     ops += big
-    for x in (-2.0, 2.0):
-        for z, h in ((-3.25, 0.45), (-3.95, 1.1)):
-            ops.append(box(P + '/Niveau 3', 'Pilotis', [x, h / 2 - 0.006, z], [0.22, h, 0.22], role='bois'))
-    tx, tz = -(TB_HALF + 1.7), -3.4
+    tx, tz = jx - 0.2, jz + 2.4
     for dx in (-0.6, 0.6):
         for dz in (-0.6, 0.6):
-            ops.append(box(P + '/Niveau 3', 'Poteau', [tx + dx, 2.5 - 0.006, tz + dz], [0.2, 5.0, 0.2], role='bois'))
-    ops.append(box(P + '/Niveau 3', 'Loge', [tx, 5.0 + 0.6 - 0.012, tz], [1.6, 1.2, 1.6], role='blanc'))
-    ops.append(box(P + '/Niveau 3', 'Toit', [tx, 6.2 + 0.2 - 0.018, tz], [2.0, 0.4, 2.0], role='accent'))
-    ops.append(sph(P + '/Niveau 3', 'Pommeau', [tx, 6.4 + 0.3 - 0.03, tz], [0.5, 0.6, 0.5], role='accent', shade=1.2))
+            ops.append(box(N3, 'Poteau', [tx + dx, 2.5 - 0.006, tz + dz], [0.2, 5.0, 0.2], role='bois'))
+    ops.append(box(N3, 'Loge', [tx, 5.0 + 0.6 - 0.012, tz], [1.6, 1.2, 1.6], role='blanc'))
+    ops.append(box(N3, 'Toit', [tx, 6.2 + 0.2 - 0.018, tz], [2.0, 0.4, 2.0], role='accent'))
+    ops.append(sph(N3, 'Pommeau', [tx, 6.4 + 0.3 - 0.03, tz], [0.5, 0.6, 0.5], role='accent', shade=1.2))
     ops.append(field('m_Track', ['Piste']))
-    ops.append(field('m_LevelParts', ['Piste/Niveau 2', 'Piste/Niveau 3']))
+    ops.append(field('m_LevelParts', [N2, N3]))
+    ops.append(field('m_ClimbClip', asset='Assets/kenney_impact-sounds/Audio/impactWood_light_002.ogg'))
     ops.append(field('m_SlideClip', asset='Assets/_Project/Audio/Placeholder/slide.wav'))
     ops.append(field('m_JumpClip', asset='Assets/kenney_impact-sounds/Audio/impactSoft_heavy_001.ogg'))
     ops.append(field('m_JuryClip', asset='Assets/_Project/Audio/Placeholder/perfect_chime.wav'))
@@ -863,6 +893,311 @@ def chaine():
     ops.append(field('m_CrushClip', asset='Assets/kenney_impact-sounds/Audio/impactBell_heavy_002.ogg'))
     return ops
 
+# ---------------------------------------------------------------- Boussole folle : Piques + Tour-aimant
+# Une rose des vents de laiton de 4,8 m posée à plat sur la voie (les ennemis marchent dessus), hérissée de pointes de fer ; au
+# milieu, un pilier porte l'aiguille rouge (le code la fait tourner, son rouge vers +Z). Niveau 2 : quatre aimants rouges aux
+# points cardinaux ; niveau 3 : deux grands anneaux dorés croisés sur l'aiguille (ils tournent avec elle, une boussole de marine
+# qui s'emballe) et une aiguille plus longue.
+BO_R = 2.4            # le rayon de la rose (m_Radius)
+BO_TOP = 0.16         # le dessus du disque
+BO_NEEDLE = 2.3       # la hauteur de l'aiguille
+
+def tie3(parent, name, a, b, role, diameter):
+    # Un cylindre de a à b, dans n'importe quel sens.
+    d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
+    length = math.sqrt(d[0] ** 2 + d[1] ** 2 + d[2] ** 2)
+    u = [x / length for x in d]
+    rot = [math.degrees(math.acos(max(-1.0, min(1.0, u[1])))), math.degrees(math.atan2(u[0], u[2])), 0]
+    return cyl(parent, name, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], [diameter, length, diameter], role=role, rot=rot)
+
+def bo_ring_upright(parent, name, radius, center_y, heading, count, diameter, role):
+    # Un anneau debout fait de segments, dans le plan vertical de ce cap (degrés).
+    ops = []
+    h = math.radians(heading)
+    for k in range(count):
+        t0 = 2 * math.pi * k / count
+        t1 = 2 * math.pi * (k + 1.06) / count
+        pts = []
+        for t in (t0, t1):
+            x = math.cos(t) * radius
+            pts.append([x * math.cos(h), center_y + math.sin(t) * radius, -x * math.sin(h)])
+        ops.append(tie3(parent, name, pts[0], pts[1], role, diameter))
+    return ops
+
+def bo_ring_flat(parent, name, radius, y, count, diameter, role, shade=1.0):
+    # Un anneau à plat fait de segments, autour de Y.
+    ops = []
+    for k in range(count):
+        t0 = 2 * math.pi * k / count
+        t1 = 2 * math.pi * (k + 1.06) / count
+        a = [math.cos(t0) * radius, y, math.sin(t0) * radius]
+        b = [math.cos(t1) * radius, y, math.sin(t1) * radius]
+        op = tie3(parent, name, a, b, role, diameter)
+        if shade != 1.0:
+            op['shade'] = shade
+        ops.append(op)
+    return ops
+
+def boussole():
+    ops = []
+    # Le disque de laiton au ras du sol et sa bordure de fer.
+    ops.append(cyl('', 'Rose', [0, BO_TOP / 2 - 0.006, 0], [2 * BO_R, BO_TOP + 0.012, 2 * BO_R], role='laiton'))
+    ops.append(cyl('', 'Bordure', [0, 0.07, 0], [2 * BO_R + 0.2, 0.116, 2 * BO_R + 0.2], role='fer'))
+    # Les branches de la rose : nord-sud et est-ouest (le nord rouge), les quatre diagonales plus courtes, plus bas.
+    # (des épaisseurs toutes différentes : aucune face ne se superpose là où elles se croisent)
+    ops.append(box('', 'Branche nord-sud', [0, 0.167, 0], [0.5, 0.094, 4.3], role='blanc'))
+    ops.append(box('', 'Branche est-ouest', [0, 0.173, 0], [4.3, 0.046, 0.5], role='blanc', shade=0.9))
+    ops.append(box('', 'Nord', [0, 0.225, 1.08], [0.4, 0.04, 2.08], role='rouge'))
+    for heading, low, high in ((45, 0.14, 0.176), (135, 0.13, 0.186)):
+        ops.append(box('', 'Diagonale', [0, (low + high) / 2, 0], [0.32, high - low, 3.0], role='noir', rot=[0, heading, 0]))
+    ops.append(cyl('', 'Moyeu', [0, 0.192, 0], [0.95, 0.164, 0.95], role='accent'))
+    # Les pointes de fer : une couronne au bord, une autre entre les branches.
+    for k in range(20):
+        a = math.radians(k * 18 + 9)
+        r = BO_R - 0.22
+        ops.append(sph('', 'Pointe', [math.cos(a) * r, BO_TOP + 0.2, math.sin(a) * r], [0.12, 0.55, 0.12], role='fer',
+                       rot=[math.sin(a) * 12, 0, -math.cos(a) * 12]))
+    for k in range(8):
+        a = math.radians(k * 45 + 22.5)
+        r = 1.45
+        ops.append(sph('', 'Pointe', [math.cos(a) * r, BO_TOP + 0.18, math.sin(a) * r], [0.11, 0.48, 0.11], role='fer'))
+    # Le pilier et l'aiguille (le repère qui tourne) : le nord rouge vers +Z, le sud blanc.
+    low, high = 0.268, BO_NEEDLE - 0.1
+    ops.append(cyl('', 'Pilier', [0, (low + high) / 2, 0], [0.32, high - low, 0.32], role='laiton'))
+    ops.append(cyl('', 'Bague', [0, 0.9, 0], [0.42, 0.16, 0.42], role='accent'))
+    N = 'Aiguille'
+    ops.append(empty('', N, [0, BO_NEEDLE, 0]))
+    ops.append(box(N, 'Pointe nord', [0, 0, 0.8 - 0.003], [0.24, 0.12, 1.606], role='rouge'))
+    ops.append(box(N, 'Pointe sud', [0, 0, -0.8], [0.2, 0.1, 1.6], role='blanc'))
+    ops.append(cyl(N, 'Chape', [0, -0.03, 0], [0.34, 0.24, 0.34], role='accent'))
+    ops.append(sph(N, 'Bout', [0, 0, 1.6], [0.28, 0.16, 0.28], role='rouge', shade=1.15))
+    # Niveau 2 : quatre aimants rouges en fer à cheval aux points cardinaux, ouverts vers le ciel.
+    ops.append(empty('', 'Niveau 2', [0, 0, 0]))
+    for k in range(4):
+        h = k * 90
+        a = math.radians(90 - h)
+        r = BO_R - 0.6
+        cx, cz = math.cos(a) * r, math.sin(a) * r
+        side = [math.cos(a + math.pi / 2), 0, math.sin(a + math.pi / 2)]
+        ops.append(box('Niveau 2', 'Aimant', [cx, 0.195, cz], [0.52, 0.19, 0.2], role='rouge', rot=[0, h, 0]))
+        for s in (-1, 1):
+            x, z = cx + side[0] * s * 0.17, cz + side[2] * s * 0.17
+            ops.append(box('Niveau 2', 'Branche', [x, 0.484, z], [0.14, 0.4, 0.18], role='rouge', rot=[0, h, 0]))
+            ops.append(box('Niveau 2', 'Pôle', [x, 0.738, z], [0.15, 0.12, 0.19], role='blanc', rot=[0, h, 0]))
+    # Niveau 3, la rose des vents : deux anneaux dorés croisés sur l'aiguille, une aiguille plus longue.
+    N3 = N + '/Niveau 3'
+    ops.append(empty(N, 'Niveau 3', [0, 0, 0]))
+    ops += bo_ring_upright(N3, 'Anneau', 1.9, 0, 0, 28, 0.1, 'accent')
+    ops += bo_ring_upright(N3, 'Anneau', 1.76, 0, 90, 28, 0.1, 'accent')
+    ops.append(box(N3, 'Grande pointe nord', [0, 0, 1.6 + 0.4 - 0.006], [0.2, 0.1, 0.8], role='rouge', shade=1.1))
+    ops.append(box(N3, 'Grande pointe sud', [0, 0, -1.6 - 0.4 + 0.006], [0.16, 0.08, 0.8], role='blanc', shade=0.95))
+    ops.append(sph(N3, 'Grand bout', [0, 0, 2.4], [0.34, 0.2, 0.34], role='rouge', shade=1.2))
+    ops.append(field('m_Needle', [N]))
+    ops.append({'op': 'field', 'field': 'm_Radius', 'value': BO_R})
+    ops.append(field('m_LevelParts', ['Niveau 2', N3]))
+    ops.append(field('m_LostClip', asset='Assets/kenney_interfaceSounds/Audio/question_002.ogg'))
+    ops.append(field('m_SpinClip', asset='Assets/650564__h2p34__lightsaber-whoosh.wav'))
+    ops.append(field('m_SpikeClip', asset='Assets/kenney_impact-sounds/Audio/impactMetal_light_002.ogg'))
+    return ops
+
+# ---------------------------------------------------------------- Lanceur de baudruches : Mortier + Bulle
+# Une estrade de foire ronde, sa jupe rayée rouge et blanc ; derrière, la grosse pompe de cuivre et sa poignée en T ; devant, le
+# canon à air sur sa tourelle (elle tourne vers la cible), sa gueule en pavillon de trompette ; un mât où flottent des ballons ;
+# et la baudruche à ton image (l'archer à la capuche verte), attachée au-dessus de l'estrade : le code la copie à chaque tir.
+# Niveau 2 : une seconde pompe, des ballons de plus ; niveau 3 : le char de carnaval, une grande étoile dorée et des guirlandes
+# de fanions.
+BA_FLOOR = 0.512        # le dessus de l'estrade (sur son liseré)
+BA_DOLL = 1.88          # la hauteur de la baudruche du modèle (m_TemplateHeight)
+BA_ELEV = 40            # l'élévation du canon (degrés)
+BA_PIVOT = 1.0          # la hauteur des tourillons, dans la tourelle
+
+def ba_doll(parent):
+    # La baudruche, le pivot à ses pieds, tournée vers +z : jambes, tunique verte, bras écartés, tête, capuche, yeux, arc.
+    ops = []
+    for s in (-1, 1):
+        ops.append(sph(parent, 'Jambe', [s * 0.15, 0.38, 0], [0.28, 0.76, 0.3], role='brun'))
+        ops.append(sph(parent, 'Bras', [s * 0.47, 1.08, 0], [0.22, 0.66, 0.22], role='vert_fonce', rot=[0, 0, s * 35]))
+        ops.append(sph(parent, 'Main', [s * 0.66, 0.84, 0], [0.16, 0.16, 0.16], role='peau'))
+        ops.append(sph(parent, 'Œil', [s * 0.1, 1.58, 0.235], [0.08, 0.1, 0.05], role='noir'))
+    ops.append(sph(parent, 'Tunique', [0, 1.0, 0], [0.76, 0.86, 0.56], role='vert_fonce'))
+    ops.append(sph(parent, 'Ceinture', [0, 0.86, 0], [0.74, 0.12, 0.54], role='brun'))
+    ops.append(sph(parent, 'Tête', [0, 1.55, 0], [0.5, 0.52, 0.5], role='peau'))
+    ops.append(sph(parent, 'Nez', [0, 1.52, 0.25], [0.09, 0.09, 0.08], role='peau', shade=0.9))
+    ops.append(sph(parent, 'Capuche', [0, 1.7, -0.04], [0.58, 0.36, 0.56], role='vert'))
+    ops.append(sph(parent, 'Pointe', [0, 1.8, -0.24], [0.2, 0.16, 0.3], role='vert', rot=[30, 0, 0]))
+    ops.append(tie3(parent, 'Arc', [0.72, 0.84, 0.05], [0.66, 1.4, 0.05], 'bois', 0.06))
+    ops.append(tie3(parent, 'Arc', [0.72, 0.84, 0.05], [0.66, 0.3, 0.05], 'bois', 0.06))
+    return ops
+
+def baudruches():
+    ops = []
+    # L'estrade, sa jupe rayée, son liseré doré.
+    ops.append(cyl('', 'Estrade', [0, 0.244, 0], [3.6, 0.5, 3.6], role='bois'))
+    for k in range(12):
+        a = math.radians(k * 30 + 15)
+        r = 1.8 + 0.03 - 0.006
+        ops.append(box('', 'Rayure', [math.cos(a) * r, 0.25, math.sin(a) * r], [0.06, 0.42, 0.95],
+                       role='rouge' if k % 2 == 0 else 'blanc', rot=[0, -math.degrees(a), 0]))
+    ops.append(cyl('', 'Liseré', [0, 0.488, 0], [3.7, 0.06, 3.7], role='accent'))
+    f = BA_FLOOR
+    # La pompe de cuivre, derrière : son corps cerclé d'or, son couvercle, sa tige et sa poignée en T.
+    px, pz = 0.55, -0.95
+    ops.append(cyl('', 'Pompe', [px, f + 1.1 - 0.006, pz], [1.0, 2.2, 1.0], role='cuivre'))
+    for y in (0.35, 1.1, 1.85):
+        ops.append(cyl('', 'Cercle', [px, f + y, pz], [1.06, 0.1, 1.06], role='accent'))
+    ops.append(cyl('', 'Couvercle', [px, f + 2.2 + 0.075 - 0.012, pz], [0.72, 0.15, 0.72], role='cuivre', shade=0.8))
+    ops.append(cyl('', 'Tige', [px, f + 2.35 + 0.4 - 0.018, pz], [0.1, 0.8, 0.1], role='metal'))
+    ops.append(cyl('', 'Poignée', [px, f + 3.15 - 0.03, pz], [0.12, 1.0, 0.12], role='bois', rot=[0, 0, 90]))
+    ops.append(tie3('', 'Tuyau', [px - 0.45, f + 0.5, pz + 0.2], [0.0, f + 0.15, 0.2], 'noir', 0.16))
+    # La tourelle : le plateau, deux joues rouges, les tourillons, le canon cerclé d'or et son pavillon de trompette.
+    T = 'Tourelle'
+    ops.append(empty('', T, [-0.15, f, 0.55]))
+    ops.append(cyl(T, 'Plateau', [0, 0.1 - 0.006, 0], [1.6, 0.2, 1.6], role='metal'))
+    for s in (-1, 1):
+        ops.append(box(T, 'Joue', [s * 0.48, 0.194 + 0.55 - 0.006, 0], [0.2, 1.1, 0.8], role='rouge'))
+        ops.append(cyl(T, 'Tourillon', [s * 0.4, BA_PIVOT, 0], [0.26, 0.2, 0.26], role='accent', rot=[0, 0, 90]))
+    e = math.radians(BA_ELEV)
+    d = (0, math.sin(e), math.cos(e))
+    rot = [90 - BA_ELEV, 0, 0]
+    pivot = (0, BA_PIVOT, 0)
+    ops.append(cyl(T, 'Canon', av_along(d, 0.45, pivot), [0.62, 1.9, 0.62], role='cuivre', rot=rot))
+    for t in (-0.3, 0.55, 1.2):
+        ops.append(cyl(T, 'Cercle', av_along(d, t, pivot), [0.68, 0.1, 0.68], role='accent', rot=rot))
+    for k, (t, dia) in enumerate(((1.42, 0.78), (1.52, 0.98), (1.6, 1.22))):
+        ops.append(cyl(T, 'Pavillon', av_along(d, t, pivot), [dia, 0.12 + k * 0.01, dia], role='cuivre', shade=1.1, rot=rot))
+    ops.append(empty(T, 'Gueule', av_along(d, 1.8, pivot)))
+    # Le mât des ballons, à gauche : cinq ballons de couleur au bout de leurs ficelles.
+    mx, mz = -1.3, -0.6
+    top = f + 4.2
+    ops.append(cyl('', 'Mât', [mx, (f - 0.006 + top) / 2, mz], [0.14, top - f + 0.006, 0.14], role='bois'))
+    ops.append(sph('', 'Pommeau', [mx, top, mz], [0.24, 0.24, 0.24], role='accent'))
+    for k, (dx, dy, dz, role) in enumerate(((-0.5, 1.0, 0.2, 'rouge'), (0.3, 1.25, 0.4, 'jaune'), (0.0, 1.5, -0.4, 'bleu'),
+                                             (-0.6, 0.6, -0.3, 'vert'), (0.55, 0.75, -0.2, 'rose'))):
+        at = [mx + dx, top + dy, mz + dz]
+        ops.append(sph('', 'Ballon', at, [0.55, 0.65, 0.55], role=role, shade=1.15))
+        ops.append(tie3('', 'Ficelle', [mx, top, mz], [at[0], at[1] - 0.3, at[2]], 'blanc', 0.02))
+    # La baudruche, attachée au-dessus de l'estrade (sa ficelle part du plancher).
+    B = 'Baudruche'
+    bx, by, bz = 0.95, f + 2.6, 0.75
+    ops.append(empty('', B, [bx, by, bz], rot=[0, 20, 0]))
+    ops += ba_doll(B)
+    ops.append(tie3('', 'Ficelle', [bx, f - 0.006, bz], [bx, by + 0.1, bz], 'blanc', 0.025))
+    # Niveau 2 : une seconde pompe, des ballons de plus.
+    N2 = 'Niveau 2'
+    ops.append(empty('', N2, [0, 0, 0]))
+    qx, qz = -0.55, -1.15
+    ops.append(cyl(N2, 'Petite pompe', [qx, f + 0.7 - 0.006, qz], [0.6, 1.4, 0.6], role='cuivre', shade=0.9))
+    ops.append(cyl(N2, 'Cercle', [qx, f + 0.9, qz], [0.65, 0.08, 0.65], role='accent'))
+    ops.append(cyl(N2, 'Poignée', [qx, f + 1.4 + 0.3 - 0.006, qz], [0.08, 0.6, 0.08], role='metal'))
+    for k, (dx, dy, dz, role) in enumerate(((0.9, 0.3, 0.6, 'rouge'), (-0.4, 1.9, 0.5, 'jaune'), (0.8, 1.8, -0.5, 'vert'))):
+        at = [mx + dx, top + dy, mz + dz]
+        ops.append(sph(N2, 'Ballon', at, [0.5, 0.6, 0.5], role=role, shade=1.2))
+        ops.append(tie3(N2, 'Ficelle', [mx, top, mz], [at[0], at[1] - 0.28, at[2]], 'blanc', 0.02))
+    # Niveau 3, le char de carnaval : une grande étoile dorée sur le mât, des guirlandes de fanions, trois gros ballons.
+    N3 = 'Niveau 3'
+    ops.append(empty('', N3, [0, 0, 0]))
+    sy = top + 2.6
+    ops.append(cyl(N3, 'Hampe', [mx, (top + 0.1 + sy) / 2, mz], [0.1, sy - top - 0.1, 0.1], role='bois'))
+    for k in range(5):
+        ops.append(box(N3, 'Étoile', [mx, sy, mz], [0.22, 1.4, 0.1 + k * 0.012], role='accent', shade=1.2, rot=[0, 0, k * 72]))
+    for k in range(9):
+        t = (k + 0.5) / 9
+        x = mx + (px + 0.3 - mx) * t
+        z = mz + (pz - mz) * t
+        y = top - 0.3 - math.sin(math.pi * t) * 0.9 + (f + 3.15 - top + 0.3) * t
+        ops.append(box(N3, 'Fanion', [x, y, z], [0.3, 0.3, 0.03], role=('rouge', 'jaune', 'bleu')[k % 3], rot=[0, 0, 45]))
+    for a, role in ((60, 'rose'), (150, 'bleu'), (300, 'jaune')):
+        r = math.radians(a)
+        ops.append(sph(N3, 'Gros ballon', [math.cos(r) * 2.0, f + 1.6, math.sin(r) * 2.0], [1.0, 1.2, 1.0], role=role, shade=1.2))
+        ops.append(tie3(N3, 'Ficelle', [math.cos(r) * 1.7, 0.494, math.sin(r) * 1.7], [math.cos(r) * 2.0, f + 1.0, math.sin(r) * 2.0],
+                        'blanc', 0.02))
+    ops.append(field('m_Turret', [T]))
+    ops.append(field('m_Muzzle', [T + '/Gueule']))
+    ops.append(field('m_DollTemplate', [B]))
+    ops.append({'op': 'field', 'field': 'm_TemplateHeight', 'value': BA_DOLL})
+    ops.append(field('m_LevelParts', [N2, N3]))
+    ops.append(field('m_FireClip', asset='Assets/kenney_impact-sounds/Audio/impactSoft_heavy_001.ogg'))
+    ops.append(field('m_SqueakClip', asset='Assets/kenney_interfaceSounds/Audio/pluck_002.ogg'))
+    ops.append(field('m_PopClip', asset='Assets/kenney_impact-sounds/Audio/impactPunch_heavy_004.ogg'))
+    return ops
+
+# ---------------------------------------------------------------- Boule à neige : Bulle + Tour de givre
+# Une boule à neige géante : un socle de bois verni à trois étages cerclés d'or, une boule de verre de 3 m (le matériau de la
+# bulle) ; dedans, la tour du joueur en miniature, des sapins et un bonhomme de neige (le code y fait tomber la neige). Le code
+# copie la « Boule » (le verre et sa collerette, centrée sur la sphère) à chaque tir, à la bonne taille : sa collerette touche
+# alors le sol. Niveau 2 : la clé de remontoir dorée derrière le socle ; niveau 3 : un anneau doré autour de la boule, une
+# couronne de cristaux de glace et une étoile de glace au sommet.
+BN_TOP = 1.43           # le dessus du socle
+BN_R = 1.5              # le rayon de la boule (m_TemplateDiameter = 2 × BN_R)
+BN_GY = BN_TOP + BN_R * 0.82   # son centre (le code pose ses boules à 0,82 rayon au-dessus du sol)
+
+def bn_fir(parent, x, z, y, h):
+    return [cyl(parent, 'Tronc', [x, y + 0.1 - 0.006, z], [0.08, 0.2, 0.08], role='bois'),
+            sph(parent, 'Sapin', [x, y + 0.15 + h / 2, z], [h * 0.5, h, h * 0.5], role='sapin'),
+            sph(parent, 'Neige', [x, y + 0.15 + h * 0.92, z], [h * 0.28, h * 0.22, h * 0.28], role='neige')]
+
+def boule_neige():
+    ops = []
+    # Le socle de bois verni : trois étages, deux cercles dorés, une plaque devant.
+    ops.append(cyl('', 'Socle', [0, 0.244, 0], [3.2, 0.5, 3.2], role='bois'))
+    ops.append(cyl('', 'Cercle', [0, 0.488, 0], [3.26, 0.06, 3.26], role='accent'))
+    ops.append(cyl('', 'Étage', [0, 0.762, 0], [2.8, 0.5, 2.8], role='bois', shade=0.85))
+    ops.append(cyl('', 'Cercle', [0, 1.006, 0], [2.86, 0.06, 2.86], role='accent'))
+    ops.append(cyl('', 'Étage', [0, 1.23, 0], [2.4, 0.4, 2.4], role='bois'))
+    ops.append(box('', 'Plaque', [0, 0.76, 1.4 + 0.02 - 0.006], [0.8, 0.3, 0.06], role='accent', shade=1.1))
+    # La boule (copiée par le code) : le verre et sa collerette dorée, centrée sur la sphère.
+    B = 'Boule'
+    ops.append(empty('', B, [0, BN_GY, 0]))
+    ops.append(sph(B, 'Verre', [0, 0, 0], [2 * BN_R, 2 * BN_R, 2 * BN_R], mat='Bulle'))
+    collar = 2 * math.sqrt(BN_R ** 2 - (0.82 * BN_R) ** 2) + 0.1
+    ops.append(cyl(B, 'Collerette', [0, -0.82 * BN_R + 0.125 - 0.006, 0], [collar, 0.25, collar], role='accent'))
+    # Dedans : un tapis de neige, la tour du joueur en miniature, des sapins, un bonhomme de neige.
+    floor = BN_TOP - 0.006 + 0.25
+    ops.append(cyl('', 'Tapis de neige', [0, floor - 0.006 + 0.05, 0], [2.0, 0.1, 2.0], role='neige'))
+    g = floor + 0.094
+    ops.append(cyl('', 'Petite tour', [0.3, g + 0.425 - 0.006, 0.1], [0.42, 0.85, 0.42], role='pierre'))
+    for k in range(6):
+        a = math.radians(k * 60)
+        ops.append(box('', 'Créneau', [0.3 + math.cos(a) * 0.17, g + 0.85 + 0.06 - 0.012, 0.1 + math.sin(a) * 0.17],
+                       [0.1, 0.12, 0.1], role='pierre', shade=0.9, rot=[0, -k * 60, 0]))
+    ops.append(cyl('', 'Drapeau', [0.3, g + 0.85 + 0.25 - 0.012, 0.1], [0.03, 0.5, 0.03], role='bois'))
+    ops.append(box('', 'Fanion', [0.3, g + 1.25, 0.1 + 0.12], [0.02, 0.14, 0.22], role='rouge'))
+    for x, z, h in ((-0.45, 0.35, 0.7), (-0.2, -0.5, 0.9), (0.55, -0.42, 0.6), (-0.65, -0.1, 0.5)):
+        ops += bn_fir('', x, z, g, h)
+    ops.append(sph('', 'Bonhomme', [0.1, g + 0.15, 0.55], [0.3, 0.3, 0.3], role='neige'))
+    ops.append(sph('', 'Bonhomme', [0.1, g + 0.38, 0.55], [0.22, 0.22, 0.22], role='neige'))
+    ops.append(cyl('', 'Chapeau', [0.1, g + 0.53, 0.55], [0.14, 0.12, 0.14], role='noir'))
+    # Niveau 2 : la clé de remontoir dorée, derrière.
+    N2 = 'Niveau 2'
+    ops.append(empty('', N2, [0, 0, 0]))
+    ops.append(cyl(N2, 'Tige de la clé', [0, 0.76, -1.4 - 0.25], [0.14, 0.62, 0.14], role='accent', rot=[90, 0, 0]))
+    ops.append(sph(N2, 'Moyeu de la clé', [0, 0.76, -1.98], [0.2, 0.2, 0.2], role='accent', shade=1.1))
+    for s in (-1, 1):
+        ops.append(sph(N2, 'Aile de la clé', [s * 0.24, 0.76, -1.98], [0.38, 0.46, 0.1], role='accent', shade=1.1))
+    # Niveau 3, la boule immense : un anneau doré autour de la boule et ses quatre bras, une couronne de cristaux, une étoile.
+    N3 = 'Niveau 3'
+    ops.append(empty('', N3, [0, 0, 0]))
+    ops += bo_ring_flat(N3, 'Anneau', BN_R + 0.12, BN_GY, 32, 0.1, 'accent')
+    for k in range(4):
+        a = math.radians(k * 90 + 45)
+        ops.append(tie3(N3, 'Bras', [math.cos(a) * 1.1, BN_TOP - 0.05, math.sin(a) * 1.1],
+                        [math.cos(a) * (BN_R + 0.12), BN_GY, math.sin(a) * (BN_R + 0.12)], 'accent', 0.08))
+    for k in range(8):
+        a = math.radians(k * 45 + 22.5)
+        h = 1.6 if k % 2 == 0 else 1.1
+        ops.append(sph(N3, 'Cristal', [math.cos(a) * 1.5, 0.494 + h / 2 - 0.15, math.sin(a) * 1.5], [0.3, h, 0.3], role='glace',
+                       shade=1.15, rot=[math.sin(a) * 15, 0, -math.cos(a) * 15]))
+    top = BN_GY + BN_R
+    for rot in ([0, 0, 0], [0, 0, 60], [0, 0, -60]):
+        ops.append(sph(N3, 'Étoile de glace', [0, top + 0.35, 0], [0.16, 0.9, 0.16], role='glace', shade=1.3, rot=rot))
+    ops.append(field('m_GlobeTemplate', [B]))
+    ops.append({'op': 'field', 'field': 'm_TemplateDiameter', 'value': 2 * BN_R})
+    ops.append(field('m_LevelParts', [N2, N3]))
+    ops.append(field('m_DropClip', asset='Assets/_Project/Audio/Placeholder/ice_zone.wav'))
+    ops.append(field('m_ShakeClip', asset='Assets/kenney_impact-sounds/Audio/impactGlass_light_002.ogg'))
+    ops.append(field('m_ShatterClip', asset='Assets/kenney_impact-sounds/Audio/impactGlass_heavy_002.ogg'))
+    return ops
+
 def duos():
     return [
         {'name': 'Boulet fou', 'prefab': 'Duos/Duo_Boulet_fou', 'definition': 'Duo_Boulet_fou', 'kinds': ['Barricade', 'Trampoline'],
@@ -894,13 +1229,21 @@ def duos():
          'ops': marteau_pilon()},
         {'name': 'Toboggan', 'prefab': 'Duos/Duo_Toboggan', 'definition': 'Duo_Toboggan', 'kinds': ['Trampoline', 'FrostTower'],
          'component': 'DuoToboggan', 'slot': 'Lane', 'footprint': [4, 7], 'palette': 'Duo_Toboggan', 'color': GOLD_LIGHT,
-         'mark': MARK, 'plans': [0, 4, 4],
-         'description': 'Une piste de glace : les ennemis glissent vers la forêt et décollent en vrille, sous les notes du jury.',
-         'levels': ['Une piste de glace en pente vers la forêt : l\'ennemi qui y monte glisse sur le ventre en tournoyant, renverse '
-                    'ceux qu\'il croise et décolle du tremplin en vrille, au ralenti, sous les notes du jury.',
-                    'Ceux qu\'il percute glissent aussi ; le saut est plus haut et plus long.',
-                    'Le saut à ski : un grand tremplin les envoie à plus de 20 m de haut, loin vers la forêt, sous un « 10 ! 10 ! '
-                    '10 ! » ; l\'atterrissage les tue.'],
+         # Revu le 31 octobre au soir (le premier essai du joueur) : tout en l'air, au-dessus de la voie ; le modèle refait, les
+         # textes revus (s'ils n'ont pas été changés à la main).
+         'mark': 'Toboggan revu, 31 octobre', 'rebuild': True,
+         'plans': [0, 4, 4],
+         'description': 'Un grand toboggan au-dessus de la voie : les ennemis grimpent l\'échelle, glissent et décollent en vrille '
+                        'vers la forêt, sous les notes du jury.',
+         'descriptionBefore': 'Une piste de glace : les ennemis glissent vers la forêt et décollent en vrille, sous les notes du jury.',
+         'levels': ['Un toboggan de glace enjambe la voie : l\'ennemi qui passe sous la plate-forme grimpe l\'échelle, glisse sur '
+                    'le ventre en tournoyant et décolle du tremplin en vrille, au ralenti, sous les notes du jury.',
+                    'Il saute plus haut et plus loin, et retombe sur les autres : il les renverse comme des quilles.',
+                    'Le saut à ski : un grand tremplin l\'envoie à plus de 20 m de haut, loin vers la forêt, sous un « 10 ! 10 ! '
+                    '10 ! » ; l\'atterrissage le tue.'],
+         'levelsBefore': ["Une piste de glace en pente vers la forêt : l'ennemi qui y monte glisse sur le ventre en tournoyant, renverse ceux qu'il croise et décolle du tremplin en vrille, au ralenti, sous les notes du jury.",
+                           "Ceux qu'il percute glissent aussi ; le saut est plus haut et plus long.",
+                           "Le saut à ski : un grand tremplin les envoie à plus de 20 m de haut, loin vers la forêt, sous un « 10 ! 10 ! 10 ! » ; l'atterrissage les tue."],
          'ops': toboggan()},
         {'name': 'Yo-yo', 'prefab': 'Duos/Duo_Yoyo', 'definition': 'Duo_Yoyo', 'kinds': ['Trampoline', 'Magnet'],
          'component': 'DuoYoyo', 'slot': 'Lane', 'footprint': [4, 3], 'palette': 'Duo_Yoyo', 'color': GOLD_LIGHT,
@@ -974,4 +1317,37 @@ def duos():
                     'L\'écrasement : jusqu\'à 15 ; la chaîne se resserre d\'un coup, tous volent les uns contre les autres et '
                     's\'écrasent au milieu.'],
          'ops': chaine()},
+        {'name': 'Boussole folle', 'prefab': 'Duos/Duo_Boussole_folle', 'definition': 'Duo_Boussole_folle', 'kinds': ['Spikes', 'Magnet'],
+         'component': 'DuoBoussole', 'slot': 'Lane', 'footprint': [5, 5], 'palette': 'Duo_Boussole', 'color': GOLD_LIGHT,
+         'mark': MARK, 'plans': [0, 4, 4],
+         'description': 'Une rose des vents géante sur la voie : son aiguille s\'affole, les ennemis perdent le nord et tournent en rond.',
+         'levels': ['Une rose des vents de laiton hérissée de pointes : l\'ennemi qui y entre perd le nord et tourne en rond 3 s '
+                    'sur les pointes.',
+                    'Il tourne plus longtemps, puis repart dans le mauvais sens, vers la forêt.',
+                    'La rose des vents : l\'aiguille s\'emballe et toute la voie perd le nord ; chacun tourne en rond là où il est, '
+                    'puis toute la voie repart vers la forêt.'],
+         'ops': boussole()},
+        {'name': 'Lanceur de baudruches', 'prefab': 'Duos/Duo_Lanceur_baudruches', 'definition': 'Duo_Lanceur_baudruches',
+         'kinds': ['Mortar', 'Bubble'],
+         'component': 'DuoBaudruches', 'slot': 'Roadside', 'footprint': [3, 3], 'palette': 'Duo_Baudruches', 'color': GOLD_LIGHT,
+         'mark': MARK, 'plans': [0, 4, 4],
+         'description': 'Il lance des poupées gonflables à ton image : les ennemis s\'arrêtent pour les frapper, et elles éclatent '
+                        'en confettis piquants.',
+         'levels': ['Une pompe de foire et un canon à air : il lance une baudruche à ton image devant les ennemis, qui s\'arrêtent '
+                    'pour la frapper ; crevée, elle éclate en confettis piquants. Ta flèche peut la crever avant.',
+                    'Frappée, elle rebondit plus loin vers la forêt et sur le côté, et les entraîne hors de leur chemin.',
+                    'Le char de carnaval : une baudruche de 7 m que tous les ennemis alentour viennent frapper ; elle éclate en '
+                    'une pluie de confettis qui leur coûte une grosse part de leurs PV.'],
+         'ops': baudruches()},
+        {'name': 'Boule à neige', 'prefab': 'Duos/Duo_Boule_a_neige', 'definition': 'Duo_Boule_a_neige', 'kinds': ['Bubble', 'FrostTower'],
+         'component': 'DuoBouleNeige', 'slot': 'Roadside', 'footprint': [3, 3], 'palette': 'Duo_BouleNeige', 'color': GOLD_LIGHT,
+         'mark': MARK, 'plans': [0, 4, 4],
+         'description': 'Une boule de verre géante tombe sur un groupe : il y neige, ils se figent en figurines ; ta flèche brise la '
+                        'boule et elles éclatent.',
+         'levels': ['Une boule de verre géante tombe du ciel sur un groupe et l\'enferme : il y neige, et les ennemis s\'y figent peu '
+                    'à peu en figurines. Ta flèche brise la boule : toutes les figurines éclatent.',
+                    'À mi-temps, la boule se secoue : les figurines tourbillonnent dans la neige et se heurtent.',
+                    'La boule immense : une boule de 18 m tombe sur toute une voie ; brisée par ta flèche, chaque figurine éclate et '
+                    'meurt.'],
+         'ops': boule_neige()},
     ]

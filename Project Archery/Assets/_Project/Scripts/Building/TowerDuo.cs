@@ -209,17 +209,28 @@ namespace Archery.Building
                 ExplosionFx.Play(point, radius, arrows.ExplosionFireMaterial, arrows.ExplosionSmokeMaterial, null);
         }
 
-        /// <summary>Le sol sous ce point (le décor, sans les ennemis ni les déclencheurs) ; sinon la hauteur du point.</summary>
-        protected static float GroundY(Vector3 point)
+        /// <summary>
+        /// Le sol sous ce point (le décor, sans les ennemis, les déclencheurs ni ce que les duos lancent) ; sinon la hauteur du point.
+        /// </summary>
+        /// <remarks>
+        /// Ce que lancent les duos (la boule de l'Avalanche, les baudruches, la boule à neige) reçoit les flèches sans les garder
+        /// (<see cref="Archery.Bows.IArrowAbsorber"/>) : ce n'est pas du sol (31 octobre : sinon la boule de l'Avalanche, qui
+        /// cherche le sol sous elle, montait sur son propre collider). Pour un point de la voie, chercher depuis
+        /// <paramref name="above"/> = 1,5 m : sous un pont, le sol est sous le pont, pas dessus (la boule de l'Avalanche montait
+        /// sur le pont du milieu, premier essai du joueur, 31 octobre).
+        /// </remarks>
+        protected static float GroundY(Vector3 point, float above = 6f)
         {
-            var from = point + Vector3.up * 6f;
+            var from = point + Vector3.up * above;
             var hits = Physics.RaycastAll(from, Vector3.down, 30f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
             var best = float.MaxValue;
             var y = point.y;
             foreach (var hit in hits)
             {
                 if (hit.distance < best && hit.collider.GetComponentInParent<Enemy>() == null &&
-                    hit.collider.GetComponentInParent<Structure>() == null && !Archery.Bows.ArrowIgnore.IsIgnored(hit.collider))
+                    hit.collider.GetComponentInParent<Structure>() == null &&
+                    hit.collider.GetComponentInParent<Archery.Bows.IArrowAbsorber>() == null &&
+                    !Archery.Bows.ArrowIgnore.IsIgnored(hit.collider))
                 {
                     best = hit.distance;
                     y = hit.point.y;

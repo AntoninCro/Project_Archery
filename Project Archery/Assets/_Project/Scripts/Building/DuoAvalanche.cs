@@ -209,7 +209,7 @@ namespace Archery.Building
         void Fire(MapScan.Lane lane, float along, int level)
         {
             var landing = lane.PointAt(along, out _);
-            landing.y = GroundY(landing);
+            landing.y = GroundY(landing, 1.5f);
             var radius = ValueFor(m_StartRadiusPerLevel, level, 0.7f);
             var from = m_Muzzle != null ? m_Muzzle.position : transform.position + Vector3.up * 4f;
             var copy = Instantiate(m_BallTemplate.gameObject, from, Quaternion.identity);
@@ -273,7 +273,7 @@ namespace Archery.Building
             ball.Radius = Mathf.Lerp(ValueFor(m_StartRadiusPerLevel, level, 0.7f), ValueFor(m_EndRadiusPerLevel, level, 1.6f),
                                      Mathf.Clamp01(ball.Rolled / Mathf.Min(distance, 60f)));
             Resize(ball);
-            point.y = GroundY(point) + ball.Radius;
+            point.y = GroundY(point, 1.5f) + ball.Radius;
             ball.Transform.position = point;
             var axis = Vector3.Cross(Vector3.up, -direction);
             if (axis.sqrMagnitude > 1e-4f)
