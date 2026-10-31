@@ -18,16 +18,65 @@ namespace Archery.Building
         /// </summary>
         Height,
 
-        /// <summary>Sur la tour (refonte du 27 octobre) : le seau d'huile, la baliste sur la tour (constructions à venir).</summary>
+        /// <summary>
+        /// Sur la tour (refonte du 27 octobre) : le seau d'huile, la baliste sur la tour. Quelques petits emplacements autour du
+        /// joueur, faits par la grille au lancement (28 octobre).
+        /// </summary>
         Tower,
     }
 
+    // Enregistré par son numéro dans les assets : ajouter à la fin, sans retirer ni déplacer.
     public enum StructureKind
     {
         Barricade,
         Spikes,
         FrostTower,
         Ballista,
+
+        // Refonte du tower defense, étape 5, lot 1 (28 octobre).
+        Mine,
+        Tar,
+        Trampoline,
+        LightningTower,
+
+        // Lot 2 (28 octobre).
+        Repeater,
+        Mortar,
+
+        // Lot 3 (28 octobre) : les constructions physiques.
+        Geyser,
+        Blower,
+        Magnet,
+        Catapult,
+
+        // Lot 4 (28 octobre).
+        Trapdoor,
+        Pendulum,
+        Bubble,
+        NetLauncher,
+
+        // Lot 5 (28 octobre) : le soutien.
+        Flamethrower,
+        Lighthouse,
+        Mirror,
+        Ring,
+
+        // Lot 6 (28 octobre) : sur la tour, et les légendaires.
+        OilBucket,
+        TowerBallista,
+        Spirit,
+
+        // Lot 7 de la refonte (31 octobre) : un duo, la tour nouvelle née de la fusion de deux tours (TowerDuo). Les sortes
+        // sont enregistrées par leur numéro : ajouter les nouvelles à la fin.
+        Duo,
+    }
+
+    /// <summary>Rareté d'un bâtiment dans les caisses de l'ingénieur (refonte du 28 octobre, étape 5).</summary>
+    public enum StructureRarity
+    {
+        Common,
+        Rare,
+        Legendary,
     }
 
     /// <summary>
@@ -44,6 +93,10 @@ namespace Archery.Building
         {
             [Tooltip("Prix en matériaux : plus utilisé depuis la refonte du 27 octobre (un plan par niveau).")]
             public int cost;
+
+            [Tooltip("Plans pour construire ce niveau (29 octobre). 0 : 1 plan jusqu'au niveau 3, 2 plans aux niveaux 4 et 5.")]
+            [Min(0)]
+            public int plans;
 
             [TextArea]
             public string description;
@@ -64,7 +117,8 @@ namespace Archery.Building
         [Tooltip("Optionnel : icône de la carte.")]
         public Sprite icon;
 
-        [Tooltip("Un élément par niveau : construction, niveau 2, niveau 3.")]
+        [Tooltip("Un élément par niveau : construction, niveau 2, niveau 3 (jusqu'au niveau 5 depuis le 29 octobre, à mesure que " +
+                 "chaque tour reçoit ses évolutions).")]
         public Level[] levels = { new Level(), new Level(), new Level() };
 
         [Tooltip("Plans donnés par un lot de la caisse de l'ingénieur (refonte du 27 octobre : les bâtiments communs viennent par " +
@@ -72,13 +126,46 @@ namespace Archery.Building
         [Min(0)]
         public int lotSize;
 
+        [Tooltip("Rareté dans les caisses de l'ingénieur (28 octobre) : chaque orbe tire d'abord une rareté (60 / 30 / 10 %), puis un " +
+                 "bâtiment de cette rareté. Une légendaire vient toujours seule.")]
+        public StructureRarity rarity;
+
+        [Tooltip("Se pose sur n'importe quel emplacement de la grille : voie, bord ou hauteur (28 octobre : les anneaux élémentaires).")]
+        public bool anywhere;
+
+        [Tooltip("Cases de la grille de construction occupées (largeur, profondeur ; 28 octobre). 0 : d'après la taille du modèle " +
+                 "au niveau 3 (la console donne le compte de chaque bâtiment à sa première pose).")]
+        public Vector2Int footprint;
+
+        [Tooltip("Retiré du jeu (29 octobre, deuxième brainstorm du tower defense : 10 tours seulement) : les caisses de " +
+                 "l'ingénieur ne le proposent plus, ni le raccourci B, ni le menu des plans. Son code et son prefab restent : " +
+                 "décocher pour le remettre.")]
+        public bool retired;
+
         public int MaxLevel => levels != null ? levels.Length : 0;
 
-        /// <summary>Ce bâtiment se pose-t-il sur un emplacement de cette sorte ? Ceux du bord de la voie vont aussi en hauteur.</summary>
-        public bool Fits(BuildSlot zone) => slot == zone || (slot == BuildSlot.Roadside && zone == BuildSlot.Height);
+        /// <summary>
+        /// Ce bâtiment se pose-t-il sur un emplacement de cette sorte ? Ceux du bord de la voie vont aussi en hauteur ; ceux qui vont
+        /// partout, sur la voie, au bord et en hauteur (pas sur la tour).
+        /// </summary>
+        public bool Fits(BuildSlot zone) => slot == zone || (slot == BuildSlot.Roadside && zone == BuildSlot.Height) ||
+                                            (anywhere && zone != BuildSlot.Tower);
 
         /// <summary>Plans d'un lot de la caisse de l'ingénieur.</summary>
-        public int LotSize => lotSize > 0 ? lotSize : kind == StructureKind.Barricade || kind == StructureKind.Spikes ? 2 : 1;
+        public int LotSize => rarity == StructureRarity.Legendary ? 1
+            : lotSize > 0 ? lotSize
+            : kind == StructureKind.Barricade || kind == StructureKind.Spikes ? 2 : 1;
+
+        /// <summary>
+        /// Plans pour construire le niveau donné (1 = construction) : 1 jusqu'au niveau 3, 2 aux niveaux 4 et 5 (deuxième brainstorm
+        /// du tower defense, 29 octobre : monter haut devient un vrai choix), sauf réglage du niveau.
+        /// </summary>
+        public int PlansFor(int level)
+        {
+            if (level >= 1 && level <= MaxLevel && levels[level - 1].plans > 0)
+                return levels[level - 1].plans;
+            return level >= 4 ? 2 : 1;
+        }
 
         /// <summary>Prix du niveau donné (1 = construction), en matériaux.</summary>
         public int CostFor(int level) => level >= 1 && level <= MaxLevel ? Mathf.Max(0, levels[level - 1].cost) : 0;

@@ -10,7 +10,9 @@ namespace Archery.EditorTools
     /// l'ouverture de Unity, la fenêtre « Récolter les cristaux », le texte qui fait payer en matériaux et les matériaux de la
     /// montre sont remplacés, une seule fois (seulement s'ils ont encore leur texte d'avant : un texte retouché à la main
     /// n'est pas touché). Étape 3, le même jour : « Choisir un bâtiment » parle de la pose à la montre (bouton « Plans »,
-    /// hologramme, joystick, runes, déplacer), y compris si un texte précédent de l'étape 2 ou 3 avait déjà été posé.
+    /// hologramme, joystick, runes, déplacer), y compris si un texte précédent de l'étape 2 ou 3 avait déjà été posé. Le
+    /// 28 octobre, après les premiers tests du joueur : il parle du menu des plans et de la grille au sol (plus des runes) ; le
+    /// soir, du menu qui reste ouvert pendant la pose (le joystick change de bâtiment, une seule gâchette pour poser).
     /// </summary>
     [InitializeOnLoad]
     static class TowerDefenseStep2Baker
@@ -34,11 +36,25 @@ namespace Archery.EditorTools
             "Avec un plan, des cercles de runes s'allument au sol autour de toi : orange sur la voie, bleus au bord, verts en hauteur. Vise-en " +
             "un de près et appuie sur la gâchette de prise : choisis le bâtiment. Barricade et pièges sur la voie, baliste et tour de givre " +
             "au bord ou en hauteur. Un autre plan du même bâtiment le fait monter de niveau ; entre les vagues, tu peux le déplacer.";
-        const string k_ChooseText =
+        // Le texte de la pose à la montre (27 octobre au soir), remplacé par celui du menu des plans et de la grille au sol.
+        const string k_WatchChooseText =
             "Touche le bouton « Plans » de ta montre avec l'autre main : l'hologramme d'un bâtiment suit le rayon de ta main. Joystick : gauche " +
             "et droite le tournent, haut et bas changent de plan ; gâchette : le poser là où les runes s'allument (orange sur la voie, bleues " +
             "au bord, vertes en hauteur) ; poignée : annuler. Pose-le sur un bâtiment pareil pour le faire monter de niveau ; entre les " +
             "vagues, le panneau d'un bâtiment propose de le déplacer.";
+        // 28 octobre, après les premiers tests du joueur : le menu des plans (carrousel), la grille verte et rouge au sol ; remplacé
+        // le soir même (plus de gâchette pour choisir avant de poser).
+        const string k_MenuChooseText =
+            "Touche le bouton « Plans » de ta montre avec l'autre main : le menu des plans s'ouvre. Joystick : défiler ; gâchette, ou toucher " +
+            "une carte : choisir. L'hologramme suit alors le rayon de ta main, sur la grille au sol : verte où il se pose, rouge ailleurs. " +
+            "Joystick : tourner ; gâchette : poser ; poignée : retour au menu. Sur un bâtiment pareil, il monte de niveau ; entre les vagues, " +
+            "son panneau propose de le déplacer.";
+        // 28 octobre au soir : le menu reste ouvert pendant la pose, l'hologramme de la carte du milieu sort tout de suite.
+        const string k_ChooseText =
+            "Touche le bouton « Plans » de ta montre avec l'autre main : le menu des plans s'ouvre, et l'hologramme du bâtiment du milieu suit " +
+            "le rayon de ta main, sur la grille au sol : verte où il se pose, rouge ailleurs. Joystick : gauche et droite changent de bâtiment " +
+            "(ou touche une carte), haut et bas le tournent ; gâchette : poser ; poignée : fermer. Sur un bâtiment pareil, il monte de " +
+            "niveau ; entre les vagues, son panneau propose de le déplacer.";
 
         static TowerDefenseStep2Baker()
         {
@@ -73,7 +89,8 @@ namespace Archery.EditorTools
                         changed++;
                     }
                     else if (window.text != null &&
-                             (window.text.Contains(k_OldPayment) || window.text == k_Step2ChooseText || window.text == k_GridChooseText))
+                             (window.text.Contains(k_OldPayment) || window.text == k_Step2ChooseText || window.text == k_GridChooseText ||
+                              window.text == k_WatchChooseText || window.text == k_MenuChooseText))
                     {
                         window.text = k_ChooseText;
                         changed++;

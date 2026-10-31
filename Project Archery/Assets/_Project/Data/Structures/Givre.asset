@@ -20,8 +20,25 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: e7db32f91c674f57bdf11bd40b5a2933, type: 3}
   levels:
   - cost: 40
+    plans: 0
     description: "Ralentit de 30 % les ennemis \xE0 9 m, volants compris."
   - cost: 50
-    description: "Ralentit de 40 % \xE0 13 m."
+    plans: 0
+    description: Le givre reste 2 s sur ceux qui sortent de la zone.
   - cost: 70
-    description: "Ralentit de 50 % \xE0 17 m."
+    plans: 0
+    description: "Pic de glace : toutes les 4 s, elle g\xE8le net un ennemi ; ta
+      fl\xE8che brise la glace et lui co\xFBte 30 % de ses PV."
+  - cost: 70
+    plans: 0
+    description: "Verglas : le sol g\xE8le, les ennemis glissent et tombent."
+  - cost: 70
+    plans: 0
+    description: "C\u0153ur de l'hiver : toutes les 15 s, une temp\xEAte change tous
+      les ennemis de la zone en statues de glace pendant 3 s ; le moindre coup les
+      fait voler en \xE9clats."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

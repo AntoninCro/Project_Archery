@@ -1,4 +1,5 @@
 using Archery.Bows;
+using Archery.Core;
 using Archery.Enemies;
 using Archery.Upgrades;
 using UnityEngine;
@@ -10,7 +11,16 @@ namespace Archery.Building
     /// Tour de givre sur un socle au bord de la voie (GDD, section 9) : elle ralentit les ennemis autour d'elle,
     /// volants compris (30 / 40 / 50 % dans un rayon de 9 / 13 / 17 m). Un disque bleuté montre sa portée au sol,
     /// ses cristaux grandissent avec le niveau. Dans l'arène du boss final, elle tire plutôt des boules de glace dont le
-    /// ralentissement s'estompe vite (<see cref="FiresIceBalls"/>).
+    /// ralentissement s'estompe vite (<see cref="FiresIceBalls"/>). Depuis le 29 octobre (deuxième brainstorm,
+    /// <c>Docs/Refonte_TowerDefense.md</c>, partie 12.6), cinq niveaux :
+    /// <list type="bullet">
+    /// <item>2 : le givre reste 2 s sur ceux qui sortent de la zone ;</item>
+    /// <item>3, le <b>pic de glace</b> : toutes les 4 s, elle gèle net un ennemi (<see cref="IceStatue"/>) ; ta flèche brise la
+    /// glace et lui coûte 30 % de ses PV max en plus ;</item>
+    /// <item>4, le <b>verglas</b> : le sol gèle, les ennemis glissent et tombent ;</item>
+    /// <item>5, le <b>cœur de l'hiver</b> : toutes les 15 s, une tempête change tous les ennemis de la zone en statues de glace
+    /// pendant 10 s, boss compris ; le moindre coup les fait voler en éclats (un boss y perd 10 % de ses PV).</item>
+    /// </list>
     /// </summary>
     public class FrostTower : Structure
     {
@@ -64,7 +74,62 @@ namespace Archery.Building
         [SerializeField]
         float[] m_IceBallSlowTimePerLevel = { 2f, 2.5f, 3f };
 
+        [Header("Évolutions (29 octobre)")]
+        [Tooltip("Durée (s) du givre sur ceux qui sortent de la zone, à partir du niveau 2.")]
+        [SerializeField]
+        float m_LingerTime = 2f;
+
+        [Tooltip("Temps (s) entre deux pics de glace (niveau 3).")]
+        [SerializeField]
+        float m_FreezeInterval = 4f;
+
+        [Tooltip("Durée (s) d'un ennemi gelé par le pic de glace.")]
+        [SerializeField]
+        float m_FreezeTime = 2.5f;
+
+        [Tooltip("Part de ses PV max que coûte à un ennemi gelé le coup qui brise la glace.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_FreezeBreakShare = 0.3f;
+
+        [SerializeField]
+        Material m_IceMaterial;
+
+        [SerializeField]
+        AudioClip m_BreakClip;
+
+        [Tooltip("Temps (s) entre deux glissades possibles d'un ennemi sur le verglas (niveau 4).")]
+        [SerializeField]
+        float m_SlipInterval = 1f;
+
+        [Tooltip("Chance qu'un ennemi sur le verglas glisse et tombe, à chaque fois.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_SlipChance = 0.25f;
+
+        [Tooltip("Temps (s) entre deux tempêtes du cœur de l'hiver (niveau 5).")]
+        [SerializeField]
+        float m_StormInterval = 15f;
+
+        [Tooltip("Durée (s) des statues de glace de la tempête (10 s depuis le 29 octobre au soir, le joueur ; 3 avant).")]
+        [SerializeField]
+        float m_StormFreeze = 10f;
+
+        [Tooltip("Part de ses PV max que perd un boss gelé quand sa glace se brise (il ne vole pas en éclats).")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_StormBossShare = 0.1f;
+
+        [SerializeField]
+        AudioClip m_StormClip;
+
         static readonly RaycastHit[] s_Hits = new RaycastHit[16];
+
+        float m_FreezeTimer = 2f;
+        float m_SlipTimer;
+        float m_StormTimer = 5f;
+        Transform m_Storm;
+        float m_StormAge = -1f;
 
         MeshRenderer m_RangeDisc;
         MaterialPropertyBlock m_Block;
@@ -163,6 +228,7 @@ namespace Archery.Building
             if (FiresIceBalls)
                 return;
 
+            UpdateEvolutions(Time.deltaTime);
             m_TickTimer -= Time.deltaTime;
             if (m_TickTimer > 0f)
                 return;
@@ -172,19 +238,153 @@ namespace Archery.Building
             var center = transform.position;
             var radius = Radius;
             var speed = ValueFor(m_SpeedPerLevel, Level, 0.7f);
+            var duration = Level >= 2 ? Mathf.Max(k_TickInterval * 1.5f, m_LingerTime) : k_TickInterval * 1.5f;
             foreach (var enemy in AliveEnemies())
             {
-                if (enemy == null || !enemy.IsAlive)
-                    continue;
-
-                var offset = enemy.transform.position - center;
-                if (offset.y < -2f - Elevation || offset.y > m_MaxHeight)
-                    continue;
-
-                offset.y = 0f;
-                if (offset.sqrMagnitude <= radius * radius)
-                    enemy.Slow(speed, k_TickInterval * 1.5f);
+                if (InZone(enemy, center, radius))
+                    enemy.Slow(speed, duration);
             }
+        }
+
+        bool InZone(Enemy enemy, Vector3 center, float radius)
+        {
+            if (enemy == null || !enemy.IsAlive)
+                return false;
+
+            var offset = enemy.transform.position - center;
+            if (offset.y < -2f - Elevation || offset.y > m_MaxHeight)
+                return false;
+
+            offset.y = 0f;
+            return offset.sqrMagnitude <= radius * radius;
+        }
+
+        // Le pic de glace (niveau 3), le verglas (niveau 4) et la tempête (niveau 5).
+        void UpdateEvolutions(float deltaTime)
+        {
+            var level = Level;
+            UpdateStormEffect(deltaTime);
+            if (level < 3)
+                return;
+
+            var center = transform.position;
+            var radius = Radius;
+            m_FreezeTimer -= deltaTime * OverchargeRate;
+            if (m_FreezeTimer <= 0f)
+                m_FreezeTimer = FreezeOne(center, radius) ? m_FreezeInterval : 0.4f;
+
+            if (level >= 4)
+            {
+                m_SlipTimer -= deltaTime;
+                if (m_SlipTimer <= 0f)
+                {
+                    m_SlipTimer = m_SlipInterval;
+                    Slip(center, radius);
+                }
+            }
+
+            if (level >= 5)
+            {
+                m_StormTimer -= deltaTime * OverchargeRate;
+                if (m_StormTimer <= 0f)
+                    m_StormTimer = Storm(center, radius) ? m_StormInterval : 0.5f;
+            }
+        }
+
+        // Le pic de glace : l'ennemi au sol le plus solide de la zone (le plus de PV) est gelé net.
+        bool FreezeOne(Vector3 center, float radius)
+        {
+            Enemy best = null;
+            foreach (var enemy in AliveEnemies())
+            {
+                if (!InZone(enemy, center, radius) || enemy.IsBoss || enemy.IsFlyer || enemy.IsAirborne || IceStatue.IsFrozen(enemy))
+                    continue;
+                if (best == null || enemy.Health.Current > best.Health.Current)
+                    best = enemy;
+            }
+
+            if (best == null || !IceStatue.Freeze(best, m_FreezeTime, m_FreezeBreakShare, m_IceMaterial, m_BreakClip, this))
+                return false;
+
+            LightningBolt.Spawn(IceBallMuzzle, best.Center, m_RangeColor * 2f, null, 0.12f, 0.35f);
+            Sfx.Play(m_BreakClip, best.Center, 0.6f, 1.4f);
+            return true;
+        }
+
+        // Le verglas : de temps en temps, un ennemi au sol glisse et tombe (il se relève étourdi).
+        void Slip(Vector3 center, float radius)
+        {
+            foreach (var enemy in AliveEnemies())
+            {
+                if (!InZone(enemy, center, radius) || enemy.IsFlyer || enemy.IsAirborne || enemy.IsBoss || IceStatue.IsFrozen(enemy) ||
+                    Random.value > m_SlipChance)
+                    continue;
+
+                // Il glisse en avant, les pieds partent, il tournoie et retombe (29 octobre au soir : on ne voyait pas la glissade).
+                var slide = enemy.Velocity;
+                slide.y = 0f;
+                var direction = slide.sqrMagnitude > 0.1f ? slide.normalized : enemy.transform.forward;
+                direction.y = 0f;
+                direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : Vector3.forward;
+                if (enemy.Launch(direction * 4f + Vector3.up * 3.5f, this))
+                    enemy.Tumble(Vector3.Cross(direction, Vector3.up) * 520f + Vector3.up * Random.Range(-360f, 360f));
+            }
+        }
+
+        // Le cœur de l'hiver : tous les ennemis au sol de la zone deviennent des statues de glace, qui volent en éclats au
+        // moindre coup ; un boss y perd une part de ses PV.
+        bool Storm(Vector3 center, float radius)
+        {
+            var frozen = 0;
+            foreach (var enemy in AliveEnemies())
+            {
+                if (!InZone(enemy, center, radius) || enemy.IsFlyer)
+                    continue;
+
+                // Les boss gèlent aussi (29 octobre au soir, le joueur) ; leur glace brisée ne leur coûte qu'une part de leurs PV.
+                if (IceStatue.Freeze(enemy, m_StormFreeze, 1f, m_IceMaterial, m_BreakClip, this, true, m_StormBossShare))
+                    frozen++;
+            }
+
+            if (frozen == 0)
+                return false;
+
+            m_StormAge = 0f;
+            Sfx.Play(m_StormClip, transform.position + Vector3.up * 2f, 1f, 0.8f);
+            return true;
+        }
+
+        // La tempête se voit : une sphère de glace qui s'étend jusqu'au bord de la zone, puis s'efface.
+        void UpdateStormEffect(float deltaTime)
+        {
+            if (m_StormAge < 0f)
+                return;
+
+            if (m_Storm == null)
+            {
+                var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.name = "Tempête (effet)";
+                Destroy(sphere.GetComponent<Collider>());
+                var renderer = sphere.GetComponent<Renderer>();
+                renderer.sharedMaterial = m_IceMaterial != null ? m_IceMaterial : m_RangeMaterial;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                m_Storm = sphere.transform;
+            }
+
+            m_StormAge += deltaTime;
+            var grow = Mathf.Clamp01(m_StormAge / 0.5f);
+            m_Storm.gameObject.SetActive(m_StormAge < 0.9f);
+            m_Storm.position = transform.position;
+            m_Storm.localScale = Vector3.one * (Radius * 2f * grow) * (m_StormAge > 0.5f ? 1f + (m_StormAge - 0.5f) : 1f);
+            if (m_StormAge >= 0.9f)
+                m_StormAge = -1f;
+        }
+
+        protected override void OnDestroy()
+        {
+            if (m_Storm != null)
+                Destroy(m_Storm.gameObject);
+            base.OnDestroy();
         }
 
         protected override void OnLevelChanged(int level)

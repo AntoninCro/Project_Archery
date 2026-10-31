@@ -38,10 +38,10 @@ Vue de dessus : `Docs/Plan_Carte_Prototype.png`. La carte est un **carré** d'en
 | Apparition gauche (`Spawn A`) | `(0, 0, 69)` | |
 | Apparition du milieu (`Spawn B`) | `(37.5, 0, 37.5)` | |
 | Apparition droite (`Spawn C`) | `(69, 0, 0)` | |
-| `Barricade Gauche` | `(0, 0, 33)` | `0` |
-| `Barricade Milieu` | `(23.33, 0, 23.33)` | `45` |
-| `Barricade Droite` | `(33, 0, 0)` | `90` |
-| Gués (rivière) | `(0, 0, 42)`, `(28.5, 0, 28.5)` et `(42, 0, 0)` | |
+| `Barricade Gauche` (supprimée le 28 octobre : le joueur construit ses barricades) | `(0, 0, 33)` | `0` |
+| `Barricade Milieu` (supprimée le 28 octobre) | `(23.33, 0, 23.33)` | `45` |
+| `Barricade Droite` (supprimée le 28 octobre) | `(33, 0, 0)` | `90` |
+| Gués (rivière) : zones qui ralentissent (`Ford Left`, `Ford Mid`, `Ford Right`), depuis le tracé de la rivière du 11 octobre | `(0, 0, 46.5)`, `(25.5, 0, 24)` et `(19.5, 0, 0)` (recalée le 28 octobre ; elle était restée en `(25.5, 0, 0)`) | |
 | Rampes vers la jungle | `(6, 0, 15)` et `(15, 0, 6)` | |
 | Antre du boss | `(73.5, 0, 79.5)`, ouverte vers la tour | `180` |
 
@@ -333,7 +333,7 @@ La tour garde 5 m de côté et 4 m de haut : le XR Origin, `Tower Top Arrival` e
 ## 9. Les ennemis, les barricades et les coffres
 
 1. **Points d'apparition** : `Spawn A`, `B` et `C` sont au bout des 3 voies (positions du plan). Si tu modifies une voie, garde-les dessus.
-2. **Barricades** : `Barricade Gauche`, `Milieu` et `Droite` sont en travers de leur voie, flèche bleue vers l'apparition, avec un *Scale X* de `1.5` (6 m), et de `2` pour celle du milieu.
+2. **Barricades** (supprimées de la scène le 28 octobre, avec les 12 socles de construction : depuis la refonte du tower defense, le joueur construit les siennes) : `Barricade Gauche`, `Milieu` et `Droite` étaient en travers de leur voie, flèche bleue vers l'apparition, avec un *Scale X* de `1.5` (6 m), et de `2` pour celle du milieu.
 3. **La navigation** : sélectionne `Ground` et clique sur **Bake** dans son *NavMesh Surface* (il prend tous les colliders de la scène). Dans la vue *Scene*, la base, les voies (avec leurs rampes et escaliers) et les gués doivent être bleus et reliés jusqu'aux apparitions. Les terrasses peuvent être bleues aussi, mais sans lien avec les voies : vérifie les *NavMesh Modifier* des accès à la jungle.
 4. **Coffres** : les 6 `Chest Spot` sont sur les terrasses, accessibles par les rampes, et déjà dans *Spawn Points* du `Chest Spawner` (le coffre apparaît exactement là, sans NavMesh). Déplace-les dans des clairières quand tu planteras les arbres.
 5. **Pour plus tard** (prévois la place, rien à poser) : des emplacements de construction plats d'une case, au bord des voies, près des barricades ; des recoins pour les matériaux de défense ; l'arène de l'antre.

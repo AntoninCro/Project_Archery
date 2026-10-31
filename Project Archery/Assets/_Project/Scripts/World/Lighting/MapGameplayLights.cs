@@ -299,8 +299,14 @@ namespace Archery.World
                         nearest = socket;
                     }
 
+                    // Une rune sans emplacement (celles des 12 socles d'avant le 27 octobre, désactivés au lancement puis
+                    // supprimés de la scène le 28 octobre au soir) : cachée, sinon elle restait allumée au sol.
                     if (nearest == null)
+                    {
+                        renderer.enabled = false;
                         continue;
+                    }
+
                     m_RuneSockets.Add(nearest);
                     m_Runes.Add(new Rune { Socket = nearest, Renderer = renderer, Radius = renderer.transform.localScale.x, Phase = Random.Range(0f, 6.3f) });
                     m_RuneMaterial ??= renderer.sharedMaterial;

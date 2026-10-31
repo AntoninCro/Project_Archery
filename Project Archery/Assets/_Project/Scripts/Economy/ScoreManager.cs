@@ -9,6 +9,7 @@ using Archery.Enemies;
 using Archery.UI;
 using Archery.Waves;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Archery.Economy
 {
@@ -35,6 +36,28 @@ namespace Archery.Economy
         [Tooltip("Les points d'élimination sont multipliés par cette valeur quand l'ennemi meurt d'un tir à la tête.")]
         [SerializeField]
         float m_HeadshotKillMultiplier = 2f;
+
+        [Tooltip("L'ennemi préparé (refonte du tower defense : le tir au vol le 27 octobre, toutes les préparations le 30) : les " +
+                 "points d'un coup du joueur (flèche, katana, faille) sur un ennemi qu'un bâtiment a préparé (en l'air, gelé, cloué, " +
+                 "pris au filet, étourdi, englué, attiré, marqué par le phare) sont multipliés par cette valeur.")]
+        [FormerlySerializedAs("m_AirShotMultiplier")]
+        [SerializeField]
+        float m_PreparedPointsMultiplier = 1.5f;
+
+        [Tooltip("Pour chaque sorte de préparation : les dégâts du coup (selon la difficulté à la préparer, 31 octobre), le mot " +
+                 "qui s'affiche au-dessus de l'ennemi touché, sa couleur et son son.")]
+        [SerializeField]
+        PreparedCue[] m_PreparedCues =
+        {
+            new PreparedCue(Preparation.Airborne, "Au vol !", new Color(0.55f, 0.85f, 1f)),
+            new PreparedCue(Preparation.Frozen, "Brisé !", new Color(0.8f, 0.97f, 1f)),
+            new PreparedCue(Preparation.Pinned, "Cloué !", new Color(0.95f, 0.5f, 0.35f)),
+            new PreparedCue(Preparation.Netted, "Au filet !", new Color(0.92f, 0.82f, 0.55f)),
+            new PreparedCue(Preparation.Stunned, "Sonné !", new Color(1f, 0.92f, 0.4f)),
+            new PreparedCue(Preparation.Glued, "Englué !", new Color(0.85f, 0.6f, 0.3f)),
+            new PreparedCue(Preparation.Pulled, "Attiré !", new Color(0.72f, 0.52f, 1f)),
+            new PreparedCue(Preparation.Marked, "Marqué !", new Color(1f, 0.97f, 0.75f)),
+        };
 
         [Header("Bonus de distance")]
         [Tooltip("Distance (m) à partir de laquelle le bonus commence.")]
@@ -83,6 +106,30 @@ namespace Archery.Economy
 
         [SerializeField]
         AudioClip m_KillClip;
+
+        // Une sorte de préparation (l'ennemi préparé, 30 octobre) : ses dégâts (31 octobre), le mot, sa couleur et le son.
+        [Serializable]
+        struct PreparedCue
+        {
+            public Preparation Kind;
+
+            [Tooltip("Les dégâts d'un coup du joueur sur un ennemi préparé ainsi sont multipliés par ceci (2 = +100 %) : plus " +
+                     "la préparation est difficile à obtenir, plus ils montent. 0 : la valeur proposée par Enemy.DefaultPreparedDamage.")]
+            public float Damage;
+
+            public string Word;
+            public Color Color;
+            public AudioClip Clip;
+
+            public PreparedCue(Preparation kind, string word, Color color)
+            {
+                Kind = kind;
+                Damage = Enemy.DefaultPreparedDamage(kind);
+                Word = word;
+                Color = color;
+                Clip = null;
+            }
+        }
 
         readonly HashSet<Arrow> m_ArrowsThatHitEnemies = new HashSet<Arrow>();
         float m_Money;
@@ -143,6 +190,13 @@ namespace Archery.Economy
             if (Instance != null && Instance != this)
                 Debug.LogWarning("Il y a plusieurs Score Manager dans la scène.", this);
             Instance = this;
+
+            // Les dégâts de chaque sorte de préparation (31 octobre : selon la difficulté à la préparer).
+            if (m_PreparedCues != null)
+            {
+                foreach (var cue in m_PreparedCues)
+                    Enemy.SetPreparedDamage(cue.Kind, cue.Damage > 0f ? cue.Damage : Enemy.DefaultPreparedDamage(cue.Kind));
+            }
         }
 
         void OnEnable()
@@ -256,7 +310,32 @@ namespace Archery.Economy
                 HitZone.WeakPoint => m_WeakPointHitPoints,
                 _ => m_BodyHitPoints,
             };
-            AddPoints(basePoints * ShotMultiplier(info));
+            AddPoints(basePoints * ShotMultiplier(info) * PreparedMultiplier(enemy, info));
+            ShowPreparation(enemy);
+        }
+
+        // L'ennemi préparé (30 octobre) : un coup du joueur sur un ennemi qu'un bâtiment a préparé (Enemy.HitPreparation, relevé
+        // avant que le coup ne compte).
+        float PreparedMultiplier(Enemy enemy, in DamageInfo info) =>
+            enemy != null && Enemy.IsPlayerHit(info) && enemy.HitPreparation != Preparation.None ? m_PreparedPointsMultiplier : 1f;
+
+        // Le mot et le son de sa préparation, au-dessus de lui.
+        void ShowPreparation(Enemy enemy)
+        {
+            if (enemy == null || enemy.HitPreparation == Preparation.None || m_PreparedCues == null)
+                return;
+
+            foreach (var cue in m_PreparedCues)
+            {
+                if (cue.Kind != enemy.HitPreparation)
+                    continue;
+
+                var position = enemy.Center + Vector3.up * 0.8f;
+                if (!string.IsNullOrEmpty(cue.Word))
+                    FloatingText.Spawn(position, cue.Word, cue.Color, 0.9f, 1f);
+                Sfx.Play(cue.Clip, position, 0.7f, UnityEngine.Random.Range(0.95f, 1.05f));
+                return;
+            }
         }
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)
@@ -269,7 +348,7 @@ namespace Archery.Economy
             if (headshot)
                 Headshots++;
 
-            var points = enemy.Definition.points * (headshot ? m_HeadshotKillMultiplier : 1f) * ShotMultiplier(info);
+            var points = enemy.Definition.points * (headshot ? m_HeadshotKillMultiplier : 1f) * ShotMultiplier(info) * PreparedMultiplier(enemy, info);
             var gained = AddPoints(points);
             if (gained <= 0)
                 return;

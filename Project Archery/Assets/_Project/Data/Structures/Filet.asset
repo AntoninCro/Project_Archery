@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Filet
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 17
+  displayName: Lance-filet
+  slot: 1
+  prefab: {fileID: 8751396483435354057, guid: 27560e58e1df6c445b704c5ef16fe26a, type: 3}
+  color: {r: 0.75, g: 0.85, b: 0.5, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Toutes les 5 s, lance un filet sur le volant le plus proche (16
+      m) : il tombe au sol, bless\xE9 par sa chute, et y reste 3 s."
+  - cost: 0
+    plans: 0
+    description: "Le volant tomb\xE9 reste 5 s au sol."
+  - cost: 0
+    plans: 0
+    description: "Barillet : deux filets \xE0 la fois."
+  - cost: 0
+    plans: 0
+    description: "Filet \xE9lectrique : il \xE9tourdit et blesse, et prend aussi
+      les ennemis au sol."
+  - cost: 0
+    plans: 0
+    description: "Toile g\xE9ante : toutes les 15 s, un filet immense couvre le ciel
+      au-dessus de la voie pendant 6 s ; tous les volants qui le touchent s'\xE9crasent
+      au sol."
+  lotSize: 1
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

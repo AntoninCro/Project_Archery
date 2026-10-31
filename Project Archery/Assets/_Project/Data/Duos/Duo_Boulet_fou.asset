@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Boulet_fou
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Boulet fou
+  slot: 0
+  prefab: {fileID: 2073780575087199314, guid: 4f8966d55ae76684990cc38c83fb5e9a, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Le boulet h\xE9riss\xE9 fait des tours complets en travers de la
+      voie : chaque ennemi frapp\xE9 part loin sur le c\xF4t\xE9, jusque sur la voie
+      voisine, et loin en arri\xE8re sur elle."
+  - cost: 0
+    plans: 4
+    description: "Plus vite, plus loin : l'ennemi lanc\xE9 renverse ceux sur qui
+      il retombe."
+  - cost: 0
+    plans: 4
+    description: "Le boulet de canon : deux boulets ; l'ennemi frapp\xE9 part \xE0
+      toute vitesse jusqu'au mur d'en face, s'y \xE9crase et blesse ceux qui sont
+      autour."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 2}
+  retired: 0

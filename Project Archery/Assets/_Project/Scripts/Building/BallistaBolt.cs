@@ -38,13 +38,21 @@ namespace Archery.Building
         float m_Damage;
         int m_PierceLeft;
         UnityEngine.Object m_Source;
+        Action<Enemies.Enemy, Vector3> m_OnHit;
         float m_Age;
         float m_Travel;
         bool m_Stuck;
 
         /// <summary>Lance le carreau. <paramref name="pierce"/> : ennemis qu'il traverse avant de s'arrêter.</summary>
-        public void Launch(Vector3 velocity, float damage, int pierce, UnityEngine.Object source)
+        public void Launch(Vector3 velocity, float damage, int pierce, UnityEngine.Object source) => Launch(velocity, damage, pierce, source, null);
+
+        /// <summary>
+        /// Comme <see cref="Launch(Vector3, float, int, UnityEngine.Object)"/> ; <paramref name="onHit"/> est appelé pour chaque
+        /// ennemi touché, avec la direction du carreau (le harpon et la baliste titan, 29 octobre).
+        /// </summary>
+        public void Launch(Vector3 velocity, float damage, int pierce, UnityEngine.Object source, Action<Enemies.Enemy, Vector3> onHit)
         {
+            m_OnHit = onHit;
             m_Velocity = velocity;
             m_Damage = damage;
             m_PierceLeft = Mathf.Max(0, pierce);
@@ -150,6 +158,10 @@ namespace Archery.Building
 
             if (HitEffects.Instance != null)
                 HitEffects.Instance.PlayImpact(hit.collider, hit.point, -direction);
+
+            var enemy = m_OnHit != null ? owner.GetComponentInParent<Enemies.Enemy>() : null;
+            if (enemy != null)
+                m_OnHit(enemy, direction);
             return true;
         }
     }

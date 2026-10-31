@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Mortier
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 9
+  displayName: Mortier
+  slot: 1
+  prefab: {fileID: 639149191176034719, guid: 5b99d43c505cc1b48a9a287e0363ccce, type: 3}
+  color: {r: 0.78, g: 0.78, b: 0.85, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Tire en cloche sur le groupe d'ennemis au sol le plus serr\xE9,
+      de 6 \xE0 24 m, toutes les 4,5 s : l'explosion blesse tous ceux autour (2,5
+      m). Les volants passent au-dessus."
+  - cost: 0
+    plans: 0
+    description: "Obus \xE0 fragmentation : quatre \xE9clats retombent autour de
+      chaque explosion."
+  - cost: 0
+    plans: 0
+    description: "Mortier de si\xE8ge : deux tubes, plus de port\xE9e."
+  - cost: 0
+    plans: 0
+    description: "Obus de goudron : une flaque qui ralentit ; ta fl\xE8che enflamm\xE9e
+      l'embrase."
+  - cost: 0
+    plans: 0
+    description: 'Bombardement : toutes les 15 s, 12 obus pleuvent tout le long de
+      la voie, le sol reste en feu et les ennemis volent dans tous les sens.'
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

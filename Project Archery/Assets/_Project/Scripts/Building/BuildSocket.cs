@@ -18,9 +18,10 @@ namespace Archery.Building
     /// les colliders du bâtiment s'y ajoutent : viser le bâtiment ouvre aussi le panneau.
     /// L'avant du socle (axe Z, bleu) compte pour les barricades : il doit pointer vers la forêt, d'où viennent les ennemis.
     /// Depuis la refonte du 27 octobre (étape 3), les 12 socles posés à la main sont remplacés par les emplacements de la
-    /// <see cref="BuildGrid"/>, un par case constructible de la carte (<see cref="IsCandidate"/>). Vides, ils sont invisibles et
-    /// ne se visent pas : on y pose l'hologramme d'un plan (<see cref="BuildPlacement"/>), et leurs runes ne s'allument que
-    /// pendant la pose. Construits, ils se visent comme avant (panneau : améliorer, déplacer).
+    /// <see cref="BuildGrid"/> (<see cref="IsCandidate"/>). Depuis le 28 octobre, un emplacement de la grille naît à la pose
+    /// d'un bâtiment, sur les cases qu'il occupe (<see cref="BuildPlacement"/>), et disparaît quand on le déplace ; seuls les
+    /// petits emplacements de la tour sont faits d'avance. Vides, ils sont invisibles et ne se visent pas. Construits, ils se
+    /// visent comme avant (panneau : améliorer, déplacer).
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildSocket : XRBaseInteractable
@@ -72,10 +73,11 @@ namespace Archery.Building
         public bool IsHighlighted => isHovered || (BuildPlacement.Instance != null && BuildPlacement.Instance.Target == this);
 
         /// <summary>
-        /// Les runes de l'emplacement s'affichent (<c>MapGameplayLights</c>) : toujours pour un socle posé à la main ; pour un
-        /// emplacement de la grille, pendant la pose, autour du joueur, là où le bâtiment peut aller.
+        /// Les runes de l'emplacement s'affichent (<c>MapGameplayLights</c>) : pour un socle posé à la main seulement. Depuis le
+        /// 28 octobre, les emplacements de la grille n'en ont plus : la grille dessinée au sol pendant la pose les remplace
+        /// (<see cref="BuildGridOverlay"/>).
         /// </summary>
-        public bool ShowsRune => !IsCandidate || (BuildPlacement.Instance != null && BuildPlacement.Instance.Reveals(this));
+        public bool ShowsRune => !IsCandidate;
 
         /// <summary>
         /// La couleur des runes d'un emplacement de la grille, selon sa sorte : orange sur la voie, vert en hauteur, doré sur la

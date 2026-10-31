@@ -73,12 +73,13 @@ MonoBehaviour:
         sous un rayon violet. Vise-en une et appuie sur la g\xE2chette (ou la g\xE2chette
         de prise) : choisis un lot de plans de construction."
     - title: "Choisir un b\xE2timent"
-      text: "Touche le bouton \xAB Plans \xBB de ta montre avec l'autre main : l'hologramme
-        d'un b\xE2timent suit le rayon de ta main. Joystick : gauche et droite le
-        tournent, haut et bas changent de plan ; g\xE2chette : le poser l\xE0 o\xF9
-        les runes s'allument (orange sur la voie, bleues au bord, vertes en hauteur)
-        ; poign\xE9e : annuler. Pose-le sur un b\xE2timent pareil pour le faire monter
-        de niveau ; entre les vagues, le panneau d'un b\xE2timent propose de le d\xE9placer."
+      text: "Touche le bouton \xAB Plans \xBB de ta montre avec l'autre main : le
+        menu des plans s'ouvre, et l'hologramme du b\xE2timent du milieu suit le
+        rayon de ta main, sur la grille au sol : verte o\xF9 il se pose, rouge ailleurs.
+        Joystick : gauche et droite changent de b\xE2timent (ou touche une carte),
+        haut et bas le tournent ; g\xE2chette : poser ; poign\xE9e : fermer. Sur
+        un b\xE2timent pareil, il monte de niveau ; entre les vagues, son panneau
+        propose de le d\xE9placer."
     - title: Construire
       text: "Un marteau appara\xEEt dans chaque main. Frappe trois fois le plan bleu
         pour construire le b\xE2timent."

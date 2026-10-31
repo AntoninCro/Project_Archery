@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: AnneauFoudre
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 21
+  displayName: Anneau de foudre
+  slot: 1
+  prefab: {fileID: 8717422513684552993, guid: acda66d517edf0647bfa3d29eadf2725, type: 3}
+  color: {r: 0.45, g: 0.75, b: 1, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Partout. Une fl\xE8che tir\xE9e \xE0 travers l'anneau se charge
+      : \xE0 l'impact, un \xE9clair saute vers 2 ennemis proches (la moiti\xE9 de
+      ses d\xE9g\xE2ts). Il se tourne vers toi."
+  - cost: 0
+    plans: 0
+    description: "La fl\xE8che fait 15 % de d\xE9g\xE2ts en plus ; l'\xE9clair saute
+      vers 3 ennemis."
+  - cost: 0
+    plans: 0
+    description: "La fl\xE8che fait 30 % de d\xE9g\xE2ts en plus ; 4 ennemis."
+  lotSize: 1
+  rarity: 1
+  anywhere: 1
+  footprint: {x: 0, y: 0}
+  retired: 1

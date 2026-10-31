@@ -144,7 +144,10 @@ namespace Archery.Defense
             return best;
         }
 
-        /// <summary>Rend des PV à la tour debout : à la fin de chaque vague, tous (depuis le 25 octobre ; avant, en boutique).</summary>
+        /// <summary>
+        /// Rend des PV à la tour debout : à la fin de chaque vague, 15 % de ses PV max depuis le 29 octobre (tous du 25 au
+        /// 29 octobre ; avant, en boutique).
+        /// </summary>
         public void Repair(float amount)
         {
             if (!IsStanding || amount <= 0f)
@@ -154,7 +157,10 @@ namespace Archery.Defense
             Sfx.Play(m_RepairClip, transform.position + Vector3.up * 2f);
         }
 
-        /// <summary>Relève la tour détruite avec tous ses PV (à la fin de la vague, depuis le 25 octobre ; avant, en boutique).</summary>
+        /// <summary>
+        /// Relève la tour détruite avec tous ses PV (à la fin de la vague du 25 au 29 octobre ; avant, en boutique). Plus appelé
+        /// depuis le 29 octobre : la tour détruite reste en ruines jusqu'à la fin de la partie (WaveManager).
+        /// </summary>
         public void Rebuild()
         {
             if (IsStanding)

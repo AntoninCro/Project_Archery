@@ -20,8 +20,26 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 618fed3b5d6b446a8d1573870490eac8, type: 3}
   levels:
   - cost: 20
+    plans: 0
     description: "Les ennemis au sol s'arr\xEAtent pour la frapper.\n400 PV."
   - cost: 30
-    description: 700 PV.
+    plans: 0
+    description: "Rempart : PV \xD72, et des pointes blessent ceux qui la frappent."
   - cost: 45
-    description: "1 000 PV.\nDes pointes blessent ceux qui la frappent."
+    plans: 0
+    description: "Pendule : un portique au-dessus d'elle, d'o\xF9 un boulet h\xE9riss\xE9
+      se balance en travers de la voie et fauche ceux qui l'assi\xE8gent."
+  - cost: 45
+    plans: 0
+    description: "Herse : toutes les 8 s, elle s'abat devant la barricade et \xE9tourdit
+      ceux qui frappent. Ta fl\xE8che qui traverse la barricade devient perforante."
+  - cost: 45
+    plans: 0
+    description: "Forteresse : un mur g\xE9ant, deux tours de guet qui criblent la
+      voie de carreaux ; chaque coup re\xE7u l\xE2che une onde qui renvoie les assaillants
+      10 m en arri\xE8re, en vol."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

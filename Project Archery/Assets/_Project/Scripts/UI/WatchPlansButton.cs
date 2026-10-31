@@ -10,14 +10,16 @@ namespace Archery.UI
 {
     /// <summary>
     /// Bouton « Plans » de la montre (refonte du tower defense, étape 3, 27 octobre ; <c>Docs/Refonte_TowerDefense.md</c>, partie 3) :
-    /// on le touche avec l'autre main et on reste un court instant dessus, comme le bouton « Tour », et un plan sort de la
-    /// montre : son hologramme suit le rayon de la main qui porte la montre (<see cref="BuildPlacement"/>). Retouché pendant la
-    /// pose, il l'annule. Visible seulement quand le joueur a des plans.
+    /// on le touche avec l'autre main et on reste un court instant dessus, comme le bouton « Tour », et le menu des plans s'ouvre
+    /// (28 octobre : un carrousel de cartes, <see cref="BuildMenu"/>) ; le bâtiment de la carte du milieu suit aussitôt le rayon
+    /// de la main qui porte la montre (<see cref="BuildPlacement"/>). Retouché, il ferme le menu et range le plan. Visible
+    /// seulement quand le joueur a des plans.
     /// </summary>
     /// <remarks>
     /// Fabriqué au lancement par <see cref="BuildPlacement"/>, en copiant le bouton « Tour » (son fond, son remplissage, son
-    /// texte) à côté de lui : rien à poser dans la scène. Son rayon de toucher est plus petit que celui du bouton « Tour », et
-    /// les deux boutons sont assez écartés pour qu'on ne déclenche pas l'un en touchant l'autre.
+    /// texte) : rien à poser dans la scène. Depuis le 29 octobre (demandé par le joueur), il est au-dessus du cadran, en reflet
+    /// du bouton « Tour » qui est dessous ; avant, à sa gauche, en bas à gauche de la montre. Son rayon de toucher est plus petit
+    /// que celui du bouton « Tour », et les deux boutons sont assez écartés pour qu'on ne déclenche pas l'un en touchant l'autre.
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
@@ -48,9 +50,11 @@ namespace Archery.UI
         bool m_Armed = true;
         int m_LastPlans = -1;
         bool m_LastActive;
+        bool m_LastMenu;
 
         /// <summary>
-        /// Copie le bouton « Tour » à côté de lui, à <paramref name="worldGap"/> m (de centre à centre), et en fait le bouton « Plans ».
+        /// Copie le bouton « Tour », de l'autre côté du cadran (au-dessus), à <paramref name="worldGap"/> m de lui au moins (de
+        /// centre à centre), et en fait le bouton « Plans ».
         /// </summary>
         public static WatchPlansButton Create(WatchTowerButton tower, float worldGap)
         {
@@ -76,8 +80,17 @@ namespace Archery.UI
             copy.transform.SetParent(tower.transform.parent, false);
             var rect = (RectTransform)copy.transform;
             var source = (RectTransform)tower.transform;
-            var scale = Mathf.Max(1e-5f, Mathf.Abs(source.lossyScale.x));
-            rect.anchoredPosition = source.anchoredPosition + new Vector2(-worldGap / scale, 0f);
+            var scale = Mathf.Max(1e-5f, Mathf.Abs(source.lossyScale.y));
+
+            // Le reflet du bouton « Tour » par rapport au milieu du cadran : il est 42 points sous le bord du bas, celui-ci 42 points
+            // au-dessus du bord du haut.
+            rect.anchorMin = new Vector2(source.anchorMin.x, 1f - source.anchorMax.y);
+            rect.anchorMax = new Vector2(source.anchorMax.x, 1f - source.anchorMin.y);
+            rect.pivot = new Vector2(source.pivot.x, 1f - source.pivot.y);
+            rect.anchoredPosition = new Vector2(source.anchoredPosition.x, -source.anchoredPosition.y);
+            var gap = Vector3.Distance(rect.TransformPoint(rect.rect.center), source.TransformPoint(source.rect.center));
+            if (gap < worldGap)
+                rect.anchoredPosition += new Vector2(0f, (worldGap - gap) / scale);
             Destroy(holder);
             return button;
         }
@@ -103,7 +116,7 @@ namespace Archery.UI
                 return;
             }
 
-            UpdateLook(plans, active);
+            UpdateLook(plans, active, placement.IsMenuOpen);
 
             var hand = TouchingHand();
             if (hand == null)
@@ -127,9 +140,11 @@ namespace Archery.UI
             Press(hand, placement);
         }
 
+        // Le menu des plans s'ouvre, l'hologramme du bâtiment du milieu déjà sorti (28 octobre au soir) ; retouché, le bouton
+        // ferme le menu et range le plan, ou abandonne un déplacement.
         void Press(XRBaseInputInteractor hand, BuildPlacement placement)
         {
-            var done = placement.IsActive ? placement.Cancel("Pose annulée") : placement.BeginFromWatch(PointerHand());
+            var done = placement.IsActive ? placement.Cancel(placement.IsMoving ? "Déplacement annulé" : null) : placement.OpenMenu(PointerHand());
             Haptics.Pulse(hand, done ? 0.5f : 0.15f, done ? 0.08f : 0.05f);
             Sfx.Play(done ? m_PressClip : m_DeniedClip, transform.position, done ? 0.8f : 0.6f, 1f, 0f);
         }
@@ -172,17 +187,18 @@ namespace Archery.UI
             return rig.TryGetHand(free, out var freeHand) ? freeHand : null;
         }
 
-        void UpdateLook(int plans, bool active)
+        void UpdateLook(int plans, bool active, bool menu)
         {
             if (m_Background != null)
                 m_Background.color = active ? m_ActiveColor : m_ReadyColor;
 
-            if (m_Label == null || (plans == m_LastPlans && active == m_LastActive))
+            if (m_Label == null || (plans == m_LastPlans && active == m_LastActive && menu == m_LastMenu))
                 return;
 
             m_LastPlans = plans;
             m_LastActive = active;
-            m_Label.text = active ? "Annuler" : $"Plans {plans}";
+            m_LastMenu = menu;
+            m_Label.text = menu ? "Fermer" : active ? "Annuler" : $"Plans {plans}";
         }
 
         void SetFill(float amount)

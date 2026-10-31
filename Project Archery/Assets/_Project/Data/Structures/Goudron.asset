@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Goudron
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 5
+  displayName: Goudron
+  slot: 0
+  prefab: {fileID: 142691763020905391, guid: 2fa2fb3feb24941418a3ebe1a7479868, type: 3}
+  color: {r: 0.7, g: 0.58, b: 0.45, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: Une flaque qui ralentit de 40 % les ennemis au sol qui la traversent.
+  - cost: 0
+    plans: 0
+    description: Ralentit de 50 %, flaque plus grande.
+  - cost: 0
+    plans: 0
+    description: Ralentit de 60 %, une grande mare.
+  lotSize: 2
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

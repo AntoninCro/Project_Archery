@@ -312,6 +312,10 @@ namespace Archery.Upgrades
         public AudioClip LightningClip => m_LightningClip;
         public AudioClip ExplosionClip => m_ExplosionClip;
 
+        // Les matériaux de l'explosion, repris par la mine du tower defense (28 octobre).
+        public Material ExplosionFireMaterial => m_ExplosionFireMaterial;
+        public Material ExplosionSmokeMaterial => m_ExplosionSmokeMaterial;
+
         /// <summary>
         /// Une flèche née d'une pièce (26 octobre : les éclats de la pointe éclatée, les flèches du fût détonateur) : une flèche
         /// en plus, qui tire ses propres effets au sort mais ne se divise pas. La renvoie (null s'il y a trop de flèches en vol).

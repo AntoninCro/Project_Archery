@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: SeauHuile
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 22
+  displayName: Seau d'huile
+  slot: 3
+  prefab: {fileID: 4317389870090939507, guid: 7c430e2d1f3cb7e42803c374797ca30d, type: 3}
+  color: {r: 0.9, g: 0.7, b: 0.2, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Sur la tour. Touche sa cible (une fl\xE8che tir\xE9e, ou tenue
+      en main) : le seau renverse son huile bouillante sur tous les ennemis au sol
+      \xE0 8 m du pied de la tour (40 de d\xE9g\xE2ts) et les ralentit. Il se remplit
+      en 20 s."
+  - cost: 0
+    plans: 0
+    description: "60 de d\xE9g\xE2ts, 9 m, se remplit en 16 s."
+  - cost: 0
+    plans: 0
+    description: "90 de d\xE9g\xE2ts, 10 m, se remplit en 12 s."
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

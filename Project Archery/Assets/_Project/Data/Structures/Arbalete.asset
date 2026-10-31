@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Arbalete
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 8
+  displayName: "Arbal\xE8te \xE0 r\xE9p\xE9tition"
+  slot: 1
+  prefab: {fileID: 7504261035969383255, guid: 053d55460e33ba34e81b0ff1a8bba67b, type: 3}
+  color: {r: 0.9, g: 0.72, b: 0.45, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Tire seule des rafales de 3 carreaux sur l'ennemi le plus proche
+      \xE0 18 m, toutes les 2,2 s. Vise d'abord les volants, plus bless\xE9s (\xD71,5)."
+  - cost: 0
+    plans: 0
+    description: "Rafales de 4 carreaux, plus forts (\xD71,33), toutes les 1,9 s."
+  - cost: 0
+    plans: 0
+    description: "Rafales de 5 carreaux, encore plus forts (\xD71,8), toutes les
+      1,6 s."
+  lotSize: 1
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

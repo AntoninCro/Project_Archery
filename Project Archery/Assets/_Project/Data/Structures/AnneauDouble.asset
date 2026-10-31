@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: AnneauDouble
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 21
+  displayName: Anneau double
+  slot: 1
+  prefab: {fileID: 324419165577612450, guid: 22f14a3f493123b48928b1dcff812c21, type: 3}
+  color: {r: 0.8, g: 0.45, b: 1, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Partout. Une fl\xE8che tir\xE9e \xE0 travers l'anneau se d\xE9double
+      : une fl\xE8che en plus part \xE0 c\xF4t\xE9 d'elle (60 % de ses d\xE9g\xE2ts).
+      Il se tourne vers toi."
+  - cost: 0
+    plans: 0
+    description: "La fl\xE8che fait 15 % de d\xE9g\xE2ts en plus ; la fl\xE8che en
+      plus, 80 %."
+  - cost: 0
+    plans: 0
+    description: "La fl\xE8che fait 30 % de d\xE9g\xE2ts en plus ; deux fl\xE8ches
+      en plus."
+  lotSize: 1
+  rarity: 1
+  anywhere: 1
+  footprint: {x: 0, y: 0}
+  retired: 1

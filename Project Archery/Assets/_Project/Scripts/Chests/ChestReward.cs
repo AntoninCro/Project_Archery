@@ -159,8 +159,10 @@ namespace Archery.Chests
         /// <summary>
         /// La caisse de l'ingénieur (refonte du tower defense, 27 octobre) : <paramref name="count"/> lots de plans de bâtiments
         /// différents, un seul à prendre. Un lot donne un ou plusieurs plans du même bâtiment (<see cref="StructureDefinition.LotSize"/> :
-        /// les bâtiments communs viennent par lots). Pour l'instant au hasard parmi les bâtiments du Build Manager ; les raretés
-        /// viendront avec les constructions nouvelles (étape 5).
+        /// les bâtiments communs viennent par lots). Depuis le 28 octobre (étape 5), chaque orbe tire d'abord une rareté (60 %
+        /// commune, 30 % rare, 10 % légendaire, parmi celles qui restent), puis un bâtiment de cette rareté. Depuis le 29 octobre,
+        /// les bâtiments retirés (<see cref="StructureDefinition.retired"/>) ne sont plus proposés : les deux légendaires l'étant,
+        /// il ne reste que commune et rare (2 chances sur 3, 1 sur 3).
         /// </summary>
         public static List<ChestReward> RollPlans(int count)
         {
@@ -172,13 +174,13 @@ namespace Archery.Chests
             s_Structures.Clear();
             foreach (var definition in builds.Structures)
             {
-                if (definition != null && definition.prefab != null && !s_Structures.Contains(definition))
+                if (definition != null && definition.prefab != null && !definition.retired && !s_Structures.Contains(definition))
                     s_Structures.Add(definition);
             }
 
             while (rewards.Count < count && s_Structures.Count > 0)
             {
-                var index = Random.Range(0, s_Structures.Count);
+                var index = PickStructure();
                 var definition = s_Structures[index];
                 s_Structures.RemoveAt(index);
 
@@ -200,6 +202,51 @@ namespace Archery.Chests
             }
 
             return rewards;
+        }
+
+        static readonly float[] k_StructureRarityWeights = { 0.6f, 0.3f, 0.1f };
+
+        // Un bâtiment de la liste : la rareté d'abord (pondérée, parmi celles qui ont encore un bâtiment), puis au hasard dans elle.
+        static int PickStructure()
+        {
+            var total = 0f;
+            for (var rarity = 0; rarity < k_StructureRarityWeights.Length; rarity++)
+            {
+                if (HasRarity(rarity))
+                    total += k_StructureRarityWeights[rarity];
+            }
+
+            var roll = Random.value * total;
+            var chosen = -1;
+            for (var rarity = 0; rarity < k_StructureRarityWeights.Length && chosen < 0; rarity++)
+            {
+                if (!HasRarity(rarity))
+                    continue;
+                roll -= k_StructureRarityWeights[rarity];
+                if (roll <= 0f)
+                    chosen = rarity;
+            }
+
+            var start = Random.Range(0, s_Structures.Count);
+            for (var i = 0; i < s_Structures.Count; i++)
+            {
+                var index = (start + i) % s_Structures.Count;
+                if (chosen < 0 || (int)s_Structures[index].rarity == chosen)
+                    return index;
+            }
+
+            return start;
+        }
+
+        static bool HasRarity(int rarity)
+        {
+            foreach (var definition in s_Structures)
+            {
+                if ((int)definition.rarity == rarity)
+                    return true;
+            }
+
+            return false;
         }
 
         // Un objet : comme en boutique, la rareté d'abord (chance comprise), puis un objet de cette rareté. Un parchemin : au hasard.

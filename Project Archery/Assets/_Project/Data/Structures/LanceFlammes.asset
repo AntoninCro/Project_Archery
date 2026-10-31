@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: LanceFlammes
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 18
+  displayName: Lance-flammes
+  slot: 1
+  prefab: {fileID: 2584432846062466349, guid: a8715ae1e25623840aa768401ea20645, type: 3}
+  color: {r: 1, g: 0.5, b: 0.2, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Quand des ennemis sont devant lui (6 m), volants compris, il crache
+      un jet de feu toutes les 3 s : ils br\xFBlent (12 de d\xE9g\xE2ts sur 3 s)."
+  - cost: 0
+    plans: 0
+    description: "7 m, br\xFBlure \xD71,5, toutes les 2,6 s."
+  - cost: 0
+    plans: 0
+    description: "8 m, br\xFBlure \xD72,25, toutes les 2,2 s."
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

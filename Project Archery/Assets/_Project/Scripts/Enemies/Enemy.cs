@@ -27,7 +27,7 @@ namespace Archery.Enemies
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Health))]
-    public class Enemy : MonoBehaviour
+    public partial class Enemy : MonoBehaviour
     {
         enum State
         {
@@ -186,6 +186,8 @@ namespace Archery.Enemies
             m_Behaviour = GetComponent<EnemyBehaviour>();
             m_RangedAttack = GetComponent<EnemyRangedAttack>();
             m_Health = GetComponent<Health>();
+            // L'ennemi préparé (30 octobre) : un coup du joueur sur un ennemi qu'un bâtiment a préparé fait plus de dégâts.
+            m_Health.DamageFilter = FilterPreparedDamage;
             m_Colliders = GetComponentsInChildren<Collider>(true);
             if (m_Animator == null)
                 m_Animator = GetComponentInChildren<Animator>();
@@ -239,6 +241,11 @@ namespace Archery.Enemies
         void Update()
         {
             var deltaTime = Time.deltaTime;
+
+            // Projeté (refonte du tower defense, 27 octobre ; Enemy.Launch.cs) : il suit sa cloche jusqu'au sol, même mort.
+            if (UpdateAirborne(deltaTime))
+                return;
+
             if (m_State == State.Dead)
             {
                 UpdateCorpse(deltaTime);
@@ -275,6 +282,13 @@ namespace Archery.Enemies
 
             UpdatePush(deltaTime);
 
+            // Étourdi : il se relève d'une chute, ou a heurté un mur (Enemy.Launch.cs).
+            if (UpdateStun(deltaTime))
+            {
+                UpdateAnimation();
+                return;
+            }
+
             if (m_State == State.Fleeing)
             {
                 if (m_Behaviour != null)
@@ -294,6 +308,12 @@ namespace Archery.Enemies
 
             ChooseTarget();
             UpdatePendingHit(deltaTime);
+
+            // Mort de son propre coup (29 octobre : les pointes de la barricade le blessent quand il frappe) : sans ce retour, la
+            // suite le remettait « en attaque », mort mais debout, ses colliders coupés (les flèches le traversaient) et sans
+            // NavMeshAgent (il restait planté là, même la barricade tombée).
+            if (m_State == State.Dead)
+                return;
 
             // Un ennemi qui attaque ne repart qu'une fois nettement hors de portée : sinon, à la limite (un tireur à 25 m
             // du joueur, qui bouge sans cesse avec le casque), il s'arrêtait et repartait plusieurs fois par seconde.
@@ -502,6 +522,7 @@ namespace Archery.Enemies
             m_SlowMultiplier = 1f;
             m_FadingAge = m_FadingDuration;
             m_Push = Vector3.zero;
+            ClearPreparations();
             if (m_Animator != null)
                 m_Animator.speed = 1f;
             m_Health.ResetHealth(Def.maxHealth * DifficultyManager.Current.enemyHealth * EnemyScaling.Health);
@@ -801,6 +822,8 @@ namespace Archery.Enemies
             s_Alive.Clear();
             Damaged = null;
             Killed = null;
+            Landed = null;
+            Smashed = null;
         }
     }
 }

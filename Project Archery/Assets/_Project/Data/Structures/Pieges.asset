@@ -20,8 +20,26 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 8beff2f2271a423d809c37e9325cea1c, type: 3}
   levels:
   - cost: 25
-    description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les 0,8 s."
+    plans: 0
+    description: "Les ennemis au sol qui passent dessus sont bless\xE9s toutes les
+      0,8 s."
   - cost: 35
-    description: "D\xE9g\xE2ts \xD71,5, un coup toutes les 0,65 s."
+    plans: 0
+    description: "Barbel\xE9es : les bless\xE9s saignent encore 3 s."
   - cost: 50
-    description: "D\xE9g\xE2ts \xD72,25, un coup toutes les 0,5 s.\nIls sont aussi ralentis de 20 %."
+    plans: 0
+    description: 'Champ de pieux : deux fois plus large.'
+  - cost: 50
+    plans: 0
+    description: "Une mine cach\xE9e explose au premier passage et se r\xE9arme toutes
+      les 20 s ; ta fl\xE8che la fait sauter."
+  - cost: 50
+    plans: 0
+    description: "M\xE2choire de la terre : toutes les 12 s, la voie s'ouvre et des
+      pieux de 4 m jaillissent sur 10 m : les petits sont tu\xE9s net, les autres
+      embroch\xE9s en l'air."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

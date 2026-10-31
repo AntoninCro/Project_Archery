@@ -24,6 +24,54 @@ builds de développement (`Core/PerfProbe.cs`), et la **refonte de la partie rog
 **Commité le soir du 26 octobre** (`d523f2b`, poussé avec `7a69a08`) : la troisième version de l'atelier (flèche debout,
 sceaux animés), les PV des parchemins retirés, la télékinésie guidée par la main.
 
+### Le deuxième chantier : la refonte du tower defense (27 et 28 octobre, dans une autre discussion)
+
+Tout est dans `Refonte_TowerDefense.md` (partie « Avancement » en tête : ce qui est fait, ce qui reste, l'étape suivante).
+En bref, **codé et compilé, rien de testé dans Unity ni au casque, rien de commité** :
+- étape 1, les modèles : 5 packs CC0 dans `projet archery/Assets_TowerDefense/` (hors du dépôt), et ce que le joueur a choisi
+  dans `Assets/construction` (pack RTS allégé, modèles Poly Pizza ; crédités) ;
+- étape 2 : les **caisses de l'ingénieur** (à la place des cristaux) donnent des **plans** (à la place des matériaux) ;
+- étape 3 : la **grille** des zones constructibles (`Building/BuildGrid`), la pose à la **montre** (bouton « Plans »,
+  hologramme, joystick : `Building/BuildPlacement`, `UI/WatchPlansButton`), le déplacement ; socles et barricades de départ
+  désactivés au lancement ;
+- étape 4 : les ennemis **projetés** (`Enemies/Enemy.Launch.cs`) et le tir au vol ;
+- étape 5 (les constructions nouvelles), **codée en entier le 28 octobre, en 6 lots** : raretés, mine, goudron, tremplin,
+  tour de foudre ; arbalète à répétition, mortier ; geyser, soufflerie, tour-aimant, catapulte ; trappe, pendule, bulle,
+  lance-filet ; lance-flammes, phare, miroir, trois anneaux élémentaires ; seau d'huile, baliste sur la tour, esprit
+  gardien, avec des emplacements sur la tour (`Editor/TowerDefenseStep5Baker` crée prefabs et réglages, à l'ouverture de
+  Unity : enregistrer la scène ensuite). Raretés proposées par Claude et acceptées, sauf celle du seau (rare, proposée).
+  La suite : tester les étapes 2 à 5, puis l'étape 6 (les fusions).
+- **premiers tests du joueur, le soir du 28 octobre**, et ce qui a été refait (codé, compilé, pas encore testé) : la baliste sur
+  la tour tire sur les ennemis collés à la tour ; une **grille de 1 m visible au sol** pendant la pose (verte où le bâtiment se
+  pose, rouge ailleurs ; un bâtiment occupe plusieurs cases), à la place des runes ; un **menu des plans** à la montre
+  (carrousel de cartes avec l'aperçu 3D de chaque bâtiment) ; une petite baliste du Tower Defense Kit à la place de l'arbalète
+  de l'arbalète à répétition et du lance-filet. Puis, après un deuxième essai, la grille « mal cadrée » sur la voie du
+  milieu : la voie est maintenant lue dans le sol (la terre des tuiles), plus à 3 m du chemin des ennemis. Puis : le menu
+  flotte et rejoint le joueur, on construit sur la rivière, et la pose se fait en un geste (le menu reste ouvert, le
+  joystick change de bâtiment, une seule gâchette). Détail : `Refonte_TowerDefense.md`, en tête de « Avancement ».
+- **deuxième brainstorm, le 29 octobre** (fait, rien de codé) : le tower defense faisait « gadget ». Décidé : quatre pistes
+  (les bâtiments préparent les tirs, tiennent le front, une menace par voie, moins de bâtiments), une tour qui ne se
+  reconstruit plus (15 % de PV par vague), et, d'après Bloons TD6, 10 tours à 5 niveaux aux évolutions uniques (des
+  niveaux 5 très forts et très visibles, comme la rampe de lancement qui tue à l'atterrissage), 13 duos, 5 trios et
+  4 ultimes. **Lot 1 codé** (la tour à 15 %, jamais reconstruite ; les 10 tours), pas encore testé ; **lot 2 commencé** :
+  le système des 5 niveaux et le tremplin : catapulte (N3, N4) validée au casque, rampe (N5) revue après l'essai
+  (370 m, retombe sur un groupe) et validée, le modèle de tous les niveaux 5 ; les 9 autres tours codées le soir, à tester :
+  `Refonte_TowerDefense.md`, parties 12.6 à 12.10.
+- **l'allure des tours, le 30 octobre** (codée, compilée, pas encore vue dans Unity) : une palette par tour, les pièces revues
+  d'après le troisième retour du joueur, plus de faces confondues, le bug des ennemis plantés dans la rivière ; partie 12.11.
+  Pour voir une tour sans Unity ni casque : `Tools/allure_tours/apercu.py` (dessins de chaque niveau d'après le prefab et
+  `Editor/TowerDefenseLook.json`) et `faces_superposees.py` ; pour changer une tour, modifier `conception.py`, le relancer,
+  vérifier les dessins, puis retirer la marque « Allure du 30 octobre » du prefab ou en changer le nom.
+- **l'ennemi préparé (lot 3), le 30 octobre** (codé, compilé, pas encore testé) : un coup du joueur sur un ennemi qu'un
+  bâtiment a préparé (en l'air, gelé, cloué, pris au filet, étourdi, englué, attiré, marqué) fait plus de dégâts (de
+  +15 % à +100 %, selon la difficulté à le préparer) et 1,5 fois plus de points, avec un mot et un son ; partie 12.12. Ensuite, au choix du joueur : les lots 4 à 6 ou les duos
+  (lot 7).
+- **les duos, le 31 octobre** (le joueur a refait la formule) : un duo est une tour nouvelle, à l'attaque à elle, à 3 niveaux
+  (4 plans chacun) ; 13 duos décidés (partie 12.15). Codés : le système de fusion et le **Boulet fou** (compilé, pas encore vu
+  dans Unity) ; partie 12.16. Leur modèle : `Tools/allure_tours/duos.py`, puis `conception.py`. Ensuite : les 12 autres duos,
+  un par un, puis les trios et les ultimes.
+Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches).
+
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
 
 **Pourquoi** : le joueur trouvait la partie roguelike ratée (des hausses de statistiques en boucle, une cinquantaine

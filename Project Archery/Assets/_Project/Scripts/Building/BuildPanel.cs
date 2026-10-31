@@ -202,8 +202,10 @@ namespace Archery.Building
                 m_MaterialsText.text = "Plans : " + (builds != null ? builds.TotalPlans : 0);
 
             var structure = Socket.Structure;
+            var duo = structure as TowerDuo;
             if (m_TitleText != null)
                 m_TitleText.text = structure == null ? $"Construire · {Socket.DisplayName}"
+                    : duo != null ? $"Duo · {structure.DisplayName} · niveau {structure.Level}"
                     : $"{structure.DisplayName} · niveau {structure.Level}";
 
             for (var i = 0; i < m_CardChoices.Length; i++)
@@ -211,9 +213,11 @@ namespace Archery.Building
             m_MoveCard = -1;
 
             // Un bâtiment : son niveau suivant, et à côté, le déplacer (refonte du 27 octobre, étape 3 : gratuit, entre les vagues).
+            // Un duo (31 octobre) se paie avec les plans de ses deux tours.
             if (structure != null)
             {
-                ShowCard(0, UpgradeOffer(structure, builds), structure.Definition, builds);
+                var owned = duo != null ? (int?)(builds != null ? builds.PlansOf(duo) : 0) : null;
+                ShowCard(0, UpgradeOffer(structure, builds, owned), structure.Definition, builds, owned);
                 var movable = builds != null && structure.IsBuilt && !structure.IsUnderConstruction && m_Cards.Length > 1;
                 if (movable)
                     m_MoveCard = 1;
@@ -239,16 +243,17 @@ namespace Archery.Building
         }
 
         // La carte compare le prix (un plan) aux plans qu'on a de ce bâtiment : sans plan, son prix passe dans la couleur « trop cher ».
-        void ShowCard(int index, ShopOffer offer, StructureDefinition definition, BuildManager builds)
+        // owned : les plans qu'on a pour le payer, s'ils ne sont pas ceux de ce bâtiment (un duo : ceux de ses deux tours).
+        void ShowCard(int index, ShopOffer offer, StructureDefinition definition, BuildManager builds, int? owned = null)
         {
             if (index >= m_Cards.Length || m_Cards[index] == null)
                 return;
 
             m_CardChoices[index] = definition;
-            m_Cards[index].Show(offer, builds != null ? builds.PlansOf(definition) : 0);
+            m_Cards[index].Show(offer, owned ?? (builds != null ? builds.PlansOf(definition) : 0));
         }
 
-        static ShopOffer UpgradeOffer(Structure structure, BuildManager builds)
+        static ShopOffer UpgradeOffer(Structure structure, BuildManager builds, int? owned = null)
         {
             var definition = structure.Definition;
             if (definition == null)
@@ -262,14 +267,20 @@ namespace Archery.Building
                 return info;
             }
 
-            return BuildOffer(definition, structure.Level + 1, builds);
+            var offer = BuildOffer(definition, structure.Level + 1, builds, owned);
+            if (structure is TowerDuo duo)
+                offer.Subtitle = $"Amélioration · {Owned(owned ?? 0)} ({duo.First?.displayName}, {duo.Second?.displayName})";
+            return offer;
         }
 
-        // Un plan par construction ou par niveau (refonte du 27 octobre) ; le sous-titre dit combien on en a.
-        static ShopOffer BuildOffer(StructureDefinition definition, int level, BuildManager builds)
+        static string Owned(int plans) => plans == 0 ? "aucun plan" : plans == 1 ? "1 plan" : plans + " plans";
+
+        // Un plan par construction ou par niveau (refonte du 27 octobre), deux aux niveaux 4 et 5 (29 octobre) ; le sous-titre
+        // dit combien on en a.
+        static ShopOffer BuildOffer(StructureDefinition definition, int level, BuildManager builds, int? ownedPlans = null)
         {
-            var plans = builds != null ? builds.PlansOf(definition) : 0;
-            var owned = plans == 0 ? "aucun plan" : plans == 1 ? "1 plan" : plans + " plans";
+            var owned = Owned(ownedPlans ?? (builds != null ? builds.PlansOf(definition) : 0));
+            var price = definition.PlansFor(level);
             return new ShopOffer
             {
                 Kind = ShopOfferKind.Build,
@@ -279,8 +290,8 @@ namespace Archery.Building
                 Description = definition.DescriptionFor(level),
                 Color = definition.color,
                 Icon = definition.icon,
-                Price = 1,
-                PriceUnit = "plan",
+                Price = price,
+                PriceUnit = price > 1 ? "plans" : "plan",
             };
         }
 

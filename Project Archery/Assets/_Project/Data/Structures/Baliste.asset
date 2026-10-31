@@ -20,8 +20,25 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: f22b715492004f108efe8a2c08f2b14c, type: 3}
   levels:
   - cost: 50
-    description: "Tire seule sur l'ennemi le plus proche \xE0 20 m, volants compris, toutes les 2,4 s."
+    plans: 0
+    description: "Tire seule sur l'ennemi le plus proche \xE0 20 m, volants compris,
+      toutes les 2,4 s."
   - cost: 60
-    description: "D\xE9g\xE2ts \xD71,5, un tir toutes les 1,6 s."
+    plans: 0
+    description: 'Carreaux perforants : chacun traverse 3 ennemis.'
   - cost: 80
-    description: "D\xE9g\xE2ts \xD72, un tir chaque seconde.\nLe carreau traverse 2 ennemis."
+    plans: 0
+    description: "Scorpion : double arc, deux cibles \xE0 la fois."
+  - cost: 80
+    plans: 0
+    description: 'Harpon : le carreau cloue sa cible au sol 1 s, et fait tomber les
+      volants.'
+  - cost: 80
+    plans: 0
+    description: "Baliste titan : toutes les 6 s, un pieu g\xE9ant traverse toute
+      la voie, embroche les ennemis et les emporte avec lui."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

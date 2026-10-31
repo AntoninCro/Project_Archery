@@ -57,14 +57,15 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 | **N** | Hors vague : lance la vague suivante. Pendant le chrono : fait venir le boss. Pendant le boss : le tue. À la vague 6 : entre dans l'arène, passe l'intro, puis tue MK. |
 | **K** | Le joueur meurt (fin de partie) |
 | **M** | +500 or |
-| **B** | 2 plans de chaque bâtiment (depuis le 27 octobre ; +50 matériaux avant) |
+| **B** | 2 plans de chaque bâtiment (depuis le 27 octobre ; +50 matériaux avant) ; depuis le 29 octobre, seulement les 10 tours en jeu (pas les retirées) |
 | **H** | Termine la construction en cours |
 | **C** | Un coffre devant le joueur |
 | **X** | Un coffre de boss près du joueur, juste devant lui (2 objets au choix ; refonte roguelike du 25 octobre). En jeu, depuis le 27 octobre au soir, le vrai coffre de boss tombe là où le boss est mort |
 | **Tab** | Toutes les pièces de la flèche au niveau 1 ; **Tab** encore : niveau 2, puis 3 (la première de chaque emplacement équipée, les autres dans l'atelier ; ni parchemins ni tourelles ; autant de fois qu'on veut ; 26 octobre au soir) |
 | **R** | La pièce nouvelle suivante de la flèche (celles des étapes 3 et 5, la super grenade et le troisième lot : de la corde triple au talisman de l'avare), un niveau de plus, équipée tout de suite (26 octobre) ; sans casque, la corde fantôme se tire au **clic du milieu** et l'empennage de rappel à **Ctrl gauche** |
 | **V** | Une caisse de l'ingénieur devant le joueur (depuis le 27 octobre ; un gisement de cristaux avant) |
-| **F2** | Sans casque : sort un plan (son hologramme suit le viseur), puis passe au suivant, puis le range ; molette : tourner, **E** : poser (27 octobre ; au casque, c'est le bouton « Plans » de la montre) |
+| **F3** | Projette en l'air les ennemis au sol à moins de 15 m du joueur (test des ennemis projetés, 28 octobre ; un boss est seulement poussé) |
+| **F2** | Sans casque : ouvre le menu des plans, le bâtiment du milieu suit déjà le viseur (molette : changer de bâtiment, **Maj** + molette : tourner, **E** : poser) ; **F2** ferme (28 octobre au soir ; au casque, c'est le bouton « Plans » de la montre) |
 | **P** | Allume les 5 runes (pendant une vague), puis fait entrer dans la dimension |
 | **G** | Donne les deux éclats de miroir (la porte de l'antre glitche), puis fait entrer sur le toit cyberpunk |
 | **1 à 4** | Choisit la difficulté (avant la première vague) |

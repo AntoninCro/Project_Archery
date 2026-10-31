@@ -183,22 +183,40 @@ namespace Archery.Core
             manager.FinishNow();
             var choices = new List<StructureDefinition>();
             manager.GetChoices(BuildSlot.Roadside, choices);
+
+            // Les balistes et les tours de givre alternent (depuis le 28 octobre, bien d'autres bâtiments se posent au bord de la
+            // voie : on garde ces deux-là, comme avant).
+            choices.RemoveAll(definition => definition.kind != StructureKind.Ballista && definition.kind != StructureKind.FrostTower);
+            if (choices.Count == 0)
+                manager.GetChoices(BuildSlot.Roadside, choices);
             if (choices.Count == 0)
                 return 0;
 
-            // Dans l'ordre autour de la tour : les balistes et les tours de givre alternent sur la carte. Depuis la refonte du
-            // 27 octobre (étape 3), les 6 emplacements au bord de la voie les plus proches de la tour, à 8 m au moins les uns des
-            // autres (avant : les 6 socles au bord de la voie posés à la main).
-            var center = Tower.Instance != null ? Tower.Instance.transform.position : Vector3.zero;
+            // Depuis la refonte du 27 octobre (étape 3), 6 places au bord de la voie, les plus proches de la tour, à 8 m au moins
+            // les unes des autres (avant : les 6 socles au bord de la voie posés à la main) ; depuis le 28 octobre, leur emplacement
+            // est créé sur la grille avec les cases du bâtiment. Les socles posés à la main qui portent un bâtiment montent aussi.
             var grid = BuildGrid.Instance;
-            var sockets = grid != null && grid.IsReady ? grid.PickSpread(BuildSlot.Roadside, 6, 8f) : new List<BuildSocket>();
-            foreach (var socket in BuildSocket.All)
+            var sockets = new List<BuildSocket>();
+            var definitions = new List<StructureDefinition>();
+            var taken = new List<Vector3>();
+            for (var i = 0; i < 6 && grid != null && grid.IsReady; i++)
             {
-                if (socket != null && socket.isActiveAndEnabled && !socket.IsCandidate && socket.Slot == BuildSlot.Roadside)
-                    sockets.Add(socket);
+                var definition = choices[i % choices.Count];
+                var socket = grid.ClaimFree(definition, taken, 8f);
+                if (socket == null)
+                    break;
+                sockets.Add(socket);
+                definitions.Add(definition);
             }
 
-            sockets.Sort((a, b) => Angle(a, center).CompareTo(Angle(b, center)));
+            foreach (var socket in BuildSocket.All)
+            {
+                if (socket != null && socket.isActiveAndEnabled && !socket.IsCandidate && socket.Slot == BuildSlot.Roadside && socket.Structure != null)
+                {
+                    sockets.Add(socket);
+                    definitions.Add(null);
+                }
+            }
 
             var count = 0;
             for (var i = 0; i < sockets.Count; i++)
@@ -207,9 +225,12 @@ namespace Archery.Core
                 var structure = socket.Structure;
                 if (structure == null)
                 {
-                    var definition = choices[i % choices.Count];
-                    if (definition.MaxLevel < 1)
+                    var definition = definitions[i];
+                    if (definition == null || definition.MaxLevel < 1)
+                    {
+                        grid.Release(socket);
                         continue;
+                    }
                     structure = socket.Place(definition);
                 }
 
@@ -228,12 +249,6 @@ namespace Archery.Core
             }
 
             return count;
-        }
-
-        static float Angle(BuildSocket socket, Vector3 center)
-        {
-            var offset = socket.transform.position - center;
-            return Mathf.Atan2(offset.z, offset.x);
         }
     }
 }

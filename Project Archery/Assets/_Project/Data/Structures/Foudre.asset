@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Foudre
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 7
+  displayName: Tour de foudre
+  slot: 1
+  prefab: {fileID: 6519504610856440435, guid: 85ead6b981a4d814ca67b71d33e68de5, type: 3}
+  color: {r: 0.55, g: 0.8, b: 1, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Un \xE9clair saute entre 3 ennemis \xE0 14 m, volants compris,
+      toutes les 2,6 s."
+  - cost: 0
+    plans: 0
+    description: "D\xE9g\xE2ts \xD71,5, 16 m, toutes les 2,1 s."
+  - cost: 0
+    plans: 0
+    description: "D\xE9g\xE2ts \xD72, 18 m, toutes les 1,6 s."
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

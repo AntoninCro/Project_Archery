@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Miroir
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 20
+  displayName: Miroir
+  slot: 1
+  prefab: {fileID: 4098391325895846369, guid: 5720c8b6cb87f614ebcdea3174c03f09, type: 3}
+  color: {r: 0.85, g: 0.95, b: 1, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une fl\xE8che tir\xE9e sur le miroir repart vers l'ennemi le plus
+      proche (25 m). Il se tourne vers toi."
+  - cost: 0
+    plans: 0
+    description: "30 m, la fl\xE8che renvoy\xE9e fait 25 % de d\xE9g\xE2ts en plus."
+  - cost: 0
+    plans: 0
+    description: 35 m, +50 %, et elle traverse un ennemi de plus.
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

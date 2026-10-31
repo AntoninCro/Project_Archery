@@ -72,6 +72,13 @@ namespace Archery.Waves
         [SerializeField]
         float m_AutoStartDelay;
 
+        [Header("Défenses")]
+        [Tooltip("Part de ses PV max que la tour abîmée regagne à la fin de chaque vague (29 octobre, décidé par le joueur : " +
+                 "0,15 ; tous depuis le 25 octobre). Détruite, elle ne se reconstruit plus. Les barricades regagnent tout.")]
+        [Range(0f, 1f)]
+        [SerializeField]
+        float m_TowerRepairShare = 0.15f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_WaveStartClip;
@@ -635,7 +642,7 @@ namespace Archery.Waves
             var points = score != null ? score.AddPoints(m_Settings.clearBonusPerWave * WaveNumber * score.DifficultyMultiplier) : 0;
             var gold = GiveWaveReward(score, out var bonusLine);
 
-            // Après la récompense (divisée par deux si la tour était détruite) : la tour et les barricades se réparent.
+            // Après la récompense (divisée par deux si la tour est détruite) : la tour (un peu) et les barricades se réparent.
             var repairLine = RestoreDefenses();
 
             var won = WaveNumber == WavesToWin && !HasWon;
@@ -667,22 +674,24 @@ namespace Archery.Waves
             m_OnWaveEnded.Invoke();
         }
 
-        // Depuis le 25 octobre, la tour (reconstruite si elle est tombée) et les barricades retrouvent tous leurs PV à la fin
-        // de chaque vague : la boutique ne vend plus de réparations. Renvoie la ligne du message de fin de vague (vide si
-        // rien n'était abîmé).
-        static string RestoreDefenses()
+        // À la fin de chaque vague, les barricades retrouvent tous leurs PV (la boutique ne vend plus de réparations depuis le
+        // 25 octobre). La tour, depuis le 29 octobre (deuxième brainstorm du tower defense, décidé par le joueur : la défendre
+        // doit compter), ne regagne que 15 % de ses PV max, et, détruite, ne se reconstruit plus : elle reste en ruines jusqu'à
+        // la fin de la partie (l'or de fin de vague reste divisé par deux, le téléporteur ne marche plus). Du 25 au 29 octobre,
+        // elle retrouvait tout et se relevait. Renvoie la ligne du message de fin de vague (vide si rien n'a changé).
+        string RestoreDefenses()
         {
             var parts = new List<string>();
             var tower = Tower.Instance;
             if (tower != null && !tower.IsStanding)
             {
-                tower.Rebuild();
-                parts.Add("Tour reconstruite");
+                parts.Add("La tour reste en ruines");
             }
-            else if (tower != null && tower.Health.Current < tower.Health.Max - 0.5f)
+            else if (tower != null && m_TowerRepairShare > 0f && tower.Health.Current < tower.Health.Max - 0.5f)
             {
-                tower.Repair(tower.Health.Max - tower.Health.Current);
-                parts.Add("Tour réparée");
+                var amount = Mathf.Min(tower.Health.Max * m_TowerRepairShare, tower.Health.Max - tower.Health.Current);
+                tower.Repair(amount);
+                parts.Add($"Tour : +{Mathf.RoundToInt(amount)} PV");
             }
 
             Barricade.TotalHealth(out var current, out var max);

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Esprit
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 24
+  displayName: Esprit gardien
+  slot: 1
+  prefab: {fileID: 1801595881696270858, guid: 8a76ad753b603834eb76eb412bb0b036, type: 3}
+  color: {r: 0.6, g: 1, b: 0.85, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Partout. Un esprit chasse les ennemis isol\xE9s \xE0 25 m de son
+      autel, volants compris : il fond sur eux et les frappe (15 de d\xE9g\xE2ts
+      par coup), puis passe au suivant."
+  - cost: 0
+    plans: 0
+    description: "30 m, coups \xD71,5, plus rapides."
+  - cost: 0
+    plans: 0
+    description: "35 m, coups \xD72,1, encore plus rapides."
+  lotSize: 1
+  rarity: 2
+  anywhere: 1
+  footprint: {x: 0, y: 0}
+  retired: 1

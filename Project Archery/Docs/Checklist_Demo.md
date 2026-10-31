@@ -189,9 +189,95 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] Les caisses pas ouvertes disparaissent à la fin de la vague ; aucune pendant la vague de MK.
 - [ ] Raccourcis : **B** donne 2 plans de chaque bâtiment ; **V** pose une caisse devant toi.
 
-**Refonte du tower defense, étape 3 : construire n'importe où (27 octobre ; `Docs/Refonte_TowerDefense.md`)**
+**Refonte du tower defense, lot 7 : les duos, le Boulet fou (31 octobre ; `Docs/Refonte_TowerDefense.md`, partie 12.16 ; B, H)**
+- [ ] À l'ouverture de Unity, la console écrit « Duos : Boulet fou, prefab créé… », « …, duo du 31 octobre », « …, définition créée… » et « …, inscrit au catalogue » ; `Prefabs/Structures/Duos/Duo_Boulet_fou`, `Data/Duos/Duo_Boulet_fou` et `Resources/TowerDuos` existent. Les 4 anciens duos (Canon, Mur de glace, Rempart à ressort, Aurore boréale) ne sont plus là.
+- [ ] **Fusionner** : une barricade et un tremplin au niveau 3 (B plusieurs fois pour les plans, H pour finir une construction), entre les vagues ; « Déplacer » sur l'un, viser l'autre : l'hologramme devient doré et montre le Boulet fou, « Duo : Boulet fou » ; à un niveau trop bas, rouge, « Les deux tours au niveau 3 au moins ». La gâchette : « Duo : Boulet fou ! » ; les deux tours d'avant disparaissent, le duo est sur la voie. Avec une tour au niveau 5, il naît au niveau 2 ; les deux au niveau 5, au niveau 3.
+- [ ] Le panneau du duo : « Duo · Boulet fou · niveau 1 », sa carte d'amélioration (4 plans, de barricade ou de tremplin) et « Déplacer » ; un plan de barricade ou de tremplin sorti de la montre et visé sur le duo le fait monter.
+- [ ] **Le Boulet fou** : la roue tourne en travers de la voie, du côté de la voie voisine ; un ennemi frappé part en cloche et retombe sur la voie voisine, puis repart vers la tour par elle ; sans voie voisine à portée, il part sur le côté. Le souffle du boulet à chaque tour, un choc à chaque coup, le boulet s'écrase un instant. Niveau 2 : plus vite, l'ennemi lancé renverse ceux sur qui il retombe.
+- [ ] **Boulet fou, après le premier essai** : la console écrit « Duos : Boulet fou, duo 2 du 31 octobre » et « …, textes des niveaux revus » ; la tour est bien plus grande (10 m au niveau 3), fanions dorés ; les ennemis partent plus loin (et retombent en arrière sur la voie voisine) ; au niveau 3, l'ennemi file à plat jusqu'au mur d'en face, s'y écrase (une grosse part de ses PV, petite explosion) et renverse ceux qui sont autour.
+- [ ] Déplacer le duo entre les vagues : son hologramme est le Boulet fou ; le viser avec une autre tour : « Déjà un duo ».
+
+**Refonte du tower defense, lot 3 : l'ennemi préparé (30 octobre ; `Docs/Refonte_TowerDefense.md`, partie 12.12 ; B, F3)**
+- [ ] À l'ouverture de Unity, la console écrit « Ennemi préparé : 8 sons donnés au Score Manager, dans la scène « Prototype_Tir » » : enregistrer la scène (Ctrl+S).
+- [ ] **F3** projette les ennemis proches : une flèche sur l'un d'eux en l'air écrit « Au vol ! » avec un son, et fait deux fois plus de dégâts (un ennemi qui survivait à une flèche au sol en meurt-il plus vite ?).
+- [ ] Chaque sorte a son mot et son son : « Brisé ! » (givre N3, le pic de glace), « Cloué ! » (baliste N4, le harpon), « Au filet ! » (un volant tombé du lance-filet), « Sonné ! » (la herse de la barricade N4, le filet électrique N4, un ennemi qui se relève d'une chute), « Englué ! » (le goudron du mortier N4), « Attiré ! » (la tour-aimant), « Marqué ! » (un ennemi dans le rayon du phare).
+- [ ] Le katana et ses failles aussi ; les tirs des bâtiments n'écrivent rien ; la flèche de glace du joueur ne prépare pas.
+- [ ] Les dégâts suivent la difficulté à préparer (31 octobre) : ×2 en l'air et gelé, ×1,75 cloué, ×1,5 au filet et sonné, ×1,3 englué, ×1,25 attiré, ×1,15 marqué. Le phare (tout ennemi de son rayon, +15 %) : est-ce encore trop facile ?
+
+**Refonte du tower defense, deuxième brainstorm, lot 2 : les 5 niveaux, le tremplin et les 9 autres tours (29 octobre ; `Docs/Refonte_TowerDefense.md`, partie 12.10)**
+- [ ] À l'ouverture de Unity : « Évolutions des tours : Tremplin passe à 5 niveaux… » (pas de Ctrl+S : prefab et réglage). Le prefab `Structures/Tremplin` a les pièces « Niveau 4 » (sous « Bras ») et « Niveau 5 » ; le réglage, 5 niveaux avec leurs textes.
+- [ ] Les autres tours restent à 3 niveaux pour l'instant (« Niveau maximal atteint » au niveau 3).
+- [ ] **B** quatre fois (8 plans de tremplin), pose un tremplin sur la voie (**H** finit la construction) ; viser le tremplin avec un plan : « Améliorer : niveau 2 », puis 3 ; au niveau 4, « Améliorer : niveau 4 (2 plans) » ; avec un seul plan, en rouge « il faut 2 plans ». Le panneau du tremplin dit « 2 plans » pour les niveaux 4 et 5.
+- [ ] N2 : les ennemis montent plus haut. N3 : le bras de bois bascule, l'ennemi s'envole vers un groupe plus loin sur la voie et le renverse (explosion, fumée). N4 : trois ennemis d'un coup (trois godets). La grille : le tremplin occupe environ 3 × 5 cases (la console le dit).
+- [x] N3 et N4 (la catapulte) : validés au casque le 29 octobre.
+- [x] **N5, la rampe de lancement** (revue après le premier essai, 29 octobre ; validée : « c'est ce genre d'effet que je veux » pour les niveaux 5) : les ennemis sur la rampe partent dans le ciel **dix fois plus haut** (370 m : une colonne de feu de plus de 200 m), et retombent **5 s** plus tard, en météores, **sur le groupe le plus serré** (à 30 m au plus ; plusieurs ennemis lancés se partagent les groupes) ; un sifflement juste avant l'impact ; ils **meurent à l'atterrissage** et blessent et renversent ceux qu'ils écrasent (explosion, fumée). Sans ennemi à viser, ils retombent vers la forêt. La console à l'ouverture : « texte du niveau 5 de Tremplin revu ». C'est drôle ? Un boss qui passe dessus recule et perd 10 % de ses PV.
+- [ ] Un ennemi touché par une flèche en plein vol meurt en l'air, mais retombe quand même avec sa traînée, et son impact blesse ceux d'en dessous.
+- [ ] **Le tremplin ne scintille plus** (retour du 29 octobre) : à l'ouverture de Unity, la console écrit « Évolutions des tours : le tremplin ne scintille plus (la flèche au-dessus de la plaque, 8 rayures autour du liseré…) » (pas de Ctrl+S : c'est un prefab). Dès le niveau 2, la flèche de bois dépasse de la plaque de métal sans clignoter ; au niveau 5, les rayures jaunes et noires ne clignotent plus avec le liseré vert. S'il reste deux pièces qui scintillent, dire lesquelles.
+- [ ] **Le bouton « Plans » au-dessus du cadran de la montre** (retour du 29 octobre ; avant, en bas à gauche), le bouton « Tour » dessous ; toucher l'un ne déclenche pas l'autre.
+- [ ] **Les 9 autres tours à 5 niveaux** (29 octobre au soir) : à l'ouverture de Unity, la console écrit « Évolutions des tours : … passe à 5 niveaux » pour Barricade, Pieges, Baliste, Mortier, Givre, Filet, Aimant, Bulle et Phare (pas de Ctrl+S : prefabs et réglages), sans erreur rouge. Pour chacune : **B** quatre fois, la poser, **H** à chaque niveau ; vérifier qu'elle tient toujours sur la grille (la console donne ses cases).
+- [ ] Barricade : N3 le boulet se balance devant le mur et renverse ; N4 la herse tombe sur ceux qui frappent, et une flèche tirée à travers le mur prend une traînée dorée et traverse plusieurs ennemis ; N5 le mur de pierre et les tours de guet qui tirent, et l'onde qui renvoie les assaillants en vol.
+- [ ] Piques : N2 les ennemis continuent de perdre des PV après le piège ; N3 deux fois plus large ; N4 la mine saute au premier passage (ou sous une flèche), revient 20 s plus tard ; N5 la mâchoire : des pieux de 4 m sur 10 m de voie, les petits meurent, les autres volent.
+- [ ] Baliste : N3 deux carreaux, deux cibles ; N4 la cible s'arrête 1 s, un volant tombe ; N5 le pieu géant toutes les 6 s, qui emporte les ennemis. Le pieu et le deuxième arc tournent bien avec la tourelle.
+- [ ] Mortier : N2 les petites explosions autour ; N4 la flaque noire qui ralentit, qu'une flèche enflammée embrase ; N5 la pluie de 12 obus le long de la voie, le sol en feu, les ennemis qui volent. Pas d'à-coup sur le Quest ?
+- [ ] Tour de givre : N3 un ennemi pris dans un bloc de glace (figé) ; une flèche le brise ; N4 des ennemis qui glissent et tombent ; N5 la sphère de glace et tous les ennemis en statues : une flèche les fait voler en éclats.
+- [ ] Lance-filet : N4 filet bleu électrique, et sans volant il prend un ennemi au sol ; N5 la toile géante au-dessus de la voie, les volants tombent.
+- [ ] Tour-aimant : N2 les volants tombent ; N3 l'attraction continue ; N4 une flèche tirée près des ennemis attirés se courbe vers eux ; N5 le trou noir, la boule d'ennemis qui tournoie puis qui explose en l'air.
+- [ ] Bulle : N3 une grosse bulle autour de 2 ou 3 ennemis ; N4 une flèche dans une bulle : un éclair blanc crève les autres, de bulle en bulle ; N5 l'orbe qui emporte tout un groupe à 30 m : crevée, ils meurent en retombant.
+- [ ] Phare : les bâtiments de son rayon font plus de dégâts dès le N1 ; N4 une flèche qui traverse le faisceau s'enflamme ; N5 la colonne de lumière du ciel toutes les 10 s, et les bâtiments autour qui tirent deux fois plus vite.
+- [ ] **Retours du premier essai** (29 octobre au soir) : à l'ouverture de Unity, la console écrit « … retouché après les essais du 29 octobre au soir » pour Baliste, Mortier, Filet, Barricade, Phare, Givre et Pieges, et « le phare se construit aussi au bord de la voie ».
+- [ ] Barricade de niveau 2 et plus : les ennemis qui la frappent meurent normalement de ses pointes ; plus aucun ennemi figé, intouchable devant elle ou après sa chute.
+- [ ] Les piques (et tout bâtiment) se posent avec l'emprise de leur niveau 1 ; plus de cases rouges sur les petits cailloux et les bosses de la prairie ; la grille se voit loin (36 m) ; le menu des plans reste collé devant toi quand tu tournes la tête.
+- [ ] Bulle : une flèche dans la bulle (sans toucher l'ennemi) la crève et le blesse ; N5 l'orbe ne fait plus planter le jeu.
+- [ ] Piques N5 : des pieux fins sur 20 m de voie. Givre N4 : les ennemis tournoient en glissant ; N5 : 10 s de gel, un boss gèle aussi.
+- [ ] Mortier : sur sa tour, plus grand ; N4 la flaque noire (pas bleue) s'embrase sous n'importe quelle flèche ; N5 cinq tubes côte à côte qui tournent ensemble.
+- [ ] Baliste : N3 deux balistes l'une sur l'autre ; N4 harpons et treuil ; N5 la baliste géante en haut, le pieu part de sa bouche. Tout tourne avec la tourelle.
+- [ ] Lance-filet : les filets ressemblent à des filets (en vol, sur un volant, la toile géante) ; N5 le canon à filet.
+- [ ] **Modèles des kits** (deuxième retouche) : la console écrit « …, retouche 2 du 29 octobre » pour Barricade, Baliste, Mortier, Filet, Aimant, Bulle et Phare. Regarder l'orientation de chaque modèle (herse face à la forêt, baliste de siège qui tire vers l'avant, bannières, charrette, fontaine autour du chaudron).
+- [ ] **L'allure des tours (30 octobre)** : la console écrit « Allure des tours : <tour>, nouvelle allure et palette » pour les 10 tours (rien à enregistrer dans la scène). Chaque tour a sa couleur ; aucune pièce ne scintille ni n'en traverse une autre, à aucun niveau (F2, monter chaque tour au niveau 5).
+- [ ] Barricade : la herse de face, ajourée ; au niveau 5, deux tours fines à bannière rouge, leur petite baliste se tourne vers sa cible et tire.
+- [ ] Baliste : au niveau 3, la charpente reste droite quand la tourelle vise en haut ou en bas ; au niveau 4, harpons et treuil ; au niveau 5, la baliste de siège tire vers l'avant, sa plate-forme ne tourne pas.
+- [ ] Mortier : environ 3 m de haut ; les tubes ne traversent ni les créneaux ni les petits mortiers des coins en tournant.
+- [ ] Phare : les deux rayons partent de la lanterne ; plus de lampadaires ; il se pose sur 2 × 2 cases.
+- [ ] Lance-filet : nid sur pilotis, échelle côté joueur, la tourelle dépasse des créneaux ; niveau 4, paratonnerre de cuivre (plus de groupe électrogène). Aimant : socle carré, condensateurs au niveau 3.
+- [ ] Givre : les cristaux grossissent moins, le pic flotte au-dessus. Pièges : cadre de poutres, crocs de fer au niveau 5. Bulle : eau bleu-vert dans la fontaine.
+- [ ] **La rivière** : un ennemi retombé d'une bulle dans la rivière repart ; on peut le toucher.
+- [ ] **Plus de plantage du goudron** (30 octobre au soir) : mortier niveau 4, enflammer une flaque de goudron avec plusieurs ennemis dessus jusqu'à ce qu'elle en tue ; pas d'erreur « Collection was modified » dans la console. **Phare** : des ennemis marqués (lueurs sur leurs points faibles) qui meurent, puis l'arrêt de la partie : pas d'erreur « Cannot set the parent of the GameObject 'Lueur du phare' » ; les lueurs suivent bien les têtes.
+- [ ] La console écrit « Allure des tours : Baliste, allure 2 du 30 octobre » : le plancher sous chaque arc ne scintille plus.
+- [ ] Forteresse : de grandes tours de guet. Phare : posé au bord de la voie ; les deux rayons dans le bon sens ; N4 l'anneau de feu au-dessus de la voie près de ta tour, une flèche qui le traverse s'enflamme.
+
+**Refonte du tower defense, deuxième brainstorm, lot 1 : la tour et les 10 tours (29 octobre ; `Docs/Refonte_TowerDefense.md`, partie 12.7)**
+- [ ] À l'ouverture de Unity : « Tower defense : 17 bâtiment(s) retiré(s) du jeu (…) ; restent 10 tours » (pas de Ctrl+S : ce sont des réglages). Dans `Data/Structures`, la case *Retired* est cochée sur les 17 (arbalète, foudre, lance-flammes, miroir, catapulte, soufflerie, pendule, geyser, trappe, les trois anneaux, mine, goudron, baliste sur la tour, esprit gardien, seau d'huile), pas sur les 10.
+- [ ] Caisses de l'ingénieur : seulement barricade, piques, baliste, tour de givre, lance-filet (communes, 2 fois sur 3) et tremplin, mortier, tour-aimant, bulle, phare (rares) ; plus de légendaire. **B** : 2 plans de chacune des 10 seulement ; le menu des plans n'a que celles-là.
+- [ ] Pendant la pose, plus de grands carrés d'emplacements sur la tour (ils servaient au seau d'huile et à la baliste sur la tour) ; la console dit « 0 emplacement(s) sur la tour ».
+- [ ] **La tour abîmée** : à la fin de la vague, elle ne regagne que 15 % de ses PV max (le message dit « Tour : +450 PV » pour 3 000 PV) ; les barricades, elles, reviennent à tous leurs PV.
+- [ ] **La tour détruite** : à la fin de la vague, elle reste en ruines (« La tour reste en ruines ») et ne se relève plus de la partie ; l'or de fin de vague reste divisé par deux, le téléporteur ne marche plus, le gong reste au sol (on lance encore les vagues). Réglage : *Tower Repair Share* du `Wave Manager` (0,15).
+
+**Refonte du tower defense : la pose revue après les premiers tests (28 octobre ; `Docs/Refonte_TowerDefense.md`, étape 3)**
+- [ ] À l'ouverture de Unity : « Refonte du tower defense, étape 5 : prefab Arbalete (petite baliste à la place de l'arbalète), prefab Filet (…) » ; l'arbalète à répétition et le lance-filet ont une petite baliste du Tower Defense Kit (pointée vers l'avant, l'axe bleu de « Tourelle »), avec un chargeur de carreaux pour l'arbalète ; les carreaux partent du bout. Pas de Ctrl+S nécessaire (ce sont des prefabs).
+- [ ] Au lancement : la console écrit « BuildGrid : … × … cases de 1 m ; constructibles : … sur la voie (dont … sur sa terre), … au bord, … en hauteur ; … emplacement(s) sur la tour » ; aucune erreur rouge, pas d'à-coup (la grille se fait en quelques secondes). « dont 0 sur sa terre », ou l'avertissement « aucune case sur de la terre » : la terre des voies n'est pas reconnue, le dire à Claude.
+- [ ] **La grille calée sur les voies** (deuxième retour du 28 octobre au soir) : avec une baliste, toute la terre des voies est rouge, jusqu'à son bord, **voie du milieu comprise** (8,5 m de large, en diagonale : la grille y fait des marches d'une case), et l'herbe verte commence juste après, sur 4,5 m. Plus de terre verte au bord de la voie, plus d'herbe rouge dans les virages. Avec une barricade : l'inverse (verte sur toute la terre). Les cases à cheval sur le bord de la terre sont rouges pour les deux.
+- [ ] **On construit sur la rivière** (troisième retour du 28 octobre au soir) : dans la clairière, le lit de la rivière est vert pour une baliste comme l'herbe autour (plus de bande rouge) ; le bâtiment s'y pose à la hauteur de l'eau, même à cheval sur une berge. Sur les terrasses, le lit compte « en hauteur ». Là où la rivière traverse une voie (les gués), c'est la voie : rouge pour une baliste, vert pour une barricade ou des piques.
+- [ ] **L'ancien système sort de la scène** : à l'ouverture de Unity, la console écrit « Ancien système de construction : 12 socle(s), 12 cercle(s) bleu(s) au sol, 3 barricade(s) de départ et le groupe « Build Sockets » supprimés de la scène… » ; enregistrer la scène (Ctrl+S). En jeu : plus aucun cercle bleu au sol aux anciennes places des tourelles, plus de barricade en travers des voies au départ.
+- [ ] **La barricade, plus étroite** (retour du 29 octobre) : à l'ouverture de Unity, la console écrit « Tower defense : la barricade passe de 6 à 4 m de large (4 cases au lieu de 6)… » (pas de Ctrl+S : c'est un prefab). À la pose, « BuildGrid : Barricade occupe 4 × 2 cases ». Elle se pose sur les voies de gauche et de droite comme sur celle du milieu, et arrête toujours les ennemis de toute la largeur de la voie (ils s'arrêtent à 5 m devant elle, même sur les côtés).
+- [ ] **Le Phare, à sa vraie taille** (29 octobre) : à la pose, « BuildGrid : Phare occupe 3 × 3 cases » (6 × 3 avant, à cause de son faisceau) ; dans le menu des plans, son aperçu montre la tour à une taille normale. Pendant la construction, pas de faisceau (seule la tour est en plan bleu) ; une fois construit, le faisceau s'allume et tourne (deux rayons au niveau 3). Le marteau ne frappe plus dans le vide à 6 m de la tour.
+- [ ] **Le gué de droite** : à l'ouverture de Unity, la console écrit « Gué de droite : la zone qui ralentit les ennemis passe de x = 25.5 à x = 19.5, sur la rivière… » ; enregistrer la scène (Ctrl+S). En jeu, les ennemis de la voie de droite ralentissent dans l'eau, plus 6 m après.
+- [ ] Bouton « Plans » de la montre : le **menu des plans** s'ouvre devant toi, un peu au-dessus du regard, **et l'hologramme du bâtiment du milieu suit déjà le rayon** (le premier la première fois, puis le dernier choisi) ; une carte par bâtiment dont tu as des plans : aperçu 3D qui tourne, nom, « ×N », zone (Voie, Bord, Tour, Partout), bordure grise (commune), bleue (rare) ou dorée (légendaire). Dessous : la carte du milieu décrite (rareté, où, cases, plans, effet du niveau 1). Le bouton de la montre dit « Fermer ». Le menu ne cache pas le sol que tu vises.
+- [ ] Joystick de la main qui porte la montre, **gauche/droite** : les cartes défilent sur la largeur (un petit son au bout de la rangée) et l'hologramme change de bâtiment aussitôt ; le joueur ne tourne pas. **Une seule gâchette : posé.** Poignée : tout se ferme. Toucher une carte avec une manette, 0,3 s (une barre se remplit) : l'hologramme prend ce bâtiment. La main qui vient de toucher la montre ne change rien par accident.
+- [ ] **Le menu flotte** : il reste où il est quand tu bouges un peu la tête ; tourne-toi franchement (plus de 30°) ou éloigne-toi : une demi-seconde après, il glisse en douceur jusque devant toi (plus de menu collé au bord de la vue).
+- [ ] Pendant le menu et la pose, **la grille se voit au sol** autour de toi : cases de 1 m bordées de lignes nettes, **vertes** là où le bâtiment se pose, **rouges** ailleurs (pas la bonne zone, pente, eau, sous un arbre, au pied de la tour, place prise) ; elle épouse le terrain et s'efface vers le bord. Elle change quand la carte du milieu change.
+- [ ] Le bâtiment choisi : son hologramme se cale sur la grille, ses cases brillent (vertes s'il se pose, rouges sinon) ; il ne déborde plus sur la voie depuis le bord, ni l'inverse. Les emplacements de la tour se dessinent en grands carrés (verts pour le seau d'huile et la baliste sur la tour).
+- [ ] Joystick **haut/bas** : tourne par crans de 45° (les cases suivent), en gardant le sens quand on change de bâtiment. Gâchette : posé, puis les marteaux, et le menu se ferme. Poignée ou bouton de la montre retouché : tout se ferme. Pour un **déplacement** (panneau d'un bâtiment) : pas de menu, tout le joystick tourne, poignée : « Déplacement annulé ».
+- [ ] La console donne une fois, par bâtiment posé, « BuildGrid : … occupe N × M cases » : à juger ; le réglage *Footprint* de `Data/Structures/…` le change.
+- [ ] Deux bâtiments ne se chevauchent pas ; un bâtiment déplacé rend ses cases (elles redeviennent vertes) ; on peut le reposer sur sa propre place, tourné.
+- [ ] Améliorer : viser un bâtiment du même type (ou une de ses cases) : « Améliorer : niveau 2 ».
+- [ ] Sans casque : **F2** ouvre le menu, le bâtiment du milieu suit déjà le viseur ; molette : changer de bâtiment, **Maj** + molette : tourner, **E** : poser ; **F2** ferme.
+- [ ] **F** : 6 balistes et tours de givre niveau 2 au bord de la voie, les plus proches de la tour, espacées, sans chevauchement.
+- [ ] **Baliste sur la tour** : elle tire sur les ennemis collés au pied de la tour (elle pique vers le bas, jusqu'à 80°), à travers le bord de la plate-forme.
+- [ ] À l'ouverture de Unity : « Refonte du tower defense, étape 2 : 1 fenêtre(s) du tutoriel… » ; Tutoriel, Construction, « Choisir un bâtiment » parle du menu des plans et de la grille verte et rouge (plus des runes), et du joystick qui change de bâtiment (plus de gâchette pour choisir). Les vidéos de la section montrent encore l'ancienne pose.
+
+**Refonte du tower defense, étape 3 : construire n'importe où (27 octobre ; `Docs/Refonte_TowerDefense.md`)** (la pose a changé le 28 octobre, bloc précédent : les lignes sur les runes, le choix au joystick seul et F2 ne valent plus)
 - [ ] Au lancement : la console écrit « BuildGrid : N emplacements de construction (… sur la voie, … au bord, … en hauteur) » ; aucune erreur rouge, pas d'à-coup.
-- [ ] Les 12 anciens socles et les 3 barricades de départ ont disparu (la scène, elle, n'a pas changé).
+- [ ] Les 12 anciens socles et les 3 barricades de départ ont disparu (depuis le 28 octobre au soir, ils sont supprimés de la scène, avec les cercles bleus des socles).
 - [ ] Rien au sol hors de la pose ; le rayon de la main ne s'accroche pas au sol, et le viseur sans casque ne propose pas « Construire » partout.
 - [ ] Avec des plans (**B**) : un bouton « Plans N » sur la montre, à côté du bouton « Tour » (assez loin pour ne pas toucher les deux à la fois ; le toucher ne doit pas téléporter en haut de la tour).
 - [ ] Le toucher avec l'autre main (0,3 s) : l'hologramme bleu d'un bâtiment suit le rayon de la main qui porte la montre, calé sur les cases ; une étiquette au-dessus (nom, plans, « Pas ici : … » en rouge) ; il rougit là où il ne se pose pas. Le bouton dit « Annuler ».
@@ -205,6 +291,72 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] **F** : 6 tourelles niveau 2 sur les emplacements au bord de la voie les plus proches de la tour, espacées.
 - [ ] Tutoriel, Construction, « Choisir un bâtiment » : parle des runes, de la hauteur et du déplacement.
 - [ ] À juger : la carte a-t-elle assez d'emplacements, aux bons endroits ? (Seuils réglables sur le composant *Build Grid*, ajouté à l'objet `Game` en jeu.)
+
+**Refonte du tower defense, étape 5, lot 6 : emplacements sur la tour, seau d'huile, baliste sur la tour, esprit gardien (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : la console cite les prefabs `SeauHuile`, `BalisteTour`, `Esprit` ; enregistrer la scène (Ctrl+S).
+- [ ] Au lancement, la console dit « … N sur la tour » (2 ou 3 attendus) ; avec un plan du seau ou de la baliste, des runes dorées apparaissent sur la plate-forme, à côté de toi, pas devant.
+- [ ] **Seau d'huile** : la cible est dorée ; la toucher (flèche tirée ou tenue en main) fait basculer le seau, un filet d'huile coule au pied de la tour, les ennemis autour perdent des PV et ralentissent ; la cible devient grise, puis redevient dorée.
+- [ ] **Baliste sur la tour** : elle tire seule, de haut, et ses carreaux traversent ; elle ne bouche pas la vue.
+- [ ] **Esprit gardien** : le fantôme quitte son autel, fond sur un ennemi seul et le frappe (éclairs verts), puis sur le suivant ; il revient quand il n'y a plus personne.
+- [ ] Caisses : de temps en temps une légendaire, toujours seule.
+- [ ] À juger : la place des emplacements sur la tour (réglages *Tower Slot…* du *Build Grid*), les chiffres, la rareté du seau.
+
+**Refonte du tower defense, étape 5, lot 5 : lance-flammes, phare, miroir, anneaux élémentaires (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : la console cite les prefabs `LanceFlammes`, `Phare`, `Miroir`, `AnneauFeu`, `AnneauFoudre`, `AnneauDouble` et le maillage `Anneau` ; enregistrer la scène (Ctrl+S).
+- [ ] Ouvrir chaque prefab : tailles, « Niveau 2 » et « Niveau 3 » ; les anneaux sont visibles des deux côtés ; la glace du miroir a sa boîte de collision (verte) autour du miroir.
+- [ ] **Lance-flammes** : un jet de feu vers la voie quand des ennemis passent devant ; ils brûlent (flammes sur eux, PV qui baissent sur 3 s).
+- [ ] **Phare** (en hauteur) : la tête des ennemis proches porte une petite lueur jaune ; le faisceau tourne ; un tir à la tête fait plus de dégâts.
+- [ ] **Miroir** : il se tourne vers la tour ; une flèche tirée dessus repart vers un ennemi proche (traînée blanche) ; sans ennemi, elle rebondit.
+- [ ] **Anneaux** (posables partout) : ils se tournent vers toi ; une flèche qui passe dedans prend sa couleur, et : feu, la cible brûle ; foudre, un éclair saute vers d'autres ennemis à l'impact ; double, une deuxième flèche part à côté.
+- [ ] À juger : trois anneaux (un par effet) ou un seul ; les chiffres.
+
+**Refonte du tower defense, étape 5, lot 4 : trappe, pendule, bulle, lance-filet (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : la console cite les prefabs `Trappe`, `Pendule`, `Bulle`, `Filet` et le matériau `Bulle` (transparent) ; enregistrer la scène (Ctrl+S).
+- [ ] Ouvrir chaque prefab : tailles, objets « Niveau 2 » et « Niveau 3 » ; le boulet du pendule pend sous la poutre, à hauteur de taille ; l'arbalète du lance-filet pointe le long de l'axe bleu (Z) de « Tourelle ».
+- [ ] **Trappe** : les battants s'ouvrent sous les ennemis, qui réapparaissent plus loin en arrière sur la voie et repartent après 1 s.
+- [ ] **Pendule** : le boulet se balance en travers de la voie ; un ennemi touché perd des PV et vole sur le côté.
+- [ ] **Bulle** : l'ennemi le plus proche monte dans une bulle et flotte ; une flèche la crève, il tombe (dégâts de chute, « Au vol ! » si on le touche en l'air) ; sinon elle crève seule.
+- [ ] **Lance-filet** : il se tourne vers un volant, le filet part, le volant tombe au sol et y reste quelques secondes, puis il redécolle. Aucun tir sans volant.
+- [ ] À juger : les chiffres et les raretés proposées (lance-filet commun ; trappe, pendule et bulle rares).
+
+**Refonte du tower defense, étape 5, lot 3 : geyser, soufflerie, tour-aimant, catapulte (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : la console cite les prefabs `Geyser`, `Soufflerie`, `Aimant`, `Catapulte` ; enregistrer la scène (Ctrl+S).
+- [ ] Ouvrir chaque prefab : tailles, objets « Niveau 2 » et « Niveau 3 » ; la soufflerie a ses pales tournées vers l'avant (axe Z), la colonne d'eau du geyser est un cylindre bleu (cachée en jeu, sauf pendant un jet).
+- [ ] **Geyser** : un groupe passe dessus → tous sautent à la verticale avec une colonne d'eau, retombent sur place ; recharge, puis le suivant.
+- [ ] **Soufflerie** : les pales s'emballent ; les ennemis devant elle s'arrêtent ou reculent vers la forêt, les volants sont déviés ; puis une pause.
+- [ ] **Tour-aimant** : des éclairs violets vers les ennemis proches, qui glissent vers elle ; un groupe se resserre.
+- [ ] **Catapulte** : elle bascule, l'ennemi le plus proche s'envole et retombe sur un groupe (dégâts autour) ; seul, il est renvoyé vers la forêt.
+- [ ] À juger : les chiffres, et les raretés proposées (geyser et soufflerie communs, aimant et catapulte rares) ; la catapulte qui lance sans « prendre » l'ennemi.
+
+**Refonte du tower defense, étape 5, lot 2 : arbalète à répétition et mortier (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : « Refonte du tower defense, étape 5 : prefab Arbalete, … réglage Mortier ; … bâtiment(s) ajouté(s) au Build Manager » ; enregistrer la scène (Ctrl+S).
+- [ ] Prefab `Arbalete` : l'arbalète pointe le long de l'axe bleu (Z) de « Tourelle » (sinon tourner l'objet « Arbalète » et replacer *Muzzle Offset* au bout) ; « Niveau 2 » ajoute une arbalète, « Niveau 3 » une troisième et un fanion.
+- [ ] Prefab `Mortier` : le canon levé vers le ciel sur son socle ; « Bouche » au bout du tube ; boulets au niveau 2, deuxième tube au niveau 3.
+- [ ] **Arbalète à répétition** : des rafales de 3 carreaux ; elle se tourne d'abord vers un volant s'il y en a un à portée.
+- [ ] **Mortier** : l'obus monte en cloche et tombe sur un groupe (là où il sera) ; explosion, dégâts autour ; rien sur un ennemi à moins de 6 m ; au niveau 3, deux obus par salve.
+- [ ] À juger : les chiffres, et s'il faut un son de tir au mortier.
+
+**Refonte du tower defense, étape 5, lot 1 : raretés, mine, goudron, tremplin, tour de foudre (28 octobre ; `Docs/Refonte_TowerDefense.md`)**
+- [ ] À l'ouverture de Unity : « Refonte du tower defense, étape 5 : … bâtiment(s) ajouté(s) au Build Manager » ; enregistrer la scène (Ctrl+S). Les prefabs `Mine`, `Goudron`, `Tremplin`, `Foudre` dans `Prefabs/Structures`, leurs réglages dans `Data/Structures`.
+- [ ] Ouvrir chaque prefab : modèles à la bonne taille, posés au sol, centrés ; les objets « Niveau 2 » et « Niveau 3 » montrent la progression (à retoucher à la main si besoin).
+- [ ] **B** puis la montre : les 27 bâtiments (lots 1 à 6 compris) défilent au joystick (haut, bas) ; l'hologramme de chacun.
+- [ ] Caisses : des lots de 3 mines, 2 goudrons, et plus rarement un tremplin ou une tour de foudre.
+- [ ] **Mine** : explose sous le premier ennemi au sol (explosion de la flèche explosive), blesse ceux autour, disparaît ; revient au début de la vague suivante ; niveau 3 : les ennemis volent.
+- [ ] **Goudron** : la flaque noire ralentit les ennemis qui la traversent ; plus grande à chaque niveau.
+- [ ] **Tremplin** : un ennemi qui passe dessus est projeté vers la forêt, la planche rebondit ; recharge, puis le suivant.
+- [ ] **Tour de foudre** : un éclair part du sommet et saute entre 3 ennemis (volants compris) ; plus haute à chaque niveau.
+- [ ] À juger : les chiffres (dégâts, rayons, recharges) et les aspects des niveaux.
+
+**Refonte du tower defense, étape 4 : les ennemis projetés (28 octobre ; `Docs/Refonte_TowerDefense.md`, partie 6.2 ; F3 pour essayer)**
+- [ ] Pendant une vague, **F3** près d'ennemis au sol : ils sautent en cloche, poussés loin de toi, puis retombent et repartent sur la voie après un court arrêt (0,5 s). Aucune erreur rouge dans la console.
+- [ ] Un ennemi qui en percute un autre en l'air : les deux perdent des PV, l'autre fait un petit saut.
+- [ ] Projeté contre une falaise : il rebondit un peu, tombe, reste étourdi plus longtemps.
+- [ ] Retombé dans la rivière : pas de dégâts de chute, il y avance plus lentement.
+- [ ] Retombé sur une terrasse de la jungle : il revient sur la voie la plus proche (il ne reste pas bloqué).
+- [ ] Tué en l'air : le corps finit sa chute au sol (il ne reste pas suspendu).
+- [ ] Un boss : F3 le pousse un peu, sans le soulever ; les volants ne bougent pas.
+- [ ] **Tir au vol** : une flèche sur un ennemi en l'air affiche « Au vol ! » et rapporte plus de points.
+- [ ] Fin de vague pendant qu'un ennemi vole : il retombe puis s'enfuit comme les autres.
 
 **Nouveautés du 19 au 23 octobre : à vérifier en premier**
 - [ ] Départ : quelle que soit ta place dans la pièce, tu apparais en haut de la tour, tourné vers le menu ; remettre le casque ou le recentrer avant la première vague t'y ramène.

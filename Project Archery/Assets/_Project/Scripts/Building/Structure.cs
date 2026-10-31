@@ -80,7 +80,45 @@ namespace Archery.Building
         /// Multiplie les dégâts du bâtiment, s'il suit la force des ennemis : cette force × la puissance des bâtiments
         /// de la difficulté (plus d'ennemis en Impossible, donc des bâtiments plus forts pour garder la même utilité).
         /// </summary>
-        protected float Strength => m_FollowEnemyStrength ? EnemyStrength * DifficultyManager.Current.structurePower : 1f;
+        protected float Strength => (m_FollowEnemyStrength ? EnemyStrength * DifficultyManager.Current.structurePower : 1f) * SupportDamage;
+
+
+        // Le soutien du phare (deuxième brainstorm du tower defense, 29 octobre) : dans son rayon, les dégâts (+20 % au niveau 1)
+        // et la cadence (niveau 2) des bâtiments ; il le renouvelle tant qu'ils y sont. Et l'élan du phare du jugement (niveau 5) :
+        // une cadence doublée pendant 5 s, à part, pour ne pas durer tant que le soutien se renouvelle.
+        float m_SupportDamage = 1f;
+        float m_SupportRate = 1f;
+        float m_SupportUntil;
+        float m_BoostRate = 1f;
+        float m_BoostUntil;
+
+        float SupportDamage => Time.time <= m_SupportUntil ? m_SupportDamage : 1f;
+
+        float SupportRate => (Time.time <= m_SupportUntil ? m_SupportRate : 1f) * (Time.time <= m_BoostUntil ? m_BoostRate : 1f);
+
+        /// <summary>
+        /// Soutenu par un phare pendant <paramref name="duration"/> s : ses dégâts multipliés par <paramref name="damage"/>, sa
+        /// cadence par <paramref name="rate"/> (le plus fort des phares s'il y en a plusieurs).
+        /// </summary>
+        public void Support(float damage, float rate, float duration)
+        {
+            if (Time.time > m_SupportUntil)
+            {
+                m_SupportDamage = 1f;
+                m_SupportRate = 1f;
+            }
+
+            m_SupportDamage = Mathf.Max(m_SupportDamage, damage);
+            m_SupportRate = Mathf.Max(m_SupportRate, rate);
+            m_SupportUntil = Mathf.Max(m_SupportUntil, Time.time + duration);
+        }
+
+        /// <summary>Sa cadence multipliée par <paramref name="rate"/> pendant <paramref name="duration"/> s (le phare du jugement).</summary>
+        public void Boost(float rate, float duration)
+        {
+            m_BoostRate = Time.time > m_BoostUntil ? rate : Mathf.Max(m_BoostRate, rate);
+            m_BoostUntil = Mathf.Max(m_BoostUntil, Time.time + duration);
+        }
 
         /// <summary>Volume du plan pendant la construction : c'est là qu'on frappe avec le marteau.</summary>
         public Bounds ConstructionBounds => m_Bounds;
@@ -121,7 +159,16 @@ namespace Archery.Building
         {
         }
 
-        protected virtual void Awake() => ShowLevelParts(0);
+        static readonly List<Structure> s_All = new List<Structure>();
+
+        /// <summary>Les bâtiments présents (le phare soutient ceux de son rayon, 29 octobre).</summary>
+        public static IReadOnlyList<Structure> All => s_All;
+
+        protected virtual void Awake()
+        {
+            s_All.Add(this);
+            ShowLevelParts(0);
+        }
 
         // Posé à la main dans la scène, sans socle : il est construit au niveau 1 dès le départ.
         protected virtual void Start()
@@ -143,7 +190,7 @@ namespace Archery.Building
         public bool IsOvercharged => m_OverchargeTimer > 0f;
 
         /// <summary>Multiplie la cadence de tir pendant la surcharge (×2, ×4, ×6 selon le niveau du talisman : 26 octobre).</summary>
-        public float OverchargeRate => IsOvercharged ? m_OverchargeRate : 1f;
+        public float OverchargeRate => (IsOvercharged ? m_OverchargeRate : 1f) * SupportRate;
 
         /// <summary>Multiplie la portée pendant la surcharge.</summary>
         public float OverchargeRange => IsOvercharged ? 2f : 1f;
@@ -272,6 +319,7 @@ namespace Archery.Building
 
         protected virtual void OnDestroy()
         {
+            s_All.Remove(this);
             if (m_Blueprint != null)
                 Destroy(m_Blueprint);
         }
@@ -287,7 +335,7 @@ namespace Archery.Building
         /// </summary>
         protected virtual bool IsBlueprintPart(Renderer renderer) => true;
 
-        /// <summary>Valeur du niveau donné (1 à 3) dans un tableau « par niveau » ; le dernier élément vaut pour les niveaux au-delà.</summary>
+        /// <summary>Valeur du niveau donné (1 à 5) dans un tableau « par niveau » ; le dernier élément vaut pour les niveaux au-delà.</summary>
         protected static float ValueFor(float[] values, int level, float fallback) =>
             values == null || values.Length == 0 ? fallback : values[Mathf.Clamp(level - 1, 0, values.Length - 1)];
 
@@ -298,6 +346,23 @@ namespace Archery.Building
         /// Ennemis vivants, copiés dans une liste réutilisée : on peut les blesser (et les tuer) en la parcourant. Sans les
         /// mannequins du centre d'entraînement (26 octobre) : les tourelles ne tirent pas dessus.
         /// </summary>
+        /// <summary>
+        /// Direction (à plat) vers la forêt, d'où vient cet ennemi (refonte du tower defense, 28 octobre : soufflerie,
+        /// catapulte) : à l'inverse de sa marche ; arrêté, à l'opposé de la tour du joueur.
+        /// </summary>
+        protected static Vector3 TowardForest(Enemy enemy)
+        {
+            var velocity = enemy.Velocity;
+            velocity.y = 0f;
+            if (velocity.sqrMagnitude > 0.25f)
+                return -velocity.normalized;
+
+            var tower = Archery.Defense.Tower.Instance;
+            var away = tower != null ? enemy.transform.position - tower.transform.position : -enemy.transform.forward;
+            away.y = 0f;
+            return away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.forward;
+        }
+
         protected static List<Enemy> AliveEnemies()
         {
             s_Enemies.Clear();
@@ -315,6 +380,70 @@ namespace Archery.Building
 
         /// <summary>Ce rendu fait partie du bâtiment montré en plan bleu (l'hologramme de pose reprend les mêmes).</summary>
         internal bool IsPreviewPart(Renderer renderer) => IsBlueprintPart(renderer);
+
+        /// <summary>
+        /// Visible au niveau donné : les pièces des niveaux 2 et 3 seulement à partir de leur niveau, le reste s'il est actif (lu
+        /// aussi sur le prefab, où les pièces des niveaux sont actives : l'hologramme de pose, l'aperçu du menu des plans).
+        /// </summary>
+        internal bool IsShownAtLevel(Transform part, int level)
+        {
+            for (var current = part; current != null; current = current.parent)
+            {
+                var index = m_LevelParts != null ? Array.IndexOf(m_LevelParts, current.gameObject) : -1;
+                if (index >= 0)
+                {
+                    if (level < index + 2)
+                        return false;
+                }
+                else if (!current.gameObject.activeSelf)
+                {
+                    return false;
+                }
+
+                if (current == transform)
+                    break;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Largeur et profondeur (m) du modèle à son plus haut niveau (3, ou 5 depuis le 29 octobre), autour de son centre, dans
+        /// son propre repère (28 octobre : les cases qu'il occupe sur la grille de construction, <see cref="BuildGrid.FootprintOf"/>).
+        /// Se lit sur le prefab.
+        /// </summary>
+        public Vector2 ModelSize()
+        {
+            var toLocal = transform.worldToLocalMatrix;
+            var half = Vector2.zero;
+            // Depuis le 29 octobre au soir (le joueur) : l'emprise de pose est celle du niveau 1, les niveaux suivants peuvent déborder.
+            var top = 1;
+            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+            {
+                if (!renderer.enabled || !(renderer is MeshRenderer || renderer is SkinnedMeshRenderer) || !IsBlueprintPart(renderer) ||
+                    !IsShownAtLevel(renderer.transform, top))
+                    continue;
+
+                var mesh = renderer is SkinnedMeshRenderer skinned ? skinned.sharedMesh
+                    : renderer.TryGetComponent<MeshFilter>(out var filter) ? filter.sharedMesh : null;
+                if (mesh == null)
+                    continue;
+
+                var matrix = toLocal * renderer.transform.localToWorldMatrix;
+                var bounds = mesh.bounds;
+                for (var i = 0; i < 8; i++)
+                {
+                    var corner = bounds.center + Vector3.Scale(bounds.extents, new Vector3(i % 2 == 0 ? -1f : 1f, (i / 2) % 2 == 0 ? -1f : 1f,
+                                                                                          i < 4 ? -1f : 1f));
+                    var local = matrix.MultiplyPoint3x4(corner);
+                    half.x = Mathf.Max(half.x, Mathf.Abs(local.x));
+                    half.y = Mathf.Max(half.y, Mathf.Abs(local.z));
+                }
+            }
+
+            var scale = transform.localScale;
+            return new Vector2(Mathf.Max(0.3f, half.x * 2f * Mathf.Abs(scale.x)), Mathf.Max(0.3f, half.y * 2f * Mathf.Abs(scale.z)));
+        }
 
         internal void Setup(StructureDefinition definition, BuildSocket socket)
         {
@@ -380,6 +509,21 @@ namespace Archery.Building
             m_FillTarget = 0f;
             m_Flash = 0f;
             ApplyBlueprint();
+        }
+
+        /// <summary>
+        /// Le bâtiment passe tout de suite à ce niveau, sans plan bleu ni marteau : une tour qui naît dans un duo garde le niveau
+        /// qu'elle avait (31 octobre).
+        /// </summary>
+        internal void SetLevelImmediate(int level)
+        {
+            if (IsUnderConstruction)
+                FinishConstruction();
+
+            Level = Mathf.Clamp(level, 1, Mathf.Max(1, MaxLevel));
+            ShowLevelParts(Level);
+            OnLevelChanged(Level);
+            Built?.Invoke(this);
         }
 
         /// <summary>Part du plan remplie (0 à 1), atteinte en un court instant.</summary>

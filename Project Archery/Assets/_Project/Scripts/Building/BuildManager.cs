@@ -77,6 +77,16 @@ namespace Archery.Building
         [SerializeField]
         Color m_MessageColor = new Color(0.55f, 0.8f, 1f);
 
+        [Header("Duos (31 octobre)")]
+        [Tooltip("Niveau que doivent avoir les deux tours pour fusionner en duo.")]
+        [Min(1)]
+        [SerializeField]
+        int m_DuoFromLevel = 3;
+
+        [Tooltip("Son de la fusion.")]
+        [SerializeField]
+        AudioClip m_DuoClip;
+
         [Header("Bilan")]
         [Tooltip("À la fin de chaque vague, un message donne la part des dégâts faite par les bâtiments et leurs éliminations " +
                  "(la console détaille chaque type de bâtiment). Utile pour régler l'équilibre en jouant.")]
@@ -144,13 +154,13 @@ namespace Archery.Building
             PlansChanged?.Invoke();
         }
 
-        bool TrySpendPlan(StructureDefinition definition)
+        bool TrySpendPlans(StructureDefinition definition, int spent)
         {
             var count = PlansOf(definition);
-            if (count <= 0)
+            if (count < spent)
                 return false;
 
-            m_Plans[definition] = count - 1;
+            m_Plans[definition] = count - spent;
             PlansChanged?.Invoke();
             return true;
         }
@@ -217,7 +227,7 @@ namespace Archery.Building
             result.Clear();
             foreach (var definition in m_Structures)
             {
-                if (definition != null && definition.Fits(slot) && definition.prefab != null)
+                if (definition != null && definition.Fits(slot) && definition.prefab != null && !definition.retired)
                     result.Add(definition);
             }
         }
@@ -257,6 +267,128 @@ namespace Archery.Building
             return ShopResult.Done($"{structure.DisplayName} déplacé", m_MessageColor);
         }
 
+        // ---- Les duos (lot 7 de la refonte, 31 octobre ; Docs/Refonte_TowerDefense.md, 12.14 et 12.15) : deux tours partenaires,
+        // chacune au moins au niveau 3, fusionnent quand on déplace l'une sur l'autre ; elles deviennent une tour nouvelle.
+
+        /// <summary>
+        /// Le duo que formeraient ces deux tours (null si elles ne sont pas partenaires), et ce qui l'empêche en ce moment dans
+        /// <paramref name="problem"/> (null si rien).
+        /// </summary>
+        public TowerDuoCatalog.Entry DuoOf(Structure a, Structure b, out string problem)
+        {
+            problem = null;
+            if (a == null || b == null || a == b || a.Definition == null || b.Definition == null)
+                return null;
+
+            var entry = TowerDuoCatalog.Find(a.Definition.kind, b.Definition.kind);
+            if (entry == null)
+                return null;
+
+            if (a is TowerDuo || b is TowerDuo)
+                problem = "Déjà un duo";
+            else if (!a.IsBuilt || !b.IsBuilt || a.IsUnderConstruction || b.IsUnderConstruction)
+                problem = "Termine d'abord leur construction";
+            else if (a.Level < m_DuoFromLevel || b.Level < m_DuoFromLevel)
+                problem = $"Les deux tours au niveau {m_DuoFromLevel} au moins";
+            else if (!CanMove)
+                problem = "On fusionne entre les vagues";
+            return entry;
+        }
+
+        /// <summary>
+        /// Le niveau où naît le duo de ces deux tours : 1 (deux tours au niveau 3), 2 (l'une au niveau maximal), 3 (les deux). Un
+        /// duo coûte ainsi autant de plans qu'on le fasse tôt puis le monte (4 plans par niveau), ou tard (31 octobre).
+        /// </summary>
+        public static int DuoLevelFrom(Structure a, Structure b)
+        {
+            var full = (a != null && a.Level >= a.MaxLevel ? 1 : 0) + (b != null && b.Level >= b.MaxLevel ? 1 : 0);
+            return 1 + full;
+        }
+
+        /// <summary>
+        /// Fusionne la tour déplacée avec celle qu'elle vise : elles disparaissent, et le duo naît à la place de la tour visée (sur
+        /// la voie, si l'une des deux y est), sur ses cases à lui.
+        /// </summary>
+        public ShopResult Fuse(Structure moving, Structure target)
+        {
+            var entry = DuoOf(moving, target, out var problem);
+            if (entry == null)
+                return ShopResult.Failed("Ces deux tours ne fusionnent pas");
+            if (problem != null)
+                return ShopResult.Failed(problem);
+
+            var definition = entry.definition;
+            var keep = DuoPlace(moving, target);
+            var socket = keep.Socket;
+            var freed = (keep == moving ? target : moving).Socket;
+            if (socket == null)
+                return ShopResult.Failed("Aucun emplacement");
+
+            var grid = BuildGrid.Instance;
+            var cells = new List<int>();
+            var spot = default(BuildGrid.Spot);
+            var reclaim = grid != null && socket.IsCandidate;
+            if (reclaim)
+            {
+                spot = grid.EvaluateInPlace(definition, socket, freed, cells);
+                if (!spot.Valid)
+                    return ShopResult.Failed($"Pas la place pour le duo ici : {spot.Reason}");
+            }
+
+            var first = moving.Definition;
+            var second = target.Definition;
+            var level = DuoLevelFrom(moving, target);
+            var localRotation = keep.transform.localRotation;
+
+            // Les deux tours d'avant s'en vont ; leurs emplacements aussi, sauf celui que garde le duo.
+            moving.Socket.Detach();
+            if (target.Socket != null && target.Socket != moving.Socket)
+                target.Socket.Detach();
+            Destroy(moving.gameObject);
+            Destroy(target.gameObject);
+            if (grid != null && freed != null && freed != socket)
+                grid.Release(freed);
+            if (reclaim)
+                grid.Reclaim(socket, spot, cells);
+
+            var duo = (TowerDuo)socket.Place(definition);
+            duo.transform.localRotation = localRotation;
+            duo.SetupDuo(entry, first, second);
+            duo.SetLevelImmediate(level);
+
+            var top = socket.transform.position + Vector3.up * 3f;
+            Sfx.Play(m_DuoClip != null ? m_DuoClip : m_CompleteClip, top, 1f);
+            FloatingText.Spawn(top + Vector3.up, $"Duo : {entry.displayName} !", entry.color, 1.4f, 2.5f);
+            HeadMessages.Show($"Duo : {entry.displayName} !" + (string.IsNullOrEmpty(entry.description) ? "" : $"\n<size=65%>{entry.description}</size>"),
+                              entry.color, 6f);
+            return ShopResult.Done($"Duo : {entry.displayName}", entry.color);
+        }
+
+        /// <summary>Où naît le duo de ces deux tours : à la place de la tour visée ; une tour de la voie et une du bord, sur la voie.</summary>
+        public static Structure DuoPlace(Structure moving, Structure target) =>
+            moving.Definition != null && target.Definition != null && moving.Definition.slot == BuildSlot.Lane &&
+            target.Definition.slot != BuildSlot.Lane ? moving : target;
+
+        /// <summary>Les plans qui font monter ce duo : ceux de ses deux tours.</summary>
+        public int PlansOf(TowerDuo duo) => duo != null ? PlansOf(duo.First) + PlansOf(duo.Second) : 0;
+
+        // Les plans d'un niveau de duo : d'abord ceux du bâtiment donné (le plan sorti de la montre), puis ceux de l'autre tour.
+        bool TrySpendDuoPlans(TowerDuo duo, StructureDefinition preferred, int spent)
+        {
+            if (PlansOf(duo) < spent)
+                return false;
+
+            var first = preferred == duo.Second ? duo.Second : duo.First;
+            var second = first == duo.First ? duo.Second : duo.First;
+            var fromFirst = Mathf.Min(spent, PlansOf(first));
+            if (fromFirst > 0)
+                m_Plans[first] = PlansOf(first) - fromFirst;
+            if (spent - fromFirst > 0 && second != null)
+                m_Plans[second] = PlansOf(second) - (spent - fromFirst);
+            PlansChanged?.Invoke();
+            return true;
+        }
+
         /// <summary>
         /// Construit un bâtiment sur un socle vide, ou le niveau suivant de celui qui y est, avec un plan de ce bâtiment.
         /// Le marteau apparaît près de la main donnée (celle qui a ouvert le panneau). Un nouveau bâtiment peut être tourné de
@@ -270,6 +402,7 @@ namespace Archery.Building
                 return ShopResult.Failed("Termine d'abord la construction en cours");
 
             var structure = socket.Structure;
+            var spentFrom = definition;
             if (structure != null)
                 definition = structure.Definition;
             if (definition == null || definition.prefab == null)
@@ -279,9 +412,19 @@ namespace Archery.Building
             if (level > definition.MaxLevel)
                 return ShopResult.Failed("Niveau maximal atteint");
 
-            // Refonte du 27 octobre : un plan du bâtiment à la place des matériaux, pour le construire comme pour l'améliorer.
-            if (!TrySpendPlan(definition))
-                return ShopResult.Failed($"Il te faut un plan : {definition.displayName}");
+            // Refonte du 27 octobre : un plan du bâtiment à la place des matériaux, pour le construire comme pour l'améliorer ;
+            // deux aux niveaux 4 et 5 (29 octobre). Un duo (31 octobre) : 4 plans par niveau, de l'une ou l'autre de ses tours.
+            var plans = definition.PlansFor(level);
+            if (structure is TowerDuo duo)
+            {
+                if (!TrySpendDuoPlans(duo, spentFrom, plans))
+                    return ShopResult.Failed($"Il te faut {plans} plans : {duo.First?.displayName} ou {duo.Second?.displayName}");
+            }
+            else if (!TrySpendPlans(definition, plans))
+            {
+                return ShopResult.Failed(plans > 1 ? $"Il te faut {plans} plans : {definition.displayName}"
+                                             : $"Il te faut un plan : {definition.displayName}");
+            }
 
             if (structure == null)
             {
@@ -472,8 +615,38 @@ namespace Archery.Building
             Debug.Log(m_Builder.ToString(), this);
         }
 
-        // Raccourcis de test au clavier (éditeur) : B donne 2 plans de chaque bâtiment (50 matériaux avant le 27 octobre), H termine
-        // la construction en cours.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // F3 : chaque ennemi au sol à moins de 15 m saute de 7 m/s, poussé loin du joueur (3 m/s) ; un boss est seulement poussé.
+        void LaunchNearbyEnemies()
+        {
+            var rig = PlayerRig.Instance;
+            if (rig == null)
+                return;
+
+            var launched = 0;
+            var player = rig.BodyPosition;
+            foreach (var enemy in new List<Enemy>(Enemy.Alive))
+            {
+                if (enemy == null || enemy.IsTrainingDummy)
+                    continue;
+
+                var away = enemy.transform.position - player;
+                away.y = 0f;
+                if (away.sqrMagnitude > 15f * 15f)
+                    continue;
+
+                var flat = away.sqrMagnitude > 1e-4f ? away.normalized : Vector3.forward;
+                if (enemy.Launch(Vector3.up * 7f + flat * 3f, this))
+                    launched++;
+            }
+
+            Announce(launched > 0 ? $"Test : {launched} ennemi{(launched > 1 ? "s" : "")} projeté{(launched > 1 ? "s" : "")}" : "Test : aucun ennemi à projeter près de toi");
+        }
+#endif
+
+        // Raccourcis de test au clavier (éditeur) : B donne 2 plans de chaque bâtiment non retiré (50 matériaux avant le 27 octobre), H termine
+        // la construction en cours, F3 projette en l'air les ennemis à moins de 15 m du joueur (l'état « projeté » des
+        // constructions physiques, Enemy.Launch.cs, 27 octobre).
         void UpdateDebugKey()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -485,14 +658,16 @@ namespace Archery.Building
             {
                 foreach (var definition in m_Structures)
                 {
-                    if (definition != null && definition.prefab != null)
+                    if (definition != null && definition.prefab != null && !definition.retired)
                         AddPlans(definition, 2);
                 }
 
-                Announce("Test : 2 plans de chaque bâtiment");
+                Announce("Test : 2 plans de chaque tour");
             }
             if (keyboard.hKey.wasPressedThisFrame)
                 FinishNow();
+            if (keyboard.f3Key.wasPressedThisFrame)
+                LaunchNearbyEnemies();
 #endif
         }
     }

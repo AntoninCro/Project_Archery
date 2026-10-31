@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Tremplin
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 6
+  displayName: Tremplin
+  slot: 0
+  prefab: {fileID: 3310416594901449235, guid: 98fc9b5a3a786614cb5be69a144f0cd4, type: 3}
+  color: {r: 0.6, g: 1, b: 0.5, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Projette en l'air, vers la for\xEAt, un ennemi au sol qui passe
+      dessus, toutes les 3 s. Sa chute le blesse, et le toucher en vol rapporte plus."
+  - cost: 0
+    plans: 0
+    description: 'Projette plus haut : l''ennemi reste plus longtemps en l''air (le
+      tir au vol rapporte plus).'
+  - cost: 0
+    plans: 0
+    description: "Catapulte : un bras attrape l'ennemi et le lance sur le groupe
+      le plus serr\xE9 ; il devient un boulet qui blesse et renverse ceux qu'il percute."
+  - cost: 0
+    plans: 0
+    description: "Trois godets : trois ennemis lanc\xE9s d'un coup."
+  - cost: 0
+    plans: 0
+    description: "Rampe de lancement : les ennemis partent \xE0 370 m dans le ciel
+      et retombent 5 s plus tard, en m\xE9t\xE9ores, sur le groupe le plus serr\xE9
+      : l'atterrissage les tue et blesse ceux qu'ils \xE9crasent. Les boss y perdent
+      10 % de leurs PV."
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 0

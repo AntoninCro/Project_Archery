@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: BalisteTour
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 23
+  displayName: Baliste sur la tour
+  slot: 3
+  prefab: {fileID: 7552609604685531846, guid: 6e736dae8af522040afdfa8198693b83, type: 3}
+  color: {r: 1, g: 0.82, b: 0.4, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Sur la tour, \xE0 c\xF4t\xE9 de toi. Une grosse baliste qui tire
+      seule sur l'ennemi le plus proche \xE0 35 m (30 de d\xE9g\xE2ts, toutes les
+      2,5 s) ; le carreau traverse un ennemi."
+  - cost: 0
+    plans: 0
+    description: "D\xE9g\xE2ts \xD71,5, toutes les 2,1 s ; il traverse 2 ennemis."
+  - cost: 0
+    plans: 0
+    description: "D\xE9g\xE2ts \xD72,2, toutes les 1,7 s ; il traverse 3 ennemis."
+  lotSize: 1
+  rarity: 2
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1

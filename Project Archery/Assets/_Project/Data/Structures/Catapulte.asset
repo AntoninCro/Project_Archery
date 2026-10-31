@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Catapulte
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 13
+  displayName: Catapulte
+  slot: 1
+  prefab: {fileID: 6124770571666826734, guid: 902fa07dde62f624bbdc16abf2480768, type: 3}
+  color: {r: 1, g: 0.75, b: 0.4, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Toutes les 5 s, attrape l'ennemi au sol le plus proche (6 m) et
+      le lance sur le groupe le plus serr\xE9 \xE0 12 m : il blesse ceux sur qui
+      il retombe. Sans groupe, elle le renvoie vers la for\xEAt."
+  - cost: 0
+    plans: 0
+    description: "Toutes les 4,2 s, 14 m, impact \xD71,5."
+  - cost: 0
+    plans: 0
+    description: "Toutes les 3,5 s, 16 m, impact \xD72,1."
+  lotSize: 1
+  rarity: 1
+  anywhere: 0
+  footprint: {x: 0, y: 0}
+  retired: 1
