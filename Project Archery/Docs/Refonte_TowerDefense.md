@@ -91,6 +91,12 @@ au-dessus de la voie, des grappins qui balaient toute sa largeur et jettent les 
 vues dans Unity**. Le joueur les essaie : **« les nouvelles tours sont validées »** ; deux bugs du Colisée corrigés (12.30 : les
 tourelles visaient les champions ; un champion restait figé quand son Colisée disparaissait). Ensuite : les ultimes.
 
+**1er novembre au soir : l'équilibrage des tours.** Le joueur atteint la vague 45 avec les seules tourelles de F4 : les bâtiments
+suivaient tout à fait la force des ennemis. Ils n'en suivent plus que la racine carrée, et leurs dégâts baissent de 20 % (12.31 ;
+compilé, pas encore essayé). Puis : « les tours sont déséquilibrées les unes par rapport aux autres ». **La prochaine tâche, pour
+l'autre compte Claude : le tableau d'équilibrage des 10 tours** (un fichier Excel, DPS par niveau et par vague, DPS de zone,
+utilité de contrôle, changements proposés), décrite en entier en **12.32**. Les ultimes viennent après.
+
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
 `compile_check_editor.py` sans erreur ni avertissement), **pas encore testées en entier dans Unity ni au casque** (tests :
@@ -2091,3 +2097,78 @@ deux bugs du Colisée, corrigés (compilé, **pas encore revu dans Unity**) :
   disparaît (la vitrine F4 passe au suivant, une fusion), ses champions perdaient leur couronne et leur protection, mais **gardaient
   leur charme** (jusqu'à 31 s) : ils couraient vers leur dernière proie, puis restaient plantés là. Ils redeviennent maintenant des
   ennemis tout de suite (`Dismiss` les libère).
+
+### 12.31 Le scaling des bâtiments (1er novembre au soir)
+
+Le joueur : avec les seules tourelles de la vitrine (F4 : deux balistes et deux lance-filets au niveau 5), il est allé jusqu'à la
+vague 45 ; « on ne peut juste pas perdre ». La cause : les dégâts de chaque bâtiment étaient multipliés par la force des ennemis
+(leurs PV : difficulté et vague, mode infini compris, ×1,15 par vague puis ×1,44 en infini) ; un bâtiment gardait la même part de
+leurs PV toute la partie, et seul leur nombre montait, plafonné à 40 à la fois. Maintenant, ils ne suivent plus que la **racine
+carrée** de cette force (`Structure.Strength`, réglage *Structure Strength Exponent* des Wave Settings, 0,5 ; 1 : comme avant) :
+
+| Vague (Normal) | PV des ennemis | Dégâts des bâtiments | Part des PV d'un ennemi |
+|---|---|---|---|
+| 1 | ×1 | ×1 | 100 % |
+| 6 (fin de partie) | ×2,0 | ×1,4 | 71 % |
+| 10 | ×8,6 | ×2,9 | 34 % |
+| 15 | ×53 | ×7,3 | 14 % |
+| 20 | ×323 | ×18 | 6 % |
+
+Les dégâts « en part des PV max » de certaines fusions (les coups des gladiateurs, le char de carnaval, le cataclysme de la
+Grande bombarde…) ne changent pas. Compilé, **pas encore essayé**. À noter : les essais avec F4 donnent 20 000 PV au joueur et à
+la tour ; pour juger l'équilibrage, regarder quand les tours sont débordées plutôt que quand la partie est perdue. Les dégâts de
+base des tours ne sont pas touchés (les valeurs du joueur font foi) : la *Structure Power* de chaque difficulté les multiplie
+tous (1 en Normal).
+
+Puis le joueur : « oui, baisse-les ». **Tous les dégâts des bâtiments baissent de 20 %**, duos et trios compris, par la *Structure
+Power* : 0,75 → 0,6 (Facile), 1 → 0,8 (Normal), 1,25 → 1 (Difficile), 1,6 → 1,28 (Impossible). Fait par
+`Editor/StructurePowerBaker` à l'ouverture de Unity (une fois, seulement si la valeur est encore l'ancienne ; la console l'écrit).
+Avec la racine carrée, à la vague 6 en Normal, un bâtiment fait ainsi 57 % de la part des PV d'un ennemi qu'il faisait avant ;
+à la vague 10, 27 %. Les dégâts par niveau de chaque tour (leurs prefabs) ne changent pas : si les niveaux 4 et 5 restent trop
+forts par rapport aux premiers, c'est eux qu'il faudra revoir.
+
+### 12.32 À FAIRE : le tableau d'équilibrage des tours (demandé le 1er novembre au soir, pour l'autre compte Claude)
+
+Le joueur : « les tours sont déséquilibrées les unes par rapport aux autres, il faudrait toutes les équilibrer ». Rien n'est
+commencé : la session du 1er novembre n'avait plus assez d'utilisation pour le faire. **La demande, telle quelle** :
+
+**Un fichier Excel** (`Project Archery/Docs/Equilibrage_Tours.xlsx` ; pas d'accent dans le nom), une ligne par **niveau** de chaque
+tour, et des colonnes :
+1. la tour, le niveau ;
+2. **ce que fait la tour** à ce niveau (en une phrase : sa cible, son effet, ce que le niveau ajoute) ;
+3. **le DPS sur une cible** (dégâts par seconde sur un seul ennemi), **une colonne par vague** : vagues 2, 3, 4, 5, 8, 10, 12 et 15 ;
+4. **le DPS de zone** (sur un groupe : les dégâts par seconde sur tous les ennemis touchés, en supposant un groupe type, à dire
+   dans l'en-tête, par exemple 5 ennemis serrés), une colonne par vague aussi ;
+5. **l'utilité de contrôle** (CC : ralentir, figer, étourdir, projeter, renvoyer en arrière, attirer, prendre au filet), pour les
+   tours qui en font : une estimation chiffrée (par exemple des secondes de chemin perdues par ennemi et par seconde, ou des
+   « ennemis-secondes » de contrôle par seconde), avec l'unité dans l'en-tête ;
+6. **à la fin de chaque tour, une ligne de plus**, avec deux colonnes : **« Changements proposés (Claude) »** (ce qu'il faudrait
+   changer pour équilibrer cette tour par rapport aux autres : les chiffres précis) et **« Changements du joueur »** (vide : le joueur
+   y écrit les siens s'il veut modifier ceux de Claude).
+
+Une feuille de plus, conseillée : la méthode et les hypothèses (la formule des vagues, la taille du groupe, ce qui n'est pas compté).
+
+**Les 10 tours** (les seules que donnent les caisses : `retired` décoché dans `Data/Structures`) : Barricade, Piques, Tremplin,
+Baliste, Mortier, Tour de givre, Lance-filet, Tour-aimant, Bulle, Phare ; **5 niveaux** chacune (la catapulte, le pendule : leurs
+niveaux 3). Leurs réglages par niveau sont dans leurs prefabs (`Prefabs/Structures/Barricade, Pieges, Tremplin, Baliste, Mortier,
+Givre, Filet, Aimant, Bulle, Phare.prefab` : `m_DamagePerLevel`, `m_IntervalPerLevel`, portée, rayon…) et leurs scripts
+(`Scripts/Building/`) ; les évolutions des niveaux 4 et 5 sont décrites en 12.10. **Les valeurs des prefabs font foi**, pas les
+chiffres de ce document. Les duos et les trios ne sont pas demandés (ils pourront suivre).
+
+**La formule des dégâts à une vague** (Normal) : dégâts de base × `Strength`, avec `Strength = (enemyHealth × EnemyScaling.Health)
+^ 0,5 × structurePower` (`Structure.Strength`, 12.31 ; *Structure Power* 0,8 en Normal depuis le 1er novembre au soir, *Structure
+Strength Exponent* 0,5 dans les Wave Settings). `EnemyScaling.Health` est réglé au début de chaque vague par `WaveManager.StartNextWave`
+: `Growth(vague, healthGrowthPerWave, endlessHealthGrowth) × EarlyStrength(vague) × lerp(1, HealthCurve(vague), waveCurve)`
+(`Data/Difficulties/Difficulty_Normal.asset`, `Data/Waves/WaveSettings.asset`, 6 vagues puis le mode infini). Pour comparer les
+tours entre elles, donner aussi le DPS **en part des PV d'un ennemi type** de la vague (ses PV : `Data/Enemies`, × la même force
+sans racine carrée) : c'est ce qui dit si une tour suit ou décroche. Ne pas oublier : le soutien du phare (+20 % de dégâts aux
+bâtiments de son rayon, la cadence au niveau 2), la moitié des bonus de l'arc pour la baliste, les dégâts de chute des ennemis
+projetés (la règle de la chute, `Enemy.Launch.cs`), le bonus des ennemis préparés (12.12 : il ne compte que pour les coups du joueur).
+
+**La méthode conseillée** (pour économiser l'utilisation) : un script Python (`Tools/equilibrage_tours.py`, à créer) qui lit les
+valeurs dans les prefabs (YAML), calcule la force de chaque vague avec les assets de difficulté et de vagues, et écrit le fichier
+Excel ; puis seulement, à la main, les colonnes « ce que fait la tour », l'utilité de contrôle et les changements proposés. Python
+3.13 est installé (`py`) avec numpy, Pillow et python-pptx ; **openpyxl n'y est peut-être pas** : vérifier, et demander au joueur
+avant de l'installer (ou passer par la compétence Excel de Claude si elle est là). Rien n'est à changer dans le jeu avant que le
+joueur ait rempli sa colonne : les changements se feront ensuite par un baker (les prefabs, une fois, seulement les valeurs encore
+à l'ancienne).

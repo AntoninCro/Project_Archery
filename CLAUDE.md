@@ -20,6 +20,8 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   **V** (une caisse), **F2** (le menu des plans sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque
   tour, puis chaque duo, puis chaque trio, posée à plusieurs niveaux ; `Building/BuildShowcase.cs`). Les trios (1er novembre) :
   un duo plus une tour, `Building/TowerTrio.cs`, modèles dans `Tools/allure_tours/trios.py` (partie « trios » du fichier d'allure).
+  **La tâche suivante (1er novembre au soir)** : le tableau Excel d'équilibrage des 10 tours, demandé par le joueur et décrit en
+  entier dans `Refonte_TowerDefense.md`, partie 12.32 (rien n'est commencé ; le scaling des bâtiments vient de changer : 12.31).
 - **Le chantier en cours** (26 octobre) : la refonte de la partie roguelike, « la flèche en pièces » ; son état et ses étapes
   sont dans `Project Archery/Docs/Refonte_Roguelike.md`, partie « Avancement ».
 
@@ -39,7 +41,9 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 - **Développement solo** depuis l'oral de groupe du 23 octobre : le code venu des anciens coéquipiers (`Scripts/BowClasses/*`,
   `Scripts/Grenade/*` et leurs prefabs) se modifie comme le reste, sans le signaler.
 - **Git** : commiter ou pousser seulement quand le joueur le demande. Sur le PC actuel (depuis le 1er novembre), le dépôt est
-  cloné en HTTPS (`https://github.com/AntoninCro/Project_Archery.git`, connexion par Git Credential Manager) et ça marche ;
+  cloné en HTTPS (`https://github.com/AntoninCro/Project_Archery.git`, connexion par Git Credential Manager) et ça marche
+  (pousser depuis un onglet du terminal du joueur, pas depuis l'outil PowerShell de Claude : il ne peut pas ouvrir la connexion
+  dans le navigateur, « terminal prompts disabled ») ;
   sur le PC d'avant, Smart App Control bloquait le HTTPS et le dépôt était en SSH.
 - Demander avant de supprimer un fichier du joueur et avant tout téléchargement ; ne jamais saisir de mot de passe.
 - Vérifier qu'un nom de fichier est libre avant de le créer ; pas d'accents dans les noms de fichiers d'assets. Garder la fin de

@@ -90,7 +90,11 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   vérifiés hors de Unity, **pas encore vus dans Unity** (parties 12.20 à 12.26 ; F4 les montre après les duos ; tests :
   `Checklist_Demo.md`, « Les trios »). Le soir, après le premier essai (parties 12.27 à 12.30) : le Volcan est remplacé par la
   **Grande bombarde**, les Montagnes russes refaites en **Grappin**, les baudruches attirent aussi volants et tireurs, le Colisée
-  corrigé ; F4 pose une défense aérienne et donne 20 000 PV. **Le joueur valide les nouvelles tours.** Ensuite : les ultimes.
+  corrigé ; F4 pose une défense aérienne et donne 20 000 PV. **Le joueur valide les nouvelles tours** (commit `d512b9f`, poussé).
+  Puis, le même soir, l'équilibrage (partie 12.31, **pas commité, pas essayé**) : les bâtiments ne suivent plus que la racine
+  carrée de la force des ennemis (le joueur tenait jusqu'à la vague 45 avec les seules tourelles de F4), et leurs dégâts baissent
+  de 20 % (`Editor/StructurePowerBaker`). **LA PROCHAINE TÂCHE** (pour l'autre compte Claude, dans une conversation neuve) : **le
+  tableau Excel d'équilibrage des 10 tours**, décrit en entier dans `Refonte_TowerDefense.md`, partie **12.32**. Ensuite : les ultimes.
 Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, posée à plusieurs niveaux).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)

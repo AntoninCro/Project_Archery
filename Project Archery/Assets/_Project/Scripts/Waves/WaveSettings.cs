@@ -90,6 +90,13 @@ namespace Archery.Waves
         [Range(0f, 0.5f)]
         public float firstWaveCalmShare = 0.07f;
 
+        [Header("Les bâtiments")]
+        [Tooltip("Les dégâts des bâtiments suivent la force des ennemis (leurs PV, vague et difficulté) à cette puissance. 1 : tout " +
+                 "à fait, un bâtiment garde le même effet toute la partie (avant le 1er novembre au soir : la vague 45 avec les seules " +
+                 "tourelles de la vitrine) ; 0,5 : sa racine carrée, il prend du retard vague après vague ; 0 : jamais.")]
+        [Range(0f, 1f)]
+        public float structureStrengthExponent = EnemyScaling.k_DefaultStructureExponent;
+
         [Header("Mode infini")]
         [Tooltip("Après la dernière vague, la courbe s'accélère : chaque vague multiplie encore les PV des ennemis par cette valeur.")]
         [Min(1f)]

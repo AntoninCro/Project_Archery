@@ -80,7 +80,17 @@ namespace Archery.Building
         /// Multiplie les dégâts du bâtiment, s'il suit la force des ennemis : cette force × la puissance des bâtiments
         /// de la difficulté (plus d'ennemis en Impossible, donc des bâtiments plus forts pour garder la même utilité).
         /// </summary>
-        protected float Strength => (m_FollowEnemyStrength ? EnemyStrength * DifficultyManager.Current.structurePower : 1f) * SupportDamage;
+        /// <remarks>
+        /// Depuis le 1er novembre au soir, il ne la suit qu'en partie (à la puissance <see cref="EnemyScaling.StructureExponent"/>,
+        /// 0,5 : sa racine carrée) : un bâtiment prend du retard sur les ennemis vague après vague, et il faut l'améliorer, le
+        /// fusionner, et tirer soi-même. Avant, il la suivait tout à fait : le joueur est allé jusqu'à la vague 45 avec les seules
+        /// tourelles de la vitrine (F4). Vague 6 (fin de partie) : 1,4 au lieu de 2 ; vague 10 : 2,9 au lieu de 8,6 ; vague 20 :
+        /// 18 au lieu de 323 (en Normal).
+        /// </remarks>
+        protected float Strength =>
+            (m_FollowEnemyStrength
+                ? Mathf.Pow(Mathf.Max(0.01f, EnemyStrength), EnemyScaling.StructureExponent) * DifficultyManager.Current.structurePower
+                : 1f) * SupportDamage;
 
 
         // Le soutien du phare (deuxième brainstorm du tower defense, 29 octobre) : dans son rayon, les dégâts (+20 % au niveau 1)

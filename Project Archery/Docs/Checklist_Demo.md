@@ -253,6 +253,7 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 - [ ] **Colisée, plusieurs champions** : la vitrine en pose trois ; les champions sortis de deux arènes différentes ne se battent plus entre eux ; la vague finit quand il ne reste que des champions.
 - [ ] **Colisée, niveau 3** : le grand champion est doré de la tête aux pieds, brillant ; « Le guerrier d'or ! » devant toi ; il reprend ses couleurs quand il tombe.
 - [ ] **Colisée, les tourelles** (12.30) : avec une baliste, un mortier ou un lance-filet à portée, aucun ne tire sur un champion ; ils visent les autres ennemis.
+- [ ] **Le scaling des bâtiments** (12.31) : avec les seules tourelles de F4, passer les vagues (gong) jusqu'au mode infini : vers la vague 10 à 15, elles sont débordées (les ennemis arrivent à la tour). Les Wave Settings ont un réglage *Structure Strength Exponent* (0,5). À l'ouverture de Unity, la console écrit « Dégâts des bâtiments −20 % … Structure Power : facile 0.6, Normal 0.8, Difficile 1, Impossible 1.28 ».
 - [ ] **Colisée retiré** (12.30) : pendant qu'un champion se bat, F4 (le Colisée disparaît) : il perd sa couronne et repart aussitôt vers la tour comme un ennemi, sans rester planté.
 - [ ] **Les autres charmes** (Chant des sirènes, Boussole folle, Bowling) : un tireur charmé va bien jusqu'à son point (la rose, la place de quille, sa cible) au lieu de s'arrêter à 17 m.
 
