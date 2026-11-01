@@ -281,8 +281,8 @@ namespace Archery.Building
         // chacune au moins au niveau 3, fusionnent quand on déplace l'une sur l'autre ; elles deviennent une tour nouvelle.
 
         /// <summary>
-        /// Le duo que formeraient ces deux tours (null si elles ne sont pas partenaires), et ce qui l'empêche en ce moment dans
-        /// <paramref name="problem"/> (null si rien).
+        /// La fusion que formeraient ces deux bâtiments (null s'ils ne sont pas partenaires) : un duo (deux tours), ou un trio (un
+        /// duo et une tour, 1er novembre) ; et ce qui l'empêche en ce moment dans <paramref name="problem"/> (null si rien).
         /// </summary>
         public TowerDuoCatalog.Entry DuoOf(Structure a, Structure b, out string problem)
         {
@@ -290,13 +290,14 @@ namespace Archery.Building
             if (a == null || b == null || a == b || a.Definition == null || b.Definition == null)
                 return null;
 
+            if (a is TowerDuo || b is TowerDuo)
+                return TrioOf(a, b, out problem);
+
             var entry = TowerDuoCatalog.Find(a.Definition.kind, b.Definition.kind);
             if (entry == null)
                 return null;
 
-            if (a is TowerDuo || b is TowerDuo)
-                problem = "Déjà un duo";
-            else if (!a.IsBuilt || !b.IsBuilt || a.IsUnderConstruction || b.IsUnderConstruction)
+            if (!a.IsBuilt || !b.IsBuilt || a.IsUnderConstruction || b.IsUnderConstruction)
                 problem = "Termine d'abord leur construction";
             else if (a.Level < m_DuoFromLevel || b.Level < m_DuoFromLevel)
                 problem = $"Les deux tours au niveau {m_DuoFromLevel} au moins";
@@ -305,12 +306,44 @@ namespace Archery.Building
             return entry;
         }
 
+        // Un trio (1er novembre) : un duo (pas un trio) et une tour au moins au niveau 3 ; le duo, à n'importe quel niveau.
+        TowerDuoCatalog.Entry TrioOf(Structure a, Structure b, out string problem)
+        {
+            problem = null;
+            var duo = a as TowerDuo ?? b as TowerDuo;
+            var tower = duo == a ? b : a;
+            if (tower is TowerDuo)
+                return null;
+
+            var entry = TowerDuoCatalog.FindTrio(duo.Definition, tower.Definition.kind);
+            if (entry == null)
+                return null;
+
+            if (duo is TowerTrio)
+                problem = "Déjà un trio";
+            else if (!duo.IsBuilt || !tower.IsBuilt || duo.IsUnderConstruction || tower.IsUnderConstruction)
+                problem = "Termine d'abord leur construction";
+            else if (tower.Level < m_DuoFromLevel)
+                problem = $"{tower.DisplayName} au niveau {m_DuoFromLevel} au moins";
+            else if (!CanMove)
+                problem = "On fusionne entre les vagues";
+            return entry;
+        }
+
         /// <summary>
         /// Le niveau où naît le duo de ces deux tours : 1 (deux tours au niveau 3), 2 (l'une au niveau maximal), 3 (les deux). Un
-        /// duo coûte ainsi autant de plans qu'on le fasse tôt puis le monte (4 plans par niveau), ou tard (31 octobre).
+        /// duo coûte ainsi autant de plans qu'on le fasse tôt puis le monte (4 plans par niveau), ou tard (31 octobre). Un trio
+        /// (1er novembre) : le niveau du duo, un de plus si la tour est à son niveau maximal (3 au plus).
         /// </summary>
         public static int DuoLevelFrom(Structure a, Structure b)
         {
+            var duo = a as TowerDuo ?? b as TowerDuo;
+            if (duo != null)
+            {
+                var tower = duo == a ? b : a;
+                return Mathf.Min(duo.MaxLevel, duo.Level + (tower != null && tower.Level >= tower.MaxLevel ? 1 : 0));
+            }
+
             var full = (a != null && a.Level >= a.MaxLevel ? 1 : 0) + (b != null && b.Level >= b.MaxLevel ? 1 : 0);
             return 1 + full;
         }
@@ -328,7 +361,7 @@ namespace Archery.Building
                 return ShopResult.Failed(problem);
 
             var definition = entry.definition;
-            var keep = DuoPlace(moving, target);
+            var keep = DuoPlace(moving, target, definition);
             var socket = keep.Socket;
             var freed = (keep == moving ? target : moving).Socket;
             if (socket == null)
@@ -342,11 +375,14 @@ namespace Archery.Building
             {
                 spot = grid.EvaluateInPlace(definition, socket, freed, cells);
                 if (!spot.Valid)
-                    return ShopResult.Failed($"Pas la place pour le duo ici : {spot.Reason}");
+                    return ShopResult.Failed($"Pas la place pour le {entry.Label.ToLowerInvariant()} ici : {spot.Reason}");
             }
 
-            var first = moving.Definition;
-            var second = target.Definition;
+            // Un trio garde les deux tours du duo, plus la troisième : leurs plans le font monter.
+            var fromDuo = moving as TowerDuo ?? target as TowerDuo;
+            var third = entry.IsTrio ? (fromDuo == moving ? target : moving).Definition : null;
+            var first = entry.IsTrio ? fromDuo.First : moving.Definition;
+            var second = entry.IsTrio ? fromDuo.Second : target.Definition;
             var level = DuoLevelFrom(moving, target);
             var localRotation = keep.transform.localRotation;
 
@@ -363,38 +399,98 @@ namespace Archery.Building
 
             var duo = (TowerDuo)socket.Place(definition);
             duo.transform.localRotation = localRotation;
-            duo.SetupDuo(entry, first, second);
+            if (duo is TowerTrio trio)
+                trio.SetupTrio(entry, first, second, third);
+            else
+                duo.SetupDuo(entry, first, second);
             duo.SetLevelImmediate(level);
 
             var top = socket.transform.position + Vector3.up * 3f;
+            var title = $"{entry.Label} : {entry.displayName} !";
             Sfx.Play(m_DuoClip != null ? m_DuoClip : m_CompleteClip, top, 1f);
-            FloatingText.Spawn(top + Vector3.up, $"Duo : {entry.displayName} !", entry.color, 1.4f, 2.5f);
-            HeadMessages.Show($"Duo : {entry.displayName} !" + (string.IsNullOrEmpty(entry.description) ? "" : $"\n<size=65%>{entry.description}</size>"),
+            FloatingText.Spawn(top + Vector3.up, title, entry.color, entry.IsTrio ? 1.8f : 1.4f, 2.5f);
+            HeadMessages.Show(title + (string.IsNullOrEmpty(entry.description) ? "" : $"\n<size=65%>{entry.description}</size>"),
                               entry.color, 6f);
-            return ShopResult.Done($"Duo : {entry.displayName}", entry.color);
+            return ShopResult.Done($"{entry.Label} : {entry.displayName}", entry.color);
         }
 
-        /// <summary>Où naît le duo de ces deux tours : à la place de la tour visée ; une tour de la voie et une du bord, sur la voie.</summary>
-        public static Structure DuoPlace(Structure moving, Structure target) =>
-            moving.Definition != null && target.Definition != null && moving.Definition.slot == BuildSlot.Lane &&
-            target.Definition.slot != BuildSlot.Lane ? moving : target;
+        /// <summary>« Duo » ou « Trio » : ce qu'est ce bâtiment fusionné, pour les messages.</summary>
+        public static string FusionLabel(TowerDuo duo) => duo is TowerTrio ? "Trio" : "Duo";
 
-        /// <summary>Les plans qui font monter ce duo : ceux de ses deux tours.</summary>
-        public int PlansOf(TowerDuo duo) => duo != null ? PlansOf(duo.First) + PlansOf(duo.Second) : 0;
+        /// <summary>Les noms des tours dont les plans font monter ce duo (ou ce trio), séparés par des virgules.</summary>
+        public static string SourceNames(TowerDuo duo, string separator = ", ")
+        {
+            var names = new List<string>();
+            if (duo != null)
+            {
+                foreach (var source in duo.PlanSources)
+                {
+                    if (source != null)
+                        names.Add(source.displayName);
+                }
+            }
 
-        // Les plans d'un niveau de duo : d'abord ceux du bâtiment donné (le plan sorti de la montre), puis ceux de l'autre tour.
+            return string.Join(separator, names);
+        }
+
+        /// <summary>
+        /// Où naît le duo de ces deux tours : à la place de la tour visée ; une tour de la voie et une du bord, sur la voie. Sauf si
+        /// le duo (<paramref name="result"/>) va au bord : alors à la place de celle du bord (1er novembre au soir : la Grande
+        /// bombarde, au bord, naît du Feu d'artifice, au bord, et du tremplin, sur la voie ; posée sur la voie, la grille la refusait).
+        /// </summary>
+        public static Structure DuoPlace(Structure moving, Structure target, StructureDefinition result = null)
+        {
+            if (moving.Definition == null || target.Definition == null)
+                return target;
+
+            var movingOnLane = moving.Definition.slot == BuildSlot.Lane;
+            var targetOnLane = target.Definition.slot == BuildSlot.Lane;
+            if (movingOnLane == targetOnLane)
+                return target;
+            var wantsLane = result == null || result.slot == BuildSlot.Lane;
+            return movingOnLane == wantsLane ? moving : target;
+        }
+
+        /// <summary>Les plans qui font monter ce duo : ceux de ses deux tours (de ses trois tours, pour un trio).</summary>
+        public int PlansOf(TowerDuo duo)
+        {
+            var total = 0;
+            if (duo != null)
+            {
+                foreach (var source in duo.PlanSources)
+                    total += PlansOf(source);
+            }
+
+            return total;
+        }
+
+        // Les plans d'un niveau de duo : d'abord ceux du bâtiment donné (le plan sorti de la montre), puis ceux des autres tours,
+        // dans l'ordre (les deux du duo, puis la troisième d'un trio).
         bool TrySpendDuoPlans(TowerDuo duo, StructureDefinition preferred, int spent)
         {
             if (PlansOf(duo) < spent)
                 return false;
 
-            var first = preferred == duo.Second ? duo.Second : duo.First;
-            var second = first == duo.First ? duo.Second : duo.First;
-            var fromFirst = Mathf.Min(spent, PlansOf(first));
-            if (fromFirst > 0)
-                m_Plans[first] = PlansOf(first) - fromFirst;
-            if (spent - fromFirst > 0 && second != null)
-                m_Plans[second] = PlansOf(second) - (spent - fromFirst);
+            var order = new List<StructureDefinition>();
+            if (preferred != null && duo.AcceptsPlansOf(preferred))
+                order.Add(preferred);
+            foreach (var source in duo.PlanSources)
+            {
+                if (source != null && !order.Contains(source))
+                    order.Add(source);
+            }
+
+            foreach (var source in order)
+            {
+                var taken = Mathf.Min(spent, PlansOf(source));
+                if (taken <= 0)
+                    continue;
+                m_Plans[source] = PlansOf(source) - taken;
+                spent -= taken;
+                if (spent <= 0)
+                    break;
+            }
+
             PlansChanged?.Invoke();
             return true;
         }
@@ -428,7 +524,7 @@ namespace Archery.Building
             if (structure is TowerDuo duo)
             {
                 if (!TrySpendDuoPlans(duo, spentFrom, plans))
-                    return ShopResult.Failed($"Il te faut {plans} plans : {duo.First?.displayName} ou {duo.Second?.displayName}");
+                    return ShopResult.Failed($"Il te faut {plans} plans : {SourceNames(duo, " ou ")}");
             }
             else if (!TrySpendPlans(definition, plans))
             {

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Boule_a_neige
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: "Boule \xE0 neige"
+  slot: 1
+  prefab: {fileID: 2596913323759963577, guid: 50c8a2a23bd7f2248994c37d40a8c1ef, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une boule de verre g\xE9ante tombe du ciel sur un groupe et l'enferme
+      : il y neige, et les ennemis s'y figent peu \xE0 peu en figurines. Ta fl\xE8che
+      brise la boule : toutes les figurines \xE9clatent."
+  - cost: 0
+    plans: 4
+    description: "\xC0 mi-temps, la boule se secoue : les figurines tourbillonnent
+      dans la neige et se heurtent."
+  - cost: 0
+    plans: 4
+    description: "La boule immense : une boule de 18 m tombe sur toute une voie ;
+      bris\xE9e par ta fl\xE8che, chaque figurine \xE9clate et meurt."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 3, y: 3}
+  retired: 0

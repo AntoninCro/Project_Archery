@@ -28,11 +28,10 @@ base, le tourniquet), la vitrine F4 et les 10 premiers duos. **Commité et pouss
 **changement de PC** : les 3 derniers duos, le Toboggan revu, les bugs du premier essai des duos, et les consignes pour
 Claude (`CLAUDE.md`, à la racine du dépôt) désormais dans le dépôt, avec ce que Claude avait retenu sur le PC d'avant.
 
-**Sur le nouveau PC** (à partir du 31 octobre au soir) : ouvrir Claude dans le dossier du dépôt (`Project_Archery`, où est
-`CLAUDE.md`) ; ouvrir le projet une fois dans Unity 6000.5.10f1 (il génère les `.csproj` dont `Tools/compile_check.py` a besoin,
-avec le SDK .NET) ; revérifier les pièges de la partie « Pièges connus » de `CLAUDE.md` (Git en SSH, le nom de Python). Les
-packs d'assets téléchargés mais pas importés (`projet archery/Assets_TowerDefense/`) étaient hors du dépôt : à recopier à la
-main s'ils servent.
+**Sur le nouveau PC** (installé le 1er novembre) : le dépôt est cloné dans `C:\Users\anton\Desktop\dev\Thunk VR` (où est
+`CLAUDE.md`), Unity 6000.5.10f1, Python et le SDK .NET sont installés, et les deux `compile_check` passent sans erreur ni
+avertissement (détail : `CLAUDE.md`, « Pièges connus »). Les packs d'assets téléchargés mais pas importés
+(`projet archery/Assets_TowerDefense/`) étaient hors du dépôt : à recopier à la main depuis l'ancien PC s'ils servent.
 
 ### Le deuxième chantier : la refonte du tower defense (27 et 28 octobre, dans une autre discussion)
 
@@ -85,7 +84,13 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   Unity**. La règle du joueur : un duo impressionnant, un niveau 3 dans la démesure. Le 31 octobre au soir, après le premier
   essai du joueur (vitrine **F4**) : le Toboggan refait (un toboggan qui enjambe la voie), les bugs de l'Avalanche et de la
   Chaîne de forçats corrigés, et les trois derniers (Boussole folle, Lanceur de baudruches, Boule à neige) : partie 12.18, les
-  13 duos codés, **pas encore vus dans Unity**. Ensuite : les trios et les ultimes.
+  13 duos codés, **pas encore vus dans Unity**. Le 1er novembre, **les trios triés** (un duo plus une tour) : 7 gardés
+  (Bowling, Beffroi, Montagnes russes, Gonfleur, Volcan, Enclume, Colisée) (partie 12.19) ; le même jour, **le système des
+  trios et **les 7 trios codés** (Enclume, Gonfleur, Bowling, Volcan, Beffroi, Colisée, Montagnes russes), compilés, modèles
+  vérifiés hors de Unity, **pas encore vus dans Unity** (parties 12.20 à 12.26 ; F4 les montre après les duos ; tests :
+  `Checklist_Demo.md`, « Les trios »). Le soir, après le premier essai (parties 12.27 à 12.30) : le Volcan est remplacé par la
+  **Grande bombarde**, les Montagnes russes refaites en **Grappin**, les baudruches attirent aussi volants et tireurs, le Colisée
+  corrigé ; F4 pose une défense aérienne et donne 20 000 PV. **Le joueur valide les nouvelles tours.** Ensuite : les ultimes.
 Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, posée à plusieurs niveaux).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)

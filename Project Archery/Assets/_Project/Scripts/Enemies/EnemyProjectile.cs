@@ -59,6 +59,11 @@ namespace Archery.Enemies
         bool m_Held;
         bool m_Done;
 
+        // Un tir de tireur charmé (1er novembre) : sans dégâts, vers un point ; ce qu'il prévient en y arrivant.
+        bool m_Harmless;
+        Vector3 m_Goal;
+        System.Action m_Arrived;
+
         void Awake()
         {
             m_Colliders = GetComponentsInChildren<Collider>(true);
@@ -134,6 +139,28 @@ namespace Archery.Enemies
             Launched?.Invoke(this);
         }
 
+        /// <summary>
+        /// Un tir sans dégâts vers <paramref name="goal"/> (un tireur charmé qui frappe une baudruche ou un autre gladiateur, 1er
+        /// novembre) : il ne touche pas le joueur, ne blesse rien, et se brise en arrivant ; <paramref name="arrived"/> est appelé
+        /// alors (c'est le bâtiment qui compte le coup). Brisé avant sur le décor, loin du but : raté.
+        /// </summary>
+        public void LaunchAt(Vector3 velocity, Vector3 goal, Enemy shooter, System.Action arrived)
+        {
+            Launch(velocity, 0f, shooter);
+            m_Harmless = true;
+            m_Goal = goal;
+            m_Arrived = arrived;
+        }
+
+        // Le but atteint (ou dépassé) pendant ce pas : il se brise là, et le bâtiment compte le coup.
+        void Arrive(Vector3 point)
+        {
+            var arrived = m_Arrived;
+            m_Arrived = null;
+            Break(point, m_ImpactClip);
+            arrived?.Invoke();
+        }
+
         void Update()
         {
             if (m_Done || m_Held)
@@ -151,7 +178,15 @@ namespace Archery.Enemies
             var step = m_Velocity * deltaTime;
             var end = start + step;
 
-            if (TouchesPlayer(end))
+            if (m_Harmless)
+            {
+                if (Vector3.Dot(m_Goal - start, step) <= step.sqrMagnitude)
+                {
+                    Arrive(m_Goal);
+                    return;
+                }
+            }
+            else if (TouchesPlayer(end))
             {
                 HitPlayer(end);
                 return;
@@ -162,6 +197,16 @@ namespace Archery.Enemies
                 Physics.Raycast(start, step.normalized, out var hit, step.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) &&
                 IsObstacle(hit.collider))
             {
+                // Sans dégâts : la baudruche visée (son collider) compte comme arrivé.
+                if (m_Harmless)
+                {
+                    if ((hit.point - m_Goal).sqrMagnitude < 2.5f * 2.5f)
+                        Arrive(hit.point);
+                    else
+                        Break(hit.point, m_ImpactClip);
+                    return;
+                }
+
                 DamageObstacle(hit.collider, hit.point);
                 Break(hit.point, m_ImpactClip);
                 return;

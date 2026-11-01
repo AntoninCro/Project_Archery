@@ -37,6 +37,9 @@ namespace Archery.Enemies
 
         /// <summary>Dans le rayon du phare : ses points faibles brillent.</summary>
         Marked,
+
+        /// <summary>Aplati comme une crêpe par une enclume (le trio Enclume, 1er novembre) : il avance tout plat, lentement.</summary>
+        Flattened,
     }
 
     // L'ennemi préparé (lot 3 de la refonte du tower defense, 30 octobre ; décidé le 29, Docs/Refonte_TowerDefense.md, 12.3,
@@ -78,6 +81,8 @@ namespace Archery.Enemies
             Preparation.Pulled => 1.25f,
             // Le phare marque tout son rayon, sans rien faire.
             Preparation.Marked => 1.15f,
+            // Une enclume toutes les 4 s, un ennemi à la fois, mais 6 s tout plat et lent (1er novembre).
+            Preparation.Flattened => 1.5f,
             _ => 1f,
         };
 
@@ -112,6 +117,8 @@ namespace Archery.Enemies
                     return Preparation.Netted;
                 if (IsStunned)
                     return Preparation.Stunned;
+                if (IsPrepared(Preparation.Flattened))
+                    return Preparation.Flattened;
                 if (IsPrepared(Preparation.Glued))
                     return Preparation.Glued;
                 if (IsPrepared(Preparation.Pulled))

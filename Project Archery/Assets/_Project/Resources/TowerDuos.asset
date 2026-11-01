@@ -20,6 +20,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: Le boulet fait des tours complets et envoie les ennemis qu'il frappe
       sur la voie voisine.
+    duo: {fileID: 0}
   - displayName: Marteau-pilon
     first: 0
     second: 1
@@ -27,13 +28,15 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Un marteau g\xE9ant enfonce l'ennemi dans le sol jusqu'au cou :
       seule sa t\xEAte d\xE9passe."
+    duo: {fileID: 0}
   - displayName: Toboggan
     first: 6
     second: 2
     definition: {fileID: 11400000, guid: b4db3df011c0f4047b29e2593ec911bb, type: 2}
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
-    description: "Une piste de glace : les ennemis glissent vers la for\xEAt et d\xE9collent
-      en vrille, sous les notes du jury."
+    description: "Un grand toboggan au-dessus de la voie : les ennemis grimpent l'\xE9chelle,
+      glissent et d\xE9collent en vrille vers la for\xEAt, sous les notes du jury."
+    duo: {fileID: 0}
   - displayName: Yo-yo
     first: 6
     second: 12
@@ -41,6 +44,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Une grue au yo-yo aimant\xE9 : elle hisse un ennemi et le fait
       claquer au sol trois fois."
+    duo: {fileID: 0}
   - displayName: Avalanche
     first: 9
     second: 2
@@ -48,6 +52,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Une boule de neige roule vers la for\xEAt, grossit et avale les
       ennemis ; elle \xE9clate au bout, ou sous ta fl\xE8che."
+    duo: {fileID: 0}
   - displayName: Feu d'artifice
     first: 9
     second: 19
@@ -55,6 +60,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Des fus\xE9es \xE9clatent en bouquets : les ennemis dessous sont
       \xE9blouis et br\xFBl\xE9s ; ta fl\xE8che s'y enflamme."
+    duo: {fileID: 0}
   - displayName: "Chant des sir\xE8nes"
     first: 19
     second: 16
@@ -62,6 +68,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: 'Le faisceau charme un ennemi : dans sa bulle rose, il change de
       camp et se jette sur les autres.'
+    duo: {fileID: 0}
   - displayName: Loupe
     first: 19
     second: 3
@@ -69,6 +76,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Dans le champ de la loupe, les ennemis ont la t\xEAte trois fois
       plus grosse."
+    duo: {fileID: 0}
   - displayName: "Carquois g\xE9ant"
     first: 3
     second: 17
@@ -76,6 +84,7 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Un grand filet rattrape tes fl\xE8ches rat\xE9es ; \xE0 dix, l'arbal\xE8te
       te les renvoie en une vol\xE9e."
+    duo: {fileID: 0}
   - displayName: "Cha\xEEne de for\xE7ats"
     first: 12
     second: 17
@@ -83,3 +92,85 @@ MonoBehaviour:
     color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
     description: "Des cha\xEEnes aimant\xE9es lient un groupe : chaque coup sur l'un
       blesse tous les autres."
+    duo: {fileID: 0}
+  - displayName: Boussole folle
+    first: 1
+    second: 12
+    definition: {fileID: 11400000, guid: 79b042f4f4b4c344a9bea229b7ccc309, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une rose des vents g\xE9ante sur la voie : son aiguille s'affole,
+      les ennemis perdent le nord et tournent en rond."
+    duo: {fileID: 0}
+  - displayName: Lanceur de baudruches
+    first: 9
+    second: 16
+    definition: {fileID: 11400000, guid: 6cdf184c8f252d24daff2fd117eab7a5, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Il lance des poup\xE9es gonflables \xE0 ton image : les ennemis
+      s'arr\xEAtent pour les frapper, et elles \xE9clatent en confettis piquants."
+    duo: {fileID: 0}
+  - displayName: "Boule \xE0 neige"
+    first: 16
+    second: 2
+    definition: {fileID: 11400000, guid: 400b4ee94eb361541bb05539167c525b, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une boule de verre g\xE9ante tombe sur un groupe : il y neige,
+      ils se figent en figurines ; ta fl\xE8che brise la boule et elles \xE9clatent."
+    duo: {fileID: 0}
+  m_Trios:
+  - displayName: Enclume
+    first: 9
+    second: 0
+    definition: {fileID: 11400000, guid: 395d65a6f377b764f9296d80508b8d1e, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Le mortier tire des enclumes : l'ennemi touch\xE9 est aplati comme
+      une cr\xEApe et avance tout plat, lentement."
+    duo: {fileID: 11400000, guid: 7bac18d4d63eccb4bb6b3356de7d885d, type: 2}
+  - displayName: Gonfleur
+    first: 3
+    second: 0
+    definition: {fileID: 11400000, guid: cc91ee7c878482647917e77f2385b1f2, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Le harpon plante un tuyau, la pompe gonfle l'ennemi comme une baudruche
+      : il s'envole, ta fl\xE8che le cr\xE8ve."
+    duo: {fileID: 11400000, guid: 6cdf184c8f252d24daff2fd117eab7a5, type: 2}
+  - displayName: Bowling
+    first: 0
+    second: 0
+    definition: {fileID: 11400000, guid: 8bb2c82d164e7c043b68180b9cf0f706, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Les ennemis sont rang\xE9s en quilles sur la voie, une boule de
+      glace roule dessus : STRIKE !"
+    duo: {fileID: 11400000, guid: 9293170784da49148b1d08dc1086ef16, type: 2}
+  - displayName: Beffroi
+    first: 19
+    second: 0
+    definition: {fileID: 11400000, guid: e1df7c1e9a3c0e244995db0905de6d06, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Quand la cloche sonne, les ennemis rembobinent leurs 4 derni\xE8res
+      secondes et perdent leur avance."
+    duo: {fileID: 11400000, guid: 79b042f4f4b4c344a9bea229b7ccc309, type: 2}
+  - displayName: "Colis\xE9e"
+    first: 0
+    second: 0
+    definition: {fileID: 11400000, guid: 4774a40218969c34f900f8689da7942d, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Une ar\xE8ne s'\xE9l\xE8ve autour des ennemis : ils se battent,
+      et le vainqueur se range de ton c\xF4t\xE9."
+    duo: {fileID: 11400000, guid: 4a471d6f080003142952dc4fd85f4f86, type: 2}
+  - displayName: Montagnes russes
+    first: 6
+    second: 0
+    definition: {fileID: 11400000, guid: 736976d1b703b2b41bb61404a54e5d5d, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Un circuit en l'air au-dessus de la voie : les grappins des wagons
+      accrochent les ennemis et les jettent vers la for\xEAt."
+    duo: {fileID: 11400000, guid: 1cba09c70d12a6948acd5ecf1d712a1e, type: 2}
+  - displayName: Grande bombarde
+    first: 6
+    second: 0
+    definition: {fileID: 11400000, guid: 579e480690180b84284c3d9027a25ec3, type: 2}
+    color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+    description: "Un mortier g\xE9ant qui se remplit de poudre ; c'est toi qui allumes
+      la m\xE8che : plus il est plein, plus le bouquet est gros."
+    duo: {fileID: 11400000, guid: d641518b3d952d048b3c693d32293d93, type: 2}

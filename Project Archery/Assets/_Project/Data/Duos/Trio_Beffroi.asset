@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Trio_Beffroi
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Beffroi
+  slot: 1
+  prefab: {fileID: 1879604185303020065, guid: 2e812fd52f94e6c4e933200ee7fffe70, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Un beffroi aux aiguilles qui tournent \xE0 l'envers : toutes les
+      10 s, sa cloche sonne et les ennemis du rayon rembobinent leurs 4 derni\xE8res
+      secondes ; ils repartent \xE0 reculons sur leur chemin."
+  - cost: 0
+    plans: 4
+    description: "\xC0 l'arriv\xE9e, ils restent fig\xE9s 2 s."
+  - cost: 0
+    plans: 4
+    description: "Minuit : douze coups ; le temps s'arr\xEAte 6 s dans tout le rayon,
+      sauf pour toi. Tes fl\xE8ches s'arr\xEAtent en l'air devant leurs cibles et,
+      au douzi\xE8me coup, repartent toutes ensemble."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 3, y: 3}
+  retired: 0

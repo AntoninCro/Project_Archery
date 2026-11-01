@@ -368,7 +368,8 @@ namespace Archery.Building
             s_Enemies.Clear();
             foreach (var enemy in Enemy.Alive)
             {
-                if (enemy != null && !enemy.IsTrainingDummy)
+                // Ni les mannequins, ni ceux qui sont de ton côté (les champions du Colisée, 1er novembre).
+                if (enemy != null && !enemy.IsTrainingDummy && !enemy.IsAlly)
                     s_Enemies.Add(enemy);
             }
 

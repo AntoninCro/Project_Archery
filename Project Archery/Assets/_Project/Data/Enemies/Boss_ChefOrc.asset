@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Boss_ChefOrc
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Francine
-  maxHealth: 1210
+  maxHealth: 787
   moveSpeed: 1.7
   attackDamage: 75
   attackRange: 3.4
   attackInterval: 2.4
   attackWindup: 0.6
   playerAggroRange: 0
+  targetsPlayer: 0
   points: 400

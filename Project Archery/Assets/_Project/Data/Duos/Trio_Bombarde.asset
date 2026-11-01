@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Trio_Bombarde
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Grande bombarde
+  slot: 1
+  prefab: {fileID: 4976447093881479209, guid: c944c1dc21fdd3e4fa3392f2bb4ad457, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une bombarde de bronze sur ses ressorts : chaque ennemi tu\xE9
+      autour d'elle, et chaque fl\xE8che tir\xE9e dans sa gueule, la remplit de poudre
+      (ses cercles rougeoient). Ta fl\xE8che dans la cible de la m\xE8che l'allume
+      : jusqu'\xE0 12 bombes de feu d'artifice sur les groupes, d'autant plus qu'elle
+      est pleine."
+  - cost: 0
+    plans: 4
+    description: "Elle se remplit deux fois plus vite ; au tir, elle rebondit si
+      fort que les ennemis proches sont renvers\xE9s."
+  - cost: 0
+    plans: 4
+    description: "Le bouquet final : pleine \xE0 ras bord, elle n'attend plus ; elle
+      d\xE9borde, puis tire 40 bombes sur toutes les voies \xE0 la fois."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 4}
+  retired: 0

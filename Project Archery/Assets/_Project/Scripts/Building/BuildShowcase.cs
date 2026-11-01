@@ -14,13 +14,16 @@ namespace Archery.Building
     /// d'un coup, pour les voir tous sans plans ni marteau. Un bâtiment de la voie se pose sur les trois voies : niveau 3 à gauche,
     /// 4 au centre, 5 à droite. Un bâtiment hors de la voie se pose au centre des deux clairières près de la tour : niveau 3 à
     /// droite, 4 à gauche (un bâtiment de la tour, sur deux emplacements de la tour). F4 encore retire ceux que la vitrine vient de
-    /// poser et passe au bâtiment suivant ; après les bâtiments de base viennent les duos, aux niveaux 1, 2 et 3 au lieu de 3, 4
-    /// et 5. Après le dernier duo, F4 retire tout, puis recommence ; Maj + F4 revient en arrière.
+    /// poser et passe au bâtiment suivant ; après les bâtiments de base viennent les duos, puis les trios (1er novembre), aux
+    /// niveaux 1, 2 et 3 au lieu de 3, 4 et 5. Après le dernier, F4 retire tout, puis recommence ; Maj + F4 revient en arrière.
     /// </summary>
     /// <remarks>
     /// Seulement dans l'éditeur et les builds de développement. Créé par le <see cref="BuildManager"/> : rien à poser dans la
     /// scène. Chaque bâtiment prend la place libre qui lui convient la plus proche du point visé : un bâtiment du joueur déjà là
     /// pousse celui de la vitrine à côté. Les bâtiments du joueur ne sont jamais retirés.
+    /// <para>Au premier appui (1er novembre, demandé par le joueur), la vitrine pose aussi une défense aérienne qui reste (un
+    /// lance-filet et une baliste au niveau maximal dans chacune des deux clairières, plus près de la tour que les bâtiments
+    /// montrés), et donne 20 000 PV au joueur et à la tour, tenus tant que la partie dure : de quoi regarder sans être dérangé.</para>
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildShowcase : MonoBehaviour
@@ -36,6 +39,12 @@ namespace Archery.Building
         // Jusqu'où (m) on cherche une place autour du point visé : le long de la voie, et en rond dans la clairière.
         const int k_LaneSearch = 10;
         const float k_ClearingSearch = 12f;
+
+        // La défense aérienne (1er novembre) : dans chaque clairière, à cette distance de la tour (plus près que les bâtiments
+        // montrés, à 20 m), et les PV du joueur et de la tour.
+        const float k_AirDefenseDistance = 11f;
+        const float k_ShowcaseHealth = 20000f;
+        static readonly StructureKind[] k_AirDefense = { StructureKind.NetLauncher, StructureKind.Ballista };
 
         static readonly float[] k_LaneSides = { 0f, 1.5f, -1.5f, 3f, -3f };
         static readonly string[] k_LaneNames = { "voie de gauche", "voie du centre", "voie de droite" };
@@ -55,13 +64,78 @@ namespace Archery.Building
         // L'étape montrée ; -1 : aucune (au lancement, ou tout retiré).
         int m_Index = -1;
 
+        // Posée une fois, au premier appui : la défense aérienne, et les PV.
+        bool m_Boosted;
+
         void Update()
         {
+            KeepHealth();
             var keyboard = Keyboard.current;
             if (keyboard == null || DesktopHand.IsTypingText || !keyboard.f4Key.wasPressedThisFrame)
                 return;
 
             Show(keyboard.shiftKey.isPressed ? -1 : 1);
+        }
+
+        // 20 000 PV au joueur et à la tour, une fois, puis gardés : les améliorations de Vitalité remettent les PV max du joueur à
+        // leur compte (PlayerUpgrades.Apply), on les remonte à chaque fois.
+        void KeepHealth()
+        {
+            if (!m_Boosted)
+                return;
+
+            var player = PlayerHealth.Instance;
+            if (player != null && player.IsAlive && player.Health.Max < k_ShowcaseHealth)
+                player.Health.SetMaxHealth(k_ShowcaseHealth);
+            var tower = Tower.Instance;
+            if (tower != null && tower.IsStanding && tower.Health.Max < k_ShowcaseHealth)
+                tower.Health.SetMaxHealth(k_ShowcaseHealth);
+        }
+
+        // Au premier appui : les PV pleins, et la défense aérienne dans les deux clairières (elle n'est jamais retirée).
+        void Boost(BuildGrid grid)
+        {
+            if (m_Boosted)
+                return;
+
+            m_Boosted = true;
+            var player = PlayerHealth.Instance;
+            if (player != null && player.IsAlive)
+                player.Health.ResetHealth(k_ShowcaseHealth);
+            var tower = Tower.Instance;
+            if (tower != null && tower.IsStanding)
+                tower.Health.ResetHealth(k_ShowcaseHealth);
+
+            var center = tower != null ? tower.transform.position : grid.transform.position;
+            var lanes = SortedLanes(grid, center);
+            if (lanes.Count < 2)
+                return;
+
+            var placed = 0;
+            var last = lanes.Count - 1;
+            var clearings = new[]
+            {
+                ClearingCenter(lanes[last - 1], lanes[last], center, k_AirDefenseDistance),
+                ClearingCenter(lanes[0], lanes[1], center, k_AirDefenseDistance),
+            };
+            foreach (var clearing in clearings)
+            {
+                foreach (var kind in k_AirDefense)
+                {
+                    var definition = DefinitionOf(kind);
+                    if (definition == null || definition.prefab == null)
+                        continue;
+
+                    // Posée comme une tour de la vitrine, puis sortie de sa liste : F4 ne la retire pas.
+                    var before = m_Placed.Count;
+                    if (PlaceAround(grid, clearing, k_ClearingSearch, default, definition, definition.MaxLevel))
+                        placed++;
+                    if (m_Placed.Count > before)
+                        m_Placed.RemoveAt(m_Placed.Count - 1);
+                }
+            }
+
+            Debug.Log($"Vitrine : {placed} défenses aériennes posées, {k_ShowcaseHealth} PV au joueur et à la tour.");
         }
 
         void Show(int direction)
@@ -76,6 +150,7 @@ namespace Archery.Building
 
             manager.FinishNow();
             Clear(grid);
+            Boost(grid);
 
             var steps = Steps(manager);
             if (steps.Count == 0)
@@ -98,7 +173,7 @@ namespace Archery.Building
             var step = steps[m_Index];
             var definition = step.Duo != null ? step.Duo.definition : step.Definition;
             var where = PlaceAll(grid, step, definition, step.Duo != null ? 1 : 3);
-            var title = step.Duo != null ? "Duo : " + step.Duo.displayName : definition.displayName;
+            var title = step.Duo != null ? step.Duo.Label + " : " + step.Duo.displayName : definition.displayName;
             var text = $"Vitrine {m_Index + 1}/{steps.Count} : {title}\n<size=60%>{where}";
             if (m_Missed.Count > 0)
                 text += "\npas de place : " + string.Join(", ", m_Missed);
@@ -123,6 +198,13 @@ namespace Archery.Building
             foreach (var entry in catalog.Duos)
             {
                 if (entry != null && entry.definition != null && entry.definition.prefab is TowerDuo && entry.definition.MaxLevel > 0)
+                    steps.Add(new Step { Duo = entry });
+            }
+
+            // Puis les trios (1er novembre), aux mêmes niveaux que les duos.
+            foreach (var entry in catalog.Trios)
+            {
+                if (entry != null && entry.definition != null && entry.definition.prefab is TowerTrio && entry.definition.MaxLevel > 0)
                     steps.Add(new Step { Duo = entry });
             }
 
@@ -174,11 +256,19 @@ namespace Archery.Building
             }
 
             var last = lanes.Count - 1;
-            if (!PlaceAround(grid, ClearingCenter(lanes[last - 1], lanes[last], tower), k_ClearingSearch, step, definition, low))
+            var right = ClearingCenter(lanes[last - 1], lanes[last], tower);
+            if (!PlaceAround(grid, right, k_ClearingSearch, step, definition, low))
                 m_Missed.Add("clairière de droite");
             if (!PlaceAround(grid, ClearingCenter(lanes[0], lanes[1], tower), k_ClearingSearch, step, definition, low + 1))
                 m_Missed.Add("clairière de gauche");
-            return $"niveau {low} dans la clairière de droite, {low + 1} dans celle de gauche";
+
+            // Un duo ou un trio du bord (1er novembre au soir) : son niveau 3, le spectacle, à côté du niveau 1 (la place libre la plus
+            // proche du centre de la clairière de droite).
+            if (step.Duo == null)
+                return $"niveau {low} dans la clairière de droite, {low + 1} dans celle de gauche";
+            if (!PlaceAround(grid, right, k_ClearingSearch, step, definition, low + 2))
+                m_Missed.Add($"clairière de droite (niveau {low + 2})");
+            return $"niveaux {low} et {low + 2} dans la clairière de droite, {low + 1} dans celle de gauche";
         }
 
         // Sur la voie, vers k_LaneDistance m de la tour : le point visé, puis de mètre en mètre vers la forêt et vers la tour, au
@@ -236,7 +326,15 @@ namespace Archery.Building
         {
             var structure = socket.Place(definition);
             level = Mathf.Clamp(level, 1, Mathf.Max(1, structure.MaxLevel));
-            if (step.Duo != null && structure is TowerDuo duo)
+            if (step.Duo != null && structure is TowerTrio trio)
+            {
+                // Un trio : les deux tours de son duo, sa troisième tour, puis son niveau d'un coup.
+                var duoEntry = DuoEntryOf(step.Duo.duo);
+                trio.SetupTrio(step.Duo, duoEntry != null ? DefinitionOf(duoEntry.first) : null,
+                               duoEntry != null ? DefinitionOf(duoEntry.second) : null, DefinitionOf(step.Duo.first));
+                trio.SetLevelImmediate(level);
+            }
+            else if (step.Duo != null && structure is TowerDuo duo)
             {
                 // Comme une fusion (BuildManager.Fuse) : ses deux tours, puis son niveau d'un coup.
                 duo.SetupDuo(step.Duo, DefinitionOf(step.Duo.first), DefinitionOf(step.Duo.second));
@@ -273,6 +371,22 @@ namespace Archery.Building
             }
 
             m_Placed.Clear();
+        }
+
+        // L'entrée du duo de cette définition (pour les deux tours d'un trio).
+        static TowerDuoCatalog.Entry DuoEntryOf(StructureDefinition duo)
+        {
+            var catalog = TowerDuoCatalog.Instance;
+            if (catalog == null || duo == null)
+                return null;
+
+            foreach (var entry in catalog.Duos)
+            {
+                if (entry != null && entry.definition == duo)
+                    return entry;
+            }
+
+            return null;
         }
 
         static StructureDefinition DefinitionOf(StructureKind kind)
@@ -314,8 +428,8 @@ namespace Archery.Building
                 Vector3.SignedAngle(mean, Flat(PointFromTower(lane, tower, k_LaneDistance) - tower), Vector3.up);
         }
 
-        static Vector3 ClearingCenter(MapScan.Lane a, MapScan.Lane b, Vector3 tower) =>
-            (PointFromTower(a, tower, k_ClearingDistance) + PointFromTower(b, tower, k_ClearingDistance)) * 0.5f;
+        static Vector3 ClearingCenter(MapScan.Lane a, MapScan.Lane b, Vector3 tower, float distance = k_ClearingDistance) =>
+            (PointFromTower(a, tower, distance) + PointFromTower(b, tower, distance)) * 0.5f;
 
         static Vector3 PointFromTower(MapScan.Lane lane, Vector3 tower, float distance) =>
             lane.PointAt(AlongFromTower(lane, tower, distance), out _);

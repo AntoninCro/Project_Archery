@@ -35,8 +35,18 @@ namespace Archery.Building
         /// <summary>Le spectacle : son niveau 3.</summary>
         public bool IsSpectacle => Level >= 3;
 
-        /// <summary>Les plans de ce bâtiment font monter ce duo (c'est l'une de ses deux tours).</summary>
-        public bool AcceptsPlansOf(StructureDefinition definition) => definition != null && (definition == m_First || definition == m_Second);
+        /// <summary>Les plans de ce bâtiment font monter ce duo (c'est l'une de ses deux tours ; l'une des trois d'un trio).</summary>
+        public virtual bool AcceptsPlansOf(StructureDefinition definition) => definition != null && (definition == m_First || definition == m_Second);
+
+        /// <summary>Les tours dont les plans le font monter : ses deux tours (trois pour un trio).</summary>
+        public virtual IEnumerable<StructureDefinition> PlanSources
+        {
+            get
+            {
+                yield return m_First;
+                yield return m_Second;
+            }
+        }
 
         internal void SetupDuo(TowerDuoCatalog.Entry entry, StructureDefinition first, StructureDefinition second)
         {
@@ -49,6 +59,15 @@ namespace Archery.Building
 
         static readonly List<Enemy> s_Near = new List<Enemy>();
         static readonly List<Enemy> s_Ground = new List<Enemy>();
+
+        /// <summary>
+        /// Les ennemis dont une fusion change la forme en ce moment (aplatis par l'Enclume, gonflés par le Gonfleur, 1er novembre) :
+        /// une seule à la fois, sinon chacune lui rendrait sa taille d'avant l'autre.
+        /// </summary>
+        protected static readonly HashSet<Enemy> s_Reshaped = new HashSet<Enemy>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetReshaped() => s_Reshaped.Clear();
 
         /// <summary>
         /// Les ennemis vivants à moins de <paramref name="radius"/> m (à plat) de ce point, sauf <paramref name="except"/> ; au sol

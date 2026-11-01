@@ -12,7 +12,8 @@ namespace Archery.Building
     /// <remarks>
     /// Un seul catalogue, chargé de <c>Resources/TowerDuos</c> : rien à poser dans la scène. <c>Editor/TowerDefenseLookBaker</c> y
     /// ajoute chaque duo de <c>Editor/TowerDefenseLook.json</c> (partie « duos »), avec sa définition (<c>Data/Duos</c>), une fois :
-    /// les textes et les couleurs changés à la main restent.
+    /// les textes et les couleurs changés à la main restent. Les trios (1er novembre, partie « trios » du fichier) ont leur liste à
+    /// eux : un duo plus une tour (<see cref="TowerTrio"/>).
     /// </remarks>
     [CreateAssetMenu(menuName = "Archery/Duos de tours", fileName = "TowerDuos")]
     public class TowerDuoCatalog : ScriptableObject
@@ -40,16 +41,31 @@ namespace Archery.Building
             [TextArea(2, 5)]
             public string description;
 
+            [Tooltip("Un trio (1er novembre) : le duo qui le fait (sa définition, Data/Duos), avec la tour « First ». Vide pour un duo.")]
+            public StructureDefinition duo;
+
+            /// <summary>Un trio (un duo plus une tour), pas un duo.</summary>
+            public bool IsTrio => duo != null;
+
+            /// <summary>« Duo » ou « Trio », pour les messages.</summary>
+            public string Label => IsTrio ? "Trio" : "Duo";
+
             public bool Joins(StructureKind a, StructureKind b) => (first == a && second == b) || (first == b && second == a);
         }
 
         [SerializeField]
         List<Entry> m_Duos = new List<Entry>();
 
+        [Tooltip("Les trios (1er novembre ; Docs/Refonte_TowerDefense.md, 12.19) : un duo plus une tour, au moins au niveau 3.")]
+        [SerializeField]
+        List<Entry> m_Trios = new List<Entry>();
+
         static TowerDuoCatalog s_Instance;
         static bool s_Loaded;
 
         public IReadOnlyList<Entry> Duos => m_Duos;
+
+        public IReadOnlyList<Entry> Trios => m_Trios;
 
         /// <summary>Le catalogue du projet (<c>Resources/TowerDuos</c>), ou null s'il n'existe pas encore.</summary>
         public static TowerDuoCatalog Instance
@@ -76,6 +92,22 @@ namespace Archery.Building
             foreach (var entry in catalog.m_Duos)
             {
                 if (entry != null && entry.definition != null && entry.definition.prefab is TowerDuo && entry.Joins(a, b))
+                    return entry;
+            }
+
+            return null;
+        }
+
+        /// <summary>Le trio de ce duo (sa définition) et de cette sorte de tour, s'il a sa tour ; null sinon.</summary>
+        public static Entry FindTrio(StructureDefinition duo, StructureKind tower)
+        {
+            var catalog = Instance;
+            if (catalog == null || duo == null)
+                return null;
+
+            foreach (var entry in catalog.m_Trios)
+            {
+                if (entry != null && entry.duo == duo && entry.first == tower && entry.definition != null && entry.definition.prefab is TowerTrio)
                     return entry;
             }
 

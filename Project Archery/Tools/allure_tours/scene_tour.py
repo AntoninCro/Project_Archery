@@ -287,7 +287,8 @@ def build_tower(tour, look, pals, matcol, passes=True):
     return root, parts
 
 def duo_spec(look, name):
-    return next(d for d in look.get('duos', []) if d['name'] == name)
+    # Un duo, ou un trio (1er novembre, « trios » du fichier d'allure) : « Duo:Enclume ».
+    return next(d for d in look.get('duos', []) + look.get('trios', []) if d['name'] == name)
 
 def build_duo(look, name, pals, matcol):
     """Un duo (31 octobre ; « duos » du fichier d'allure) : une tour nouvelle, faite de ses seules opérations, à sa palette,

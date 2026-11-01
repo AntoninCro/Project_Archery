@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Trio_Enclume
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Enclume
+  slot: 0
+  prefab: {fileID: 2927056468696281878, guid: f884698d43b4f164aae9641b41141c31, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une forge sur pilotis au-dessus de la voie : toutes les 4 s, son
+      mortier tire une enclume sur l'ennemi le plus avanc\xE9 ; aplati comme une
+      cr\xEApe, il avance tout plat, deux fois moins vite, 6 s."
+  - cost: 0
+    plans: 4
+    description: "L'enclume rebondit et aplatit un deuxi\xE8me ennemi ; l'onde du
+      choc fait tomber ceux qui sont autour."
+  - cost: 0
+    plans: 4
+    description: "La pluie d'enclumes : vingt enclumes tombent du ciel sur les ennemis
+      \xE0 port\xE9e, puis une enclume de 10 m au milieu du groupe le plus serr\xE9
+      ; les petits meurent net, tous les autres sont aplatis."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 4}
+  retired: 0

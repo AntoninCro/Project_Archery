@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Trio_Volcan
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Volcan
+  slot: 0
+  prefab: {fileID: 6518142159484412952, guid: 47bdfd8282228d14b8751bbef389ce77, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Un petit volcan sur la voie : toutes les 6 s, il entre en \xE9ruption
+      et les ennemis sur son c\xF4ne partent en bombes de lave, qui retombent sur
+      les groupes autour et br\xFBlent le sol. Ta fl\xE8che qui traverse le panache
+      s'enflamme."
+  - cost: 0
+    plans: 4
+    description: "La lave coule autour du c\xF4ne, et les bombes en laissent l\xE0
+      o\xF9 elles tombent : le sol br\xFBle."
+  - cost: 0
+    plans: 4
+    description: "L'\xE9ruption : la montagne grandit sous tes yeux, la lumi\xE8re
+      rougit, et une coul\xE9e de lave descend la voie \xE0 contre-sens sur 30 m
+      ; elle repousse vers la for\xEAt tout ce qu'elle touche et le br\xFBle."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 4}
+  retired: 0

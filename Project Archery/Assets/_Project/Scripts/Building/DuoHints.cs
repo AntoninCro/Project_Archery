@@ -7,8 +7,9 @@ namespace Archery.Building
 {
     /// <summary>
     /// Les flèches « DUO » (le joueur, 31 octobre) : entre deux tours qui peuvent fusionner, une grande flèche dorée en arc, haut
-    /// au-dessus d'elles, les relie, avec le mot « DUO » (et le nom du duo) à son sommet. Seulement entre les vagues : pendant une
-    /// vague, elles prendraient de la vue au joueur (et on ne fusionne pas).
+    /// au-dessus d'elles, les relie, avec le mot « DUO » (et le nom du duo) à son sommet ; « TRIO » entre un duo et une tour qui
+    /// font un trio (1er novembre). Seulement entre les vagues : pendant une vague, elles prendraient de la vue au joueur (et on
+    /// ne fusionne pas).
     /// </summary>
     /// <remarks>
     /// Créé par <see cref="BuildManager"/> (rien à poser dans la scène). Les paires sont revues deux fois par seconde par
@@ -107,10 +108,11 @@ namespace Archery.Building
             foreach (var hint in m_Hints)
                 hint.Seen = false;
 
+            // Les duos en sont aussi : un duo et une tour font un trio (1er novembre, la flèche « TRIO ») ; un trio ne fusionne plus.
             m_Towers.Clear();
             foreach (var structure in Structure.All)
             {
-                if (structure != null && structure.IsBuilt && !(structure is TowerDuo))
+                if (structure != null && structure.IsBuilt && !(structure is TowerTrio))
                     m_Towers.Add(structure);
             }
 
@@ -169,9 +171,10 @@ namespace Archery.Building
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             filter.sharedMesh = new Mesh { name = "Flèche de duo" };
 
-            var label = new GameObject("DUO").transform;
+            var word = entry != null ? entry.Label.ToUpperInvariant() : "DUO";
+            var label = new GameObject(word).transform;
             label.SetParent(root.transform, false);
-            AddText(label, "DUO", 26f, Vector3.zero, true);
+            AddText(label, word, 26f, Vector3.zero, true);
             var title = entry != null && !string.IsNullOrEmpty(entry.displayName) ? entry.displayName : null;
             if (title != null)
                 AddText(label, title, 10f, new Vector3(0f, -1.9f, 0f), false);

@@ -120,6 +120,12 @@ namespace Archery.Enemies
         /// </summary>
         public bool IsTrainingDummy => m_Behaviour != null && m_Behaviour.IsTrainingDummy;
 
+        /// <summary>
+        /// De ton côté (1er novembre : un champion du Colisée) : les bâtiments ne le visent plus. Essai du joueur : les tourelles
+        /// continuaient de tirer sur les champions (sans leur faire de dégâts).
+        /// </summary>
+        public bool IsAlly { get; set; }
+
         /// <summary>Centre du corps : là où visent la visée automatique, les éclairs et les explosions.</summary>
         public Vector3 Center => transform.TransformPoint(0f, m_CenterHeight, 0f);
 

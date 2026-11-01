@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Boss_Champignon
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Thomas
-  maxHealth: 320
+  maxHealth: 272
   moveSpeed: 1.5
   attackDamage: 40
   attackRange: 2.8
   attackInterval: 2.2
   attackWindup: 0.38
   playerAggroRange: 0
+  targetsPlayer: 0
   points: 200

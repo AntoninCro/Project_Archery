@@ -128,8 +128,23 @@ namespace Archery.Enemies
         Vector3 m_DiveTarget;
         float m_GroundCheckTimer;
         float m_LastGround = float.MinValue;
+        Vector3 m_LurePoint;
+        float m_LureTimer;
 
         public override Vector3 Velocity => m_Velocity;
+
+        /// <summary>
+        /// Attiré (la baudruche du Lanceur de baudruches, 1er novembre : « les baudruches devraient aussi attirer les volants ») :
+        /// pendant <paramref name="duration"/> s, il tourne tout près de ce point au lieu du joueur, sans piquer sur lui. C'est le
+        /// bâtiment qui compte ses coups.
+        /// </summary>
+        public void Lure(Vector3 point, float duration)
+        {
+            m_LurePoint = point;
+            m_LureTimer = Mathf.Max(m_LureTimer, duration);
+        }
+
+        public void EndLure() => m_LureTimer = 0f;
         public override Vector3 SpawnOffset => Vector3.up * m_SpawnHeight;
 
         protected override void Awake()
@@ -159,6 +174,22 @@ namespace Archery.Enemies
             var feet = hasPlayer ? player.BodyPosition : TowerTop();
             var headPosition = hasPlayer ? head.position : feet + Vector3.up * 1.6f;
             var speed = Enemy.CurrentSpeed;
+
+            // Attiré : il tourne en rond serré autour du point (2,2 m), un piqué en cours est oublié.
+            if (m_LureTimer > 0f)
+            {
+                m_LureTimer -= deltaTime;
+                if (m_Phase != Phase.Circling)
+                    SetPhase(Phase.Circling, 0f);
+                m_Angle += m_Direction * speed / 2.2f * deltaTime;
+                var lurePoint = m_LurePoint + new Vector3(Mathf.Cos(m_Angle), 0f, Mathf.Sin(m_Angle)) * 2.2f;
+                Steer(lurePoint, speed, m_TurnRate * 2f, deltaTime);
+                Move(deltaTime);
+                UpdateWings(1f, 1.3f);
+                if (m_LureTimer <= 0f)
+                    m_DiveTimer = NextDiveDelay();
+                return;
+            }
 
             switch (m_Phase)
             {

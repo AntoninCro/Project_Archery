@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Duo_Boussole_folle
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Boussole folle
+  slot: 0
+  prefab: {fileID: 3913895450483602419, guid: c4223a21d253acb45b7924556f793df0, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une rose des vents de laiton h\xE9riss\xE9e de pointes : l'ennemi
+      qui y entre perd le nord et tourne en rond 3 s sur les pointes."
+  - cost: 0
+    plans: 4
+    description: "Il tourne plus longtemps, puis repart dans le mauvais sens, vers
+      la for\xEAt."
+  - cost: 0
+    plans: 4
+    description: "La rose des vents : l'aiguille s'emballe et toute la voie perd
+      le nord ; chacun tourne en rond l\xE0 o\xF9 il est, puis toute la voie repart
+      vers la for\xEAt."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 5, y: 5}
+  retired: 0

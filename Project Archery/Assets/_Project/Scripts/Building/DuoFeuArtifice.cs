@@ -445,8 +445,8 @@ namespace Archery.Building
             Destroy(go);
         }
 
-        // Une traînée d'étincelles derrière la fusée.
-        static void AddTrail(Transform body, Color color)
+        // Une traînée d'étincelles derrière la fusée (et les bombes de la Grande bombarde, 1er novembre).
+        internal static void AddTrail(Transform body, Color color)
         {
             var arrows = Archery.Upgrades.SpecialArrows.Instance;
             var material = arrows != null ? arrows.EffectMaterial : null;

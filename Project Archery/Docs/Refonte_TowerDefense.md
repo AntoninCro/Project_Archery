@@ -69,6 +69,28 @@ enjambe la voie (l'échelle, la piste en l'air, le saut) ; Boussole folle, Lance
 13 duos sont faits. Compilés, modèles vérifiés hors de Unity ; **pas encore vus dans Unity ni testés au casque**. Ensuite : les
 trios et les ultimes.
 
+**1er novembre : les trios, triés** (12.19). Un trio devient un duo plus une tour (même formule que les duos) ; sur 9
+propositions de Claude, le joueur garde **7 trios** : Bowling, Beffroi, Montagnes russes, Gonfleur, Volcan, Enclume, Colisée.
+La règle de fusion et de prix (9, 13 ou 17 plans) est proposée, pas encore validée. Les essais des trois derniers duos sont
+remis à plus tard. Puis, le même jour, **le système des trios et l'Enclume codés** (12.20) : compilés, modèle vérifié hors de
+Unity, **pas encore vus dans Unity ni testés au casque**, rien de commité. Puis le **Gonfleur** (12.21), demandé par le
+joueur avant d'essayer l'Enclume : compilé, modèle vérifié hors de Unity, pas encore vu dans Unity. Puis le **Bowling** (12.22)
+et le **Volcan** (12.23), de même : les quatre trios « simples » et « moyens » sont faits. Puis le **Beffroi** (12.24), le
+premier des lourds, le **Colisée** (12.25) et les **Montagnes russes** (12.26) : **les 7 trios sont codés**, compilés, leurs
+modèles vérifiés hors de Unity ; **aucun n'est encore vu dans Unity ni testé au casque**. Ensuite : les essais du joueur (F4,
+`Checklist_Demo.md`, « Les trios »), puis les ultimes (à revoir avec la formule des duos et des trios).
+
+**1er novembre au soir : le premier essai des trios** (12.27). Corrigés : les baudruches attirent aussi les volants et les tireurs ;
+un tireur charmé ne s'arrête plus à 17 m de son but (il tire maintenant sur la baudruche, ses rivaux de l'arène, ses proies) ; les
+champions de deux Colisées ne se battent plus entre eux ; le grand champion est en armure dorée ; F4 pose une défense aérienne et
+donne 20 000 PV au joueur et à la tour. Compilés, **pas encore revus dans Unity**. **Le Volcan et les Montagnes russes sont à
+refaire** : trois propositions pour chacun, à trier par le joueur (12.27). Puis le joueur choisit le Réveil, sans volcan : la
+**Grande bombarde** remplace le Volcan (12.28 ; un mortier géant qui se remplit de poudre, ta flèche dans la mèche déclenche la
+salve). Compilée, **pas encore vue dans Unity**. Puis les **Montagnes russes refaites en Grappin** (12.29 ; un ovale en l'air
+au-dessus de la voie, des grappins qui balaient toute sa largeur et jettent les accrochés vers la forêt). Compilées, **pas encore
+vues dans Unity**. Le joueur les essaie : **« les nouvelles tours sont validées »** ; deux bugs du Colisée corrigés (12.30 : les
+tourelles visaient les champions ; un champion restait figé quand son Colisée disparaissait). Ensuite : les ultimes.
+
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
 `compile_check_editor.py` sans erreur ni avertissement), **pas encore testées en entier dans Unity ni au casque** (tests :
@@ -1667,3 +1689,405 @@ ne sont pas touchés.
 - **Boule à neige** : le verre transparent (le matériau `Bulle`) ; les figurines figées, le tourbillon ; la flèche qui brise la
   boule ; la boule immense (18 m : ce qu'elle cache de la vue).
 - **Avalanche** et **Chaîne de forçats** : les bugs ci-dessus, corrigés.
+
+### 12.19 Les trios (proposés par Claude, triés par le joueur le 1er novembre)
+
+Les 5 trios de 12.9 étaient faits pour les fusions empilées ; avec les duos devenus des tours nouvelles (12.14), **un trio
+devient un duo plus une tour**. Même formule que les duos de 12.15 : chaque trio garde **un seul** élément de ses tours, le
+pousse à l'extrême et apporte une mécanique qu'aucune autre tour ni aucun duo n'a (Claude a évité celles des 13 duos :
+changer de voie, planter dans le sol, glisser, hypnotiser, grossir la tête, recycler les flèches, enchaîner, désorienter,
+leurrer, figer en figurines). Plus grand qu'un duo, des accents dorés, un niveau 3 dans la démesure. Comme partout, les boss
+ne sont ni projetés, ni aplatis, ni gonflés, ni recrutés : une grosse part de leurs PV à la place.
+
+**La règle proposée** (pas encore validée par le joueur) :
+- un trio = **un duo + une troisième tour** (pas une des deux du duo) au moins au niveau 3 ; on déplace l'un sur l'autre,
+  comme pour les duos (hologramme doré ; une flèche « TRIO » entre les vagues) ; il reste sur la voie si l'une de ses tours y est ;
+- il naît **au niveau du duo**, un de plus si la tour est au niveau 5 (3 au plus) ;
+- **4 plans par niveau**, de l'une de ses trois tours : 9 plans au niveau 1, 13 au niveau 2, 17 au niveau 3, par n'importe quel
+  chemin (comme les duos : 6 + 3 ; 10 + 3 ou 6 + 7 ; 14 + 3 ou 10 + 7) ;
+- un trio ne refusionne pas (les ultimes restent à revoir à part).
+
+**Le tri du joueur (1er novembre)** : sur 9 propositions, gardés les 5 conseillés moins la **Lanterne des phalènes**
+(Carquois géant + Phare : les volants attirés comme des papillons de nuit), plus **Volcan**, **Enclume** et **Colisée** ;
+retiré aussi le **Grand chapiteau** (Yo-yo + Bulle : un automate qui jongle avec les ennemis). **7 trios** donc, au lieu de 5.
+Textes et chiffres : des propositions, à revoir aux essais.
+
+| Trio | Duo + tour | Où | Niveau 1 : l'idée | Niveau 2 | Niveau 3 : la démesure | Allure | À coder |
+|---|---|---|---|---|---|---|---|
+| **Bowling** | Avalanche + Barricade | voie | des rails de bois guident les ennemis et les rangent en **triangle de quilles** au bout de la piste (« Rangés ! », 3 s) ; toutes les 8 s, une boule de glace roule dessus : « **STRIKE !** » en grand, ils volent dans tous les sens (« Au vol ! ») ; ta flèche dans la boule l'accélère et la fait éclater en glace au milieu des quilles | un strike rend la boule suivante deux fois plus grosse ; une deuxième boule fait le « spare » sur les survivants | **Partie parfaite** : douze boules d'affilée, toute la voie rangée en triangles, une boule de 4 m pour finir ; le tableau affiche 300 | une machine de retour de boules géante, des quilles dorées au sommet, un tableau de score lumineux | moyen |
+| **Beffroi** | Boussole folle + Phare | bord | toutes les 10 s, la cloche sonne : les ennemis du rayon **rembobinent** leurs 4 dernières secondes, à reculons sur leur chemin (image sépia, bruit de cassette, « Rembobiné ! ») | à l'arrivée, ils restent figés 2 s (préparés) | **Minuit** : douze coups ; le temps s'arrête 6 s dans tout le rayon, **sauf pour toi** : tes flèches s'arrêtent en l'air devant leurs cibles, et au douzième coup partent toutes ensemble (un boss : figé moins longtemps) | un beffroi de pierre, un grand cadran doré aux aiguilles qui tournent à l'envers, la rose des vents au sol | lourd |
+| **Montagnes russes** | Chaîne de forçats + Tremplin | voie | un circuit de bois avec un looping enjambe la voie ; toutes les 6 s, un wagon aimanté passe au ras du sol, ramasse jusqu'à 4 ennemis, monte ; en haut du looping, ils tombent (« Au vol ! ») | trois wagons attachés ; ceux qui tombent retombent sur un groupe (les quilles) | **Grand huit infernal** : un train de dix wagons, le circuit au-dessus de toute la voie, et à la fin un saut dans le vide : le train s'écrase sur le groupe le plus serré, l'atterrissage tue | une charpente rouge et or, des lampions, des wagons de fer enchaînés | lourd |
+| **Gonfleur** | Lanceur de baudruches + Baliste | bord | la baliste plante un tuyau-harpon dans un ennemi, la pompe le **gonfle comme une baudruche** : il s'envole doucement (« Au vol ! ») ; ta flèche le crève (confettis, il blesse ceux du dessous) ; sinon il crève seul au bout de 6 s et retombe | deux tuyaux ; un ennemi crevé souffle son air sur ses voisins, qui gonflent à leur tour | **Défilé** : toute une voie gonflée d'un coup, le ciel plein d'ennemis-ballons, un stand de tir géant (chaque ballon crevé : deux fois plus de points) ; les gros deviennent des chars de parade | une pompe de foire géante en cuivre sur un char, des tuyaux rayés, la baliste-harpon dorée | moyen |
+| **Volcan** | Feu d'artifice + Tremplin | voie | un petit volcan sur la voie ; toutes les 6 s, il entre en éruption : les ennemis sur son cône (4 m) partent en **bombes de lave** qui retombent sur les groupes autour (« Au vol ! » ; blessés, brûlés) ; ta flèche qui traverse le panache s'enflamme | la lave coule autour du cône, et les bombes en laissent là où elles tombent : le sol brûle | **Éruption** : la montagne grandit sous tes yeux (15 m), le ciel rougit, et une **coulée de lave descend la voie à contre-sens** sur 30 m : elle repousse vers la forêt tout ce qu'elle touche et le brûle | un cône de roche noire fendu de lave orange, une couronne de fusées dorées autour du cratère | moyen |
+| **Enclume** | Marteau-pilon + Mortier | voie | toutes les 4 s, le mortier tire une enclume en cloche sur l'ennemi visé : **aplati comme une crêpe** (« Aplati ! ») 6 s, il avance tout plat, deux fois moins vite (préparé) | l'enclume rebondit et aplatit un deuxième ennemi ; l'onde du choc fait tomber autour | **Pluie d'enclumes** : vingt enclumes sur toute la voie, puis une enclume de 10 m au milieu : les petits tués net, tous les autres aplatis ; elle reste plantée 6 s, puis s'enfonce dans le sol | une forge sur pilotis, un mortier en cloche de bronze, une pile d'enclumes cerclées d'or, une cheminée qui crache des étincelles | simple |
+| **Colisée** | Chant des sirènes + Barricade | voie | toutes les 15 s, une **arène** de pierre (8 m) s'élève autour de 3 à 5 ennemis : hypnotisés (« Gladiateurs ! »), ils se battent entre eux ; le dernier debout **se range de ton côté** pour la vague (couronne de laurier dorée) et frappe les ennemis qui passent ; ta flèche élimine le gladiateur qu'elle touche | deux champions à la fois ; un champion qui meurt éclate en bulles qui hypnotisent autour | **Les jeux du cirque** : l'arène s'élargit sur toute la voie (20 m) et avale un groupe entier ; le vainqueur devient **géant** (×3), en armure dorée, et marche à contre-sens sur la voie jusqu'à la fin de la vague (un boss n'est jamais gladiateur : l'arène le ralentit) | un petit amphithéâtre de pierre blanche, des gradins, une sirène de bronze sur une colonne, des oriflammes dorées | lourd |
+
+**Les tours dans les trios** :
+
+| Tour | Trios | Nombre |
+|---|---|---|
+| Mortier | Bowling, Gonfleur, Volcan, Enclume | 4 |
+| Barricade | Bowling, Enclume, Colisée | 3 |
+| Phare | Beffroi, Volcan, Colisée | 3 |
+| Piques | Beffroi, Enclume | 2 |
+| Tremplin | Montagnes russes, Volcan | 2 |
+| Tour-aimant | Beffroi, Montagnes russes | 2 |
+| Bulle | Gonfleur, Colisée | 2 |
+| Tour de givre | Bowling | 1 |
+| Lance-filet | Montagnes russes | 1 |
+| Baliste | Gonfleur | 1 |
+
+Les duos sans trio : Boulet fou, Toboggan, Yo-yo, Loupe, Carquois géant, Boule à neige. Sans la Lanterne, **aucun trio n'est
+fait contre les volants**, et le mortier entre dans 4 trios sur 7 (le lance-filet, la baliste et la tour de givre dans un seul).
+
+**L'ordre de code conseillé** : le système (la fusion d'un duo et d'une tour, la flèche « TRIO », la vitrine F4 étendue aux
+trios), avec l'**Enclume** (la plus simple, pour éprouver le système) ; puis le Gonfleur, le Bowling et le Volcan (moyens) ;
+enfin le Beffroi, le Colisée et les Montagnes russes (lourds).
+
+### 12.20 Les trios dans le code : le système et l'Enclume (1er novembre)
+
+Le joueur : « oui, commence » (le système avec l'Enclume). Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni
+avertissement), le modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests :
+`Checklist_Demo.md`, « Les trios »). La règle de 12.19 est codée telle quelle, à valider aux essais.
+
+**Le système** :
+- Un trio est un duo (`Building/TowerTrio.cs` hérite de `TowerDuo`) : sa troisième tour (`Third`), et les plans de ses trois
+  tours le font monter (`PlanSources`, `AcceptsPlansOf`). Sa définition va dans `Data/Duos` (sorte « Duo », comme les duos), son
+  prefab dans `Prefabs/Structures/Duos` ; le catalogue `Resources/TowerDuos` a une liste à part, **Trios** (le duo dont il naît,
+  sa troisième tour en `First`, sa définition).
+- **Fusionner** : comme un duo, déplacer le duo sur la tour (ou la tour sur le duo) entre les vagues. `BuildManager.DuoOf` rend un
+  duo ou un trio (« Déjà un trio », « Mortier au niveau 3 au moins ») ; `DuoLevelFrom` donne le niveau du duo, un de plus si la
+  tour est au niveau maximal ; `Fuse` garde les deux tours du duo et la troisième. Les messages disent « Trio : Enclume ! ».
+- Les flèches dorées relient aussi un duo et une tour qui font un trio, avec le mot « TRIO » (`DuoHints`) ; la vitrine **F4**
+  montre les trios après les duos (`BuildShowcase`).
+- Le baker (`Editor/TowerDefenseLookBaker`) lit la partie « trios » du fichier d'allure, écrite par
+  `Tools/allure_tours/trios.py` (via `conception.py`) : prefab, modèle, définition, inscription au catalogue, une fois.
+- **Une préparation nouvelle, « Aplati »** (`Preparation.Flattened`, ajoutée à la fin) : +50 % de dégâts pour un coup du joueur
+  (proposé). Le mot « Aplati ! » s'affiche sans son tant que la scène n'a pas sa ligne dans les *Prepared Cues* du Score
+  Manager (à ajouter à la main pour lui donner un son).
+
+**L'Enclume** (`Building/TrioEnclume.cs`, Marteau-pilon + Mortier, sur la voie, 4 × 4 cases) : une forge sur pilotis (plate-forme à
+6,5 m, les ennemis passent dessous), un foyer et sa cheminée, un mortier en cloche de bronze, un tas d'enclumes cerclées d'or
+(celle du haut sert de modèle aux tirs) ; niveau 2 : le soufflet et deux fanions ; niveau 3 : un portique d'où pend une grande
+enclume dorée. Les réglages sont en tête du script :
+- niveau 1 : toutes les 4 s (3,2 ; 2,4 aux niveaux 2 et 3), une enclume en cloche (1,1 s de vol) sur l'ennemi au sol le plus
+  avancé à 16 m ; dégâts 40 / 55 / 70 dans 1,4 m ; les survivants sont **aplatis** 6 s (7 au niveau 3) : écrasés à 18 % de leur
+  hauteur et 1,45 fois plus larges (leurs zones de touche avec), deux fois moins vite, puis ils reprennent leur forme d'un coup ;
+- niveau 2 : l'onde (3,5 m, 15 de dégâts, renversés) et un rebond vers l'ennemi le plus avancé à 6 m ;
+- niveau 3 : toutes les 16 s, avec au moins trois ennemis à portée, vingt enclumes du ciel en 2,5 s (30 de dégâts), puis la
+  grande enclume (×8) tout droit sur le groupe le plus serré : 350 de dégâts dans 6 m, les survivants aplatis ; un boss y perd
+  8 % de ses PV max, sans être aplati. Elle reste plantée 6 s, puis s'enfonce (les ennemis passent au travers : les bâtiments n'ont
+  pas de collider).
+- Les boss ne sont jamais aplatis, les volants jamais visés.
+
+**À surveiller aux tests** : l'ennemi aplati (sa racine écrasée, et donc son NavMesh Agent : qu'il ne s'enfonce pas et ne flotte
+pas) ; la place de la forge sur la voie (4 × 4 cases, peut-être trop peu pour les pilotis à 3,9 m de part et d'autre) ; le nombre
+d'enclumes en même temps ; la grande enclume qui cache la vue.
+
+### 12.21 Le Gonfleur dans le code (1er novembre)
+
+Le joueur : « fais le Gonfleur » (avant d'essayer l'Enclume). Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni
+avertissement), modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests :
+`Checklist_Demo.md`, « Les trios »).
+
+**Le Gonfleur** (`Building/TrioGonfleur.cs`, Lanceur de baudruches + Baliste, au bord, 4 × 4 cases) : un char de foire (roues,
+jupe rayée rouge et blanc, cadre doré), une grosse pompe de cuivre cerclée d'or et son piston, un tuyau rayé jusqu'à la
+baliste-harpon dorée, trois ballons à un mât ; niveau 2 : l'enrouleur du deuxième tuyau, deux ballons de plus ; niveau 3 : un
+ballon de parade géant (un gros ennemi rose aux oreilles, couronné d'or) retenu par quatre cordes. Les réglages sont en tête du
+script :
+- niveau 1 : toutes les 3,5 s (3 ; 2,5), la baliste se tourne vers l'ennemi au sol le plus avancé à 18 m ; le tuyau file jusqu'à
+  lui (le harpon : 15 / 20 / 25 de dégâts), la pompe bat et il **enfle** en 1,5 s, immobile (×1,7 : sa racine, ses zones de touche
+  avec), puis il s'envole doucement à 7 m (« Gonflé ! » ; en l'air, il est préparé : « Au vol ! ») ; blessé (ta flèche, un coup),
+  il crève : « Pan ! », des confettis qui blessent ceux du dessous (3 m, 30 / 40 / 50), et il retombe (la règle de la chute) ;
+  sinon il crève tout seul au bout de 6 s, sans blesser personne, et retombe ;
+- niveau 2 : deux tuyaux à la fois ; un ballon crevé avant la fin souffle son air sur deux voisins (4 m), qui gonflent en 0,6 s
+  sans tuyau, un peu moins gros et moins haut (eux ne soufflent plus) ;
+- niveau 3, **le défilé** : toutes les 18 s, avec au moins quatre ennemis à portée, toute la portée gonfle d'un coup (16 au
+  plus, un tuyau chacun, en 0,8 s), monte à 10 m et flotte 8 s (« Le défilé ! ») ; un ennemi de plus de 2,4 m devient un char
+  de parade (×2,6) ; un ballon du défilé crevé par ta flèche rapporte ses points une deuxième fois (« Défilé ×2 »).
+- Les boss et les volants ne sont jamais gonflés. Un ennemi aplati par l'Enclume n'est pas gonflé, et un ennemi gonflé n'est pas
+  aplati (les fusions qui changent la taille d'un ennemi se le réservent : `TowerDuo.s_Reshaped`).
+
+**À surveiller aux tests** : l'ennemi gonflé (sa racine agrandie : son NavMesh Agent, ses pieds dans le sol pendant qu'il enfle) ;
+les tuyaux (le matériau rouge du modèle sur un LineRenderer) ; le défilé, seize ennemis en l'air (la vue, le Quest) ; le son de
+gonflage (provisoire : `teleport_charge`).
+
+### 12.22 Le Bowling dans le code (1er novembre)
+
+Le joueur : « oui, le Bowling ». Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), modèle dessiné hors
+de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Les trios »).
+
+**Le Bowling** (`Building/TrioBowling.cs`, Avalanche + Barricade, sur la voie, 4 × 3 cases) : une machine de retour de boules
+géante en arche au-dessus de la voie (les ennemis passent dessous) : deux tours laquées rouge cerclées d'or et leurs étagères de
+boules de glace, la poutre, le tableau de score (son texte flotte devant, face au joueur), deux quilles dorées, et sous la poutre
+la boule suivante dans sa pince (elle sert de modèle aux boules lancées) ; niveau 2 : deux boules de plus, deux fanions ; niveau
+3 : une boule d'or sur le tableau, deux grandes quilles dorées. Tout suit la voie la plus proche de l'arche (pas l'orientation du
+modèle) : les places des quilles et le chemin de la boule. Les réglages sont en tête du script :
+- **les quilles** : 9 m plus loin vers la forêt, le long de la voie, les ennemis au sol à moins de 7 m sont **charmés** vers une
+  place du triangle (1, 2, 3, 4 quilles par rang, sa pointe vers l'arche ; « Rangés ! ») et y attendent, 4 s au plus ;
+- **la boule** (niveau 1) : toutes les 8 s s'il y a une quille rangée (dès 4 s s'il y en a trois), une boule de glace de 1,4 m part
+  de l'arche et roule vers la forêt le long de la voie (13 m/s) ; ceux qu'elle touche (45 / 60 / 75 de dégâts) volent vers la
+  forêt, sur les côtés et en l'air, en tournoyant ; toutes les quilles tombées (trois au moins) : « STRIKE ! » (en grand, sur le
+  tableau) ; **ta flèche dans la boule** la rend givrée : elle va 1,8 fois plus vite et éclate au premier ennemi (4 m, 40 de
+  dégâts, gelés 2 s : « Brisé ! » sous tes flèches) ;
+- niveau 2 : après un strike, la boule suivante est deux fois plus grosse (et 1,5 fois plus forte) ; s'il reste des quilles, une
+  deuxième boule part 0,6 s plus tard (« SPARE ! » si elle les fait toutes tomber) ;
+- niveau 3, **la partie parfaite** : toutes les 24 s, avec cinq ennemis près des quilles, trois triangles à la suite (30 places),
+  puis douze boules d'affilée (0,4 s entre deux), la dernière de 4 m (250 de dégâts ; un boss : 6 % de ses PV max) ; le tableau
+  affiche 300.
+- Le tableau compte les ennemis renversés. Les boss ne sont ni rangés ni projetés (ils prennent les dégâts) ; les volants ni l'un
+  ni l'autre ; un ennemi déjà charmé (sirènes, boussole, baudruches) n'est pas rangé.
+
+**À surveiller aux tests** : les quilles qui vont à leur place et y restent (le charme, le NavMesh sur les bords de la voie) ; la
+boule qui suit bien la voie et le sol (les ponts, la rivière) ; les ennemis projetés en dehors des voies ; l'arche (4 × 3 cases,
+les tours à 3,6 m de part et d'autre) ; le texte du tableau.
+
+### 12.23 Le Volcan dans le code (1er novembre)
+
+Le joueur : « oui, le Volcan ». Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), modèle dessiné hors
+de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Les trios »).
+
+**Le Volcan** (`Building/TrioVolcan.cs`, Feu d'artifice + Tremplin, sur la voie, 4 × 4 cases) : un petit volcan sur la voie, six
+gradins de roche noire fendue de lave, une ceinture dorée, le cratère et sa lave, et une couronne de huit fusées dorées (le feu
+d'artifice) ; niveau 2 : des coulées de lave sur ses flancs, des fumerolles ; niveau 3 : dix grandes fusées à deux étages autour
+de sa base, et quatre obélisques dorés coiffés de flammes. Les réglages sont en tête du script :
+- niveau 1 : toutes les 6 s (5 ; 4,5), s'il y a quelqu'un sur le cône (4 m), **l'éruption** : ceux qui sont dessus partent en
+  **bombes de lave** (« Bombe de lave ! », 14 m/s vers le haut, en tournoyant, une traînée de braises), **guidées** vers le
+  groupe le plus serré à 14 m (comme la rampe de lancement) ; à l'impact, une explosion (2,5 m, 35 / 45 / 55 de dégâts, renversés)
+  et une flaque de lave en feu 2 s ; le panache monte 3 s au-dessus du cratère : **ta flèche qui le traverse s'enflamme** (comme au
+  brasero de la tour) ; une lueur rouge à chaque éruption ;
+- niveau 2 : un anneau de lave en feu autour du cône (5 m), refait toutes les 5,5 s ; les bombes laissent leur lave 5 s ;
+- niveau 3, **la grande éruption** : toutes les 20 s, avec quatre ennemis sur la voie vers la forêt, une éruption, puis la
+  montagne grandit (×2,2), la lueur rougit, et **une coulée de lave descend la voie à contre-sens** (30 m à 6 m/s, 6 m de large) :
+  ceux qu'elle touche prennent 60 de dégâts et sont repoussés vers la forêt, en l'air ; elle laisse de la lave en feu derrière elle
+  (6 s) ; la montagne redescend ensuite.
+- Les boss ne sont jamais projetés ni repoussés (ils prennent les dégâts) ; les volants pas touchés.
+
+**À surveiller aux tests** : les ennemis qui traversent la montagne (les bâtiments n'ont pas de collider : ils marchent dans le
+cône jusqu'à l'éruption) ; les bombes qui retombent bien sur un groupe ; les flaques (le matériau de la lave du modèle) ; la
+coulée qui suit la voie ; la lueur (une lumière en plus : le Quest).
+
+### 12.24 Le Beffroi dans le code (1er novembre)
+
+Le joueur : « fais le Beffroi » (avant d'essayer les quatre premiers). Codé, compilé (le jeu et les outils d'éditeur, sans erreur
+ni avertissement), modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests :
+`Checklist_Demo.md`, « Les trios »).
+
+**Le Beffroi** (`Building/TrioBeffroi.cs`, Boussole folle + Phare, au bord, 3 × 3 cases) : une tour de pierre de 11 m, deux grands
+cadrans dorés (devant et derrière) aux aiguilles qui tournent à l'envers, un clocher ouvert et sa cloche de bronze qui se balance,
+un toit d'ardoise en gradins et sa flèche dorée, la rose des vents de laiton à son pied ; niveau 2 : quatre pinacles dorés et une
+lanterne (le phare) au sommet ; niveau 3 : un croissant de lune doré et une étoile au bout de la flèche, les douze heures dorées
+autour des cadrans. Les réglages sont en tête du script :
+- **le chemin** : le beffroi note la position des ennemis au sol à moins de 23 m, tous les dixièmes de seconde ;
+- niveau 1 : toutes les 10 s (8,5 ; 7), s'il y a quelqu'un à 15 m, la cloche sonne : jusqu'à 12 ennemis **rembobinent** leurs
+  4 dernières secondes (« << Rembobiné ! ») : tenus, ils repartent à reculons le long du chemin qu'ils viennent de faire, sans se
+  retourner, en 1,2 s (une traînée sépia), puis sont lâchés là ; les aiguilles s'emballent à l'envers ;
+- niveau 2 : à l'arrivée, ils restent figés 2 s (étourdis : « Figé ! », préparés pour tes flèches) ;
+- niveau 3, **Minuit** : toutes les 30 s, avec cinq ennemis à portée, douze coups en 6 s (« Le temps s'arrête… », « Dong ! 1 » à
+  « 12 ») ; dans un rayon de 20 m, les ennemis sont figés (gelés, sans glace ; un boss 2 s seulement) et **tes flèches s'arrêtent
+  en l'air** (comme celles du fût suspendu) ; au douzième coup (« Minuit ! »), elles repartent toutes ensemble, à leur vitesse
+  d'avant, et les ennemis reprennent.
+- Les boss et les volants ne sont jamais rembobinés.
+
+**À surveiller aux tests** : le rembobinage (l'ennemi tenu glisse sur son chemin, puis retombe sur le NavMesh) ; les aiguilles et la
+cloche (leur sens) ; Minuit : les flèches arrêtées (cherchées deux fois par dixième de seconde parmi toutes les flèches de la
+scène : le Quest), qu'elles repartent bien, et rien d'autre de figé par erreur.
+
+### 12.25 Le Colisée dans le code (1er novembre)
+
+Le joueur : « oui, le Colisée ». Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), modèle dessiné hors
+de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Les trios »).
+
+**Le Colisée** (`Building/TrioColisee.cs`, Chant des sirènes + Barricade, sur la voie, 4 × 4 cases) : un petit amphithéâtre de
+marbre ouvert sur la voie, deux gradins en arc de cercle de part et d'autre (trois rangs, une colonnade aux chapiteaux dorés), la
+sirène de bronze sur sa colonne, couronnée de laurier doré (chaque champion en porte une copie), et un pan de mur à l'arche rouge
+(les murs de l'arène en sont des copies) ; niveau 2 : quatre oriflammes rouges ; niveau 3 : deux mâts dorés et une grande
+couronne de laurier suspendue au-dessus de la voie. Les réglages sont en tête du script :
+- niveau 1 : toutes les 15 s (13 ; 12), s'il y a moins de champions que permis, **une arène** s'élève (16 pans de mur qui sortent du
+  sol, 4 m de rayon) autour du groupe le plus serré à 16 m : jusqu'à 5 ennemis, charmés, se battent (« Gladiateurs ! ») ;
+  chacun court sur son voisin et le frappe (20 % de ses PV max par coup, toutes les 0,7 s), sans sortir de l'arène ; **ta flèche
+  élimine le gladiateur qu'elle touche** (« Éliminé ! », l'élimination compte pour toi) ; le dernier debout (ou le plus en forme au
+  bout de 10 s) devient **champion** (« Champion ! », la couronne de laurier au-dessus de sa tête) : il ne prend plus aucun dégât,
+  court sur l'ennemi le plus proche et le frappe (30 / 40 / 50) ; sans personne, il marche vers la forêt ; il tombe au bout de
+  30 s, à la fin de la vague, ou quand il ne reste plus que des champions (sinon la vague ne finirait pas) ;
+- niveau 2 : deux champions à la fois ; un champion qui tombe éclate en bulles roses qui hypnotisent 3 voisins (6 m), qui se
+  battent 5 s sans arène (« Hypnotisés ! ») ;
+- niveau 3, **les jeux du cirque** : toutes les 30 s, avec six ennemis à portée, une arène de 10 m (28 pans, plus hauts) avale
+  jusqu'à 14 ennemis ; le vainqueur devient **le grand champion** (×3, ses coups ×3 et ils renversent).
+- Les boss ne sont jamais gladiateurs (l'arène les ralentit de moitié) ; les volants pas touchés ; un ennemi déjà charmé non plus.
+
+**À surveiller aux tests** : l'arène (les pans qui montent et redescendent, posés sur le sol) ; les gladiateurs qui se battent
+vraiment (le charme, le NavMesh dans l'arène) ; le champion (qu'il ne prenne aucun dégât, qu'il ne bloque pas la fin de la vague) ;
+le grand champion (×3 : son NavMesh Agent, sa couronne).
+
+### 12.26 Les Montagnes russes dans le code (1er novembre)
+
+Le joueur : « oui, le dernier ». Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), modèle dessiné hors
+de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Les trios »).
+
+**Les Montagnes russes** (`Building/TrioMontagnesRusses.cs`, Chaîne de forçats + Tremplin, sur la voie, 4 × 8 cases) : un circuit
+de bois rouge et or le long de la voie : la gare de départ, les rails au ras de la voie, un looping de 5,2 m (ses piliers, ses
+rayons dorés), la gare d'arrivée, et un wagon de fer à l'aimant rouge garé au départ (il sert de modèle) ; niveau 2 : une guirlande
+de lampions d'une gare à l'autre par le haut du looping, une étoile dorée ; niveau 3 : le tremplin au-delà de la gare d'arrivée
+(jusqu'à 5 m de haut, sur ses étais) et son arche dorée. **Le chemin des wagons est calculé dans le code avec les mêmes cotes que le
+modèle** (constantes `k_…` en tête du script, `MR_…` dans `Tools/allure_tours/trios.py`) : changer l'un, c'est changer l'autre.
+Les réglages sont en tête du script :
+- niveau 1 : toutes les 6 s (5 ; 4,5), s'il y a des ennemis près du circuit, un wagon sort de la gare (11 m/s) ; au ras de la
+  voie, il **ramasse** jusqu'à 4 ennemis à 1,6 m (« Embarqué ! », 15 / 20 / 25 de dégâts : ils sont tenus sur ses places) ; dans le
+  looping, ils font le tour avec lui et, **en haut, la tête en bas, ils tombent** (« Au vol ! » : la chute les blesse) ; le wagon
+  rentre en gare d'arrivée et disparaît ;
+- niveau 2 : un train de trois wagons (12 places) ; ceux qui tombent sont guidés vers le groupe le plus serré à 15 m et, en
+  retombant, blessent (25) et renversent ceux qui sont autour ;
+- niveau 3, **le grand huit infernal** : toutes les 25 s, avec six ennemis près du circuit, un train de dix wagons (plus vite)
+  garde ses passagers dans le looping, file sur le tremplin et **saute dans le vide** (« Dans le vide ! ») vers le groupe le plus
+  serré à 30 m : les wagons s'y écrasent (« CRASH ! », une explosion ; chacun blesse et renverse à 4 m), leurs passagers avec eux,
+  et **l'atterrissage les tue**.
+- Les boss et les volants ne montent jamais.
+
+**À surveiller aux tests** : que le circuit soit bien posé le long de la voie (le chemin suit l'orientation du bâtiment : z le long
+de la voie, comme le Toboggan) ; les passagers sur leurs places (tenus 8 s au plus, relancés à chaque image) ; la chute du haut du
+looping ; le saut du grand huit (la cloche des wagons, les passagers qui retombent au même endroit) ; la place sur la voie (4 × 8
+cases, le tremplin dépasse au niveau 3).
+
+### 12.27 Le premier essai des trios (1er novembre au soir)
+
+Le joueur a essayé les trios (F4). Ses retours, et ce qui en est fait (compilé, le jeu et les outils d'éditeur sans erreur ni
+avertissement ; **pas encore revu dans Unity ni testé au casque**) :
+
+- **Lanceur de baudruches** : « les baudruches devraient aussi attirer les volants et les tireurs ». Fait : les **volants** viennent
+  tourner en rond serré au-dessus de la tête de la baudruche et la picorent en passant (`FlyingEnemy.Lure`, `Enemy.LureFlyer` : ils
+  ne piquent plus sur le joueur tant qu'elle tient) ; les **tireurs** s'arrêtent à 7 m d'elle et lui tirent dessus (un projectile sans
+  dégâts : le coup compte quand il arrive ; `Enemy.ShootAt`, `EnemyProjectile.LaunchAt`). Les deux sont attirés de plus loin que les
+  autres (×2,5 pour les volants, ×2 pour les tireurs : réglages *Flyer Lure Factor*, *Ranged Lure Factor* ; pas le char de carnaval,
+  qui attire déjà à 40 m) ; les confettis blessent aussi les volants qui tournent autour.
+- **La cause commune, trouvée en passant** : un tireur charmé gardait son arrêt à 80 % de sa portée de tir (17 m). Il courait vers
+  la baudruche, l'arène ou sa proie, s'arrêtait à 17 m et restait là, à regarder. Charmé, il s'arrête maintenant tout près, ou à la
+  distance que le bâtiment lui donne (`Enemy.Charm`, nouveau paramètre *stopAt*), et retrouve son arrêt à la fin du charme. Cela
+  vaut pour tous les duos et trios qui charment (Chant des sirènes, Boussole folle, Bowling).
+- **Colisée** :
+  - « les vainqueurs se battent entre eux sans pouvoir se tuer après être sortis chacun de leur arène » : chaque Colisée ne
+    reconnaissait que ses propres champions ; ceux d'un autre Colisée (la vitrine en pose trois) étaient des proies, et des proies
+    qui ne prennent aucun dégât. Les champions de tous les Colisées sont maintenant du même camp (une liste commune) : ils ne se
+    chassent plus, et la vague finit quand il ne reste qu'eux, d'où qu'ils viennent.
+  - « les tireurs ne tirent pas sur les ennemis et restent à regarder le joueur de loin » : la cause ci-dessus. Un **gladiateur
+    tireur** se tient au milieu de l'arène et tire sur son voisin le plus proche ; un **champion tireur** s'arrête à 8 m de sa proie
+    et lui tire dessus (10 m de portée, 15 pour le grand champion ; réglage *Ranged Reach*). Le coup porte quand le projectile arrive.
+  - « il n'y a pas de guerrier en armure dorée » : le grand champion n'était que grandi (×3) et couronné. Il est maintenant **doré
+    de la tête aux pieds** : chacun de ses matériaux est copié, teint d'or, rendu métallique et lumineux (rendu à la fin) ; « Le
+    guerrier d'or ! » s'affiche devant le joueur, avec une plus grande gerbe d'or.
+- **La vitrine (F4)** : au premier appui, elle pose aussi une **défense aérienne qui reste** (un lance-filet et une baliste au
+  niveau 5 dans chacune des deux clairières, à 11 m de la tour, que F4 ne retire jamais) et donne **20 000 PV au joueur et à la
+  tour**, remontés si une amélioration de Vitalité les change.
+- **Volcan** : « tout le concept est à revoir ». Propositions ci-dessous, **à trier** ; rien n'est recodé.
+- **Montagnes russes** (le « manège » du joueur) : « il ne semble prendre qu'un ennemi sur 30 », le modèle et les ennemis dans les
+  wagons sont bugués, l'aspect est à revoir, et « ce n'est pas logique que les ennemis reviennent vers le joueur » ; le concept doit
+  rester un peu différent du Toboggan. **Pourquoi un sur 30** : le wagon ne ramasse que sur 8 m de rails (de la gare au looping),
+  dans un rayon de 1,6 m autour d'une seule ligne au milieu du bâtiment, en passant à 11 m/s (0,7 s) ; sur une voie de 4 à 8 m de
+  large, presque tous passent à côté. Et le circuit va de la gare (côté forêt) vers l'arrivée (côté tour) : les passagers sont
+  avancés vers le joueur. Propositions ci-dessous, **à trier** ; rien n'est recodé.
+
+**Le Volcan, trois propositions (Claude, 1er novembre)** — Feu d'artifice + Tremplin, toujours :
+
+| Volcan | Niveau 1 | Niveau 2 | Niveau 3 : la démesure | Allure | À coder |
+|---|---|---|---|---|---|
+| **Le Réveil** *(conseillé)* | un volcan endormi au bord de la voie, qui se **remplit** : chaque ennemi tué à 15 m et chaque flèche tirée dans son cratère le font gronder un peu plus (le cône rougeoie, la fumée monte, une jauge de lave dans ses fissures). **C'est toi qui choisis le moment** : ta flèche dans le cratère le fait exploser, et plus il est plein, plus l'éruption est grosse (jusqu'à 12 bombes de lave sur les groupes à 25 m, qui explosent et laissent de la lave en feu) | il se remplit deux fois plus vite ; l'éruption secoue le sol : tous les ennemis à 10 m sont renversés | **Le cataclysme** : plein à ras bord, il n'attend plus : le ciel rougit, la montagne grandit sous tes yeux, 40 bombes tombent sur toutes les voies, et une coulée descend chaque voie vers la forêt | un cône noir fendu de lave, la jauge qui monte dans ses fissures, des fusées dorées plantées au bord du cratère comme des mèches | moyen |
+| **L'Obsidienne** | la lave coule en travers de la voie et **durcit en murs d'obsidienne** : les ennemis doivent faire le tour (le seul bâtiment qui change leur chemin sur la voie même) ; ceux qui sont dans la lave quand elle durcit restent prisonniers d'obsidienne 4 s (préparés : ta flèche les fait éclater) | les murs sont brûlants : les longer brûle | **La muraille** : une muraille de 20 m ferme toute la voie 10 s ; ses ennemis rebroussent chemin vers une autre voie | un volcan bas au bord de la voie, des orgues de basalte, des coulées figées et luisantes | lourd (le NavMesh change pendant la partie) |
+| **Le Soulèvement** | le sol de la voie se **soulève** sous un groupe : un plateau de roche de 6 m monte à 5 m avec les ennemis dessus, qui ne peuvent plus en descendre (des cibles en hauteur, au vol), puis il s'effondre dans la lave (gros dégâts) | le plateau en jette au bord : ils tombent de 5 m | **La montagne** : 30 m de voie se soulèvent en montagne ; tout glisse vers la forêt en dévalant la pente, et elle redescend | une faille fumante au bord de la voie, des blocs de roche hérissés de fusées | lourd |
+
+**Les Montagnes russes, trois propositions (Claude, 1er novembre)** — Chaîne de forçats + Tremplin, toujours ; elles emmènent
+les ennemis **vers la forêt**, jamais vers le joueur :
+
+| Montagnes russes | Niveau 1 | Niveau 2 | Niveau 3 : la démesure | Allure | À coder |
+|---|---|---|---|---|---|
+| **Le Grappin** *(conseillé)* | un circuit fermé, un grand ovale sur pylônes à 5 m au-dessus de la voie, dans son axe ; le train y **tourne sans arrêt**. Sous chaque wagon pend une chaîne et un **grappin aimanté qui se balance d'un bord à l'autre de la voie** : il accroche tout ce qu'il frôle (3,5 m : on ne passe plus à côté), et l'ennemi pend sous le wagon, ballotté dans les virages (« Accroché ! »). Les wagons ne ramassent que sur la branche qui va vers la forêt ; au virage du fond, la force centrifuge les décroche : ils volent 15 m plus loin vers la forêt (« Au vol ! ») | les accrochés d'un wagon sont enchaînés entre eux : une grappe qui fouette, au passage, les ennemis sous le circuit (dégâts, renversés) | **Le grand huit infernal** : le train accélère, fait un looping géant au bout du circuit et s'en détache avec tous ses accrochés, droit sur le groupe le plus serré : crash, l'atterrissage tue | une charpente rouge et or, des lampions, des wagons de fer, les grappins dorés au bout de leurs chaînes | moyen |
+| **La Grande roue** | une grande roue de 14 m qui enjambe la voie ; ses nacelles **ramassent les ennemis en bas** et les **hissent** (des cibles lentes, en l'air : « Au vol ! ») ; en haut, la nacelle bascule vers la forêt et les vide 15 m plus loin | les nacelles sont enchaînées : en tombant, ceux d'une nacelle entraînent ceux de la suivante, ils retombent en grappe sur un groupe | **La roue folle** : elle tourne à toute vitesse et vide toutes ses nacelles d'un coup sur toute la voie, très loin vers la forêt | une roue de fer peinte, des nacelles dorées, des ampoules | moyen |
+| **Le Train fantôme** | un tunnel hanté posé sur la voie ; les ennemis qui y entrent sont pris par les wagons et ressortent du **côté de la forêt, terrifiés** : ils s'enfuient vers la forêt 5 s en hurlant, sans attaquer (« Terrifié ! » ; une mécanique nouvelle, la peur) | un terrifié fait fuir ceux qu'il croise | **Le grand frisson** : un fantôme géant sort du tunnel et toute la voie s'enfuit 6 s | une maison de foire noire et violette, une gueule de monstre en entrée, des chaînes et des squelettes dorés | simple |
+
+**À trier par le joueur** : un Volcan et une version des Montagnes russes (ou ses propres idées). Puis : les recoder, et revoir
+les retours ci-dessus dans Unity (F4).
+
+### 12.28 La Grande bombarde, à la place du Volcan (1er novembre au soir)
+
+Le joueur : « code le Réveil, mais oublie complètement le volcan ». Il garde la mécanique du Réveil (une jauge qui se remplit, ta
+flèche qui déclenche) avec une autre allure, choisie parmi deux (la Grande bombarde, ou un géant de pierre endormi). Codé, compilé
+(le jeu et les outils d'éditeur, sans erreur ni avertissement), le modèle dessiné hors de Unity sans faces superposées ; **pas encore
+vu dans Unity ni testé au casque**.
+
+**Le Volcan est retiré** : le baker l'enlève de la liste des trios du catalogue (`retiredTrios` du fichier d'allure ; il ne se
+fusionne plus et la vitrine ne le montre plus). Ses fichiers restent (`TrioVolcan.cs`, `Prefabs/Structures/Duos/Trio_Volcan`,
+`Data/Duos/Trio_Volcan`), à supprimer quand le joueur le voudra.
+
+**La Grande bombarde** (`Building/TrioBombarde.cs`, Feu d'artifice + Tremplin, **au bord**, 4 × 4 cases ; textes et chiffres
+proposés) : un mortier de feu d'artifice en bronze de 7 m, posé sur quatre gros ressorts de cuivre (le tremplin : tout le corps
+rebondit au tir). Sur son fût, cinq cercles de fer, la jauge ; à côté, sur un poteau, une cible ronde, la mèche, qui se tourne
+vers le joueur, et son cordon jusqu'à la culasse ; trois bombes de feu d'artifice (bleue, rouge, verte) sur l'affût. Niveau 2 : le
+baril de poudre et deux fanions dorés ; niveau 3 : la couronne dorée de la gueule et deux grandes fusées à deux étages.
+- **La poudre** : chaque ennemi tué à 18 m (+8 %, pas ceux de ses propres bombes : elle se rechargerait toute seule) et chaque
+  flèche tirée dans sa gueule (+12 %, « Poudre 40 % ») la remplissent. Les cercles rougeoient un à un (un grondement, de la
+  fumée) ; de plus en plus de fumée et de braises montent de la gueule. Pleine : « Pleine ! Tire dans la mèche », le dernier
+  cercle clignote.
+- **La mèche** : ta flèche dans la cible l'allume (il faut 15 % de poudre au moins, et un ennemi à 30 m ; sinon « Pas assez de
+  poudre », « Personne à portée », et la poudre reste). L'étincelle court le long du cordon (0,9 s), puis **la salve** : d'autant
+  plus de bombes qu'elle est pleine (12 au plus au niveau 1, 14 au niveau 2, 16 au niveau 3), une toutes les 0,09 s, en cloche,
+  sur le groupe le plus serré, puis le suivant… ; chacune explose en gerbe de couleur (3 m, 45 / 55 / 65 de dégâts) et projette
+  ceux qu'elle touche (pas les boss). Le corps s'enfonce sur ses ressorts et rebondit.
+- **Niveau 2** : elle se remplit deux fois plus vite ; au tir, la **secousse** renverse les ennemis à 10 m.
+- **Niveau 3, le bouquet final** : pleine, elle n'attend plus ; « La bombarde déborde ! » 3 s, puis 40 bombes en 2,5 s, sur les
+  groupes et au hasard sur les voies, à 60 m.
+
+Trouvé en passant : un duo ou un trio **du bord** né d'une tour du bord et d'une tour de la voie se posait à la place de celle de la
+voie, où la grille le refuse. Il prend maintenant la place de celle du bord (`BuildManager.DuoPlace`, la place du résultat). Et la
+vitrine (F4) pose les duos et trios du bord aussi au niveau 3, à côté du niveau 1, dans la clairière de droite (avant : niveaux 1
+et 2 seulement, le spectacle ne se voyait pas).
+
+**À surveiller aux tests** : viser la gueule et la mèche depuis la tour (la gueule à 7 m de haut, une sphère de 1,2 m ; la cible
+de 1,6 m) ; la jauge (les cercles qui s'allument, le matériau de braise) ; les bombes qui retombent sur les groupes ; le rebond sur
+les ressorts ; le bouquet final (40 bombes et leurs explosions : le Quest).
+
+### 12.29 Les Montagnes russes refaites : le Grappin (1er novembre au soir)
+
+Le joueur choisit **le Grappin** parmi les trois propositions de 12.27. Codé, compilé (le jeu et les outils d'éditeur, sans erreur
+ni avertissement), le modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque**. Le nom,
+le prefab, la définition et le script restent ceux des Montagnes russes (`Building/TrioMontagnesRusses.cs`, réécrit) ; le baker
+refait le modèle (une nouvelle passe, « Grappin du 1er novembre », `rebuild`) et les textes, s'ils n'ont pas été changés à la main.
+
+**Le modèle** : un ovale de rails à 5 m au-dessus de la voie (deux lignes droites de 8 m, à 1,2 m de part et d'autre de l'axe,
+reliées par deux virages), porté par trois portiques de bois aux poutres rouges et aux équerres dorées, et une enseigne de foire
+rouge cerclée d'or, à ampoules, au-dessus du portique du milieu. Le wagon rouge et son treuil ; dessous, la chaîne et le grappin
+aimanté à trois griffes dorées. Niveau 2 : des mâts à fanions dorés et des guirlandes de lampions le long du circuit ; niveau 3 :
+un tremplin au bout de chaque ligne droite, ses étais, son arche dorée et son crâne.
+
+**Ce qu'il fait** (réglages en tête du script, chiffres proposés) :
+- **Le circuit tourne sans arrêt** : deux wagons (trois aux niveaux 2 et 3) à 6,5 m/s.
+- **Le grappin** : sur la ligne droite qui va vers la forêt (le circuit peut être posé dans un sens ou dans l'autre : c'est revu
+  toutes les 2 s), le treuil descend le grappin à 1,6 m du sol et il se **balance d'un bord à l'autre de la voie** (3,2 m de
+  chaque côté de l'axe, un aller-retour en 1,3 s) ; il accroche les ennemis au sol à 1,8 m de lui (« Accroché ! », 15 / 20 / 25
+  de dégâts ; 3 au plus, 4 aux niveaux 2 et 3). Plein, ou sur le reste du circuit, il remonte ; les accrochés **pendent** sous lui,
+  en grappe, et se balancent (des cibles en l'air : le tir au vol).
+- **Le virage du côté de la forêt** les jette vers la forêt (9 m/s, et vers le haut : ils retombent à une douzaine de mètres, en
+  tournoyant ; « Au vol ! », la chute les blesse). Ils doivent refaire le chemin, et repasser sous le grappin.
+- **Niveau 2, la grappe** : dès deux accrochés, ils fouettent au passage les ennemis à 2 m du grappin (« Fouetté ! », 20 de
+  dégâts, renversés ; une fois par seconde chacun).
+- **Niveau 3, le grand huit infernal** : toutes les 25 s, avec six ennemis près du circuit, un train de six wagons file à 13 m/s
+  sur la ligne droite qui va vers la forêt, ses grappins balancés deux fois plus vite (et un peu plus larges), accroche tout, monte
+  le tremplin et saute dans le vide vers le groupe le plus serré à 30 m : « CRASH ! », les wagons écrasent ce qui est dessous, les
+  accrochés meurent à l'atterrissage.
+- Les boss et les volants ne sont jamais accrochés.
+
+**À surveiller aux tests** : le sens du circuit (la ligne droite qui ramasse doit aller vers la forêt) ; combien d'ennemis le
+grappin prend (le joueur : « un sur 30 » avant) ; les accrochés qui pendent (leur position, pas sous le sol) ; le virage qui les
+jette (qu'ils retombent bien sur la voie, vers la forêt) ; la chaîne (un LineRenderer au matériau de fer) ; la place sur la voie
+(4 × 8 cases ; le circuit fait 12,4 m de long, 17 m avec les tremplins, et les portiques sont à 2,6 m de l'axe).
+
+### 12.30 Les nouvelles tours validées, deux bugs du Colisée (1er novembre au soir)
+
+Le joueur a essayé la Grande bombarde, le Grappin et les corrections de 12.27 : **« les nouvelles tours sont validées »**. Restaient
+deux bugs du Colisée, corrigés (compilé, **pas encore revu dans Unity**) :
+- **Les tourelles tiraient sur les champions** (sans leur faire de dégâts : leur protection annulait les coups). Un champion restait
+  dans la liste des ennemis que visent les bâtiments. Il est maintenant **de ton côté** (`Enemy.IsAlly`, mis par le Colisée, retiré
+  quand il tombe) : `Structure.AliveEnemies` et la baliste (`Ballista.FindTarget`) le laissent de côté, comme les mannequins. Tous
+  les bâtiments passent par là : plus aucun ne le vise, ne le projette ni ne le marque.
+- **Des ennemis figés après l'arène** (le joueur pensait à un ennemi mort en même temps que couronné). La cause : quand un Colisée
+  disparaît (la vitrine F4 passe au suivant, une fusion), ses champions perdaient leur couronne et leur protection, mais **gardaient
+  leur charme** (jusqu'à 31 s) : ils couraient vers leur dernière proie, puis restaient plantés là. Ils redeviennent maintenant des
+  ennemis tout de suite (`Dismiss` les libère).

@@ -336,6 +336,11 @@ namespace Archery.Economy
                 Sfx.Play(cue.Clip, position, 0.7f, UnityEngine.Random.Range(0.95f, 1.05f));
                 return;
             }
+
+            // Une sorte venue après le réglage de la scène (aplati, 1er novembre) : son mot proposé, sans son, tant qu'elle n'a pas
+            // sa ligne dans Prepared Cues.
+            if (enemy.HitPreparation == Preparation.Flattened)
+                FloatingText.Spawn(enemy.Center + Vector3.up * 0.8f, "Aplati !", new Color(0.95f, 0.75f, 0.45f), 0.9f, 1f);
         }
 
         void OnEnemyKilled(Enemy enemy, DamageInfo info)

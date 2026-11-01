@@ -205,7 +205,7 @@ namespace Archery.Building
             var duo = structure as TowerDuo;
             if (m_TitleText != null)
                 m_TitleText.text = structure == null ? $"Construire · {Socket.DisplayName}"
-                    : duo != null ? $"Duo · {structure.DisplayName} · niveau {structure.Level}"
+                    : duo != null ? $"{BuildManager.FusionLabel(duo)} · {structure.DisplayName} · niveau {structure.Level}"
                     : $"{structure.DisplayName} · niveau {structure.Level}";
 
             for (var i = 0; i < m_CardChoices.Length; i++)
@@ -269,7 +269,7 @@ namespace Archery.Building
 
             var offer = BuildOffer(definition, structure.Level + 1, builds, owned);
             if (structure is TowerDuo duo)
-                offer.Subtitle = $"Amélioration · {Owned(owned ?? 0)} ({duo.First?.displayName}, {duo.Second?.displayName})";
+                offer.Subtitle = $"Amélioration · {Owned(owned ?? 0)} ({BuildManager.SourceNames(duo)})";
             return offer;
         }
 

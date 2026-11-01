@@ -21,18 +21,18 @@ MonoBehaviour:
   levels:
   - cost: 0
     plans: 0
-    description: "Une piste de glace en pente vers la for\xEAt : l'ennemi qui y monte
-      glisse sur le ventre en tournoyant, renverse ceux qu'il croise et d\xE9colle
+    description: "Un toboggan de glace enjambe la voie : l'ennemi qui passe sous
+      la plate-forme grimpe l'\xE9chelle, glisse sur le ventre en tournoyant et d\xE9colle
       du tremplin en vrille, au ralenti, sous les notes du jury."
   - cost: 0
     plans: 4
-    description: Ceux qu'il percute glissent aussi ; le saut est plus haut et plus
-      long.
+    description: 'Il saute plus haut et plus loin, et retombe sur les autres : il
+      les renverse comme des quilles.'
   - cost: 0
     plans: 4
-    description: "Le saut \xE0 ski : un grand tremplin les envoie \xE0 plus de 20
-      m de haut, loin vers la for\xEAt, sous un \xAB 10 ! 10 ! 10 ! \xBB ; l'atterrissage
-      les tue."
+    description: "Le saut \xE0 ski : un grand tremplin l'envoie \xE0 plus de 20 m
+      de haut, loin vers la for\xEAt, sous un \xAB 10 ! 10 ! 10 ! \xBB ; l'atterrissage
+      le tue."
   lotSize: 0
   rarity: 0
   anywhere: 0

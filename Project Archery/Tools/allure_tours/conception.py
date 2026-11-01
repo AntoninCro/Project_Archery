@@ -4,6 +4,7 @@
 import json, os, sys, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import duos as duo_design
+import trios as trio_design
 
 JSON = sys.argv[1]
 
@@ -438,10 +439,14 @@ for name in ('Barricade', 'Pieges', 'Baliste', 'Mortier', 'Givre', 'Filet', 'Aim
 for name, mark, requires, fn in PASSES:
     towers.append({'prefab': name, 'mark': mark, 'requires': requires, 'ops': fn()})
 look['towers'] = towers
-for key in [k for k in look['palettes'] if k.startswith('Duo_')]:
+for key in [k for k in look['palettes'] if k.startswith('Duo_') or k.startswith('Trio_')]:
     del look['palettes'][key]
 look['palettes'].update(duo_design.PALETTES)
+look['palettes'].update(trio_design.PALETTES)
 look['duos'] = duo_design.duos()
+# Les trios (1er novembre, trios.py) : comme les duos, dans leur partie à eux.
+look['trios'] = trio_design.trios()
+look['retiredTrios'] = trio_design.RETIRED
 def dump(look):
     # Une opération par ligne : le fichier se lit (et se compare) facilement.
     lines = ['{', ' "palettes": {']
@@ -457,15 +462,19 @@ def dump(look):
             lines.append('   ' + json.dumps(op, ensure_ascii=False) + (',' if j < len(t['ops']) - 1 else ''))
         lines.append('  ] }' + (',' if i < len(look['towers']) - 1 else ''))
     lines.append(' ],')
-    # Les duos : leurs réglages sur une ligne, puis une opération par ligne.
-    lines.append(' "duos": [')
-    for i, d in enumerate(look.get('duos', [])):
-        head = {k: v for k, v in d.items() if k != 'ops'}
-        lines.append('  { ' + json.dumps(head, ensure_ascii=False)[1:-1] + ', "ops": [')
-        for j, op in enumerate(d.get('ops', [])):
-            lines.append('   ' + json.dumps(op, ensure_ascii=False) + (',' if j < len(d['ops']) - 1 else ''))
-        lines.append('  ] }' + (',' if i < len(look['duos']) - 1 else ''))
-    lines.append(' ]')
+    # Les duos, puis les trios : leurs réglages sur une ligne, puis une opération par ligne.
+    for part in ('duos', 'trios'):
+        items = look.get(part, [])
+        lines.append(' "%s": [' % part)
+        for i, d in enumerate(items):
+            head = {k: v for k, v in d.items() if k != 'ops'}
+            lines.append('  { ' + json.dumps(head, ensure_ascii=False)[1:-1] + ', "ops": [')
+            for j, op in enumerate(d.get('ops', [])):
+                lines.append('   ' + json.dumps(op, ensure_ascii=False) + (',' if j < len(d['ops']) - 1 else ''))
+            lines.append('  ] }' + (',' if i < len(items) - 1 else ''))
+        lines.append(' ],')
+    # Les trios retirés (1er novembre au soir) : le baker les enlève du catalogue.
+    lines.append(' "retiredTrios": ' + json.dumps(look.get('retiredTrios', []), ensure_ascii=False))
     lines.append('}')
     return '\n'.join(lines) + '\n'
 

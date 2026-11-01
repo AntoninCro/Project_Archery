@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Trio_Bowling
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Bowling
+  slot: 0
+  prefab: {fileID: 7580593917437786426, guid: 4ffab522d70b4fc47bc6f2698354d057, type: 3}
+  color: {r: 0.9098039, g: 0.72156864, b: 0.2901961, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 0
+    description: "Une machine de bowling g\xE9ante enjambe la voie : plus loin, les
+      ennemis qui arrivent sont rang\xE9s en triangle de quilles ; une boule de glace
+      roule sur eux vers la for\xEAt et ils volent dans tous les sens. Ta fl\xE8che
+      dans la boule l'acc\xE9l\xE8re : elle \xE9clate en glace au milieu des quilles."
+  - cost: 0
+    plans: 4
+    description: "Un strike rend la boule suivante deux fois plus grosse ; s'il en
+      reste debout, une deuxi\xE8me boule fait le spare."
+  - cost: 0
+    plans: 4
+    description: "La partie parfaite : trois triangles de quilles, douze boules d'affil\xE9e,
+      la derni\xE8re de 4 m ; le tableau affiche 300."
+  lotSize: 0
+  rarity: 0
+  anywhere: 0
+  footprint: {x: 4, y: 3}
+  retired: 0

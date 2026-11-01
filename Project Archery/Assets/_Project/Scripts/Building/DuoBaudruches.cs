@@ -21,8 +21,11 @@ namespace Archery.Building
     /// </summary>
     /// <remarks>
     /// Venir la frapper, c'est le charme (<see cref="Enemy.Charm"/>) : l'ennemi court vers la baudruche, et c'est le duo qui compte
-    /// ses coups. Les boss et les volants ne viennent pas. La baudruche est une copie de celle du modèle (le pivot à ses pieds),
-    /// avec un <see cref="DuoShotTarget"/> qui reçoit les flèches : crevée par une flèche, les confettis font moitié plus de dégâts.
+    /// ses coups. Les boss ne viennent pas. La baudruche est une copie de celle du modèle (le pivot à ses pieds), avec un
+    /// <see cref="DuoShotTarget"/> qui reçoit les flèches : crevée par une flèche, les confettis font moitié plus de dégâts.
+    /// Depuis le 1er novembre (le joueur : « les baudruches devraient aussi attirer les volants et les tireurs »), les volants
+    /// viennent tourner autour de sa tête et la picorer (<see cref="Enemy.LureFlyer"/>), et les tireurs viennent de plus loin et
+    /// lui tirent dessus de quelques mètres (<see cref="Enemy.ShootAt"/>) ; ils sont attirés de plus loin que les autres.
     /// </remarks>
     public class DuoBaudruches : TowerDuo
     {
@@ -80,6 +83,20 @@ namespace Archery.Building
         [Tooltip("Au bout de ce temps (s), elle éclate d'elle-même.")]
         [SerializeField]
         float m_Lifetime = 12f;
+
+        [Header("Les volants et les tireurs (1er novembre)")]
+        [Tooltip("Les volants sont attirés de tant de fois plus loin que les autres (pas pour le char de carnaval, qui attire de " +
+                 "partout).")]
+        [SerializeField]
+        float m_FlyerLureFactor = 2.5f;
+
+        [Tooltip("Les tireurs aussi.")]
+        [SerializeField]
+        float m_RangedLureFactor = 2f;
+
+        [Tooltip("Distance (m) d'où un tireur lui tire dessus.")]
+        [SerializeField]
+        float m_RangedReach = 8f;
 
         [Header("Les confettis")]
         [Tooltip("Dégâts des confettis piquants, par niveau (vague 1, en Normal).")]
@@ -179,6 +196,8 @@ namespace Archery.Building
             public Doll Doll;
             public float NextHit;
             public float NextCharm;
+            public bool Flyer;
+            public bool Ranged;
         }
 
         readonly List<Doll> m_Dolls = new List<Doll>();
@@ -412,14 +431,24 @@ namespace Archery.Building
             return false;
         }
 
-        // Les ennemis autour viennent la frapper ; le char de carnaval prend ceux des autres baudruches.
+        // Les ennemis autour viennent la frapper ; le char de carnaval prend ceux des autres baudruches. Les volants et les tireurs
+        // viennent de plus loin (sauf pour le char, qui attire de partout).
         void Lure(Doll doll)
         {
             var radius = doll.Giant ? m_FloatReach : ValueFor(m_LureRadiusPerLevel, doll.Level, 7f);
+            var widest = doll.Giant ? 1f : Mathf.Max(1f, Mathf.Max(m_FlyerLureFactor, m_RangedLureFactor));
             var point = doll.Transform.position;
-            foreach (var enemy in EnemiesNear(point, radius))
+            foreach (var enemy in EnemiesNear(point, radius * widest, false))
             {
-                if (enemy.IsBoss)
+                if (enemy.IsBoss || enemy.IsAirborne)
+                    continue;
+
+                var flyer = enemy.IsFlyer;
+                var ranged = !flyer && enemy.IsRanged;
+                var reach = radius * (doll.Giant ? 1f : flyer ? m_FlyerLureFactor : ranged ? m_RangedLureFactor : 1f);
+                var flat = enemy.transform.position - point;
+                flat.y = 0f;
+                if (flat.sqrMagnitude > reach * reach)
                     continue;
 
                 if (m_Lured.TryGetValue(enemy, out var lured))
@@ -429,12 +458,20 @@ namespace Archery.Building
                     continue;
                 }
 
-                if (enemy.Charm(1f, point))
-                    m_Lured[enemy] = new Lured { Doll = doll, NextHit = Time.time + 0.4f, NextCharm = Time.time + 0.5f };
+                var drawn = flyer ? enemy.LureFlyer(AirPoint(doll), 1f) : enemy.Charm(1f, point, ranged ? m_RangedReach - 1f : -1f);
+                if (drawn)
+                    m_Lured[enemy] = new Lured
+                    {
+                        Doll = doll, NextHit = Time.time + 0.4f, NextCharm = Time.time + 0.5f, Flyer = flyer, Ranged = ranged,
+                    };
             }
         }
 
-        // Chacun court vers sa baudruche ; à côté d'elle, il la frappe.
+        // Là où les volants tournent : au-dessus de sa tête.
+        static Vector3 AirPoint(Doll doll) => doll.Transform.position + Vector3.up * (doll.Height + 1.2f);
+
+        // Chacun court vers sa baudruche ; à côté d'elle, il la frappe (un volant : il la picore en passant ; un tireur : il lui
+        // tire dessus de quelques mètres, et le coup compte quand le projectile arrive).
         void UpdateLured()
         {
             if (m_Lured.Count == 0)
@@ -453,18 +490,48 @@ namespace Archery.Building
                 }
 
                 var point = doll.Transform.position;
-                if (Time.time >= lured.NextCharm)
-                {
-                    lured.NextCharm = Time.time + 0.5f;
-                    enemy.Charm(1f, point);
-                }
-
-                enemy.SetCharmDestination(point);
                 var flat = enemy.transform.position - point;
                 flat.y = 0f;
                 var reach = 1.4f + doll.Height * 0.24f;
+                if (lured.Flyer)
+                {
+                    // Le volant suit la baudruche (elle rebondit) ; il la picore quand il passe près de sa tête.
+                    if (!enemy.LureFlyer(AirPoint(doll), 1f))
+                    {
+                        m_Ended.Add(enemy);
+                        continue;
+                    }
+
+                    reach += 2.5f;
+                }
+                else
+                {
+                    if (Time.time >= lured.NextCharm)
+                    {
+                        lured.NextCharm = Time.time + 0.5f;
+                        enemy.Charm(1f, point, lured.Ranged ? m_RangedReach - 1f : -1f);
+                    }
+
+                    enemy.SetCharmDestination(point);
+                    if (lured.Ranged)
+                        reach = m_RangedReach + 1f;
+                }
+
                 if (doll.Flying || doll.Bouncing || flat.sqrMagnitude > reach * reach || Time.time < lured.NextHit || enemy.IsAirborne)
                     continue;
+
+                if (lured.Ranged)
+                {
+                    lured.NextHit = Time.time + m_HitInterval * Random.Range(1.4f, 1.8f);
+                    var hitter = enemy;
+                    var target = doll;
+                    enemy.ShootAt(point + Vector3.up * doll.Height * 0.5f, () =>
+                    {
+                        if (target.Transform != null && !target.Flying && target.Hits > 0)
+                            HitDoll(target, hitter);
+                    });
+                    continue;
+                }
 
                 lured.NextHit = Time.time + m_HitInterval * Random.Range(0.85f, 1.15f);
                 enemy.PlayAttackAnimation();
@@ -549,9 +616,13 @@ namespace Archery.Building
             var radius = doll.Giant ? m_FloatConfettiRadius : m_ConfettiRadius;
             var damage = (doll.Giant ? m_FloatDamage : ValueFor(m_ConfettiDamagePerLevel, doll.Level, 35f)) * bonus;
             m_Scratch.Clear();
-            m_Scratch.AddRange(EnemiesNear(center, radius));
+            m_Scratch.AddRange(EnemiesNear(center, radius, false));
             foreach (var enemy in m_Scratch)
             {
+                // Les volants qui tournaient autour sont blessés aussi (ni renversés, ni ceux qui sont déjà en l'air).
+                if (enemy.IsAirborne)
+                    continue;
+
                 var amount = damage + (doll.Giant ? enemy.Health.Max * m_FloatShare * bonus / Mathf.Max(0.01f, Strength) : 0f);
                 if (m_Lured.TryGetValue(enemy, out var lured) && lured.Doll == doll)
                 {

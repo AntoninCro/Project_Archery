@@ -46,6 +46,11 @@ namespace Archery.EditorTools
     /// <c>Resources/TowerDuos</c> s'il n'y est pas déjà : ce que le joueur y change reste. Dans une opération <c>field</c>, un
     /// matériau du projet se donne par <c>mat</c>, un asset (un son) par son chemin, <c>asset</c>.
     /// </para>
+    /// <para>
+    /// Les <b>trios</b> (1er novembre, partie « trios ») se font de même (une <see cref="TowerTrio"/>), après les duos ; leur
+    /// <c>duo</c> nomme la définition du duo dont ils naissent, <c>kinds</c> leur troisième tour, et ils vont dans la liste des
+    /// trios du catalogue.
+    /// </para>
     /// </remarks>
     [InitializeOnLoad]
     static class TowerDefenseLookBaker
@@ -147,6 +152,52 @@ namespace Archery.EditorTools
                     }
                 }
             }
+
+            // Les trios (1er novembre), après les duos : chacun est né d'un duo, qui doit avoir sa définition.
+            if (look.TryGetValue("trios", out var trios) && trios is List<object> trioList)
+            {
+                foreach (Dictionary<string, object> trio in trioList)
+                {
+                    try
+                    {
+                        ApplyDuo(trio, palettes);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("Trios : " + Text(trio, "name") + ", " + e);
+                    }
+                }
+            }
+
+            // Les trios retirés (1er novembre au soir : le Volcan, remplacé par la Grande bombarde) : enlevés de la liste des trios du
+            // catalogue ; leurs fichiers (prefab, définition, script) restent.
+            if (look.TryGetValue("retiredTrios", out var retired) && retired is List<object> retiredList && retiredList.Count > 0)
+                RetireTrios(retiredList);
+        }
+
+        static void RetireTrios(List<object> names)
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<TowerDuoCatalog>(k_CatalogPath);
+            if (catalog == null)
+                return;
+
+            var serialized = new SerializedObject(catalog);
+            var list = serialized.FindProperty("m_Trios");
+            var removed = new List<string>();
+            for (var i = list.arraySize - 1; i >= 0; i--)
+            {
+                var name = list.GetArrayElementAtIndex(i).FindPropertyRelative("displayName").stringValue;
+                if (!names.Contains(name))
+                    continue;
+                list.DeleteArrayElementAtIndex(i);
+                removed.Add(name);
+            }
+
+            if (removed.Count == 0)
+                return;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssetIfDirty(catalog);
+            Debug.Log("Trios : " + string.Join(", ", removed) + ", retiré du catalogue (" + k_CatalogPath + ").");
         }
 
         // Les textures des palettes, écrites hors de Unity : importées tout de suite si elles ne le sont pas encore.
@@ -843,7 +894,8 @@ namespace Archery.EditorTools
             Debug.Log("Duos : " + Text(duo, "name") + ", textes des niveaux revus (" + AssetDatabase.GetAssetPath(definition) + ").");
         }
 
-        // Inscrit le duo au catalogue s'il n'y est pas (par son nom) ; sinon lui rend seulement sa définition s'il l'a perdue.
+        // Inscrit le duo au catalogue s'il n'y est pas (par son nom) ; sinon lui rend seulement sa définition s'il l'a perdue. Un
+        // trio (1er novembre : « duo », la définition du duo dont il naît ; « kinds », sa troisième tour) va dans la liste des trios.
         static void RegisterDuo(Dictionary<string, object> duo, string name, StructureDefinition definition)
         {
             var catalog = AssetDatabase.LoadAssetAtPath<TowerDuoCatalog>(k_CatalogPath);
@@ -853,8 +905,20 @@ namespace Archery.EditorTools
                 AssetDatabase.CreateAsset(catalog, k_CatalogPath);
             }
 
+            StructureDefinition fromDuo = null;
+            var trio = Text(duo, "duo");
+            if (trio != null)
+            {
+                fromDuo = AssetDatabase.LoadAssetAtPath<StructureDefinition>(k_DuoDataFolder + trio + ".asset");
+                if (fromDuo == null)
+                {
+                    Debug.LogWarning("Trios : " + name + ", le duo " + trio + " n'a pas encore sa définition (" + k_DuoDataFolder + ").");
+                    return;
+                }
+            }
+
             var serialized = new SerializedObject(catalog);
-            var list = serialized.FindProperty("m_Duos");
+            var list = serialized.FindProperty(fromDuo != null ? "m_Trios" : "m_Duos");
             for (var i = 0; i < list.arraySize; i++)
             {
                 var existing = list.GetArrayElementAtIndex(i);
@@ -887,14 +951,16 @@ namespace Archery.EditorTools
             var entry = list.GetArrayElementAtIndex(list.arraySize - 1);
             entry.FindPropertyRelative("displayName").stringValue = name;
             SetEnum(entry.FindPropertyRelative("first"), kinds != null && kinds.Count > 0 ? kinds[0] as string : null);
-            SetEnum(entry.FindPropertyRelative("second"), kinds != null && kinds.Count > 1 ? kinds[1] as string : null);
+            if (fromDuo == null)
+                SetEnum(entry.FindPropertyRelative("second"), kinds != null && kinds.Count > 1 ? kinds[1] as string : null);
             entry.FindPropertyRelative("definition").objectReferenceValue = definition;
             if (ColorUtility.TryParseHtmlString(Text(duo, "color") ?? "", out var color))
                 entry.FindPropertyRelative("color").colorValue = color;
             entry.FindPropertyRelative("description").stringValue = Text(duo, "description") ?? "";
+            entry.FindPropertyRelative("duo").objectReferenceValue = fromDuo;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssetIfDirty(catalog);
-            Debug.Log("Duos : " + name + ", inscrit au catalogue (" + k_CatalogPath + ").");
+            Debug.Log((fromDuo != null ? "Trios : " : "Duos : ") + name + ", inscrit au catalogue (" + k_CatalogPath + ").");
         }
 
         static void EnsureFolder(string folder)

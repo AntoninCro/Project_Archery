@@ -466,7 +466,7 @@ namespace Archery.Building
             {
                 if (m_Hologram != null)
                     m_Hologram.SetActive(false);
-                var keep = BuildManager.DuoPlace(m_Moving, m_FuseTarget).transform;
+                var keep = BuildManager.DuoPlace(m_Moving, m_FuseTarget, m_FuseEntry != null ? m_FuseEntry.definition : null).transform;
                 m_DuoHologram.transform.SetPositionAndRotation(keep.position, keep.rotation);
                 SetDuoLook(m_Valid);
                 ShowLabel(keep.position + Vector3.up * (m_DuoHologramTop + 0.45f), true);
@@ -543,7 +543,7 @@ namespace Archery.Building
 
             var structure = aimed != null ? aimed.Structure : null;
 
-            // Une tour déplacée sur une tour partenaire : le duo (31 octobre).
+            // Une tour déplacée sur une tour partenaire : le duo (31 octobre) ; un duo et une tour : le trio (1er novembre).
             if (m_Moving != null && structure != null && builds != null)
             {
                 var duo = builds.DuoOf(m_Moving, structure, out var problem);
@@ -553,14 +553,15 @@ namespace Archery.Building
                     m_FuseEntry = duo;
                     m_FuseTarget = structure;
                     m_Valid = problem == null;
-                    m_Status = !m_Valid ? $"Duo : {duo.displayName}\n<color=#FF9080>{problem}</color>"
-                        : m_Desktop ? $"Duo : {duo.displayName}"
-                        : $"Duo : {duo.displayName}\n<size=70%>gâchette : fusionner · poignée : annuler</size>";
+                    var title = $"{duo.Label} : {duo.displayName}";
+                    m_Status = !m_Valid ? $"{title}\n<color=#FF9080>{problem}</color>"
+                        : m_Desktop ? title
+                        : $"{title}\n<size=70%>gâchette : fusionner · poignée : annuler</size>";
                     return;
                 }
             }
 
-            // Un plan d'une de ses deux tours sur un duo le fait monter (31 octobre : 4 plans par niveau, des deux tours).
+            // Un plan d'une de ses tours sur un duo (ou un trio) le fait monter (31 octobre : 4 plans par niveau, de ses tours).
             var aimedDuo = m_Moving == null ? structure as TowerDuo : null;
             if (structure != null && m_Moving == null && (structure.Definition == m_Definition || (aimedDuo != null && aimedDuo.AcceptsPlansOf(m_Definition))))
             {
@@ -572,7 +573,7 @@ namespace Archery.Building
                     if (aimedDuo != null)
                     {
                         plans = builds != null ? builds.PlansOf(aimedDuo) : 0;
-                        header = $"Duo {aimedDuo.DisplayName} · {plans} plans ({aimedDuo.First?.displayName}, {aimedDuo.Second?.displayName})";
+                        header = $"{BuildManager.FusionLabel(aimedDuo)} {aimedDuo.DisplayName} · {plans} plans ({BuildManager.SourceNames(aimedDuo)})";
                     }
 
                     m_Upgrade = true;

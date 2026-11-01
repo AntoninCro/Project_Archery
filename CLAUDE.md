@@ -18,7 +18,8 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   montre, ennemis projetés, puis constructions nouvelles et fusions) ; son état et l'étape suivante sont dans
   `Project Archery/Docs/Refonte_TowerDefense.md`, partie « Avancement ». Raccourcis : **B** (2 plans de chaque bâtiment),
   **V** (une caisse), **F2** (le menu des plans sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque
-  tour, puis chaque duo, posée à plusieurs niveaux ; `Building/BuildShowcase.cs`).
+  tour, puis chaque duo, puis chaque trio, posée à plusieurs niveaux ; `Building/BuildShowcase.cs`). Les trios (1er novembre) :
+  un duo plus une tour, `Building/TowerTrio.cs`, modèles dans `Tools/allure_tours/trios.py` (partie « trios » du fichier d'allure).
 - **Le chantier en cours** (26 octobre) : la refonte de la partie roguelike, « la flèche en pièces » ; son état et ses étapes
   sont dans `Project Archery/Docs/Refonte_Roguelike.md`, partie « Avancement ».
 
@@ -37,8 +38,9 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   README pour tout nouvel asset (sa licence ; créditer le CC-BY).
 - **Développement solo** depuis l'oral de groupe du 23 octobre : le code venu des anciens coéquipiers (`Scripts/BowClasses/*`,
   `Scripts/Grenade/*` et leurs prefabs) se modifie comme le reste, sans le signaler.
-- **Git** : commiter ou pousser seulement quand le joueur le demande. Le dépôt est en SSH (`git@github.com:AntoninCro/Project_Archery.git`) :
-  sur ce PC, Smart App Control bloque Git en HTTPS.
+- **Git** : commiter ou pousser seulement quand le joueur le demande. Sur le PC actuel (depuis le 1er novembre), le dépôt est
+  cloné en HTTPS (`https://github.com/AntoninCro/Project_Archery.git`, connexion par Git Credential Manager) et ça marche ;
+  sur le PC d'avant, Smart App Control bloquait le HTTPS et le dépôt était en SSH.
 - Demander avant de supprimer un fichier du joueur et avant tout téléchargement ; ne jamais saisir de mot de passe.
 - Vérifier qu'un nom de fichier est libre avant de le créer ; pas d'accents dans les noms de fichiers d'assets. Garder la fin de
   ligne d'un fichier (CRLF ou LF) quand on le modifie.
@@ -64,10 +66,12 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 - **Git en PowerShell** : rafraîchir le PATH d'abord :
   `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')`.
 - **Le casque** : `adb` est livré avec Unity ; journaux et mesures du Quest : `Docs/Audit_Performance_Quest.md`, partie 8.
-- **Changement de PC (31 octobre au soir)** : ces pièges viennent du PC d'avant ; les revérifier sur le nouveau (Smart App
-  Control et Git en SSH, le nom de Python, le PATH). `Tools/compile_check.py` a besoin du SDK .NET et des `.csproj` que Unity
-  génère à la première ouverture du projet. Les packs d'assets téléchargés mais pas importés étaient hors du dépôt, dans
-  `projet archery/Assets_TowerDefense/` sur l'ancien PC : ils ne sont pas dans Git.
+- **Le PC actuel (installé le 1er novembre, vérifié)** : le dépôt est dans `C:\Users\anton\Desktop\dev\Thunk VR` (le projet
+  Unity dans `Thunk VR\Project Archery`). Unity Hub y a **deux versions** : 6000.5.10f1 (celle du projet) et 6000.6.7f1 ;
+  toujours ouvrir avec la 6000.5.10f1 (l'autre convertirait le projet). Python 3.13 (`py` et `python` marchent tous les deux,
+  avec numpy, Pillow et python-pptx), SDK .NET 8 et 10, Git et Git LFS (le dépôt n'utilise pas LFS), installés par winget. Les
+  deux `compile_check` passent sans erreur ni avertissement. Les packs d'assets téléchargés mais pas importés étaient hors du
+  dépôt, dans `projet archery/Assets_TowerDefense/` sur l'ancien PC : ils ne sont pas dans Git, ni sur ce PC.
 
 ## Ce que Claude a retenu (la mémoire du PC d'avant, reprise ici le 31 octobre)
 
@@ -88,7 +92,7 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 
 ## Vérifier
 
-- Sans Unity (depuis `Project Archery/` ; sur le PC d'avant, Python s'appelait `py`, pas `python`) : `py Tools/compile_check.py`
+- Sans Unity (depuis `Project Archery/`) : `py Tools/compile_check.py`
   compile le code du jeu comme un build, puis `py Tools/compile_check_editor.py` compile les outils d'`Assets/_Project/Editor`
   (les bakers) contre lui.
 - Dans Unity : cliquer dans la fenêtre (recompilation), lire la console ; les bakers y écrivent ce qu'ils ont fait. Le journal

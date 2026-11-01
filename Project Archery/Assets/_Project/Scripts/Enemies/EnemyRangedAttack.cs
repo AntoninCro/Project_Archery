@@ -91,6 +91,27 @@ namespace Archery.Enemies
             Sfx.Play(m_FireClip, origin, 0.9f, Random.Range(0.95f, 1.05f));
         }
 
+        /// <summary>
+        /// Charmé (une baudruche, un combat du Colisée, 1er novembre) : un tir sans dégâts vers ce point, tout de suite (même une
+        /// liche, sans charge) ; <paramref name="arrived"/> quand il y arrive. Faux s'il ne peut pas tirer.
+        /// </summary>
+        public bool FireAt(Vector3 point, System.Action arrived)
+        {
+            if (m_ProjectilePrefab == null)
+                return false;
+
+            var origin = Origin;
+            var direction = point - origin;
+            if (direction.sqrMagnitude < 1e-4f)
+                return false;
+
+            direction.Normalize();
+            var projectile = Instantiate(m_ProjectilePrefab, origin, Quaternion.LookRotation(direction));
+            projectile.LaunchAt(direction * m_ProjectileSpeed * 1.5f, point, m_Enemy, arrived);
+            Sfx.Play(m_FireClip, origin, 0.7f, Random.Range(0.95f, 1.1f));
+            return true;
+        }
+
         // La boule grossit au bout du bâton ; le coup de bâton part juste avant la fin, et la boule avec lui (visée au
         // dernier moment : on peut se décaler pendant la charge). Le lanceur mort, la boule se dissipe ; abattue d'une
         // flèche, l'attaque est perdue.
