@@ -451,8 +451,9 @@ def bombarde():
 # Un beffroi de pierre au bord de la voie : sa tour, deux grands cadrans dorés (devant, -z, et derrière) dont les aiguilles
 # (m_Hands : repère au centre, l'aiguille vers le haut) tournent à l'envers, le clocher ouvert et sa cloche de bronze (m_Bell :
 # repère à l'attache), le toit d'ardoise en gradins et sa flèche dorée ; à son pied, la rose des vents de laiton (la boussole).
-# Niveau 2 : quatre pinacles dorés et une lanterne (le phare) au sommet ; niveau 3, Minuit : un croissant de lune doré et une
-# étoile au bout de la flèche, et les douze heures dorées autour des cadrans.
+# Niveau 2 : quatre pinacles dorés et une lanterne (le phare) au sommet ; niveau 3 : un croissant de lune doré et une étoile au
+# bout de la flèche, et les douze heures dorées autour des cadrans (faits pour Minuit, gardés pour le Phare du passé, dont le
+# faisceau part de la lanterne ; 2 novembre au soir : Minuit passe à la Grande Horloge, l'ultime).
 BF_HALF = 1.3        # la demi-largeur de la tour
 BF_BODY = 8.4        # le haut de la tour, sous le clocher
 BF_CLOCK = 6.6       # le centre des cadrans
@@ -518,7 +519,7 @@ def beffroi():
             ops.append(sph('Niveau 2', 'Boule', [sx * (BF_HALF + 0.05), roof + 1.3, sz * (BF_HALF + 0.05)], [0.3, 0.3, 0.3], role='accent'))
     ops.append(cyl('Niveau 2', 'Lanterne', [0, spire + 1.2, 0], [0.5, 0.5, 0.5], role='lumiere'))
     ops.append(cyl('Niveau 2', 'Chapeau', [0, spire + 1.5, 0], [0.62, 0.1, 0.62], role='accent'))
-    # Niveau 3, Minuit : un croissant de lune et une étoile au bout de la flèche, les douze heures autour des cadrans.
+    # Niveau 3 : un croissant de lune et une étoile au bout de la flèche, les douze heures autour des cadrans.
     ops.append(empty('', 'Niveau 3', [0, 0, 0]))
     moon = spire + 2.35
     for k in range(7):
@@ -846,8 +847,10 @@ def trios():
          'levels': ['Un beffroi aux aiguilles qui tournent à l\'envers : toutes les 10 s, sa cloche sonne et les ennemis du rayon '
                     'rembobinent leurs 4 dernières secondes ; ils repartent à reculons sur leur chemin.',
                     'À l\'arrivée, ils restent figés 2 s.',
-                    'Minuit : douze coups ; le temps s\'arrête 6 s dans tout le rayon, sauf pour toi. Tes flèches s\'arrêtent en '
-                    'l\'air devant leurs cibles et, au douzième coup, repartent toutes ensemble.'],
+                    # Le Phare du passé (2 novembre au soir ; Minuit avant, passé à la Grande Horloge) : la fiche est changée
+                    # par Editor/BeffroiPhareBaker.
+                    'Le Phare du passé : la lanterne s\'allume et son faisceau fait le tour de toute la carte ; chaque ennemi '
+                    'qu\'il balaie rembobine son chemin, puis reste figé.'],
          'ops': beffroi()},
         {'name': 'Colisée', 'prefab': 'Duos/Trio_Colisee', 'definition': 'Trio_Colisee', 'duo': 'Duo_Chant_des_sirenes',
          'kinds': ['Barricade'], 'component': 'TrioColisee', 'slot': 'Lane', 'footprint': [4, 4], 'palette': 'Trio_Colisee',

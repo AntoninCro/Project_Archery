@@ -25,11 +25,11 @@ MonoBehaviour:
       \xE0 six arcs les renvoie en une vol\xE9e de carreaux qui pleut sur le groupe
       le plus serr\xE9."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Chaque carreau renvoy\xE9 explose \xE0 l'impact, et br\xFBle si
       ta fl\xE8che \xE9tait enflamm\xE9e."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "La nu\xE9e : toutes tes fl\xE8ches rat\xE9es, partout sur la carte,
       sont gard\xE9es ; \xE0 trente, elles repartent d'un coup, trois carreaux chacune,
       et pleuvent sur tous les ennemis \xE0 port\xE9e."

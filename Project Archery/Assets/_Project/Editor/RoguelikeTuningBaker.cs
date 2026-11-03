@@ -23,8 +23,10 @@ namespace Archery.EditorTools
     /// réécrits ; ceux des pièces nouvelles (provisoires, écrits par Claude) le sont s'ils n'ont pas été changés ;</item>
     /// <item>le mannequin d'entraînement (tant que son prefab n'a pas de <see cref="TrainingDummy"/>) : il devient un ennemi entre
     /// les vagues, avec sa fiche <c>Data/Enemies/Enemy_Mannequin</c> (créée si elle manque) ;</item>
-    /// <item>la scène ouverte (tant que le groupe « Training » a moins de 6 mannequins) : un groupe de 3 mannequins serrés et
-    /// un mannequin loin, pour le talisman du sniper. La scène est alors à enregistrer (Ctrl+S).</item>
+    /// <item>la scène ouverte (tant que le groupe « Training » avait moins de 6 mannequins) : un groupe de 3 mannequins serrés et
+    /// un mannequin loin, pour le talisman du sniper. Retiré le 2 novembre au soir : il ne comptait pas les mannequins qui vont et
+    /// viennent, et en a ajouté un de trop ; la disposition est maintenant celle de <c>TrainingLaneBaker</c> (5 mannequins sur la
+    /// voie du milieu, dont le groupe de 3 et un loin).</item>
     /// </list>
     /// </summary>
     [InitializeOnLoad]
@@ -36,17 +38,6 @@ namespace Archery.EditorTools
 
         // Les PV d'un mannequin, comme un orc (110), avant la difficulté et la vague.
         const float k_DummyHealth = 110f;
-
-        const int k_WantedDummies = 6;
-
-        // Les nouveaux mannequins : distance à la tour (m) et décalage sur le côté (m, positif à droite vu de la tour), comme dans
-        // TrainingLayoutBaker. Le groupe de 3, serré (1,1 m), puis un mannequin loin.
-        static readonly Vector2[] k_NewDummySlots =
-        {
-            new Vector2(27f, -8f), new Vector2(28f, -7.1f), new Vector2(26.9f, -6.6f), new Vector2(45f, 1f),
-        };
-
-        static readonly string[] k_NewDummyNames = { "Mannequin groupe 1", "Mannequin groupe 2", "Mannequin groupe 3", "Mannequin loin" };
 
         // Les objets dont la valeur ou le déclencheur change, et leurs nouvelles valeurs (par exemplaire).
         struct Tuning
@@ -115,16 +106,7 @@ namespace Archery.EditorTools
                 return;
 
             TuneCatalog();
-            var prefabReady = MakeDummyAnEnemy();
-            if (!prefabReady)
-                return;
-
-            for (var i = 0; i < SceneManager.sceneCount; i++)
-            {
-                var scene = SceneManager.GetSceneAt(i);
-                if (scene.isLoaded)
-                    AddDummies(scene);
-            }
+            MakeDummyAnEnemy();
         }
 
         // ---------------------------------------------------------------- le catalogue
@@ -235,41 +217,6 @@ namespace Archery.EditorTools
                       $"({k_DummyHealth:0} PV avant la difficulté et la vague, fiche {k_DummyDefinitionPath}) ; il se relève quand " +
                       "on le tue, ne rapporte rien, et les tourelles l'ignorent.", AssetDatabase.LoadAssetAtPath<GameObject>(k_DummyPrefabPath));
             return true;
-        }
-
-        // ---------------------------------------------------------------- les mannequins en plus
-
-        static void AddDummies(Scene scene)
-        {
-            var group = TrainingLayoutBaker.GroupOf(scene);
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(k_DummyPrefabPath);
-            if (group == null || prefab == null)
-                return;
-
-            // Les mannequins : les éléments du groupe qui ne sont ni des cibles ni la cible mobile (comme TrainingLayoutBaker).
-            var dummies = Enumerable.Range(0, group.childCount).Select(group.GetChild)
-                .Count(child => child.GetComponentInChildren<TrainingTarget>(true) == null &&
-                                child.GetComponentInChildren<PingPongMover>(true) == null &&
-                                child.GetComponentInChildren<Health>(true) != null);
-            if (dummies >= k_WantedDummies)
-                return;
-
-            var count = Mathf.Min(k_WantedDummies - dummies, k_NewDummySlots.Length);
-            var items = new List<Transform>();
-            var slots = new List<Vector2>();
-            for (var i = 0; i < count; i++)
-            {
-                var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-                instance.transform.SetParent(group, false);
-                instance.name = k_NewDummyNames[i];
-                Undo.RegisterCreatedObjectUndo(instance, "Mannequins d'entraînement");
-                items.Add(instance.transform);
-                slots.Add(k_NewDummySlots[i]);
-            }
-
-            TrainingLayoutBaker.PlaceNew(scene, group, items, slots);
-            Debug.Log($"Réglages roguelike du 26 octobre : {items.Count} mannequin(s) ajouté(s) au centre d'entraînement " +
-                      $"({string.Join(", ", items.Select(item => item.name))}). Enregistre la scène (Ctrl+S).", group);
         }
     }
 }

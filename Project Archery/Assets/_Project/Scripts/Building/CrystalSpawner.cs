@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Archery.Chests;
 using Archery.Core;
 using Archery.Defense;
+using Archery.Enemies;
 using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
@@ -13,59 +14,43 @@ using UnityEngine.InputSystem;
 namespace Archery.Building
 {
     /// <summary>
-    /// Fait apparaître les caisses de l'ingénieur de chaque vague (refonte du tower defense du 27 octobre,
-    /// <c>Docs/Refonte_TowerDefense.md</c>, partie 2) sur des emplacements choisis, loin de la tour, au début de l'accalmie :
-    /// 3 caisses, une de plus toutes les 2 vagues. Une caisse s'ouvre comme un coffre et propose des lots de plans de
-    /// construction. Celles qui ne sont pas ouvertes disparaissent à la fin de la vague.
+    /// Les coffres de la vague (GDD, section 13) : tous ensemble, au début de la vague (au gong), d'un seul côté de la forêt, vu de la
+    /// tour face aux ennemis ; l'autre côté à la vague suivante. Ceux qui ne sont pas ouverts disparaissent à la fin de la vague.
+    /// Un coffre : un parchemin, une tourelle, un objet (<c>ChestRewards.Roll</c>).
     /// </summary>
     /// <remarks>
-    /// Le nom vient des gisements de cristaux qu'il faisait apparaître avant la refonte (GDD, section 9), aux mêmes
-    /// emplacements et en même nombre ; les matériaux sont retirés. Une caisse est le coffre de la scène (celui du
-    /// <see cref="ChestSpawner"/>) transformé par <see cref="Chest.MakeEngineerCrate"/>, en attendant son propre modèle.
+    /// Le 2 novembre au soir, après le premier essai du joueur (« un simulateur de randonnée » : 5 à 8 coffres par vague, dont deux
+    /// pendant la montée, et l'on ne voyait plus ses tours) : 4 coffres, d'un seul côté, aucun pendant la montée ; les emplacements
+    /// du <see cref="ChestSpawner"/> s'ajoutent aux siens (il ne garde que le coffre du boss). Avant : 3 coffres, un de plus toutes
+    /// les 2 vagues ; du 27 octobre au 2 novembre, les caisses de l'ingénieur (des lots de plans). Le nom vient des gisements de
+    /// cristaux qu'il faisait apparaître avant la refonte du tower defense (GDD, section 9), aux mêmes emplacements.
     /// </remarks>
     [DisallowMultipleComponent]
     public class CrystalSpawner : MonoBehaviour
     {
-        [Tooltip("Prefab de la caisse : un coffre (Chest). Vide : celui du Chest Spawner de la scène.")]
+        [Tooltip("Prefab du coffre (Chest). Vide : celui du Chest Spawner de la scène.")]
         [SerializeField]
         Chest m_CratePrefab;
 
-        [Tooltip("Emplacements possibles (objets vides, dans la jungle et sur les terrasses).")]
+        [Tooltip("Emplacements possibles (objets vides, dans la jungle et sur les terrasses). Ceux du Chest Spawner s'y ajoutent.")]
         [SerializeField]
         List<Transform> m_Spots = new List<Transform>();
 
-        [Header("Nombre")]
-        [Tooltip("Caisses par série, à la vague 1.")]
-        [SerializeField]
-        int m_BaseCount = 3;
-
-        [Tooltip("Une caisse de plus par série toutes les N vagues.")]
+        [Tooltip("Coffres par vague (2 novembre au soir, le joueur ; avant, 3, puis un de plus toutes les 2 vagues, 6 au plus).")]
         [Min(1)]
         [SerializeField]
-        int m_WavesPerExtra = 2;
+        int m_Count = 4;
 
-        [Tooltip("Caisses par série, au plus.")]
-        [SerializeField]
-        int m_MaxCount = 6;
-
-        [Tooltip("Une deuxième série de caisses au début de la montée (ou à l'arrivée du boss s'il est appelé plus tôt).")]
-        [SerializeField]
-        bool m_SecondBatch = true;
-
-        [Tooltip("Distance minimale (m) entre la tour et une caisse.")]
+        [Tooltip("Distance minimale (m) entre la tour et un coffre.")]
         [SerializeField]
         float m_MinTowerDistance = 15f;
 
-        [Tooltip("Délai (s) après le début de la vague avant l'apparition de la première série.")]
+        [Tooltip("Délai (s) après le début de la vague avant l'apparition des coffres.")]
         [SerializeField]
         float m_SpawnDelay = 3f;
 
         [Header("Retours")]
-        [Tooltip("Couleur du rayon et de la caisse : le violet des anciens cristaux, la couleur de la construction.")]
-        [SerializeField]
-        Color m_CrateColor = new Color(0.62f, 0.4f, 1f);
-
-        [Tooltip("Optionnel : son de l'apparition des caisses.")]
+        [Tooltip("Optionnel : son de l'apparition des coffres.")]
         [SerializeField]
         AudioClip m_AppearClip;
 
@@ -73,17 +58,51 @@ namespace Archery.Building
         Color m_MessageColor = new Color(0.72f, 0.55f, 1f);
 
         readonly List<Chest> m_Crates = new List<Chest>();
+        readonly List<Transform> m_AllSpots = new List<Transform>();
         readonly List<Transform> m_FreeSpots = new List<Transform>();
+        bool m_HasAllSpots;
         WaveManager m_Waves;
         float m_SpawnTimer = -1f;
-        bool m_SecondBatchPending;
+
+        // Le côté des coffres de la dernière vague : -1 à gauche, 1 à droite, 0 pas encore de coffres.
+        int m_Side;
 
         public static CrystalSpawner Instance { get; private set; }
 
-        /// <summary>Les emplacements des caisses (la grille de construction n'y pose pas d'emplacement).</summary>
-        public IReadOnlyList<Transform> Spots => m_Spots;
+        /// <summary>
+        /// Tous les emplacements de coffres, les siens et ceux du Chest Spawner (la grille de construction n'y pose pas
+        /// d'emplacement).
+        /// </summary>
+        public IReadOnlyList<Transform> Spots
+        {
+            get
+            {
+                if (m_HasAllSpots)
+                    return m_AllSpots;
 
-        /// <summary>Caisses encore à ouvrir sur la carte.</summary>
+                m_HasAllSpots = true;
+                m_AllSpots.Clear();
+                foreach (var spot in m_Spots)
+                {
+                    if (spot != null)
+                        m_AllSpots.Add(spot);
+                }
+
+                var chests = FindAnyObjectByType<ChestSpawner>();
+                if (chests != null)
+                {
+                    foreach (var spot in chests.SpawnPoints)
+                    {
+                        if (spot != null && !m_AllSpots.Contains(spot))
+                            m_AllSpots.Add(spot);
+                    }
+                }
+
+                return m_AllSpots;
+            }
+        }
+
+        /// <summary>Coffres encore à ouvrir sur la carte.</summary>
         public int Remaining
         {
             get
@@ -115,18 +134,17 @@ namespace Archery.Building
             }
 
             if (m_CratePrefab == null)
-                Debug.LogWarning("CrystalSpawner : aucun prefab de caisse (ni de coffre dans le Chest Spawner).", this);
+                Debug.LogWarning("CrystalSpawner : aucun prefab de coffre (ni dans le Chest Spawner).", this);
 
             m_Waves = WaveManager.Instance;
             if (m_Waves == null)
             {
-                Debug.LogWarning("CrystalSpawner : aucun Wave Manager, les caisses n'apparaîtront jamais.", this);
+                Debug.LogWarning("CrystalSpawner : aucun Wave Manager, les coffres n'apparaîtront jamais.", this);
                 return;
             }
 
             m_Waves.WaveStarted += OnWaveStarted;
             m_Waves.WaveEnded += OnWaveEnded;
-            m_Waves.StageChanged += OnStageChanged;
             m_Waves.GameOver += ClearAll;
         }
 
@@ -139,28 +157,16 @@ namespace Archery.Building
 
             m_Waves.WaveStarted -= OnWaveStarted;
             m_Waves.WaveEnded -= OnWaveEnded;
-            m_Waves.StageChanged -= OnStageChanged;
             m_Waves.GameOver -= ClearAll;
         }
 
         void OnWaveStarted(int wave)
         {
-            // Pas de caisse pendant la vague du boss final : la carte est vide.
+            // Pas de coffre pendant la vague du boss final : la carte est vide.
             if (m_Waves.IsFinalBossWave)
                 return;
 
             m_SpawnTimer = m_SpawnDelay;
-            m_SecondBatchPending = m_SecondBatch;
-        }
-
-        // Deuxième série : au début de la montée, ou à l'arrivée du boss s'il a été appelé pendant l'accalmie.
-        void OnStageChanged(WaveStage stage)
-        {
-            if (!m_SecondBatchPending || stage == WaveStage.Calm)
-                return;
-
-            m_SecondBatchPending = false;
-            SpawnWave(m_Waves.WaveNumber);
         }
 
         void OnWaveEnded(int wave) => ClearAll();
@@ -168,7 +174,6 @@ namespace Archery.Building
         void ClearAll()
         {
             m_SpawnTimer = -1f;
-            m_SecondBatchPending = false;
             foreach (var crate in m_Crates)
             {
                 if (crate != null)
@@ -189,27 +194,28 @@ namespace Archery.Building
                 return;
 
             m_SpawnTimer = -1f;
-            SpawnWave(m_Waves.WaveNumber);
+            SpawnWave();
         }
 
-        void SpawnWave(int wave)
+        // Les coffres de la vague, sur le côté opposé à celui de la vague d'avant (le premier au hasard) ; sur l'autre côté s'il
+        // n'y a plus de place libre de celui-là.
+        void SpawnWave()
         {
             if (m_CratePrefab == null)
                 return;
 
-            var count = Mathf.Min(m_MaxCount, m_BaseCount + (wave - 1) / m_WavesPerExtra);
             var tower = TowerPosition();
-            m_FreeSpots.Clear();
-            foreach (var spot in m_Spots)
+            var axis = EnemyAxis(tower);
+            m_Side = m_Side == 0 ? (Random.value < 0.5f ? -1 : 1) : -m_Side;
+            CollectFreeSpots(tower, axis, m_Side);
+            if (m_FreeSpots.Count == 0)
             {
-                var flat = spot != null ? spot.position - tower : Vector3.zero;
-                flat.y = 0f;
-                if (spot != null && flat.magnitude >= m_MinTowerDistance && !IsOccupied(spot.position))
-                    m_FreeSpots.Add(spot);
+                m_Side = -m_Side;
+                CollectFreeSpots(tower, axis, m_Side);
             }
 
             var spawned = 0;
-            while (spawned < count && m_FreeSpots.Count > 0)
+            while (spawned < m_Count && m_FreeSpots.Count > 0)
             {
                 var index = Random.Range(0, m_FreeSpots.Count);
                 var spot = m_FreeSpots[index];
@@ -226,11 +232,50 @@ namespace Archery.Building
 
             if (m_AppearClip != null)
                 Sfx.Play(m_AppearClip, PlayerPosition() + Vector3.up, 0.8f, 1f, 0f);
-            var title = spawned == 1 ? "Une caisse de l'ingénieur est apparue !" : $"{spawned} caisses de l'ingénieur sont apparues !";
-            Announce(title + "\n<size=70%>Des plans de construction à prendre</size>");
+            var side = m_Side < 0 ? "gauche" : "droit";
+            var title = spawned == 1 ? $"Un coffre est apparu, côté {side} !" : $"{spawned} coffres sont apparus, côté {side} !";
+            Announce(title + "\n<size=70%>Vu de la tour, face aux ennemis ; un parchemin, une tourelle, un objet</size>");
         }
 
-        // Une caisse de la série précédente, pas encore ouverte, occupe déjà cet emplacement.
+        // Les emplacements libres de ce côté, assez loin de la tour.
+        void CollectFreeSpots(Vector3 tower, Vector3 axis, int side)
+        {
+            m_FreeSpots.Clear();
+            foreach (var spot in Spots)
+            {
+                var flat = spot.position - tower;
+                flat.y = 0f;
+                if (flat.magnitude >= m_MinTowerDistance && SideOf(flat, axis) == side && !IsOccupied(spot.position))
+                    m_FreeSpots.Add(spot);
+            }
+        }
+
+        // Le côté d'un point, vu de la tour face aux ennemis : 1 à droite, -1 à gauche.
+        static int SideOf(Vector3 fromTower, Vector3 axis) => Vector3.Cross(axis, fromTower).y >= 0f ? 1 : -1;
+
+        // De la tour vers le milieu des points d'apparition des ennemis (là d'où ils viennent).
+        static Vector3 EnemyAxis(Vector3 tower)
+        {
+            var spawner = FindAnyObjectByType<EnemySpawner>();
+            var sum = Vector3.zero;
+            var count = 0;
+            if (spawner != null)
+            {
+                foreach (var point in spawner.SpawnPoints)
+                {
+                    if (point == null)
+                        continue;
+                    sum += point.position;
+                    count++;
+                }
+            }
+
+            var axis = count > 0 ? sum / count - tower : Vector3.forward;
+            axis.y = 0f;
+            return axis.sqrMagnitude > 0.01f ? axis.normalized : Vector3.forward;
+        }
+
+        // Un coffre pas encore ouvert occupe déjà cet emplacement.
         bool IsOccupied(Vector3 position)
         {
             foreach (var crate in m_Crates)
@@ -242,7 +287,7 @@ namespace Archery.Building
             return false;
         }
 
-        // La caisse est tournée vers la tour, comme les coffres : on arrive par l'avant.
+        // Le coffre est tourné vers la tour : on arrive par l'avant.
         Chest SpawnAt(Vector3 position, Vector3 lookAt)
         {
             var toTarget = lookAt - position;
@@ -250,14 +295,13 @@ namespace Archery.Building
             var rotation = toTarget.sqrMagnitude > 0.01f ? Quaternion.LookRotation(toTarget) : Quaternion.identity;
 
             var crate = Instantiate(m_CratePrefab, position, rotation);
-            crate.name = "Caisse de l'ingénieur";
-            crate.MakeEngineerCrate(m_CrateColor);
+            crate.name = "Coffre";
             m_Crates.Add(crate);
             return crate;
         }
 
-        // Raccourci de test au clavier (éditeur) : V pose une caisse de l'ingénieur 3 m devant le joueur (un gisement de
-        // cristaux avant le 27 octobre).
+        // Raccourci de test au clavier (éditeur) : V pose un coffre 3 m devant le joueur (une caisse de l'ingénieur du 27 octobre
+        // au 2 novembre, un gisement de cristaux avant).
         void UpdateDebugKey()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -275,7 +319,7 @@ namespace Archery.Building
 
         void Announce(string text)
         {
-            HeadMessages.Show(text, m_MessageColor, 4f);
+            HeadMessages.Show(text, m_MessageColor, 5f);
         }
 
         Vector3 PlayerPosition()

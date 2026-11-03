@@ -26,11 +26,11 @@ MonoBehaviour:
       roule sur eux vers la for\xEAt et ils volent dans tous les sens. Ta fl\xE8che
       dans la boule l'acc\xE9l\xE8re : elle \xE9clate en glace au milieu des quilles."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Un strike rend la boule suivante deux fois plus grosse ; s'il en
       reste debout, une deuxi\xE8me boule fait le spare."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "La partie parfaite : trois triangles de quilles, douze boules d'affil\xE9e,
       la derni\xE8re de 4 m ; le tableau affiche 300."
   lotSize: 0

@@ -5,6 +5,7 @@ import json, os, sys, math
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import duos as duo_design
 import trios as trio_design
+import ultimes as ultimate_design
 
 JSON = sys.argv[1]
 
@@ -439,14 +440,17 @@ for name in ('Barricade', 'Pieges', 'Baliste', 'Mortier', 'Givre', 'Filet', 'Aim
 for name, mark, requires, fn in PASSES:
     towers.append({'prefab': name, 'mark': mark, 'requires': requires, 'ops': fn()})
 look['towers'] = towers
-for key in [k for k in look['palettes'] if k.startswith('Duo_') or k.startswith('Trio_')]:
+for key in [k for k in look['palettes'] if k.startswith('Duo_') or k.startswith('Trio_') or k.startswith('Ultime_')]:
     del look['palettes'][key]
 look['palettes'].update(duo_design.PALETTES)
 look['palettes'].update(trio_design.PALETTES)
+look['palettes'].update(ultimate_design.PALETTES)
 look['duos'] = duo_design.duos()
 # Les trios (1er novembre, trios.py) : comme les duos, dans leur partie à eux.
 look['trios'] = trio_design.trios()
 look['retiredTrios'] = trio_design.RETIRED
+# Les ultimes (2 novembre, ultimes.py) : le niveau 4 d'un trio de leur famille.
+look['ultimates'] = ultimate_design.ultimes()
 def dump(look):
     # Une opération par ligne : le fichier se lit (et se compare) facilement.
     lines = ['{', ' "palettes": {']
@@ -462,8 +466,8 @@ def dump(look):
             lines.append('   ' + json.dumps(op, ensure_ascii=False) + (',' if j < len(t['ops']) - 1 else ''))
         lines.append('  ] }' + (',' if i < len(look['towers']) - 1 else ''))
     lines.append(' ],')
-    # Les duos, puis les trios : leurs réglages sur une ligne, puis une opération par ligne.
-    for part in ('duos', 'trios'):
+    # Les duos, les trios, puis les ultimes : leurs réglages sur une ligne, puis une opération par ligne.
+    for part in ('duos', 'trios', 'ultimates'):
         items = look.get(part, [])
         lines.append(' "%s": [' % part)
         for i, d in enumerate(items):

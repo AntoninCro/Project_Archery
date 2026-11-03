@@ -229,7 +229,7 @@ namespace Archery.Building
             CollectAvailable();
             if (m_Available.Count == 0)
             {
-                Announce("Pas de plan : ouvre les caisses de l'ingénieur");
+                Announce("Pas de plan : ouvre les coffres");
                 return false;
             }
 
@@ -561,13 +561,14 @@ namespace Archery.Building
                 }
             }
 
-            // Un plan d'une de ses tours sur un duo (ou un trio) le fait monter (31 octobre : 4 plans par niveau, de ses tours).
+            // Un plan d'une de ses tours sur un duo (ou un trio) le fait monter (31 octobre : des plans de ses tours, 2 par niveau
+            // pour un duo et 3 pour un trio depuis le 2 novembre).
             var aimedDuo = m_Moving == null ? structure as TowerDuo : null;
             if (structure != null && m_Moving == null && (structure.Definition == m_Definition || (aimedDuo != null && aimedDuo.AcceptsPlansOf(m_Definition))))
             {
                 if (structure.IsBuilt && !structure.IsUnderConstruction && structure.Level < structure.MaxLevel)
                 {
-                    // Deux plans aux niveaux 4 et 5 (29 octobre).
+                    // Un plan par niveau d'une tour (deux aux niveaux 4 et 5 du 29 octobre au 2 novembre).
                     var next = structure.Level + 1;
                     var need = structure.Definition.PlansFor(next);
                     if (aimedDuo != null)
@@ -580,6 +581,21 @@ namespace Archery.Building
                     m_Valid = plans >= need;
                     m_Status = m_Valid ? $"{header}\nAméliorer : niveau {next}" + (need > 1 ? $" ({need} plans)" : "")
                         : $"{header}\n<color=#FF9080>Niveau {next} : il faut {need} plans</color>";
+                    return;
+                }
+
+                // Un trio au niveau 3 : son niveau 4, l'ultime de sa famille (2 novembre ; 10 plans de ses tours, entre les vagues).
+                string ultimateProblem = null;
+                var ultimatePlans = 0;
+                var ultimate = builds != null ? builds.UltimateOf(structure, out ultimateProblem, out ultimatePlans) : null;
+                if (ultimate != null && aimedDuo != null)
+                {
+                    plans = builds.PlansOf(aimedDuo);
+                    header = $"Trio {aimedDuo.DisplayName} · {plans} plans ({BuildManager.SourceNames(aimedDuo)})";
+                    m_Upgrade = true;
+                    m_Valid = ultimateProblem == null;
+                    m_Status = m_Valid ? $"{header}\nUltime : {ultimate.displayName} ({ultimatePlans} plans)"
+                        : $"{header}\n<color=#FF9080>Ultime : {ultimate.displayName} · {ultimateProblem}</color>";
                     return;
                 }
 

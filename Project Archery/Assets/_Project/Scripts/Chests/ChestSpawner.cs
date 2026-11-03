@@ -1,14 +1,11 @@
 using System.Collections.Generic;
 using Archery.Bows;
 using Archery.Core;
-using Archery.Defense;
 using Archery.Enemies;
 using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Serialization;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using UnityEngine.InputSystem;
 #endif
@@ -16,15 +13,13 @@ using UnityEngine.InputSystem;
 namespace Archery.Chests
 {
     /// <summary>
-    /// Fait apparaître 2 ou 3 coffres par vague (GDD, sections 3 bis et 13), loin de la tour : il faut descendre et courir
-    /// pour aller les ouvrir. Le premier arrive pendant l'accalmie, le deuxième au début de la montée, et un troisième
-    /// parfois plus tard. Les coffres disparaissent à la fin de la vague, ouverts ou non.
-    /// Depuis la refonte du 25 octobre, le boss vaincu laisse aussi un coffre d'objets, qui tombe près du joueur au début
-    /// de la pause (pas après la victoire contre le boss final) ; il reste jusqu'à la fin de la vague suivante.
+    /// Le coffre du boss (GDD, section 13) : depuis la refonte du 25 octobre, le boss vaincu laisse un coffre d'objets, là où il
+    /// est tombé, au début de la pause (pas après la victoire contre le boss final) ; il reste jusqu'à la fin de la vague suivante.
     /// </summary>
     /// <remarks>
-    /// Sans points d'apparition, les coffres se posent au hasard sur le sol des ennemis (NavMesh), dans un anneau
-    /// autour de la tour.
+    /// Jusqu'au 2 novembre, il faisait aussi apparaître 2 ou 3 coffres par vague, loin de la tour, dont deux pendant la montée. Le
+    /// joueur, après son premier essai (« un simulateur de randonnée ») : tous les coffres de la vague arrivent ensemble, au gong,
+    /// d'un seul côté de la forêt (<c>Building/CrystalSpawner</c>, qui prend aussi les emplacements d'ici).
     /// </remarks>
     [DisallowMultipleComponent]
     public class ChestSpawner : MonoBehaviour
@@ -32,37 +27,10 @@ namespace Archery.Chests
         [SerializeField]
         Chest m_ChestPrefab;
 
-        [Tooltip("Emplacements possibles (objets vides). Vide : au hasard sur le NavMesh, autour de la tour.")]
+        [Tooltip("Emplacements de coffres (objets vides) : ceux des coffres de vague, que le Crystal Spawner reprend avec les siens " +
+                 "depuis le 2 novembre.")]
         [SerializeField]
         List<Transform> m_SpawnPoints = new List<Transform>();
-
-        [Tooltip("Distance minimale (m) entre la tour et un coffre tiré au hasard.")]
-        [SerializeField]
-        float m_MinDistance = 15f;
-
-        [Tooltip("Distance maximale (m) entre la tour et un coffre tiré au hasard.")]
-        [SerializeField]
-        float m_MaxDistance = 30f;
-
-        [Tooltip("Distance minimale (m) entre deux coffres.")]
-        [SerializeField]
-        float m_MinSpacing = 8f;
-
-        [Tooltip("Moments d'apparition des deux coffres de chaque vague, en part du chrono (0,1 = après 10 % du chrono) : " +
-                 "le premier pendant l'accalmie, le deuxième au début de la montée.")]
-        [SerializeField]
-        Vector2 m_SpawnMoments = new Vector2(0.1f, 0.45f);
-
-        [Tooltip("Chance (0 à 1) d'un troisième coffre dans la vague.")]
-        [Range(0f, 1f)]
-        [FormerlySerializedAs("m_SecondChestChance")]
-        [SerializeField]
-        float m_ExtraChestChance = 0.5f;
-
-        [Tooltip("Moment d'apparition du troisième coffre, en part du chrono.")]
-        [Range(0f, 1f)]
-        [SerializeField]
-        float m_ExtraChestMoment = 0.7f;
 
         [Tooltip("Optionnel : son de l'apparition d'un coffre.")]
         [SerializeField]
@@ -94,8 +62,6 @@ namespace Archery.Chests
         static readonly RaycastHit[] s_GroundHits = new RaycastHit[16];
 
         readonly List<Chest> m_Chests = new List<Chest>();
-        readonly List<float> m_Pending = new List<float>();
-        readonly List<Transform> m_FreePoints = new List<Transform>();
         WaveManager m_Waves;
         float m_BossChestTimer = -1f;
         bool m_HasBossDeath;
@@ -148,17 +114,7 @@ namespace Archery.Chests
 
         void OnWaveStarted(int wave)
         {
-            m_Pending.Clear();
             m_HasBossDeath = false;
-
-            // Pas de coffre pendant la vague du boss final : la carte est vide.
-            if (m_Waves.IsFinalBossWave)
-                return;
-
-            m_Pending.Add(m_SpawnMoments.x);
-            m_Pending.Add(m_SpawnMoments.y);
-            if (Random.value < m_ExtraChestChance)
-                m_Pending.Add(m_ExtraChestMoment);
         }
 
         void OnWaveEnded(int wave)
@@ -173,7 +129,6 @@ namespace Archery.Chests
         // Fin de vague ou de partie : les coffres restants disparaissent.
         void ClearAll()
         {
-            m_Pending.Clear();
             m_BossChestTimer = -1f;
             foreach (var chest in m_Chests)
             {
@@ -193,29 +148,6 @@ namespace Archery.Chests
                 if (m_BossChestTimer <= 0f)
                     SpawnBossChest();
             }
-
-            if (m_Waves == null || m_Waves.Phase != WavePhase.Wave || m_Pending.Count == 0 || m_Waves.WaveDuration <= 0f)
-                return;
-
-            var elapsed = 1f - m_Waves.TimeRemaining / m_Waves.WaveDuration;
-            for (var i = m_Pending.Count - 1; i >= 0; i--)
-            {
-                if (elapsed < m_Pending[i])
-                    continue;
-
-                m_Pending.RemoveAt(i);
-                Spawn();
-            }
-        }
-
-        void Spawn()
-        {
-            if (m_ChestPrefab == null || !TryFindPosition(out var position))
-                return;
-
-            // Le coffre est tourné vers la tour : on arrive par l'avant.
-            SpawnAt(position, TowerPosition());
-            Announce();
         }
 
         Chest SpawnAt(Vector3 position, Vector3 lookAt)
@@ -382,72 +314,6 @@ namespace Archery.Chests
         void Announce()
         {
             HeadMessages.Show("Un coffre est apparu !", m_MessageColor, 4f);
-        }
-
-        bool TryFindPosition(out Vector3 position)
-        {
-            m_Chests.RemoveAll(chest => chest == null);
-            return m_SpawnPoints.Count > 0 ? TryPickSpawnPoint(out position) : TryPickRandomPosition(out position);
-        }
-
-        bool TryPickSpawnPoint(out Vector3 position)
-        {
-            m_FreePoints.Clear();
-            foreach (var point in m_SpawnPoints)
-            {
-                if (point != null && IsFarFromOtherChests(point.position))
-                    m_FreePoints.Add(point);
-            }
-
-            position = default;
-            if (m_FreePoints.Count == 0)
-                return false;
-
-            position = m_FreePoints[Random.Range(0, m_FreePoints.Count)].position;
-            return true;
-        }
-
-        // Un point au hasard dans l'anneau autour de la tour, posé sur le NavMesh.
-        bool TryPickRandomPosition(out Vector3 position)
-        {
-            var center = TowerPosition();
-            for (var attempt = 0; attempt < 30; attempt++)
-            {
-                var angle = Random.Range(0f, Mathf.PI * 2f);
-                var distance = Random.Range(m_MinDistance, Mathf.Max(m_MinDistance, m_MaxDistance));
-                var candidate = center + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * distance;
-                if (!NavMesh.SamplePosition(candidate, out var hit, 3f, NavMesh.AllAreas))
-                    continue;
-
-                var flat = hit.position - center;
-                flat.y = 0f;
-                if (flat.magnitude < m_MinDistance * 0.8f || !IsFarFromOtherChests(hit.position))
-                    continue;
-
-                position = hit.position;
-                return true;
-            }
-
-            position = default;
-            Debug.LogWarning("ChestSpawner : aucune place trouvée pour un coffre (NavMesh autour de la tour ?).", this);
-            return false;
-        }
-
-        bool IsFarFromOtherChests(Vector3 position)
-        {
-            foreach (var chest in m_Chests)
-            {
-                if (chest != null && Vector3.Distance(chest.transform.position, position) < m_MinSpacing)
-                    return false;
-            }
-
-            return true;
-        }
-
-        Vector3 TowerPosition()
-        {
-            var tower = Tower.Instance;
-            return tower != null ? tower.transform.position : transform.position;
         }
     }
 }

@@ -25,13 +25,13 @@ MonoBehaviour:
       10 s, sa cloche sonne et les ennemis du rayon rembobinent leurs 4 derni\xE8res
       secondes ; ils repartent \xE0 reculons sur leur chemin."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "\xC0 l'arriv\xE9e, ils restent fig\xE9s 2 s."
   - cost: 0
-    plans: 4
-    description: "Minuit : douze coups ; le temps s'arr\xEAte 6 s dans tout le rayon,
-      sauf pour toi. Tes fl\xE8ches s'arr\xEAtent en l'air devant leurs cibles et,
-      au douzi\xE8me coup, repartent toutes ensemble."
+    plans: 3
+    description: "Le Phare du pass\xE9 : la lanterne s'allume et son faisceau fait
+      le tour de toute la carte ; chaque ennemi qu'il balaie rembobine son chemin,
+      puis reste fig\xE9."
   lotSize: 0
   rarity: 0
   anywhere: 0

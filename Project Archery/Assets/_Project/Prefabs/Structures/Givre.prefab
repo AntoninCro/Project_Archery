@@ -193,7 +193,7 @@ MonoBehaviour:
   - 17
   m_SpeedPerLevel:
   - 0.7
-  - 0.6
+  - 0.55
   - 0.5
   m_MaxHeight: 15
   m_RangeMaterial: {fileID: 2100000, guid: cfc60ced9df00434d97d6ddff9797e6e, type: 2}
@@ -229,6 +229,7 @@ MonoBehaviour:
   m_BreakClip: {fileID: 8300000, guid: a4966b88c52a2874e995e2d694997aa5, type: 3}
   m_SlipInterval: 1
   m_SlipChance: 0.25
+  m_SlipSpeed: 2
   m_StormInterval: 15
   m_StormFreeze: 10
   m_StormBossShare: 0.1

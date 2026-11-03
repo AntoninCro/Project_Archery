@@ -2257,7 +2257,7 @@ MonoBehaviour:
   m_IntervalPerLevel:
   - 6
   - 5
-  - 11
+  - 8
   m_FlightTime: 1.1
   m_FlightHeight: 7
   m_StartRadiusPerLevel:
@@ -2282,7 +2282,7 @@ MonoBehaviour:
   - 60
   - 80
   - 80
-  m_GiantShare: 0.5
+  m_GiantShare: 0.6
   m_ShotBonus: 1.5
   m_SplashDamage: 25
   m_FireClip: {fileID: 8300000, guid: c4d4c28fa856de84db98c10ed4b6ec66, type: 3}

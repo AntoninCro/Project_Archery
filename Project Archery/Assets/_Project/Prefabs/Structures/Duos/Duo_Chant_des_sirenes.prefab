@@ -5220,15 +5220,15 @@ MonoBehaviour:
   - 5
   - 4.5
   - 4
-  m_TargetsPerLevel: 010000000200000002000000
+  m_TargetsPerLevel: 020000000200000002000000
   m_CharmTimePerLevel:
   - 6
   - 6
   - 6
   m_HitDamagePerLevel:
-  - 20
-  - 26
-  - 24
+  - 45
+  - 55
+  - 65
   m_HitCooldown: 0.8
   m_HitRange: 1.6
   m_SpreadRadius: 7

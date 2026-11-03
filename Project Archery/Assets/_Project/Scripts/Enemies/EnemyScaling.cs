@@ -25,9 +25,22 @@ namespace Archery.Enemies
 
         /// <summary>
         /// Le 1er novembre au soir : avec 1 (les bâtiments suivaient tout à fait), le joueur est allé jusqu'à la vague 45 avec les
-        /// seules tourelles de la vitrine (F4) ; une baliste gardait le même effet toute la partie.
+        /// seules tourelles de la vitrine (F4) ; une baliste gardait le même effet toute la partie. 0,5 ce soir-là ; 0 depuis le
+        /// 2 novembre (le joueur : « on enlève le scale des tourelles par vagues ») : ils grandissent avec les parchemins.
         /// </summary>
-        public const float k_DefaultStructureExponent = 0.5f;
+        public const float k_DefaultStructureExponent = 0f;
+
+        /// <summary>
+        /// Part des bonus des parchemins du joueur (force, adresse, vigueur) dont profitent les bâtiments, la tour et les
+        /// barricades (Wave Settings, <c>Structure Scroll Share</c>) : 1, tout ; 0, rien.
+        /// </summary>
+        public static float StructureScrollShare { get; set; } = k_DefaultStructureScrollShare;
+
+        /// <summary>
+        /// Le 2 novembre (le joueur : « on joue deux roguelikes en un », celui de l'arc et celui des tourelles, sans lien entre
+        /// eux ; puis son idée : « les parchemins marchent pour le joueur et les tours »).
+        /// </summary>
+        public const float k_DefaultStructureScrollShare = 1f;
 
         public static void Reset()
         {
@@ -35,6 +48,7 @@ namespace Archery.Enemies
             Damage = 1f;
             Speed = 1f;
             StructureExponent = k_DefaultStructureExponent;
+            StructureScrollShare = k_DefaultStructureScrollShare;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

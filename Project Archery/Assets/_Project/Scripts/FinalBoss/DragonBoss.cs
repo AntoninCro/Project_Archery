@@ -76,6 +76,12 @@ namespace Archery.FinalBoss
             Landing,
             Idle,
             Dead,
+
+            // Plaqué au sol par le marteau du Colosse de forge (l'ultime, 2 novembre ; DragonBoss.Pin.cs).
+            Pinned,
+
+            // Étourdi par la charge des chevaux du Grand Manège (l'ultime, 2 novembre ; DragonBoss.Daze.cs).
+            Dazed,
         }
 
         enum PerchPurpose
@@ -601,7 +607,8 @@ namespace Archery.FinalBoss
         float WalkSpeed => Enemy.CurrentSpeed / Mathf.Max(0.05f, Enemy.SlowMultiplier);
 
         bool IsAirborne => m_State == State.TakeOff || m_State == State.Flying || m_State == State.Dash || m_State == State.PerchFlight ||
-                           m_State == State.Landing || m_State == State.Leap || m_State == State.Salto;
+                           m_State == State.Landing || m_State == State.Leap || m_State == State.Salto ||
+                           (m_State == State.Dazed && m_DazeInAir);
 
         Vector3 Center => m_Arena != null ? m_Arena.Center : Vector3.zero;
         float FloorY => m_Arena != null ? m_Arena.FloorY : transform.position.y;
@@ -687,6 +694,10 @@ namespace Archery.FinalBoss
 
         public override void Tick(float deltaTime)
         {
+            // Le temps arrêté (Minuit de la Grande Horloge, 2 novembre, tard ; DragonBoss.TimeStop.cs) : rien ne bouge.
+            if (UpdateTimeStop(deltaTime))
+                return;
+
             m_Tempo = Tempo;
             var dt = deltaTime * m_Tempo;
             m_StateTime += dt;
@@ -766,6 +777,12 @@ namespace Archery.FinalBoss
                     break;
                 case State.Landing:
                     UpdateLanding(dt);
+                    break;
+                case State.Pinned:
+                    UpdatePinned(dt);
+                    break;
+                case State.Dazed:
+                    UpdateDazed(dt);
                     break;
                 case State.Idle:
                     if (ArenaPlayer.IsAlive)
@@ -899,6 +916,7 @@ namespace Archery.FinalBoss
 
         public override void OnDied()
         {
+            ResumeTime();
             StopAttacks();
             ClearPose();
             m_TPose = 0f;

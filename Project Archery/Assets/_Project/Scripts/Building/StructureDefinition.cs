@@ -94,7 +94,7 @@ namespace Archery.Building
             [Tooltip("Prix en matériaux : plus utilisé depuis la refonte du 27 octobre (un plan par niveau).")]
             public int cost;
 
-            [Tooltip("Plans pour construire ce niveau (29 octobre). 0 : 1 plan jusqu'au niveau 3, 2 plans aux niveaux 4 et 5.")]
+            [Tooltip("Plans pour construire ce niveau (29 octobre). 0 : 1 plan (2 aux niveaux 4 et 5 jusqu'au 2 novembre).")]
             [Min(0)]
             public int plans;
 
@@ -121,8 +121,8 @@ namespace Archery.Building
                  "chaque tour reçoit ses évolutions).")]
         public Level[] levels = { new Level(), new Level(), new Level() };
 
-        [Tooltip("Plans donnés par un lot de la caisse de l'ingénieur (refonte du 27 octobre : les bâtiments communs viennent par " +
-                 "lots). 0 : selon le bâtiment, 2 pour la barricade et les piques, 1 pour la tour de givre et la baliste.")]
+        [Tooltip("Lot de l'orbe de tourelle d'un coffre : multiplie les plans donnés (Plans Per Chest du Build Manager, 2 depuis le " +
+                 "2 novembre). 0 : ×1 (depuis le 2 novembre ; avant, 2 plans pour la barricade et les piques, 1 pour les autres).")]
         [Min(0)]
         public int lotSize;
 
@@ -151,20 +151,22 @@ namespace Archery.Building
         public bool Fits(BuildSlot zone) => slot == zone || (slot == BuildSlot.Roadside && zone == BuildSlot.Height) ||
                                             (anywhere && zone != BuildSlot.Tower);
 
-        /// <summary>Plans d'un lot de la caisse de l'ingénieur.</summary>
-        public int LotSize => rarity == StructureRarity.Legendary ? 1
-            : lotSize > 0 ? lotSize
-            : kind == StructureKind.Barricade || kind == StructureKind.Spikes ? 2 : 1;
+        /// <summary>
+        /// Lot de l'orbe de tourelle d'un coffre : ×1, sauf réglage. Le 2 novembre, après son premier essai, le joueur : la barricade
+        /// et les piques, qui venaient par 2, valaient bien plus que les autres ; le même lot pour tous. Le 2 novembre, chaque orbe
+        /// donne 2 plans de son bâtiment (<see cref="BuildManager.PlansPerChest"/>), pour tous les bâtiments.
+        /// </summary>
+        public int LotSize => Mathf.Max(1, lotSize);
 
         /// <summary>
-        /// Plans pour construire le niveau donné (1 = construction) : 1 jusqu'au niveau 3, 2 aux niveaux 4 et 5 (deuxième brainstorm
-        /// du tower defense, 29 octobre : monter haut devient un vrai choix), sauf réglage du niveau.
+        /// Plans pour construire le niveau donné (1 = construction) : 1, sauf réglage du niveau (les duos et les trios). Du 29 octobre
+        /// au 2 novembre, 2 aux niveaux 4 et 5 ; le joueur, après son premier essai : un seul plan par niveau.
         /// </summary>
         public int PlansFor(int level)
         {
             if (level >= 1 && level <= MaxLevel && levels[level - 1].plans > 0)
                 return levels[level - 1].plans;
-            return level >= 4 ? 2 : 1;
+            return 1;
         }
 
         /// <summary>Prix du niveau donné (1 = construction), en matériaux.</summary>

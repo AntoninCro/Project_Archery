@@ -66,8 +66,9 @@ namespace Archery.Waves
         [Tooltip("Nombre maximal d'ennemis vivants en même temps, à la vague 1. Il augmente avec la difficulté et les vagues.")]
         public int maxAlive = 12;
 
-        [Tooltip("Plafond absolu d'ennemis vivants en même temps, pour que le jeu reste fluide dans le casque.")]
-        public int maxAliveCap = 40;
+        [Tooltip("Plafond absolu d'ennemis vivants en même temps, pour que le jeu reste fluide dans le casque. 150 depuis le 2 novembre " +
+                 "(le joueur ; 40 avant) : en Normal, il compte à partir de la vague 13, en mode infini.")]
+        public int maxAliveCap = 150;
 
         [Tooltip("Plafond de la hausse de vitesse due aux vagues (2 = au plus deux fois plus rapides qu'à la vague 1).")]
         [Min(1f)]
@@ -93,9 +94,16 @@ namespace Archery.Waves
         [Header("Les bâtiments")]
         [Tooltip("Les dégâts des bâtiments suivent la force des ennemis (leurs PV, vague et difficulté) à cette puissance. 1 : tout " +
                  "à fait, un bâtiment garde le même effet toute la partie (avant le 1er novembre au soir : la vague 45 avec les seules " +
-                 "tourelles de la vitrine) ; 0,5 : sa racine carrée, il prend du retard vague après vague ; 0 : jamais.")]
+                 "tourelles de la vitrine) ; 0,5 : sa racine carrée, il prend du retard vague après vague ; 0 : jamais (depuis le " +
+                 "2 novembre, le joueur : ils grandissent avec les parchemins du joueur, Structure Scroll Share).")]
         [Range(0f, 1f)]
         public float structureStrengthExponent = EnemyScaling.k_DefaultStructureExponent;
+
+        [Tooltip("Part des bonus des parchemins du joueur dont profitent les bâtiments (2 novembre, l'idée du joueur) : la force " +
+                 "pour leurs dégâts, l'adresse pour leur cadence, la vigueur pour les PV de la tour et des barricades. 1 : autant " +
+                 "que le joueur (+12 % de dégâts par parchemin de force) ; 0 : rien.")]
+        [Range(0f, 2f)]
+        public float structureScrollShare = EnemyScaling.k_DefaultStructureScrollShare;
 
         [Header("Mode infini")]
         [Tooltip("Après la dernière vague, la courbe s'accélère : chaque vague multiplie encore les PV des ennemis par cette valeur.")]

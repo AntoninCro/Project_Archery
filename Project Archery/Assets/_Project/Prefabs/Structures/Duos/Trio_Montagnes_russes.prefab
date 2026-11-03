@@ -1890,16 +1890,16 @@ MonoBehaviour:
   m_HookRadius: 1.8
   m_HookSeats: 030000000400000004000000
   m_PickDamagePerLevel:
-  - 15
-  - 20
-  - 25
+  - 40
+  - 50
+  - 60
   m_SwingWidth: 3.2
   m_SwingPeriod: 1.3
   m_ReelSpeed: 4
   m_FlingSpeed: 9
-  m_FlingLift: 4.5
+  m_FlingLift: 7
   m_WhipRadius: 2
-  m_WhipDamage: 20
+  m_WhipDamage: 40
   m_GreatInterval: 25
   m_InfernalWagons: 6
   m_InfernalSpeed: 13

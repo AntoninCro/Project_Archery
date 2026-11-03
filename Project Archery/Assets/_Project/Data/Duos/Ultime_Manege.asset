@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Ultime_Manege
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: "Grand Man\xE8ge"
+  slot: 1
+  prefab: {fileID: 5118439884597620799, guid: c4a7b3566fc09af4c867331ccf9fd9f3, type: 3}
+  color: {r: 1, g: 0.47843137, b: 0.78431374, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 10
+    description: "L'ultime de la f\xEAte foraine : un carrousel g\xE9ant de chevaux
+      de bois, perch\xE9 sur son m\xE2t. Toutes les 1,2 s, son ruban dor\xE9 attrape
+      un ennemi \xE0 30 m et le fait tourner parmi les chevaux ; au 5e tour, tous
+      ceux qui tournent sont \xE9ject\xE9s d'un coup sur le groupe le plus serr\xE9,
+      sous le feu d'artifice. Chaque ennemi que touche ta fl\xE8che, et un de ses
+      chevaux saute du man\xE8ge et le pi\xE9tine (5 par seconde au plus). Toutes
+      les 25 s, ses chevaux descendent la voie au galop jusqu'\xE0 la for\xEAt. Dans
+      l'ar\xE8ne, ses chevaux suivent tes fl\xE8ches dans MK, et leur charge l'\xE9tourdit."
+  lotSize: 0
+  rarity: 0
+  anywhere: 1
+  footprint: {x: 4, y: 4}
+  retired: 0

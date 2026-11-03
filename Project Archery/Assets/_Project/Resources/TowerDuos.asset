@@ -21,6 +21,7 @@ MonoBehaviour:
     description: Le boulet fait des tours complets et envoie les ennemis qu'il frappe
       sur la voie voisine.
     duo: {fileID: 0}
+    trios: []
   - displayName: Marteau-pilon
     first: 0
     second: 1
@@ -29,6 +30,7 @@ MonoBehaviour:
     description: "Un marteau g\xE9ant enfonce l'ennemi dans le sol jusqu'au cou :
       seule sa t\xEAte d\xE9passe."
     duo: {fileID: 0}
+    trios: []
   - displayName: Toboggan
     first: 6
     second: 2
@@ -37,6 +39,7 @@ MonoBehaviour:
     description: "Un grand toboggan au-dessus de la voie : les ennemis grimpent l'\xE9chelle,
       glissent et d\xE9collent en vrille vers la for\xEAt, sous les notes du jury."
     duo: {fileID: 0}
+    trios: []
   - displayName: Yo-yo
     first: 6
     second: 12
@@ -45,6 +48,7 @@ MonoBehaviour:
     description: "Une grue au yo-yo aimant\xE9 : elle hisse un ennemi et le fait
       claquer au sol trois fois."
     duo: {fileID: 0}
+    trios: []
   - displayName: Avalanche
     first: 9
     second: 2
@@ -53,6 +57,7 @@ MonoBehaviour:
     description: "Une boule de neige roule vers la for\xEAt, grossit et avale les
       ennemis ; elle \xE9clate au bout, ou sous ta fl\xE8che."
     duo: {fileID: 0}
+    trios: []
   - displayName: Feu d'artifice
     first: 9
     second: 19
@@ -61,6 +66,7 @@ MonoBehaviour:
     description: "Des fus\xE9es \xE9clatent en bouquets : les ennemis dessous sont
       \xE9blouis et br\xFBl\xE9s ; ta fl\xE8che s'y enflamme."
     duo: {fileID: 0}
+    trios: []
   - displayName: "Chant des sir\xE8nes"
     first: 19
     second: 16
@@ -69,6 +75,7 @@ MonoBehaviour:
     description: 'Le faisceau charme un ennemi : dans sa bulle rose, il change de
       camp et se jette sur les autres.'
     duo: {fileID: 0}
+    trios: []
   - displayName: Loupe
     first: 19
     second: 3
@@ -77,6 +84,7 @@ MonoBehaviour:
     description: "Dans le champ de la loupe, les ennemis ont la t\xEAte trois fois
       plus grosse."
     duo: {fileID: 0}
+    trios: []
   - displayName: "Carquois g\xE9ant"
     first: 3
     second: 17
@@ -85,6 +93,7 @@ MonoBehaviour:
     description: "Un grand filet rattrape tes fl\xE8ches rat\xE9es ; \xE0 dix, l'arbal\xE8te
       te les renvoie en une vol\xE9e."
     duo: {fileID: 0}
+    trios: []
   - displayName: "Cha\xEEne de for\xE7ats"
     first: 12
     second: 17
@@ -93,6 +102,7 @@ MonoBehaviour:
     description: "Des cha\xEEnes aimant\xE9es lient un groupe : chaque coup sur l'un
       blesse tous les autres."
     duo: {fileID: 0}
+    trios: []
   - displayName: Boussole folle
     first: 1
     second: 12
@@ -101,6 +111,7 @@ MonoBehaviour:
     description: "Une rose des vents g\xE9ante sur la voie : son aiguille s'affole,
       les ennemis perdent le nord et tournent en rond."
     duo: {fileID: 0}
+    trios: []
   - displayName: Lanceur de baudruches
     first: 9
     second: 16
@@ -109,6 +120,7 @@ MonoBehaviour:
     description: "Il lance des poup\xE9es gonflables \xE0 ton image : les ennemis
       s'arr\xEAtent pour les frapper, et elles \xE9clatent en confettis piquants."
     duo: {fileID: 0}
+    trios: []
   - displayName: "Boule \xE0 neige"
     first: 16
     second: 2
@@ -117,6 +129,7 @@ MonoBehaviour:
     description: "Une boule de verre g\xE9ante tombe sur un groupe : il y neige,
       ils se figent en figurines ; ta fl\xE8che brise la boule et elles \xE9clatent."
     duo: {fileID: 0}
+    trios: []
   m_Trios:
   - displayName: Enclume
     first: 9
@@ -126,6 +139,7 @@ MonoBehaviour:
     description: "Le mortier tire des enclumes : l'ennemi touch\xE9 est aplati comme
       une cr\xEApe et avance tout plat, lentement."
     duo: {fileID: 11400000, guid: 7bac18d4d63eccb4bb6b3356de7d885d, type: 2}
+    trios: []
   - displayName: Gonfleur
     first: 3
     second: 0
@@ -134,6 +148,7 @@ MonoBehaviour:
     description: "Le harpon plante un tuyau, la pompe gonfle l'ennemi comme une baudruche
       : il s'envole, ta fl\xE8che le cr\xE8ve."
     duo: {fileID: 11400000, guid: 6cdf184c8f252d24daff2fd117eab7a5, type: 2}
+    trios: []
   - displayName: Bowling
     first: 0
     second: 0
@@ -142,6 +157,7 @@ MonoBehaviour:
     description: "Les ennemis sont rang\xE9s en quilles sur la voie, une boule de
       glace roule dessus : STRIKE !"
     duo: {fileID: 11400000, guid: 9293170784da49148b1d08dc1086ef16, type: 2}
+    trios: []
   - displayName: Beffroi
     first: 19
     second: 0
@@ -150,6 +166,7 @@ MonoBehaviour:
     description: "Quand la cloche sonne, les ennemis rembobinent leurs 4 derni\xE8res
       secondes et perdent leur avance."
     duo: {fileID: 11400000, guid: 79b042f4f4b4c344a9bea229b7ccc309, type: 2}
+    trios: []
   - displayName: "Colis\xE9e"
     first: 0
     second: 0
@@ -158,6 +175,7 @@ MonoBehaviour:
     description: "Une ar\xE8ne s'\xE9l\xE8ve autour des ennemis : ils se battent,
       et le vainqueur se range de ton c\xF4t\xE9."
     duo: {fileID: 11400000, guid: 4a471d6f080003142952dc4fd85f4f86, type: 2}
+    trios: []
   - displayName: Montagnes russes
     first: 6
     second: 0
@@ -166,6 +184,7 @@ MonoBehaviour:
     description: "Un circuit en l'air au-dessus de la voie : les grappins des wagons
       accrochent les ennemis et les jettent vers la for\xEAt."
     duo: {fileID: 11400000, guid: 1cba09c70d12a6948acd5ecf1d712a1e, type: 2}
+    trios: []
   - displayName: Grande bombarde
     first: 6
     second: 0
@@ -174,3 +193,43 @@ MonoBehaviour:
     description: "Un mortier g\xE9ant qui se remplit de poudre ; c'est toi qui allumes
       la m\xE8che : plus il est plein, plus le bouquet est gros."
     duo: {fileID: 11400000, guid: d641518b3d952d048b3c693d32293d93, type: 2}
+    trios: []
+  m_Ultimates:
+  - displayName: Colosse de forge
+    first: 0
+    second: 0
+    definition: {fileID: 11400000, guid: 5fd21516b5884ae4cb485a20c8ccd5c4, type: 2}
+    color: {r: 1, g: 0.61960787, b: 0.2509804, a: 1}
+    description: "D'une main il bat sa forge, de l'autre il lance un marteau sur
+      chaque fl\xE8che qui touche ; sa fournaise verse une coul\xE9e de fonte sur
+      toute la voie."
+    duo: {fileID: 0}
+    trios:
+    - {fileID: 11400000, guid: 395d65a6f377b764f9296d80508b8d1e, type: 2}
+    - {fileID: 11400000, guid: 579e480690180b84284c3d9027a25ec3, type: 2}
+  - displayName: "Grand Man\xE8ge"
+    first: 0
+    second: 0
+    definition: {fileID: 11400000, guid: 7b0ee30a070a85744b29c9a8c22b1111, type: 2}
+    color: {r: 1, g: 0.47843137, b: 0.78431374, a: 1}
+    description: "Son ruban fait tourner les ennemis sur le man\xE8ge, puis les \xE9jecte
+      sur leurs voisins ; un cheval de bois saute sur chaque ennemi que touche ta
+      fl\xE8che ; ses chevaux chargent sur toute la voie."
+    duo: {fileID: 0}
+    trios:
+    - {fileID: 11400000, guid: cc91ee7c878482647917e77f2385b1f2, type: 2}
+    - {fileID: 11400000, guid: 4774a40218969c34f900f8689da7942d, type: 2}
+    - {fileID: 11400000, guid: 736976d1b703b2b41bb61404a54e5d5d, type: 2}
+  - displayName: Grande Horloge
+    first: 0
+    second: 0
+    definition: {fileID: 11400000, guid: b8971133d8090924d8d1127dd5b02070, type: 2}
+    color: {r: 0.56078434, g: 0.84705883, b: 1, a: 1}
+    description: "Ses douze chiffres de glace tombent un \xE0 un sur les ennemis
+      ; apr\xE8s le XII, Minuit arr\xEAte le temps sur toute la carte, puis le givre
+      brise tous les fig\xE9s ; chaque fl\xE8che qui touche est rejou\xE9e par une
+      fl\xE8che de glace g\xE9ante."
+    duo: {fileID: 0}
+    trios:
+    - {fileID: 11400000, guid: 8bb2c82d164e7c043b68180b9cf0f706, type: 2}
+    - {fileID: 11400000, guid: e1df7c1e9a3c0e244995db0905de6d06, type: 2}

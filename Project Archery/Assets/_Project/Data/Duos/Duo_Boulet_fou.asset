@@ -25,11 +25,11 @@ MonoBehaviour:
       voie : chaque ennemi frapp\xE9 part loin sur le c\xF4t\xE9, jusque sur la voie
       voisine, et loin en arri\xE8re sur elle."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Plus vite, plus loin : l'ennemi lanc\xE9 renverse ceux sur qui
       il retombe."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Le boulet de canon : deux boulets ; l'ennemi frapp\xE9 part \xE0
       toute vitesse jusqu'au mur d'en face, s'y \xE9crase et blesse ceux qui sont
       autour."

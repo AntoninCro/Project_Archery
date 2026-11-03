@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Archery.Bows;
-using Archery.Chests;
 using Archery.Defense;
 using Archery.Enemies;
 using Archery.Player;
+using Archery.Training;
 using Archery.World;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,13 +20,19 @@ namespace Archery.Building
     /// bâtiments dépassaient sur la voie), et chaque case de sol plat près d'une voie est classée :
     /// <list type="bullet">
     /// <item>sur la voie (barricade, piques), sur la terre de la voie (lue dans le matériau du sol depuis le 28 octobre au soir :
-    /// le chemin des ennemis coupe les virages), l'avant tourné vers la forêt ;</item>
-    /// <item>au bord de la voie (baliste, tour de givre), à moins de 4,5 m des cases de la voie, à peu près au même niveau,
-    /// tournée vers la voie (une case qui déborde sur la terre n'est ni l'un ni l'autre) ;</item>
-    /// <item>en hauteur (les mêmes), sur une terrasse ou une falaise au-dessus d'une voie, tournée vers elle.</item>
+    /// le chemin des ennemis coupe les virages ; depuis le 2 novembre, seulement celle des tuiles des voies, rangées sous
+    /// « Lanes », et des passages de la rivière, et toute la case : les voies restent droites), l'avant tourné vers la forêt ;</item>
+    /// <item>au bord de la voie (baliste, tour de givre), tout sol plat au niveau des voies, tourné vers la voie la plus proche
+    /// (jusqu'au 2 novembre au soir, à moins de 4,5 m des cases de la voie, puis de 12 m : les clairières étaient refusées) ; les
+    /// demi-cases du bord de la voie du milieu, mi-terre mi-herbe, en sont depuis le 2 novembre au soir (de la clairière) ;</item>
+    /// <item>en hauteur (les mêmes), sur une terrasse de 1,5 à 7,5 m plus haute que la voie (pas sur les montagnes), tournée vers
+    /// elle (jusqu'au 2 novembre au soir, à 15 m au plus du chemin des ennemis).</item>
     /// </list>
-    /// Pas au pied de la tour, ni sous un arbre ou un rocher, ni près des points d'apparition (ennemis, caisses, coffres). Le lit
-    /// de la rivière se construit depuis le 28 octobre au soir, à la hauteur de l'eau (un gué comme la voie). Un bâtiment occupe plusieurs cases, d'après la taille de son modèle (<see cref="FootprintOf"/>) : il se pose
+    /// Pas au pied de la tour, ni sous un arbre ou un grand rocher (les cailloux et les mannequins d'entraînement disparaissent sous
+    /// un bâtiment posé dessus, depuis le 2 novembre), ni près des points d'apparition (ennemis, caisses, coffres). L'habillage des
+    /// falaises (faces et rebords des kits, posés devant les blocs du terrain) ne compte pas depuis le 2 novembre : il débordait en
+    /// l'air au-dessus des voies et bloquait leurs bords. Le lit de la rivière se construit depuis le 28 octobre au soir, à la
+    /// hauteur de l'eau (seuls les passages des voies sont la voie, depuis le 2 novembre). Un bâtiment occupe plusieurs cases, d'après la taille de son modèle (<see cref="FootprintOf"/>) : il se pose
     /// là où toutes ses cases lui conviennent et sont libres (<see cref="Evaluate"/>). Pendant la pose, la grille se voit au
     /// sol autour du joueur, verte là où le bâtiment choisi se pose, rouge ailleurs (<see cref="BuildGridOverlay"/>).
     /// </summary>
@@ -53,13 +59,16 @@ namespace Archery.Building
 
         // Ce qu'il y a sous un point (28 octobre au soir) : la terre des voies, l'herbe, ou autre chose (un pont, de la pierre, un
         // sol sans matériau connu). Lu dans le matériau de la tuile touchée (« dirt », « dirtDark », « grass » des kits de Kenney).
-        // River : le lit de la rivière hors des passages sur les voies (ses tuiles sont aussi de la terre, RiverPieceOf).
+        // River : le lit de la rivière hors des passages sur les voies (ses tuiles sont aussi de la terre, RiverPieceOf). Earth (3
+        // novembre) : de la terre hors des voies, celle des marches et des blocs rocheux du kit (les escaliers qui montent de la
+        // voie de droite vers la jungle l'élargissaient).
         enum Surface : byte
         {
             Other,
             Dirt,
             Grass,
             River,
+            Earth,
         }
 
         // Une pièce du lit de la rivière : son niveau des berges (son pivot), et si elle est un passage sur une voie.
@@ -106,9 +115,36 @@ namespace Archery.Building
 
         static readonly RaycastHit[] s_Hits = new RaycastHit[32];
 
-        // Les modèles de la carte qui ne sont pas du sol : on ne construit pas dessus (les arbres : MapScan.IsPlant).
+        // Les modèles de la carte qui ne sont pas du sol : on ne construit pas dessus (les arbres : MapScan.IsPlant). « stone »
+        // depuis le 2 novembre au soir : les grandes pierres dressées (stone_tall…, stone_large…) étaient prises pour du sol, « pas
+        // plat », sur les terrasses (les petites, stone_small…, disparaissent sous un bâtiment, plus bas).
         static readonly string[] k_ObstaclePrefixes =
-            { "rock", "stump", "log", "fence", "statue", "tent", "campfire", "pot_", "sign", "crop", "barrel", "crate", "chest" };
+            { "rock", "stone", "stump", "log", "fence", "statue", "tent", "campfire", "pot_", "sign", "crop", "barrel", "crate", "chest" };
+
+        // Les cailloux du kit (2 novembre au soir, premier essai du joueur : ils bloquaient des places, dans la rivière surtout ;
+        // au ×3 du kit, beaucoup sont plus gros que les petits cailloux d'IsPebble). Comme les mannequins et les cibles
+        // d'entraînement : ni sol ni obstacle pour la grille, et un bâtiment posé dessus les fait disparaître (rendus s'il est
+        // déplacé). Les grands rochers (stone_tall…) bloquent toujours.
+        static readonly string[] k_ClearablePrefixes = { "rock_small", "stone_small" };
+
+        // Le groupe des tuiles de terre des voies (Map > Lanes, Docs/Guide_Carte.md, section 0) : seule leur terre est la voie.
+        const string k_LanesGroup = "Lanes";
+
+        // Pourquoi une case n'est pas constructible (2 novembre au soir : l'étiquette de l'hologramme le dit).
+        enum BlockReason : byte
+        {
+            None,
+            Obstacle,
+            Slope,
+            Tower,
+            Spawn,
+            ChestSpot,
+            Overflow,
+            // Plus de 7,5 m au-dessus des voies (les montagnes), ou 1,5 m sous elles. (« Trop loin d'une voie » jusqu'au 2 novembre au
+            // soir : la grille n'a plus de limite de distance.)
+            TooHigh,
+            TooLow,
+        }
 
         [Header("Grille")]
         [Tooltip("Taille (m) d'une case (28 octobre : 1 m, demandé par le joueur ; 3 m avant). Un bâtiment en occupe plusieurs.")]
@@ -129,22 +165,25 @@ namespace Archery.Building
         [SerializeField]
         float m_LaneReach = 8f;
 
-        [Tooltip("Sur un sol qui n'est ni de la terre ni de l'herbe (un pont…), une case dont le centre est à moins de cette " +
-                 "distance (m) du chemin des ennemis est sur la voie (la seule règle avant le 28 octobre au soir).")]
-        [SerializeField]
-        float m_LaneHalfWidth = 3f;
+        // Lane Half Width (3 m), retiré le 2 novembre au soir : un sol ni terre ni herbe (un pont…) à moins de 3 m du chemin était
+        // sur la voie, la seule règle avant le 28 octobre au soir. Les ponts de la carte passent au-dessus de la voie du milieu.
+        // Roadside Width (4,5 m, puis 12 m) et Height Reach (15 m, puis 25 m), retirés le même soir : la grille n'a plus de limite
+        // de distance (le joueur : « les hauteurs, c'est un peu le bordel » ; les terrasses à 6 m près de l'antre étaient trop
+        // loin du chemin des ennemis, qui part de l'apparition du milieu). Tout sol plat se construit, au sol ou sur les terrasses.
 
-        [Tooltip("Largeur (m) de la bande au bord de la voie, comptée depuis les cases de la voie.")]
+        [Tooltip("Une case plus haute que la voie d'au moins cette hauteur (m) est en hauteur (1,5 m depuis le 2 novembre au soir, " +
+                 "2 m avant : entre les deux, rien n'allait).")]
         [SerializeField]
-        float m_RoadsideWidth = 4.5f;
+        float m_HeightMin = 1.5f;
 
-        [Tooltip("Une case plus haute que la voie d'au moins cette hauteur (m) est en hauteur.")]
+        [Tooltip("Une case plus haute que la voie de plus de cette hauteur (m) n'est pas constructible : les montagnes (les " +
+                 "terrasses de la jungle sont à 3 et 6 m).")]
         [SerializeField]
-        float m_HeightMin = 2f;
+        float m_HeightMax = 7.5f;
 
-        [Tooltip("Distance (m) au plus entre une case en hauteur et le chemin des ennemis.")]
+        [Tooltip("Marge (m) de la grille autour des chemins des ennemis : assez pour toute la carte, jusqu'aux montagnes.")]
         [SerializeField]
-        float m_HeightReach = 15f;
+        float m_GridMargin = 15f;
 
         [Header("Interdits")]
         [Tooltip("Pas de construction à moins de cette distance (m) de la tour (le téléporteur, l'escalier).")]
@@ -186,8 +225,13 @@ namespace Archery.Building
         readonly List<Vector3> m_Spots = new List<Vector3>();
         readonly Dictionary<Collider, bool> m_ObstacleCache = new Dictionary<Collider, bool>();
         readonly Dictionary<Collider, bool> m_PebbleCache = new Dictionary<Collider, bool>();
+        readonly Dictionary<Collider, Transform> m_ClearableCache = new Dictionary<Collider, Transform>();
+        readonly Dictionary<Transform, Bounds> m_Clearables = new Dictionary<Transform, Bounds>();
+        readonly Dictionary<BuildSocket, List<GameObject>> m_Cleared = new Dictionary<BuildSocket, List<GameObject>>();
         readonly Dictionary<Collider, SurfaceInfo> m_SurfaceCache = new Dictionary<Collider, SurfaceInfo>();
         readonly Dictionary<Collider, RiverPiece> m_RiverCache = new Dictionary<Collider, RiverPiece>();
+        readonly Dictionary<Collider, bool> m_CladdingCache = new Dictionary<Collider, bool>();
+        readonly Dictionary<Collider, bool> m_LaneTileCache = new Dictionary<Collider, bool>();
         readonly Dictionary<BuildSocket, int[]> m_Claims = new Dictionary<BuildSocket, int[]>();
         readonly Dictionary<StructureDefinition, Vector2Int> m_Footprints = new Dictionary<StructureDefinition, Vector2Int>();
         readonly List<int> m_Scratch = new List<int>();
@@ -205,6 +249,10 @@ namespace Archery.Building
         int m_Width;
         int m_Depth;
         CellKind[] m_Kind = System.Array.Empty<CellKind>();
+        BlockReason[] m_Why = System.Array.Empty<BlockReason>();
+
+        // Ce qui bloque une case (l'obstacle, ou le sol qui n'est pas plat) : son nom s'affiche en test (2 novembre).
+        Collider[] m_Culprit = System.Array.Empty<Collider>();
         float[] m_Height = System.Array.Empty<float>();
         float[] m_Facing = System.Array.Empty<float>();
         float[] m_Corner = System.Array.Empty<float>();
@@ -263,7 +311,7 @@ namespace Archery.Building
             CollectForbiddenPoints();
             m_Container = new GameObject("Emplacements de construction (grille)").transform;
 
-            // Le rectangle autour des voies, assez large pour les cases en hauteur, calé sur la grille.
+            // Le rectangle autour des voies, assez large pour toute la carte, calé sur la grille.
             var min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             var max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             foreach (var lane in m_Lanes)
@@ -276,17 +324,20 @@ namespace Archery.Building
             }
 
             var cell = m_GridCellSize = Mathf.Max(0.25f, m_GridCellSize);
-            var margin = Mathf.Max(m_LaneReach, m_LaneHalfWidth) + Mathf.Max(m_RoadsideWidth, m_HeightReach) + cell;
+            var margin = Mathf.Max(m_GridMargin, m_LaneReach) + cell;
             m_Origin = new Vector2(Mathf.Floor((min.x - margin) / cell) * cell, Mathf.Floor((min.z - margin) / cell) * cell);
             m_Width = Mathf.CeilToInt((max.x + margin - m_Origin.x) / cell);
             m_Depth = Mathf.CeilToInt((max.z + margin - m_Origin.y) / cell);
             var count = m_Width * m_Depth;
             m_Kind = new CellKind[count];
+            m_Why = new BlockReason[count];
+            m_Culprit = new Collider[count];
             m_Height = new float[count];
             m_Facing = new float[count];
             m_Occupant = new BuildSocket[count];
             m_Corner = new float[(m_Width + 1) * (m_Depth + 1)];
             var cornerBlocked = new bool[m_Corner.Length];
+            var cornerCulprit = new Collider[m_Corner.Length];
             var top = max.y + 40f;
             var depth = top - min.y + 40f;
             var tower = TowerPosition();
@@ -299,7 +350,7 @@ namespace Archery.Building
                 {
                     var i = z * (m_Width + 1) + x;
                     var found = SampleGround(m_Origin.x + x * cell, m_Origin.y + z * cell, top, depth, out var height, out var blocked, out _,
-                                             out _);
+                                             out _, out cornerCulprit[i]);
                     m_Corner[i] = found ? height : float.NaN;
                     cornerBlocked[i] = blocked;
                 }
@@ -312,45 +363,19 @@ namespace Archery.Building
             }
 
             // Les cases : le sol en leur centre, plat sous toute la case, puis leur sorte d'après la terre de la voie et la voie la
-            // plus proche. road : la case est sur la terre d'une voie ou y déborde.
+            // plus proche. (Jusqu'au 2 novembre au soir, une seconde passe refusait les cases au bord trop loin de la voie.)
             var counts = new int[5];
-            var road = new bool[count];
             var dirtLane = 0;
             for (var z = 0; z < m_Depth; z++)
             {
                 for (var x = 0; x < m_Width; x++)
                 {
                     var i = z * m_Width + x;
-                    m_Kind[i] = Classify(x, z, top, depth, tower, cornerBlocked, out m_Height[i], out m_Facing[i], out road[i],
-                                         out var onDirt);
+                    m_Kind[i] = Classify(x, z, top, depth, tower, cornerBlocked, cornerCulprit, out m_Height[i], out m_Facing[i],
+                                         out var onDirt, out m_Why[i], out m_Culprit[i]);
                     counts[(int)m_Kind[i]]++;
                     if (onDirt && m_Kind[i] == CellKind.Lane)
                         dirtLane++;
-                }
-
-                if (watch.Elapsed.TotalMilliseconds > m_FrameBudget)
-                {
-                    yield return null;
-                    watch.Restart();
-                }
-            }
-
-            // Au bord de la voie : seulement à moins de m_RoadsideWidth d'une case de la voie (ou qui touche sa terre), à peu près
-            // à son niveau. Mesuré depuis les cases plutôt que depuis le chemin des ennemis (28 octobre au soir), qui n'est pas au
-            // milieu de la voie.
-            var reach = m_RoadsideWidth / cell;
-            var radius = Mathf.CeilToInt(reach);
-            for (var z = 0; z < m_Depth; z++)
-            {
-                for (var x = 0; x < m_Width; x++)
-                {
-                    var i = z * m_Width + x;
-                    if (m_Kind[i] != CellKind.Roadside || IsNearRoad(x, z, radius, reach * reach, road))
-                        continue;
-
-                    m_Kind[i] = CellKind.Blocked;
-                    counts[(int)CellKind.Roadside]--;
-                    counts[(int)CellKind.Blocked]++;
                 }
 
                 if (watch.Elapsed.TotalMilliseconds > m_FrameBudget)
@@ -372,17 +397,113 @@ namespace Archery.Building
 
             var towerSlots = CreateTowerSockets();
             m_ObstacleCache.Clear();
+            m_ClearableCache.Clear();
             m_SurfaceCache.Clear();
             m_RiverCache.Clear();
+            m_CladdingCache.Clear();
+            m_LaneTileCache.Clear();
             IsReady = true;
             Version++;
-            Debug.Log($"BuildGrid : {m_Width} × {m_Depth} cases de {cell} m ; constructibles : {counts[(int)CellKind.Lane]} sur la voie " +
-                      $"(dont {dirtLane} sur sa terre), {counts[(int)CellKind.Roadside]} au bord, {counts[(int)CellKind.Height]} en " +
-                      $"hauteur ; {towerSlots} emplacement(s) sur la tour.", this);
+            Debug.Log($"BuildGrid : {m_Width} × {m_Depth} cases de {cell} m ; constructibles : {counts[(int)CellKind.Lane]} sur la voie, " +
+                      $"{counts[(int)CellKind.Roadside]} au bord, {counts[(int)CellKind.Height]} en hauteur ; {towerSlots} emplacement(s) " +
+                      $"sur la tour.", this);
             if (dirtLane == 0)
-                Debug.LogWarning("BuildGrid : aucune case sur de la terre (matériau « dirt ») : la voie suit seulement le chemin des " +
-                                 "ennemis, à moins de " + m_LaneHalfWidth + " m.", this);
+                Debug.LogWarning("BuildGrid : aucune case sur la terre des voies (matériau « dirt » des tuiles rangées sous un objet " +
+                                 "« " + k_LanesGroup + " », ou des passages de la rivière) : rien ne se pose sur la voie.", this);
+#if UNITY_EDITOR
+            WriteDebugImage();
+#endif
         }
+
+#if UNITY_EDITOR
+        // Pour Claude (2 novembre) : la grille vue de dessus, dans Logs/BuildGrid.png (hors de Git), à chaque lancement dans
+        // l'éditeur. Unity ouvert, Claude ne voit pas la scène : l'image lui montre ce que la grille a compris de la carte. Une case
+        // = 4 × 4 pixels ; X vers la droite, Z vers le haut ; un trait sombre tous les 10 m, le chemin des ennemis en blanc. Orange :
+        // la voie ; bleu : le bord ; vert : en hauteur ; rouge : un obstacle ; brun : pas plat ; rose : déborde sur la voie ; brun
+        // sombre : trop haut ou trop bas ; gris : la tour ; violet : une apparition ; jaune : un coffre ; noir : pas de sol.
+        void WriteDebugImage()
+        {
+            const int scale = 4;
+            var width = m_Width * scale;
+            var height = m_Depth * scale;
+            var pixels = new Color32[width * height];
+            for (var z = 0; z < m_Depth; z++)
+            {
+                var lineZ = Mathf.RoundToInt(m_Origin.y + z * m_GridCellSize) % 10 == 0;
+                for (var x = 0; x < m_Width; x++)
+                {
+                    var lineX = Mathf.RoundToInt(m_Origin.x + x * m_GridCellSize) % 10 == 0;
+                    var color = DebugColor(z * m_Width + x);
+                    for (var dz = 0; dz < scale; dz++)
+                    {
+                        for (var dx = 0; dx < scale; dx++)
+                        {
+                            var line = lineX && dx == 0 || lineZ && dz == 0;
+                            pixels[(z * scale + dz) * width + x * scale + dx] =
+                                line ? new Color32((byte)(color.r / 2), (byte)(color.g / 2), (byte)(color.b / 2), 255) : color;
+                        }
+                    }
+                }
+            }
+
+            foreach (var lane in m_Lanes)
+            {
+                for (var i = 1; i < lane.Points.Count; i++)
+                {
+                    var from = lane.Points[i - 1];
+                    var to = lane.Points[i];
+                    var steps = Mathf.CeilToInt(Mathf.Sqrt(Flat(to - from)) * scale / m_GridCellSize) + 1;
+                    for (var s = 0; s <= steps; s++)
+                    {
+                        var point = Vector3.Lerp(from, to, (float)s / steps);
+                        var px = Mathf.FloorToInt((point.x - m_Origin.x) / m_GridCellSize * scale);
+                        var pz = Mathf.FloorToInt((point.z - m_Origin.y) / m_GridCellSize * scale);
+                        if (px >= 0 && px < width && pz >= 0 && pz < height)
+                            pixels[pz * width + px] = new Color32(255, 255, 255, 255);
+                    }
+                }
+            }
+
+            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
+            try
+            {
+                texture.SetPixels32(pixels);
+                texture.Apply();
+                var path = System.IO.Path.Combine(Application.dataPath, "..", "Logs", "BuildGrid.png");
+                System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogWarning("BuildGrid : l'image de la grille (Logs/BuildGrid.png) n'a pas pu s'écrire : " + exception.Message, this);
+            }
+            finally
+            {
+                Destroy(texture);
+            }
+        }
+
+        Color32 DebugColor(int i)
+        {
+            switch (m_Kind[i])
+            {
+                case CellKind.Void: return new Color32(15, 15, 15, 255);
+                case CellKind.Lane: return new Color32(240, 140, 40, 255);
+                case CellKind.Roadside: return new Color32(60, 160, 240, 255);
+                case CellKind.Height: return new Color32(60, 200, 90, 255);
+            }
+
+            switch (m_Why[i])
+            {
+                case BlockReason.Obstacle: return new Color32(200, 30, 30, 255);
+                case BlockReason.Slope: return new Color32(140, 90, 60, 255);
+                case BlockReason.Tower: return new Color32(150, 150, 150, 255);
+                case BlockReason.Spawn: return new Color32(170, 60, 200, 255);
+                case BlockReason.ChestSpot: return new Color32(240, 220, 40, 255);
+                case BlockReason.Overflow: return new Color32(255, 130, 170, 255);
+                default: return new Color32(80, 50, 40, 255);
+            }
+        }
+#endif
 
         // Les 12 socles posés à la main (sauf ceux qui portent déjà un bâtiment) et les barricades de départ. Le premier socle sert
         // de modèle aux emplacements : sa couche, ses couches d'interaction, sa plaque. Depuis le 28 octobre au soir, ils sont
@@ -419,7 +540,8 @@ namespace Archery.Building
             }
         }
 
-        // Les points d'apparition (ennemis, caisses de l'ingénieur, coffres) : on n'y construit pas.
+        // Les points d'apparition (ennemis, coffres : ceux du Crystal Spawner, qui reprend ceux du Chest Spawner depuis le
+        // 2 novembre) : on n'y construit pas. Et les mannequins et cibles d'entraînement, qu'un bâtiment posé dessus fait disparaître.
         void CollectForbiddenPoints()
         {
             m_SpawnPoints.Clear();
@@ -444,43 +566,42 @@ namespace Archery.Building
                 }
             }
 
-            var chests = FindAnyObjectByType<ChestSpawner>();
-            if (chests != null)
-            {
-                foreach (var spot in chests.SpawnPoints)
-                {
-                    if (spot != null)
-                        m_Spots.Add(spot.position);
-                }
-            }
+            foreach (var dummy in FindObjectsByType<TrainingDummy>(FindObjectsInactive.Include))
+                RegisterClearable(dummy.transform);
+            foreach (var target in FindObjectsByType<TrainingTarget>(FindObjectsInactive.Include))
+                RegisterClearable(target.transform);
         }
 
         // Une case : son sol (plat sous toute la case, sans obstacle), sa sorte d'après la terre de la voie et la voie la plus
-        // proche, et le cap d'un bâtiment posé là (vers la forêt sur la voie, vers la voie ailleurs). road : la case est sur la
-        // terre d'une voie ou y déborde (le bord de la voie se mesure depuis ces cases). « Au bord » n'est qu'un essai, confirmé
-        // une fois toutes les cases classées (IsNearRoad).
-        CellKind Classify(int x, int z, float top, float depth, Vector3 tower, bool[] cornerBlocked, out float height, out float facing,
-                          out bool road, out bool onDirt)
+        // proche, et le cap d'un bâtiment posé là (vers la forêt sur la voie, vers la voie ailleurs). onDirt : la case est sur la
+        // terre d'une voie. culprit : ce qui bloque la case (un obstacle, un sol pas plat), sinon null.
+        CellKind Classify(int x, int z, float top, float depth, Vector3 tower, bool[] cornerBlocked, Collider[] cornerCulprit,
+                          out float height, out float facing, out bool onDirt, out BlockReason why, out Collider culprit)
         {
             facing = 0f;
-            road = false;
             onDirt = false;
+            why = BlockReason.None;
+            culprit = null;
             var cell = m_GridCellSize;
             var center = new Vector3(m_Origin.x + (x + 0.5f) * cell, 0f, m_Origin.y + (z + 0.5f) * cell);
-            if (!SampleGround(center.x, center.z, top, depth, out height, out var blocked, out var normalY, out var surface))
+            if (!SampleGround(center.x, center.z, top, depth, out height, out var blocked, out var normalY, out var surface, out var hit))
             {
                 height = float.NaN;
                 return CellKind.Void;
             }
 
-            onDirt = road = surface == Surface.Dirt;
+            onDirt = surface == Surface.Dirt;
             var ground = new Vector3(center.x, height, center.z);
 
             // L'herbe tolère ses petites bosses (29 octobre au soir, le joueur : des bouts de prairie au niveau du sol étaient
             // refusés) : une pente jusqu'à 45°, 60 cm d'écart entre le centre et un coin.
             var grass = surface == Surface.Grass;
             if (blocked || normalY < (grass ? 0.7f : 0.85f))
+            {
+                why = blocked ? BlockReason.Obstacle : BlockReason.Slope;
+                culprit = hit;
                 return CellKind.Blocked;
+            }
 
             var maxStep = grass ? Mathf.Max(m_MaxStep, 0.6f) : m_MaxStep;
             for (var i = 0; i < 4; i++)
@@ -488,13 +609,20 @@ namespace Archery.Building
                 var corner = (z + i / 2) * (m_Width + 1) + x + i % 2;
                 var cornerHeight = m_Corner[corner];
                 if (cornerBlocked[corner] || float.IsNaN(cornerHeight) || Mathf.Abs(cornerHeight - height) > maxStep)
+                {
+                    why = cornerBlocked[corner] ? BlockReason.Obstacle : BlockReason.Slope;
+                    culprit = cornerBlocked[corner] || cornerHeight > height ? cornerCulprit[corner] : hit;
                     return CellKind.Blocked;
+                }
             }
 
             // L'eau ne bloque plus (28 octobre au soir, demandé par le joueur) : le lit de la rivière se construit comme l'herbe,
             // un gué comme la voie.
-            if (IsNear(ground, tower, m_TowerClearance) || IsNearAny(ground, m_SpawnPoints, m_SpawnClearance) ||
-                IsNearAny(ground, m_Spots, m_SpotClearance))
+            why = IsNear(ground, tower, m_TowerClearance) ? BlockReason.Tower
+                : IsNearAny(ground, m_SpawnPoints, m_SpawnClearance) ? BlockReason.Spawn
+                : IsNearAny(ground, m_Spots, m_SpotClearance) ? BlockReason.ChestSpot
+                : BlockReason.None;
+            if (why != BlockReason.None)
                 return CellKind.Blocked;
 
             // La voie la plus proche : sa distance, sa hauteur et son sens à cet endroit.
@@ -517,65 +645,74 @@ namespace Archery.Building
             var towardLane = toLane.sqrMagnitude > 0.01f ? Mathf.Atan2(toLane.x, toLane.z) * Mathf.Rad2Deg : 0f;
             var atLaneLevel = Mathf.Abs(rise) <= 1.2f;
 
-            // Sur la voie (28 octobre au soir) : la terre sous le centre de la case, près du chemin des ennemis et à son niveau.
+            // Sur la voie (28 octobre au soir) : la terre de la voie sous toute la case, près du chemin des ennemis et à son niveau.
             // Avant, toute case à moins de 3 m du chemin : il coupe les virages et la voie du milieu fait 8,5 m de large, la
-            // grille débordait sur l'herbe d'un côté et laissait de la terre « au bord » de l'autre. Sur un pont ou un sol sans
-            // matériau connu, l'ancienne règle.
-            var laneGround = surface == Surface.Dirt ? distance <= m_LaneReach : surface == Surface.Other && distance <= m_LaneHalfWidth;
-            if (laneGround && atLaneLevel && IsOnNavMesh(ground))
+            // grille débordait sur l'herbe d'un côté et laissait de la terre « au bord » de l'autre. Le 2 novembre au soir (deuxième
+            // essai du joueur, deux fois) : seulement la terre des tuiles des voies et des passages de la rivière (Surface.Dirt ; celle
+            // des marches et des rochers ne compte plus, ni le lit de la rivière à côté d'un gué, ni un sol inconnu à 3 m du chemin) :
+            // la voie de droite s'élargissait. Et une case à moitié sur la terre (les demi-cases de la bordure en diagonale de la voie
+            // du milieu) est de la clairière, au bord de la voie : on y pose les tours, pas les pièges.
+            var halfCell = surface == Surface.Dirt && atLaneLevel && IsHalfCell(center, height, cell, top, depth);
+            if (surface == Surface.Dirt && !halfCell && atLaneLevel && distance <= m_LaneReach && IsOnNavMesh(ground))
             {
                 // Sur la voie : l'avant vers la forêt, d'où viennent les ennemis (le chemin va de leur apparition à la tour).
-                road = true;
                 laneDirection.y = 0f;
                 facing = laneDirection.sqrMagnitude > 1e-4f ? Mathf.Atan2(-laneDirection.x, -laneDirection.z) * Mathf.Rad2Deg : 0f;
                 return CellKind.Lane;
             }
 
-            // De la terre au niveau de la voie mais hors d'elle, ou une case qui déborde sur la terre de la voie sans avoir son
-            // centre dessus : ni sur la voie, ni au bord (un bâtiment y dépasserait sur le chemin des ennemis).
-            if (atLaneLevel && (surface == Surface.Dirt || distance <= m_LaneReach + cell && TouchesDirt(center, height, cell, top, depth)))
+            // De la terre de la voie, à son niveau, mais loin du chemin ou hors du NavMesh : ni sur la voie, ni au bord (un bâtiment
+            // y dépasserait sur le chemin des ennemis).
+            if (surface == Surface.Dirt && !halfCell && atLaneLevel)
             {
-                road = true;
+                why = BlockReason.Overflow;
                 return CellKind.Blocked;
             }
 
-            if (Mathf.Abs(rise) <= 1.5f && distance <= m_LaneReach + m_RoadsideWidth)
-            {
-                facing = towardLane;
+            // Ailleurs, tout sol plat, sans limite de distance depuis le 2 novembre au soir : au niveau des voies (au bord), ou sur
+            // une terrasse jusqu'à 7,5 m plus haut (en hauteur ; pas les montagnes). Tourné vers la voie la plus proche.
+            facing = towardLane;
+            if (Mathf.Abs(rise) <= m_HeightMin)
                 return CellKind.Roadside;
-            }
-
-            if (rise >= m_HeightMin && distance <= m_HeightReach)
-            {
-                facing = towardLane;
+            if (rise > m_HeightMin && rise <= m_HeightMax)
                 return CellKind.Height;
-            }
 
+            why = rise > 0f ? BlockReason.TooHigh : BlockReason.TooLow;
             return CellKind.Blocked;
         }
 
-        // Le sol sous ce point : le plus haut touché qui n'est ni un obstacle (arbre, rocher, mannequin…), ni un déclencheur, ni
-        // ce que les flèches traversent, ni une plaque d'emplacement. blocked : un obstacle se dresse au-dessus de ce sol.
-        // surface : de la terre, de l'herbe ou autre chose (d'après le matériau touché).
+        // Le sol sous ce point : le plus haut touché qui n'est ni un obstacle (arbre, rocher…), ni un déclencheur, ni ce que les
+        // flèches traversent, ni une plaque d'emplacement, ni un petit caillou, un caillou du kit ou un mannequin d'entraînement
+        // (qu'un bâtiment fait disparaître), ni l'habillage d'une falaise (2 novembre). blocked : un obstacle se dresse au-dessus de
+        // ce sol. surface : de la terre, de l'herbe ou autre chose (d'après le matériau touché). culprit : l'obstacle s'il y en a
+        // un, sinon le sol touché.
         bool SampleGround(float x, float z, float top, float depth, out float height, out bool blocked, out float normalY,
-                          out Surface surface)
+                          out Surface surface, out Collider culprit)
         {
             height = 0f;
             normalY = 1f;
+            culprit = null;
             var count = Physics.RaycastNonAlloc(new Vector3(x, top, z), Vector3.down, s_Hits, depth, Physics.DefaultRaycastLayers,
                                                 QueryTriggerInteraction.Ignore);
             var ground = float.MaxValue;
             var obstacle = float.MaxValue;
             var groundHit = -1;
+            Collider obstacleCollider = null;
             for (var i = 0; i < count; i++)
             {
                 var hit = s_Hits[i];
-                if (ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<BuildSocket>() != null || IsPebble(hit.collider))
+                if (ArrowIgnore.IsIgnored(hit.collider) || hit.collider.GetComponentInParent<BuildSocket>() != null || IsPebble(hit.collider) ||
+                    ClearableRoot(hit.collider) != null || IsCladding(hit.collider))
                     continue;
 
                 if (IsObstacle(hit.collider))
                 {
-                    obstacle = Mathf.Min(obstacle, hit.distance);
+                    if (hit.distance < obstacle)
+                    {
+                        obstacle = hit.distance;
+                        obstacleCollider = hit.collider;
+                    }
+
                     continue;
                 }
 
@@ -594,7 +731,10 @@ namespace Archery.Building
                 return false;
 
             var groundCollider = s_Hits[groundHit].collider;
+            culprit = blocked ? obstacleCollider : groundCollider;
             surface = SurfaceOf(s_Hits[groundHit]);
+            if (surface == Surface.Dirt && !IsLaneTile(groundCollider))
+                surface = Surface.Earth;
             var river = RiverPieceOf(groundCollider);
             if (river.IsRiver)
             {
@@ -713,44 +853,38 @@ namespace Archery.Building
             return name.StartsWith("grass", System.StringComparison.OrdinalIgnoreCase) ? Surface.Grass : Surface.Other;
         }
 
-        // La case déborde sur de la terre (presque à sa hauteur) : 4 points près de ses coins, à 10 % du bord.
-        bool TouchesDirt(Vector3 center, float height, float cell, float top, float depth)
+        // Une case de la voie à moitié sur autre chose que sa terre, à sa hauteur (2 novembre : les demi-cases de la bordure en
+        // diagonale de la voie du milieu, mi-terre mi-herbe) : 4 points près de ses coins, à 10 % du bord. Les voies droites ont
+        // leurs bords sur les lignes de la grille : leurs cases sont entières. (Jusqu'au 2 novembre, TouchesDirt faisait l'inverse
+        // pour les cases d'herbe qui touchaient la terre : elles débordaient sur la voie, puis furent la voie un jour.)
+        bool IsHalfCell(Vector3 center, float height, float cell, float top, float depth)
         {
             for (var i = 0; i < 4; i++)
             {
                 var x = center.x + (i % 2 == 0 ? -0.4f : 0.4f) * cell;
                 var z = center.z + (i < 2 ? -0.4f : 0.4f) * cell;
-                if (SampleGround(x, z, top, depth, out var sampled, out _, out _, out var surface) && surface == Surface.Dirt &&
-                    Mathf.Abs(sampled - height) <= 1.2f)
+                if (SampleGround(x, z, top, depth, out var sampled, out _, out _, out var surface, out _) && surface != Surface.Dirt &&
+                    Mathf.Abs(sampled - height) <= 0.6f)
                     return true;
             }
 
             return false;
         }
 
-        // Une case de la voie (ou qui touche sa terre) à moins de reach cases, à peu près au même niveau.
-        bool IsNearRoad(int x, int z, int radius, float reachSquared, bool[] road)
+        // La terre de cette tuile est-elle celle d'une voie (une tuile rangée sous Map > Lanes, 2 novembre) ? Les marches et les
+        // blocs rocheux du kit ont aussi de la terre (matériau « dirt ») : au pied de la jungle, ils élargissaient la voie de droite.
+        bool IsLaneTile(Collider collider)
         {
-            var height = m_Height[z * m_Width + x];
-            for (var dz = -radius; dz <= radius; dz++)
-            {
-                var row = z + dz;
-                if (row < 0 || row >= m_Depth)
-                    continue;
+            if (m_LaneTileCache.TryGetValue(collider, out var cached))
+                return cached;
 
-                for (var dx = -radius; dx <= radius; dx++)
-                {
-                    var column = x + dx;
-                    if (column < 0 || column >= m_Width || dx * dx + dz * dz > reachSquared)
-                        continue;
+            var lane = false;
+            var transform = collider.transform;
+            for (var i = 0; i < 5 && transform != null && !lane; i++, transform = transform.parent)
+                lane = transform.name == k_LanesGroup;
 
-                    var j = row * m_Width + column;
-                    if (road[j] && Mathf.Abs(m_Height[j] - height) <= 1.5f)
-                        return true;
-                }
-            }
-
-            return false;
+            m_LaneTileCache[collider] = lane;
+            return lane;
         }
 
         // Un petit caillou, une touffe (29 octobre au soir, le joueur : ils bloquaient des cases de la prairie) : moins de 1,2 m de
@@ -765,6 +899,122 @@ namespace Archery.Building
                          collider.GetComponentInParent<Enemy>() == null && collider.GetComponentInParent<Structure>() == null;
             m_PebbleCache[collider] = pebble;
             return pebble;
+        }
+
+        // Le caillou du kit, le mannequin ou la cible d'entraînement de ce collider (ce qu'un bâtiment posé dessus fait disparaître),
+        // ou null.
+        Transform ClearableRoot(Collider collider)
+        {
+            if (m_ClearableCache.TryGetValue(collider, out var root))
+                return root;
+
+            root = null;
+            var dummy = collider.GetComponentInParent<TrainingDummy>(true);
+            var target = dummy == null ? collider.GetComponentInParent<TrainingTarget>(true) : null;
+            if (dummy != null)
+                root = dummy.transform;
+            else if (target != null)
+                root = target.transform;
+
+            var transform = collider.transform;
+            for (var i = 0; i < 3 && transform != null && root == null; i++, transform = transform.parent)
+            {
+                foreach (var prefix in k_ClearablePrefixes)
+                {
+                    if (transform.name.StartsWith(prefix, System.StringComparison.Ordinal))
+                    {
+                        root = transform;
+                        break;
+                    }
+                }
+            }
+
+            m_ClearableCache[collider] = root;
+            if (root != null)
+                RegisterClearable(root);
+            return root;
+        }
+
+        // Retient la place d'un caillou ou d'un mannequin (ses colliders, tant qu'il est actif), pour le cacher sous un bâtiment.
+        void RegisterClearable(Transform root)
+        {
+            if (root == null || m_Clearables.ContainsKey(root))
+                return;
+
+            var found = false;
+            var bounds = new Bounds(root.position, Vector3.zero);
+            foreach (var collider in root.GetComponentsInChildren<Collider>())
+            {
+                if (collider.isTrigger || !collider.enabled || !collider.gameObject.activeInHierarchy)
+                    continue;
+                if (found)
+                    bounds.Encapsulate(collider.bounds);
+                else
+                    bounds = collider.bounds;
+                found = true;
+            }
+
+            // Un mannequin qui va et vient (2 novembre au soir) : toute sa place, d'un bout à l'autre du trajet.
+            if (root.TryGetComponent<PingPongMover>(out var patrol))
+            {
+                var end = bounds;
+                end.center += patrol.Offset;
+                bounds.Encapsulate(end);
+            }
+
+            m_Clearables[root] = found ? bounds : new Bounds(root.position, Vector3.one);
+        }
+
+        // Les cailloux et les mannequins sous un bâtiment posé là disparaissent ; ils reviennent quand il s'en va (Release).
+        void ClearUnder(BuildSocket socket, Vector3 center, Quaternion rotation, Vector2 size)
+        {
+            var hidden = new List<GameObject>();
+            var inverse = Quaternion.Inverse(rotation);
+            foreach (var pair in m_Clearables)
+            {
+                var root = pair.Key;
+                if (root == null || !root.gameObject.activeSelf)
+                    continue;
+
+                var bounds = pair.Value;
+                var local = inverse * (bounds.center - center);
+                var reach = Mathf.Min(bounds.extents.x, bounds.extents.z) * 0.7f;
+                if (Mathf.Abs(local.x) > size.x * 0.5f + reach || Mathf.Abs(local.z) > size.y * 0.5f + reach ||
+                    bounds.max.y < center.y - 1f || bounds.min.y > center.y + 3f)
+                    continue;
+
+                root.gameObject.SetActive(false);
+                hidden.Add(root.gameObject);
+            }
+
+            if (hidden.Count > 0)
+                m_Cleared[socket] = hidden;
+        }
+
+        // L'habillage d'une falaise (2 novembre, deuxième essai du joueur) : les faces et les rebords des kits (cliff_rock,
+        // cliff_top_stone, cliff_corner…), posés devant les blocs du terrain (cliff_block…) et les escaliers (cliff_steps…). Ni sol
+        // ni obstacle : la grille prend le terrain dessous. Au bord des voies, ils débordaient en l'air au-dessus des cases (le
+        // joueur : « un caillou qui est en l'air pour le décor ») et les bloquaient.
+        bool IsCladding(Collider collider)
+        {
+            if (m_CladdingCache.TryGetValue(collider, out var cached))
+                return cached;
+
+            var cladding = false;
+            var transform = collider.transform;
+            for (var i = 0; i < 3 && transform != null; i++, transform = transform.parent)
+            {
+                var name = transform.name;
+                if (!name.StartsWith("cliff_", System.StringComparison.Ordinal))
+                    continue;
+
+                cladding = !name.StartsWith("cliff_block", System.StringComparison.Ordinal) &&
+                           !name.StartsWith("cliff_steps", System.StringComparison.Ordinal);
+                break;
+            }
+
+            m_CladdingCache[collider] = cladding;
+            return cladding;
         }
 
         bool IsObstacle(Collider collider)
@@ -1037,6 +1287,8 @@ namespace Archery.Building
             var taken = false;
             var wrongKind = false;
             var blocked = false;
+            var why = BlockReason.None;
+            Collider culprit = null;
             var fitting = BuildSlot.Roadside;
             var hasFitting = false;
             if (cells.Count == 0)
@@ -1051,7 +1303,14 @@ namespace Archery.Building
 
                 var cellKind = m_Kind[i];
                 if (cellKind == CellKind.Void || cellKind == CellKind.Blocked)
+                {
                     blocked = true;
+                    if (why == BlockReason.None || i == index)
+                    {
+                        why = m_Why[i];
+                        culprit = m_Culprit[i];
+                    }
+                }
                 else if (!definition.Fits(SlotOf(cellKind)))
                     wrongKind = true;
                 else if (!hasFitting || i == index)
@@ -1078,7 +1337,7 @@ namespace Archery.Building
             if (taken)
                 spot.Reason = "Place prise";
             else if (blocked)
-                spot.Reason = "Pas constructible ici";
+                spot.Reason = ReasonText(why) + CulpritText(culprit);
             else if (wrongKind || !hasFitting)
                 spot.Reason = "Pas ici : se pose " + WhereText(definition);
             else if (high - low > m_MaxStep)
@@ -1086,6 +1345,34 @@ namespace Archery.Building
             else
                 spot.Valid = true;
             return spot;
+        }
+
+        // Ce qui empêche de construire sur une case (2 novembre au soir : le joueur voit ce qui bloque, et peut le dire).
+        static string ReasonText(BlockReason why) => why switch
+        {
+            BlockReason.Obstacle => "Pas ici : un arbre ou un rocher",
+            BlockReason.Slope => "Pas ici : le sol n'est pas plat",
+            BlockReason.Tower => "Pas ici : trop près de la tour",
+            BlockReason.Spawn => "Pas ici : les ennemis arrivent là",
+            BlockReason.ChestSpot => "Pas ici : la place d'un coffre",
+            BlockReason.Overflow => "Pas ici : ça déborde sur la voie",
+            BlockReason.TooHigh => "Pas ici : trop haut",
+            BlockReason.TooLow => "Pas ici : trop bas",
+            _ => "Pas constructible ici",
+        };
+
+        // En test (2 novembre) : le nom de ce qui bloque, et de son parent, pour que le joueur puisse le dire (« cliff_rock (3) ·
+        // Cliffs »). Rien dans le jeu final.
+        static string CulpritText(Collider culprit)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (culprit == null)
+                return "";
+            var parent = culprit.transform.parent;
+            return " (" + culprit.name + (parent != null ? " · " + parent.name : "") + ")";
+#else
+            return "";
+#endif
         }
 
         Spot EvaluateTower(StructureDefinition definition, Vector3 point, int steps, BuildSocket mine)
@@ -1153,6 +1440,7 @@ namespace Archery.Building
             }
 
             m_Claims[socket] = claimed.ToArray();
+            ClearUnder(socket, spot.Position, spot.Rotation, spot.Size);
             Version++;
             return socket;
         }
@@ -1173,6 +1461,17 @@ namespace Archery.Building
             }
 
             m_Claims.Remove(socket);
+            if (m_Cleared.TryGetValue(socket, out var hidden))
+            {
+                foreach (var cleared in hidden)
+                {
+                    if (cleared != null)
+                        cleared.SetActive(true);
+                }
+
+                m_Cleared.Remove(socket);
+            }
+
             Destroy(socket.gameObject);
             Version++;
         }

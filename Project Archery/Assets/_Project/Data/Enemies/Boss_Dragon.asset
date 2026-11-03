@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: MK
   maxHealth: 7760
   moveSpeed: 2.6
-  attackDamage: 8.33
+  attackDamage: 16.67
   attackRange: 6
   attackInterval: 1.6
   attackWindup: 0.5

@@ -1444,7 +1444,7 @@ MonoBehaviour:
   m_MaxLinkedPerLevel: 05000000080000000f000000
   m_GroupRadius: 7
   m_Duration: 8
-  m_Share: 0.6
+  m_Share: 0.4
   m_Slow: 0.6
   m_Slack: 3
   m_CrushDelay: 2.5

@@ -25,10 +25,10 @@ MonoBehaviour:
       son champ, ils ont la t\xEAte trois fois plus grosse ; les tirs \xE0 la t\xEAte
       deviennent faciles."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Une baliste plante ses carreaux dans les t\xEAtes g\xE9antes."
   - cost: 0
-    plans: 4
+    plans: 2
     description: 'La fourmi : la loupe concentre le soleil en un rayon sur l''ennemi
       le plus fort ; il fume, puis prend feu (un tiers de ses PV ; un boss, 15 %).'
   lotSize: 0

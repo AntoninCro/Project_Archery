@@ -2687,7 +2687,7 @@ MonoBehaviour:
   - 11
   - 12
   m_IntervalPerLevel:
-  - 7
+  - 6
   - 6
   - 5
   m_HeightPerLevel:

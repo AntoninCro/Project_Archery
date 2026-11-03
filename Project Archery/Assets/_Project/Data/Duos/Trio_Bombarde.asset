@@ -27,11 +27,11 @@ MonoBehaviour:
       : jusqu'\xE0 12 bombes de feu d'artifice sur les groupes, d'autant plus qu'elle
       est pleine."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Elle se remplit deux fois plus vite ; au tir, elle rebondit si
       fort que les ennemis proches sont renvers\xE9s."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Le bouquet final : pleine \xE0 ras bord, elle n'attend plus ; elle
       d\xE9borde, puis tire 40 bombes sur toutes les voies \xE0 la fois."
   lotSize: 0

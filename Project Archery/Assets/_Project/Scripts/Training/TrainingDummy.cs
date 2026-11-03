@@ -12,14 +12,16 @@ namespace Archery.Training
     /// Un mannequin du centre d'entraînement qui compte comme un ennemi (26 octobre, demandé par le joueur, pour essayer les
     /// améliorations) : entre les vagues (avant la première et pendant les pauses), les flèches et toutes leurs améliorations le
     /// traitent comme un vrai ennemi (foudre, explosion, aimant, gel, marque, bourreau…), avec les PV d'un ennemi qui apparaîtrait
-    /// maintenant (difficulté et vague). Il ne bouge pas (une poussée le déplace, puis il revient à sa place), n'attaque pas, ne
+    /// maintenant (difficulté et vague). Il ne bouge pas, sauf son va-et-vient (une poussée le déplace, puis il revient à sa place), n'attaque pas, ne
     /// rapporte ni points, ni or, ni succès, et les tourelles l'ignorent (<see cref="Enemy.IsTrainingDummy"/>). Tué, il tombe
     /// en arrière, puis se relève.
     /// </summary>
     /// <remarks>
     /// Pendant une vague, il redevient le mannequin d'avant (invulnérable, il se régénère, hors des ennemis) : l'auto-visée, les
     /// éclairs ou la marque du chasseur ne partent pas vers lui au milieu des vrais ennemis. Posé sur le prefab
-    /// <c>Training Dummy</c>, avec son <see cref="Enemy"/>, par <c>Editor/RoguelikeTuningBaker</c>.
+    /// <c>Training Dummy</c>, avec son <see cref="Enemy"/>, par <c>Editor/RoguelikeTuningBaker</c>. Avec un
+    /// <see cref="PingPongMover"/> (2 novembre au soir, le joueur : des mannequins qui font des droite-gauche sur la voie du
+    /// milieu), sa place va et vient entre les vagues, et lui avec.
     /// </remarks>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Enemy))]
@@ -70,7 +72,13 @@ namespace Archery.Training
         float m_DeadTime;
         float m_RiseTime = -1f;
 
-        public override Vector3 Velocity => Vector3.zero;
+        // Le va-et-vient (un PingPongMover sur le mannequin, désactivé : c'est lui qui le fait) : le départ, la phase, la vitesse.
+        PingPongMover m_Patrol;
+        Vector3 m_PatrolStart;
+        float m_PatrolPhase;
+        Vector3 m_Velocity;
+
+        public override Vector3 Velocity => m_Velocity;
 
         public override bool IsTrainingDummy => true;
 
@@ -97,6 +105,12 @@ namespace Archery.Training
             m_Home = transform.position;
             m_HomeRotation = transform.rotation;
             m_MeterTop = MeasureTop();
+            if (TryGetComponent(out m_Patrol))
+            {
+                m_Patrol.enabled = false;
+                m_PatrolStart = m_Home;
+            }
+
             Apply(InWave());
         }
 
@@ -105,6 +119,8 @@ namespace Archery.Training
             var wave = InWave();
             if (!m_Ready || wave != m_InWave)
                 Apply(wave);
+
+            Patrol(Time.deltaTime);
 
             // La série finit : le mannequin reprend tous ses PV pour la suivante.
             if (m_SeriesOpen && Time.time - m_LastHit > k_SeriesGap)
@@ -116,6 +132,26 @@ namespace Archery.Training
         }
 
         void LateUpdate() => UpdateMeter();
+
+        // Le va-et-vient : sa place glisse le long du trajet, et lui avec (une poussée en cours se résorbe quand même, Tick).
+        // Il s'arrête pendant les vagues et quand il est à terre.
+        void Patrol(float deltaTime)
+        {
+            m_Velocity = Vector3.zero;
+            if (m_Patrol == null || m_InWave || Enemy == null || !Enemy.IsAlive || deltaTime <= 0f)
+                return;
+
+            var offset = m_Patrol.Offset;
+            var length = offset.magnitude;
+            if (length < 1e-3f)
+                return;
+
+            m_PatrolPhase += m_Patrol.Speed * deltaTime / length;
+            var home = m_PatrolStart + offset * Mathf.SmoothStep(0f, 1f, Mathf.PingPong(m_PatrolPhase, 1f));
+            m_Velocity = (home - m_Home) / deltaTime;
+            transform.position += home - m_Home;
+            m_Home = home;
+        }
 
         void OnDamaged(Health health, DamageInfo info)
         {

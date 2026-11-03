@@ -47,6 +47,17 @@ namespace Archery.Menus
             "Porte une main vide à ta hanche, comme pour fouiller ta poche, et serre la poignée : une grenade sort. Lance-la : " +
             "elle éclate au premier contact en une gerbe de flèches. Ta montre affiche sa recharge.";
 
+        /// <summary>
+        /// La fenêtre des coffres, catégorie Construction (le coffre unique, 2 novembre ; deux plans par coffre, 2 novembre). Elle
+        /// remplace celle des caisses de l'ingénieur dans l'asset (<c>Editor/SecondTestBaker</c>).
+        /// </summary>
+        public const string ChestTitle = "Ouvrir les coffres";
+
+        public const string ChestText =
+            "Au début de chaque vague, des coffres apparaissent d'un côté de la jungle, sous un rayon doré (l'autre côté à la vague " +
+            "suivante). Vise-en un et appuie sur la gâchette (ou la gâchette de prise) : choisis un parchemin, deux plans d'un bâtiment " +
+            "de ton chantier, ou un objet. Ton chantier : 3 bâtiments au début, un de plus après chaque boss.";
+
         public List<Section> sections = new List<Section>();
 
         /// <summary>L'asset de Resources, ou le contenu par défaut s'il manque.</summary>
@@ -93,9 +104,7 @@ namespace Archery.Menus
                     ("La montre",
                      "Regarde ton poignet : tes PV, la vague, le chrono, tes plans de construction et tes bonus en cours.")),
                 NewSection("Construction", "Construction",
-                    ("Ouvrir les caisses de l'ingénieur",
-                     "Pendant les vagues, des caisses de l'ingénieur tombent dans la jungle, sous un rayon violet. Vise-en une et appuie sur la gâchette " +
-                     "(ou la gâchette de prise) : choisis un lot de plans de construction."),
+                    (ChestTitle, ChestText),
                     ("Choisir un bâtiment",
                      "Touche le bouton « Plans » de ta montre avec l'autre main : l'hologramme d'un bâtiment suit le rayon de ta main. Joystick : gauche " +
                      "et droite le tournent, haut et bas changent de plan ; gâchette : le poser là où les runes s'allument (orange sur la voie, bleues " +

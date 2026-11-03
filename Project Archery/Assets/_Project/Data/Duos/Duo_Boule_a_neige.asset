@@ -25,11 +25,11 @@ MonoBehaviour:
       : il y neige, et les ennemis s'y figent peu \xE0 peu en figurines. Ta fl\xE8che
       brise la boule : toutes les figurines \xE9clatent."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "\xC0 mi-temps, la boule se secoue : les figurines tourbillonnent
       dans la neige et se heurtent."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "La boule immense : une boule de 18 m tombe sur toute une voie ;
       bris\xE9e par ta fl\xE8che, chaque figurine \xE9clate et meurt."
   lotSize: 0

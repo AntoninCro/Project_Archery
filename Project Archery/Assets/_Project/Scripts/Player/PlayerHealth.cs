@@ -8,7 +8,8 @@ namespace Archery.Player
 {
     /// <summary>
     /// PV du joueur (GDD, section 3) : vibrations et voile rouge quand il est touché, et un voile rouge permanent
-    /// autour de la vision, selon les PV perdus (<see cref="HurtVignette"/>, ajouté tout seul).
+    /// autour de la vision, selon les PV perdus (<see cref="HurtVignette"/>, ajouté tout seul). Depuis le 2 novembre, les PV
+    /// remontent tout seuls après quelques secondes sans être touché.
     /// À placer sur le XR Origin, avec un <see cref="Health"/> et le <see cref="PlayerRig"/>.
     /// </summary>
     [DisallowMultipleComponent]
@@ -34,6 +35,18 @@ namespace Archery.Player
         [SerializeField]
         bool m_HurtVignette = true;
 
+        [Header("Régénération (2 novembre)")]
+        [Tooltip("Secondes sans être touché avant que les PV remontent (le joueur, après son premier essai : MK frappe plus fort, " +
+                 "le joueur se soigne tout seul quand il esquive bien ; partout, pas seulement contre MK). 0 : pas de régénération.")]
+        [Min(0f)]
+        [SerializeField]
+        float m_RegenDelay = 5f;
+
+        [Tooltip("PV regagnés par seconde ensuite, en pourcentage des PV max.")]
+        [Min(0f)]
+        [SerializeField]
+        float m_RegenPercentPerSecond = 4f;
+
         [Tooltip("En attendant le vrai écran de fin de partie : recharge la scène après la mort.")]
         [SerializeField]
         bool m_ReloadSceneOnDeath = true;
@@ -45,6 +58,7 @@ namespace Archery.Player
         PlayerRig m_Rig;
         MaterialPropertyBlock m_PropertyBlock;
         float m_OverlayAmount;
+        float m_LastHurtTime = float.NegativeInfinity;
 
         public static PlayerHealth Instance { get; private set; }
 
@@ -93,6 +107,7 @@ namespace Archery.Player
 
         void Update()
         {
+            UpdateRegen();
             if (m_DamageOverlay == null || m_OverlayAmount <= 0f)
                 return;
 
@@ -105,8 +120,19 @@ namespace Archery.Player
             m_DamageOverlay.enabled = m_OverlayAmount > 0f;
         }
 
+        // Après quelques secondes sans être touché, les PV remontent doucement (2 novembre).
+        void UpdateRegen()
+        {
+            if (m_RegenDelay <= 0f || m_RegenPercentPerSecond <= 0f || !m_Health.IsAlive || m_Health.Frozen ||
+                m_Health.Current >= m_Health.Max || Time.time - m_LastHurtTime < m_RegenDelay)
+                return;
+
+            m_Health.Heal(m_Health.Max * m_RegenPercentPerSecond * 0.01f * Time.deltaTime);
+        }
+
         void OnDamaged(Health health, DamageInfo info)
         {
+            m_LastHurtTime = Time.time;
             var strength = Mathf.Clamp01(info.Amount / 20f);
             foreach (var hand in m_Rig.Hands)
                 Haptics.Pulse(hand, 0.3f + 0.5f * strength, 0.15f);

@@ -25,10 +25,10 @@ MonoBehaviour:
       ensemble, plus lentement, et chaque coup sur l'un blesse tous les autres (ta
       fl\xE8che \xE0 la t\xEAte d'un seul : toute la cha\xEEne)."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Jusqu'\xE0 8 ; un li\xE9 qui meurt fait tomber les autres."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "L'\xE9crasement : jusqu'\xE0 15 ; la cha\xEEne se resserre d'un
       coup, tous volent les uns contre les autres et s'\xE9crasent au milieu."
   lotSize: 0

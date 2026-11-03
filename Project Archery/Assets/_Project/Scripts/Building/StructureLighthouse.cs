@@ -6,6 +6,7 @@ using Archery.Enemies;
 using Archery.Upgrades;
 using Archery.World;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Archery.Building
 {
@@ -284,7 +285,7 @@ namespace Archery.Building
             if (nearest == null)
                 return false;
 
-            var point = nearest.PointAt(Mathf.Max(0f, nearest.Length - m_RingFromTower), out _);
+            var point = CenterOnLane(nearest.PointAt(Mathf.Max(0f, nearest.Length - m_RingFromTower), out var along), along);
             var ring = new GameObject("Anneau de feu du phare (effet)").transform;
             ring.position = point + Vector3.up * m_RingHeight;
             const int links = 18;
@@ -317,6 +318,28 @@ namespace Archery.Building
 
             m_Ring = ring;
             return true;
+        }
+
+        // Le milieu de la voie, en travers, là où passe la vague (2 novembre, le joueur : l'anneau n'était pas bien centré) : le tracé
+        // de la voie n'en suit pas toujours le milieu ; on prend le milieu entre les bords du NavMesh de part et d'autre. Si un bord
+        // manque à 12 m (une clairière qui touche la voie), on garde le tracé.
+        static Vector3 CenterOnLane(Vector3 point, Vector3 along)
+        {
+            if (!NavMesh.SamplePosition(point, out var hit, 4f, NavMesh.AllAreas))
+                return point;
+
+            var start = hit.position;
+            along.y = 0f;
+            if (along.sqrMagnitude < 1e-4f)
+                return start;
+
+            var side = Vector3.Cross(Vector3.up, along.normalized);
+            if (!NavMesh.Raycast(start, start + side * 12f, out var left, NavMesh.AllAreas) ||
+                !NavMesh.Raycast(start, start - side * 12f, out var right, NavMesh.AllAreas))
+                return start;
+
+            var middle = (left.position + right.position) * 0.5f;
+            return NavMesh.SamplePosition(middle, out var centered, 2f, NavMesh.AllAreas) ? centered.position : middle;
         }
 
         // ---------------------------------------------------------------- niveau 5 : le jugement

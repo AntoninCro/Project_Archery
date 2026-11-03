@@ -261,6 +261,7 @@ namespace Archery.Waves
                                            m_Settings.Growth(WaveNumber, difficulty.speedGrowthPerWave, m_Settings.endlessSpeedGrowth));
             m_CountScale = m_Settings.Growth(WaveNumber, difficulty.countGrowthPerWave, m_Settings.endlessCountGrowth) * waveCount;
             EnemyScaling.StructureExponent = m_Settings.structureStrengthExponent;
+            EnemyScaling.StructureScrollShare = m_Settings.structureScrollShare;
 
             m_Bosses.Clear();
             m_BossArrivalTime = -1f;

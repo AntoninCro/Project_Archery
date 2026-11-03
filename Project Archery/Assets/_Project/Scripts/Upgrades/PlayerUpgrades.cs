@@ -86,6 +86,7 @@ namespace Archery.Upgrades
         bool m_Suspended;
         readonly List<Upgrade> m_Owned = new List<Upgrade>();
         float m_BaseMaxHealth = -1f;
+        float m_BaseTowerHealth = -1f;
 
         public static PlayerUpgrades Instance { get; private set; }
 
@@ -158,6 +159,22 @@ namespace Archery.Upgrades
         // Seule la Vigueur donne des PV max : les +5 PV de la Force et de l'Adresse (26 octobre, comme dans Dead Cells) ont été
         // retirés le même jour, à la demande du joueur.
         public float BonusMaxHealth => Total(UpgradeEffect.Vitality) + Total(UpgradeEffect.Vigor);
+
+        // Les parchemins valent aussi pour les bâtiments (2 novembre, l'idée du joueur : « les parchemins marchent pour le joueur et
+        // les tours » ; les deux roguelikes, l'arc et les tourelles, sont liés) : Structure.ScrollStrength, ScrollRate,
+        // ScrollHealthMultiplier.
+
+        /// <summary>Bonus de dégâts des parchemins de force (0,12 par parchemin) : les bâtiments en profitent aussi.</summary>
+        public float ScrollDamageBonus => Total(UpgradeEffect.Strength);
+
+        /// <summary>Bonus des parchemins d'adresse (0,1 par parchemin) : la cadence des bâtiments.</summary>
+        public float ScrollRateBonus => Total(UpgradeEffect.Dexterity);
+
+        /// <summary>
+        /// Les PV des parchemins de vigueur, en part des PV de base du joueur (25 sur 200 : +12,5 % par parchemin) : la tour et
+        /// les barricades gagnent la même part de leurs PV.
+        /// </summary>
+        public float ScrollHealthShare => m_BaseMaxHealth > 0f ? Total(UpgradeEffect.Vigor) / m_BaseMaxHealth : 0f;
         public float HeadDamageMultiplier => 1f + Total(UpgradeEffect.HeadHunter);
         public float LifeOnHeadshot => Total(UpgradeEffect.Vampirism);
         public int ChainCount => Mathf.RoundToInt(Total(UpgradeEffect.ChainLightning));
@@ -455,6 +472,15 @@ namespace Archery.Upgrades
                 if (m_BaseMaxHealth < 0f)
                     m_BaseMaxHealth = player.Health.Max;
                 player.Health.SetMaxHealth(m_BaseMaxHealth + BonusMaxHealth);
+            }
+
+            // La vigueur vaut aussi pour la tour (2 novembre) ; les barricades suivent d'elles-mêmes (StructureBarricade).
+            var tower = Archery.Defense.Tower.Instance;
+            if (tower != null && tower.IsStanding)
+            {
+                if (m_BaseTowerHealth < 0f)
+                    m_BaseTowerHealth = tower.Health.Max;
+                tower.Health.SetMaxHealth(m_BaseTowerHealth * (1f + ScrollHealthShare));
             }
 
             var score = ScoreManager.Instance;

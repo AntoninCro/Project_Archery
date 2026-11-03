@@ -38,6 +38,9 @@ namespace Archery.World
         /// <summary>Le ciel affiché en ce moment (null avant le lancement).</summary>
         public static SkySettings Current { get; private set; }
 
+        /// <summary>Le contrôleur du ciel de la carte (null avant son lancement).</summary>
+        public static SkyController Instance { get; private set; }
+
         [Tooltip("Matériau du ciel (shader « Archery/StylizedSky »). Vide : celui de Lighting > Environment.")]
         [SerializeField]
         Material m_SkyMaterial;
@@ -70,6 +73,35 @@ namespace Archery.World
         float m_FlashTime = -100f;
         float m_NextLightning = -1f;
         float m_ThunderTime = -1f;
+
+        // Un ciel posé par-dessus celui de la difficulté (2 novembre au soir : le ciel de forge du Colosse), mêlé selon son poids.
+        readonly SkySettings m_Shown = new SkySettings();
+        SkySettings m_Overlay;
+        float m_OverlayWeight;
+        bool m_OverlayWasOn;
+
+        /// <summary>
+        /// Pose un ciel par-dessus celui de la difficulté, mêlé à <paramref name="weight"/> (0 : aucun effet, 1 : ce ciel seul) ;
+        /// à rappeler quand le poids change. Le Colosse de forge s'en sert (2 novembre au soir) ; null ou 0 l'enlève.
+        /// </summary>
+        public void SetOverlay(SkySettings sky, float weight)
+        {
+            m_Overlay = sky;
+            m_OverlayWeight = sky != null ? Mathf.Clamp01(weight) : 0f;
+        }
+
+        /// <summary>
+        /// Un éclair tout de suite (le ciel et la carte s'éclairent), de cette force (0 à 1) ; le tonnerre de la carte suit si
+        /// <paramref name="thunder"/> (sinon, l'appelant joue le sien). Le marteau du Colosse de forge (2 novembre au soir).
+        /// </summary>
+        public void Strike(float strength, bool thunder = false)
+        {
+            m_FlashTime = Time.time;
+            m_FlashStrength = Mathf.Clamp01(strength);
+            m_ThunderTime = thunder ? Time.time + Random.Range(0.15f, 0.4f) : -1f;
+        }
+
+        void Awake() => Instance = this;
 
         void Start()
         {
@@ -109,6 +141,8 @@ namespace Archery.World
 
         void OnDestroy()
         {
+            if (Instance == this)
+                Instance = null;
             DifficultyManager.Changed -= OnDifficultyChanged;
             if (m_RuntimeSky != null)
                 Destroy(m_RuntimeSky);
@@ -151,47 +185,64 @@ namespace Archery.World
             if (m_Target == null)
                 return;
 
+            var changed = false;
             if (m_Transition < 1f)
             {
                 m_Transition = Mathf.Min(1f, m_Transition + Time.deltaTime / Mathf.Max(0.01f, m_TransitionDuration));
                 m_Blend.Lerp(m_From, m_Target, Mathf.SmoothStep(0f, 1f, m_Transition));
-                Apply(m_Blend);
+                changed = true;
             }
             else if (m_LiveTuning)
             {
                 m_Blend.CopyFrom(m_Target);
-                Apply(m_Blend);
+                changed = true;
             }
+
+            // Le ciel posé par-dessus (2 novembre au soir) ; quand il s'en va, celui de la difficulté revient une fois.
+            var shown = m_Blend;
+            var overlay = m_Overlay != null && m_OverlayWeight > 0.001f;
+            if (overlay)
+            {
+                m_Shown.Lerp(m_Blend, m_Overlay, m_OverlayWeight);
+                shown = m_Shown;
+                changed = true;
+            }
+            else if (m_OverlayWasOn)
+            {
+                changed = true;
+            }
+
+            m_OverlayWasOn = overlay;
 
             // Un éclair éclaire le ciel et la carte un instant : on réapplique le ciel tant qu'il dure.
             var wasFlashing = m_Flash > 0.001f;
-            UpdateLightning(m_Blend);
-            if (wasFlashing || m_Flash > 0.001f)
-                Apply(m_Blend);
+            UpdateLightning(shown);
+            if (changed || wasFlashing || m_Flash > 0.001f)
+                Apply(shown);
         }
 
-        // Éclairs au loin (ciel rouge) : un double flash, puis le tonnerre une ou deux secondes plus tard.
+        // Éclairs au loin (ciel rouge) : un double flash, puis le tonnerre une ou deux secondes plus tard. Un éclair demandé
+        // (Strike, 2 novembre au soir) se joue aussi sous un ciel sans éclairs.
         void UpdateLightning(SkySettings sky)
         {
-            if (sky.lightning <= 0.01f)
+            var now = Time.time;
+            if (sky.lightning > 0.01f)
+            {
+                var meanInterval = 60f / sky.lightning;
+                if (m_NextLightning < 0f)
+                    m_NextLightning = now + Random.Range(0.3f, 1.2f) * meanInterval;
+
+                if (now >= m_NextLightning)
+                {
+                    m_FlashTime = now;
+                    m_FlashStrength = Random.Range(0.55f, 1f);
+                    m_NextLightning = now + Random.Range(0.4f, 1.6f) * meanInterval;
+                    m_ThunderTime = now + Random.Range(0.8f, 2.5f);
+                }
+            }
+            else
             {
                 m_NextLightning = -1f;
-                m_Flash = 0f;
-                Shader.SetGlobalFloat(k_FlashId, 0f);
-                return;
-            }
-
-            var now = Time.time;
-            var meanInterval = 60f / sky.lightning;
-            if (m_NextLightning < 0f)
-                m_NextLightning = now + Random.Range(0.3f, 1.2f) * meanInterval;
-
-            if (now >= m_NextLightning)
-            {
-                m_FlashTime = now;
-                m_FlashStrength = Random.Range(0.55f, 1f);
-                m_NextLightning = now + Random.Range(0.4f, 1.6f) * meanInterval;
-                m_ThunderTime = now + Random.Range(0.8f, 2.5f);
             }
 
             var t = now - m_FlashTime;

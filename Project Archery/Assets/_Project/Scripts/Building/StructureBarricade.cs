@@ -202,15 +202,23 @@ namespace Archery.Building
         {
             base.OnLevelChanged(level);
             m_Barricade.enabled = true;
-            m_Health.ResetHealth(ValueFor(m_HealthPerLevel, level, 400f));
+            m_Health.ResetHealth(MaxHealthAt(level));
             m_Barricade.Rebuild(false);
         }
+
+        // Les PV du niveau, × les parchemins de vigueur du joueur (2 novembre, l'idée du joueur : +12,5 % par parchemin).
+        float MaxHealthAt(int level) => ValueFor(m_HealthPerLevel, level, 400f) * ScrollHealthMultiplier;
 
         protected override void Update()
         {
             base.Update();
             if (!IsBuilt)
                 return;
+
+            // Un parchemin de vigueur pris en cours de partie : les PV en plus s'ajoutent aussi à ceux qui restent.
+            var max = MaxHealthAt(Mathf.Max(1, Level));
+            if (m_Health.IsAlive && Mathf.Abs(m_Health.Max - max) > 0.5f)
+                m_Health.SetMaxHealth(max);
 
             var level = Level;
             var deltaTime = Time.deltaTime;

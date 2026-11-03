@@ -76,7 +76,8 @@ Refaire les réglages* remet les valeurs du baker.
 
 Rien d'urgent. À surveiller au profileur une fois dans le casque, dont le processeur est bien plus lent que celui d'un PC :
 
-- **Jusqu'à 40 ennemis en vie** (plafond des vagues), tous animés en permanence, même hors de vue (`AlwaysAnimate`, choisi
+- **Jusqu'à 150 ennemis en vie** (plafond des vagues, 40 avant le 2 novembre ; en Normal, plus de 40 à partir de la vague 13 :
+  à mesurer en mode infini), tous animés en permanence, même hors de vue (`AlwaysAnimate`, choisi
   parce que les bornes de certains modèles sont fausses : le mage agrandi ×100). Corriger les bornes des modèles concernés
   permettrait de ne plus animer les ennemis invisibles.
 - **Physique** : `Auto Sync Transforms` est activé (chaque déplacement d'objet resynchronise la physique avant la requête

@@ -25,10 +25,10 @@ MonoBehaviour:
       le sol jusqu'au cou : plant\xE9, seule sa t\xEAte d\xE9passe, un tir \xE0 la
       t\xEAte facile."
   - cost: 0
-    plans: 4
+    plans: 2
     description: L'onde du coup renverse et blesse tout autour.
   - cost: 0
-    plans: 4
+    plans: 2
     description: "La forge : trois marteaux en cadence sur toute la largeur de la
       voie, puis le grand coup, les trois ensemble, qui envoie en l'air tout ce qui
       est \xE0 11 m."

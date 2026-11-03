@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 914951e0db49b1742b824e1d459faf21, type: 3}
+  m_Name: Ultime_Horloge
+  m_EditorClassIdentifier: Archery.Runtime::Archery.Building.StructureDefinition
+  kind: 25
+  displayName: Grande Horloge
+  slot: 1
+  prefab: {fileID: 5895743698698301022, guid: a6b4ee75422e8714991e6ab59d146099, type: 3}
+  color: {r: 0.56078434, g: 0.84705883, b: 1, a: 1}
+  icon: {fileID: 0}
+  levels:
+  - cost: 0
+    plans: 10
+    description: "L'ultime de la glace et du temps : une horloge astronomique de
+      glace et d'or qui flotte au-dessus de son socle. \xC0 chaque tic (1,2 s), l'un
+      de ses douze chiffres romains de glace part sur un ennemi \xE0 30 m et givre
+      ses voisins. Apr\xE8s le XII, Minuit : le temps s'arr\xEAte 9 s sur toute la
+      carte, sauf pour toi (tes fl\xE8ches attendent en l'air) ; au douzi\xE8me coup,
+      tes fl\xE8ches repartent toutes ensemble et le givre de tous les fig\xE9s \xE9clate.
+      Chaque fl\xE8che qui touche est rejou\xE9e 1 s plus tard par une fl\xE8che
+      de glace g\xE9ante (5 par seconde au plus). Dans l'ar\xE8ne, Minuit arr\xEAte
+      MK."
+  lotSize: 0
+  rarity: 0
+  anywhere: 1
+  footprint: {x: 4, y: 4}
+  retired: 0

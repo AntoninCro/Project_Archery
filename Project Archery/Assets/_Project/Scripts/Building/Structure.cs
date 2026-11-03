@@ -87,10 +87,36 @@ namespace Archery.Building
         /// tourelles de la vitrine (F4). Vague 6 (fin de partie) : 1,4 au lieu de 2 ; vague 10 : 2,9 au lieu de 8,6 ; vague 20 :
         /// 18 au lieu de 323 (en Normal).
         /// </remarks>
+        /// <remarks>
+        /// Depuis le 2 novembre (le joueur : « on joue deux roguelikes en un », l'arc et les tourelles, sans lien), il suit les
+        /// parchemins de force du joueur (<see cref="ScrollStrength"/>) et plus la force des vagues (Wave Settings, <i>Structure
+        /// Strength Exponent</i> à 0 : 0,5 avant). Un bâtiment ne grandit plus qu'avec ses niveaux, ses fusions et les parchemins.
+        /// </remarks>
         protected float Strength =>
             (m_FollowEnemyStrength
-                ? Mathf.Pow(Mathf.Max(0.01f, EnemyStrength), EnemyScaling.StructureExponent) * DifficultyManager.Current.structurePower
+                ? Mathf.Pow(Mathf.Max(0.01f, EnemyStrength), EnemyScaling.StructureExponent) * DifficultyManager.Current.structurePower *
+                  ScrollStrength
                 : 1f) * SupportDamage;
+
+        static Archery.Upgrades.PlayerUpgrades Upgrades => Archery.Upgrades.PlayerUpgrades.Instance;
+
+        /// <summary>
+        /// Les parchemins de force valent aussi pour les bâtiments (2 novembre, l'idée du joueur) : +12 % de dégâts par parchemin,
+        /// comme pour le joueur (× la part des Wave Settings, <i>Structure Scroll Share</i>, 1).
+        /// </summary>
+        public static float ScrollStrength =>
+            1f + (Upgrades != null ? Mathf.Max(0f, Upgrades.ScrollDamageBonus) : 0f) * EnemyScaling.StructureScrollShare;
+
+        /// <summary>Les parchemins d'adresse : la cadence des bâtiments, +10 % par parchemin (comme l'anneau du joueur).</summary>
+        public static float ScrollRate =>
+            1f + (Upgrades != null ? Mathf.Max(0f, Upgrades.ScrollRateBonus) : 0f) * EnemyScaling.StructureScrollShare;
+
+        /// <summary>
+        /// Les parchemins de vigueur : les PV de la tour et des barricades, la même part que ceux du joueur (+25 PV sur 200 :
+        /// +12,5 % par parchemin).
+        /// </summary>
+        public static float ScrollHealthMultiplier =>
+            1f + (Upgrades != null ? Mathf.Max(0f, Upgrades.ScrollHealthShare) : 0f) * EnemyScaling.StructureScrollShare;
 
 
         // Le soutien du phare (deuxième brainstorm du tower defense, 29 octobre) : dans son rayon, les dégâts (+20 % au niveau 1)
@@ -199,8 +225,11 @@ namespace Archery.Building
         /// </summary>
         public bool IsOvercharged => m_OverchargeTimer > 0f;
 
-        /// <summary>Multiplie la cadence de tir pendant la surcharge (×2, ×4, ×6 selon le niveau du talisman : 26 octobre).</summary>
-        public float OverchargeRate => (IsOvercharged ? m_OverchargeRate : 1f) * SupportRate;
+        /// <summary>
+        /// Multiplie la cadence de tir pendant la surcharge (×2, ×4, ×6 selon le niveau du talisman : 26 octobre), le soutien du
+        /// phare, et les parchemins d'adresse du joueur (2 novembre, <see cref="ScrollRate"/>).
+        /// </summary>
+        public float OverchargeRate => (IsOvercharged ? m_OverchargeRate : 1f) * SupportRate * ScrollRate;
 
         /// <summary>Multiplie la portée pendant la surcharge.</summary>
         public float OverchargeRange => IsOvercharged ? 2f : 1f;

@@ -7,7 +7,8 @@ using UnityEngine;
 namespace Archery.FinalBoss
 {
     /// <summary>
-    /// Les tourelles du joueur (balistes, tours de givre) rejoignent l'arène du boss final pendant l'intro : sur chaque
+    /// Les tourelles du joueur (balistes, tours de givre ; et l'ultime depuis le 2 novembre, <see cref="TowerUltimate"/>)
+    /// rejoignent l'arène du boss final pendant l'intro : sur chaque
     /// quart de cristaux qui s'allume, une tourelle (deux s'il y en a plus de quatre) descend du ciel dans un rayon de
     /// lumière, sur un emplacement du plateau (cases T du plan), de préférence dans le quart qui s'allume. Elles attendent
     /// le début du combat pour tirer, portent plus loin (Range Scale), et retrouvent leur place sur la carte quand l'arène
@@ -104,14 +105,16 @@ namespace Archery.FinalBoss
             m_FloorY = arena.FloorY;
             var slots = new List<Pose>(grid.TurretSlots);
             var turrets = new List<Structure>();
+            // L'ultime vient aussi (2 novembre : le Colosse de forge, qui plaque MK au sol).
             foreach (var structure in FindObjectsByType<Structure>())
             {
-                if (structure != null && structure.IsBuilt && !structure.IsUnderConstruction && (structure is Ballista || structure is FrostTower))
+                if (structure != null && structure.IsBuilt && !structure.IsUnderConstruction &&
+                    (structure is Ballista || structure is FrostTower || structure is TowerUltimate))
                     turrets.Add(structure);
             }
 
-            // Les plus fortes d'abord, s'il y a plus de tourelles que d'emplacements.
-            turrets.Sort((a, b) => b.Level.CompareTo(a.Level));
+            // Les plus fortes d'abord, s'il y a plus de tourelles que d'emplacements : l'ultime, puis par niveau.
+            turrets.Sort((a, b) => Rank(b).CompareTo(Rank(a)));
             var count = Mathf.Min(turrets.Count, slots.Count);
             var quarters = CeilingCrystals.GroupCount;
             var next = 0;
@@ -134,6 +137,8 @@ namespace Archery.FinalBoss
                 }
             }
         }
+
+        static int Rank(Structure structure) => (structure is TowerUltimate ? 100 : 0) + structure.Level;
 
         // Un emplacement libre dans le quart qui s'allume, sinon dans le quart le plus proche.
         static Pose TakeSlot(List<Pose> slots, int quarter, ArenaShape arena)
@@ -205,6 +210,10 @@ namespace Archery.FinalBoss
                 frost.FiresIceBalls = true;
                 m_Frost.Add(frost);
             }
+
+            // L'ultime, réduite (la voûte est basse près des parois) : ici, ta flèche dans MK et son marteau le plaque au sol.
+            if (turret is TowerUltimate ultimate)
+                ultimate.EnterArena();
 
             turret.transform.SetPositionAndRotation(moved.Slot.position + Vector3.up * m_DropHeight, moved.Slot.rotation);
             moved.Beam = CreateBeam(moved.Slot.position);
@@ -381,6 +390,8 @@ namespace Archery.FinalBoss
                 moved.Turret.Elevation = 0f;
                 if (moved.Turret is FrostTower frost)
                     frost.FiresIceBalls = false;
+                if (moved.Turret is TowerUltimate ultimate)
+                    ultimate.LeaveArena();
                 moved.Turret.enabled = moved.WasEnabled;
             }
 

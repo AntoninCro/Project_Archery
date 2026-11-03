@@ -1202,6 +1202,8 @@ MonoBehaviour:
   - 5
   - 4.2
   - 3.5
+  - 3.5
+  - 3
   m_PiercePerLevel: 000000000000000002000000
   m_BowBonusShare: 0.5
   m_ScorpionFromLevel: 3
@@ -1230,14 +1232,14 @@ MonoBehaviour:
   - 5
   - 5
   - 6
-  m_NetsPerLevel: 010000000100000002000000
+  m_NetsPerLevel: 0100000001000000020000000200000003000000
   m_NetSpeed: 30
   m_NetSize: 1.4
   m_NetMaterial: {fileID: 2100000, guid: 23f898614b1f9e14dbe3acee0a2ce882, type: 2}
   m_CatchClip: {fileID: 0}
   m_ShockNetMaterial: {fileID: 2100000, guid: ca6e0a51b4662ec499f28790ace11c60, type: 2}
-  m_ShockDamage: 15
-  m_ShockStun: 2
+  m_ShockDamage: 35
+  m_ShockStun: 2.5
   m_ShockColor: {r: 0.5, g: 0.85, b: 1, a: 1}
   m_WebInterval: 15
   m_WebDuration: 6

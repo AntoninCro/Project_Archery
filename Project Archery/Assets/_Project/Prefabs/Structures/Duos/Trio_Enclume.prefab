@@ -4304,13 +4304,13 @@ MonoBehaviour:
   m_AnvilTemplate: {fileID: 1817528073383741718}
   m_Range: 16
   m_IntervalPerLevel:
-  - 4
-  - 3.2
-  - 2.4
+  - 2.5
+  - 2.2
+  - 2
   m_DamagePerLevel:
-  - 40
-  - 55
-  - 70
+  - 200
+  - 240
+  - 280
   m_FlatTimePerLevel:
   - 6
   - 6
@@ -4318,7 +4318,7 @@ MonoBehaviour:
   m_FlatSpeed: 0.5
   m_FlatHeight: 0.18
   m_FlatWidth: 1.45
-  m_SplashRadius: 1.4
+  m_SplashRadius: 2.5
   m_FlightTime: 1.1
   m_BounceRange: 6
   m_WaveRadius: 3.5

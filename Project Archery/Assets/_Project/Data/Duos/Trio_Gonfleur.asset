@@ -26,11 +26,11 @@ MonoBehaviour:
       il s'envole doucement ; ta fl\xE8che le cr\xE8ve (confettis : ceux du dessous
       sont bless\xE9s), sinon il cr\xE8ve tout seul au bout de 6 s et retombe."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Deux tuyaux \xE0 la fois ; un ennemi crev\xE9 souffle son air sur
       deux voisins, qui gonflent \xE0 leur tour."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Le d\xE9fil\xE9 : toute la port\xE9e gonfle d'un coup, le ciel
       se remplit d'ennemis-ballons et les gros deviennent des chars de parade ; chaque
       ballon crev\xE9 par ta fl\xE8che rapporte deux fois ses points."

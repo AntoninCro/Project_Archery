@@ -25,11 +25,11 @@ MonoBehaviour:
       \xE0 ton image devant les ennemis, qui s'arr\xEAtent pour la frapper ; crev\xE9e,
       elle \xE9clate en confettis piquants. Ta fl\xE8che peut la crever avant."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Frapp\xE9e, elle rebondit plus loin vers la for\xEAt et sur le
       c\xF4t\xE9, et les entra\xEEne hors de leur chemin."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Le char de carnaval : une baudruche de 7 m que tous les ennemis
       alentour viennent frapper ; elle \xE9clate en une pluie de confettis qui leur
       co\xFBte une grosse part de leurs PV."

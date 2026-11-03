@@ -8489,12 +8489,15 @@ MonoBehaviour:
   m_BallSpeed: 13
   m_BallRadius: 0.7
   m_DamagePerLevel:
-  - 45
-  - 60
-  - 75
+  - 150
+  - 200
+  - 250
   m_KnockForward: 4
   m_KnockSide: 5
   m_KnockUp: 7
+  m_WindupTime: 2
+  m_ChargedScale: 1.6
+  m_ChargedDamage: 1.75
   m_ShotSpeedFactor: 1.8
   m_ShatterRadius: 4
   m_ShatterDamage: 40

@@ -559,7 +559,7 @@ namespace Archery.FinalBoss
             if (body == null)
                 return;
 
-            var ignore = m_State == State.Salto || m_State == State.Recover;
+            var ignore = m_State == State.Salto || m_State == State.Recover || m_State == State.Pinned;
             if (!ignore && m_PlayerCollisionIgnored && PlayerInsideBody(body))
                 ignore = true;
             if (ignore == m_PlayerCollisionIgnored)

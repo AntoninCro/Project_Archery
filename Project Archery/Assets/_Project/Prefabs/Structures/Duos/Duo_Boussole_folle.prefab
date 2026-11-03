@@ -9665,9 +9665,9 @@ MonoBehaviour:
   - 4
   m_CircleRadius: 1.6
   m_SpikeDamagePerLevel:
-  - 7
-  - 9
-  - 11
+  - 10
+  - 14
+  - 18
   m_SpikeInterval: 0.5
   m_Immunity: 7
   m_BackwardTimePerLevel:

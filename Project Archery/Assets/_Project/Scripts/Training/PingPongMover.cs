@@ -3,7 +3,9 @@ using UnityEngine;
 namespace Archery.Training
 {
     /// <summary>
-    /// Fait aller et venir un objet entre sa position de départ et un décalage (cibles mobiles).
+    /// Fait aller et venir un objet entre sa position de départ et un décalage (cibles mobiles). Sur un mannequin
+    /// d'entraînement, c'est le <see cref="TrainingDummy"/> qui s'en sert (2 novembre au soir : des mannequins qui font des
+    /// droite-gauche sur la voie du milieu) : il le désactive et va et vient lui-même, pour revenir à sa place après une poussée.
     /// </summary>
     public class PingPongMover : MonoBehaviour
     {
@@ -17,6 +19,9 @@ namespace Archery.Training
 
         Vector3 m_Start;
         float m_Phase;
+
+        /// <summary>Déplacement maximal par rapport à la position de départ, dans le repère du monde.</summary>
+        public Vector3 Offset => m_Offset;
 
         public float Speed
         {

@@ -24,11 +24,11 @@ MonoBehaviour:
     description: "Une rose des vents de laiton h\xE9riss\xE9e de pointes : l'ennemi
       qui y entre perd le nord et tourne en rond 3 s sur les pointes."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Il tourne plus longtemps, puis repart dans le mauvais sens, vers
       la for\xEAt."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "La rose des vents : l'aiguille s'emballe et toute la voie perd
       le nord ; chacun tourne en rond l\xE0 o\xF9 il est, puis toute la voie repart
       vers la for\xEAt."

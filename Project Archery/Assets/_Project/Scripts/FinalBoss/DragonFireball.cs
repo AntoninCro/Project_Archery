@@ -124,9 +124,18 @@ namespace Archery.FinalBoss
             m_Light.intensity = 1.5f + 2.5f * charge;
         }
 
+        /// <summary>
+        /// Le temps arrêté dans l'arène (Minuit, la Grande Horloge, 2 novembre, tard ; <see cref="DragonBoss.StopTime"/>) : les boules de
+        /// feu en vol s'arrêtent là où elles sont.
+        /// </summary>
+        public static bool TimeStopped { get; set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetTimeStopped() => TimeStopped = false;
+
         void Update()
         {
-            if (m_Done)
+            if (m_Done || TimeStopped)
                 return;
 
             var deltaTime = Time.deltaTime;

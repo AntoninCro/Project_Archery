@@ -27,11 +27,11 @@ MonoBehaviour:
       ; ils pendent sous le wagon jusqu'au virage du c\xF4t\xE9 de la for\xEAt, qui
       les jette 13 m plus loin, vers la for\xEAt."
   - cost: 0
-    plans: 4
+    plans: 3
     description: Trois wagons, quatre ennemis par grappin ; la grappe qui pend fouette
       au passage ceux qui sont dessous.
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Le grand huit infernal : un train de six wagons file \xE0 toute
       vitesse, accroche tout sur son passage, monte le tremplin et saute dans le
       vide ; il s'\xE9crase sur le groupe le plus serr\xE9, l'atterrissage tue."

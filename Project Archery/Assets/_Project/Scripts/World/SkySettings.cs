@@ -223,6 +223,122 @@ namespace Archery.World
             contrast = 5f,
         };
 
+        /// <summary>
+        /// Le ciel de forge du Colosse de forge (2 novembre au soir ; <c>Docs/Refonte_TowerDefense.md</c>, 12.47) : un orage de braise,
+        /// noir et rouge, le soleil comme une fournaise, des éclairs ; posé par-dessus celui de la difficulté
+        /// (<see cref="SkyController.SetOverlay"/>), plus ou moins fort.
+        /// </summary>
+        public static SkySettings Forge() => new SkySettings
+        {
+            elevation = 14f,
+            azimuth = 0f,
+            discSize = 5f,
+            discColor = new Color(1f, 0.42f, 0.12f),
+            glowColor = new Color(0.65f, 0.16f, 0.03f),
+            glowSize = 38f,
+            moonSurface = 0f,
+            zenithColor = new Color(0.07f, 0.02f, 0.02f),
+            horizonColor = new Color(0.55f, 0.15f, 0.04f),
+            groundColor = new Color(0.08f, 0.03f, 0.02f),
+            horizonSharpness = 1.6f,
+            stars = 0f,
+            lightColor = new Color(1f, 0.45f, 0.22f),
+            lightIntensity = 0.85f,
+            shadowStrength = 0.75f,
+            ambientSky = new Color(0.34f, 0.12f, 0.08f),
+            ambientEquator = new Color(0.42f, 0.16f, 0.07f),
+            ambientGround = new Color(0.12f, 0.05f, 0.03f),
+            fogDensity = 0.012f,
+            reflections = 0.45f,
+            night = true,
+            lamps = 0.9f,
+            aurora = 0f,
+            auroraColor = new Color(1f, 0.35f, 0.1f),
+            shootingStars = 0f,
+            lightning = 10f,
+            colorFilter = new Color(1.08f, 0.9f, 0.82f),
+            saturation = 8f,
+            contrast = 10f,
+        };
+
+        /// <summary>
+        /// Le ciel de fête du Grand Manège (2 novembre, tard ; <c>Docs/Refonte_TowerDefense.md</c>, 12.51) : une nuit de fête foraine,
+        /// violette et rose, une grosse lune dorée, des aurores roses et des étoiles filantes comme des fusées ; posé par-dessus celui
+        /// de la difficulté (<see cref="SkyController.SetOverlay"/>) pendant son éveil et sa charge seulement (le joueur, 12.48 :
+        /// « cela doit être temporaire »). Le feu d'artifice, c'est le Manège qui le tire.
+        /// </summary>
+        public static SkySettings Fete() => new SkySettings
+        {
+            elevation = 24f,
+            azimuth = 0f,
+            discSize = 4.5f,
+            discColor = new Color(1f, 0.86f, 0.55f),
+            glowColor = new Color(0.45f, 0.18f, 0.42f),
+            glowSize = 30f,
+            moonSurface = 0.6f,
+            zenithColor = new Color(0.05f, 0.02f, 0.12f),
+            horizonColor = new Color(0.42f, 0.12f, 0.36f),
+            groundColor = new Color(0.06f, 0.03f, 0.08f),
+            horizonSharpness = 1.8f,
+            stars = 1f,
+            lightColor = new Color(1f, 0.72f, 0.85f),
+            lightIntensity = 0.7f,
+            shadowStrength = 0.6f,
+            ambientSky = new Color(0.32f, 0.2f, 0.42f),
+            ambientEquator = new Color(0.4f, 0.22f, 0.36f),
+            ambientGround = new Color(0.12f, 0.07f, 0.12f),
+            fogDensity = 0.008f,
+            reflections = 0.5f,
+            night = true,
+            lamps = 1f,
+            aurora = 0.9f,
+            auroraColor = new Color(1f, 0.35f, 0.75f),
+            shootingStars = 1f,
+            lightning = 0f,
+            colorFilter = new Color(1.04f, 0.94f, 1.06f),
+            saturation = 14f,
+            contrast = 6f,
+        };
+
+        /// <summary>
+        /// Le ciel de Minuit de la Grande Horloge (2 novembre, tard ; <c>Docs/Refonte_TowerDefense.md</c>, 12.52) : une nuit d'hiver, bleu
+        /// profond, une grande lune pâle presque au zénith (minuit), de grandes aurores vertes et bleues, des étoiles filantes ; posé
+        /// par-dessus celui de la difficulté pendant son éveil et pendant Minuit seulement (passager, comme ceux du Colosse et du
+        /// Manège).
+        /// </summary>
+        public static SkySettings Minuit() => new SkySettings
+        {
+            elevation = 70f,
+            azimuth = 0f,
+            discSize = 5.5f,
+            discColor = new Color(0.85f, 0.92f, 1f),
+            glowColor = new Color(0.15f, 0.3f, 0.5f),
+            glowSize = 26f,
+            moonSurface = 1f,
+            zenithColor = new Color(0.01f, 0.02f, 0.08f),
+            horizonColor = new Color(0.08f, 0.2f, 0.32f),
+            groundColor = new Color(0.02f, 0.04f, 0.07f),
+            horizonSharpness = 2.2f,
+            stars = 1f,
+            lightColor = new Color(0.65f, 0.8f, 1f),
+            lightIntensity = 0.65f,
+            shadowStrength = 0.6f,
+            ambientSky = new Color(0.2f, 0.3f, 0.48f),
+            ambientEquator = new Color(0.16f, 0.24f, 0.34f),
+            ambientGround = new Color(0.06f, 0.08f, 0.12f),
+            fogDensity = 0.01f,
+            reflections = 0.35f,
+            night = true,
+            lamps = 1f,
+            aurora = 1f,
+            auroraColor = new Color(0.3f, 1f, 0.75f),
+            shootingStars = 1f,
+            lightning = 0f,
+            colorFilter = new Color(0.9f, 0.97f, 1.08f),
+            saturation = 0f,
+            contrast = 8f,
+        };
+
         /// <summary>Impossible : ciel et lune rouges, la lune juste au-dessus du chemin des ennemis.</summary>
         public static SkySettings BloodMoon() => new SkySettings
         {

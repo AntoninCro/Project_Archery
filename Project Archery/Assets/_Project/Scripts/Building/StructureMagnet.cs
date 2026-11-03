@@ -46,6 +46,16 @@ namespace Archery.Building
         [SerializeField]
         float m_KeepAway = 1.5f;
 
+        [Tooltip("À partir de ce niveau, les ennemis au sol attirés sont aussi ralentis (2 novembre, le tableau d'équilibrage : le " +
+                 "niveau 4 n'aidait que les flèches du joueur).")]
+        [SerializeField]
+        int m_SlowFromLevel = 4;
+
+        [Tooltip("Leur vitesse dans la zone, en part de la normale (0,75 : 25 % moins vite).")]
+        [Range(0.1f, 1f)]
+        [SerializeField]
+        float m_SlowMultiplier = 0.75f;
+
         [Tooltip("Éclairs montrés au plus à chaque impulsion.")]
         [SerializeField]
         int m_MaxBolts = 6;
@@ -188,6 +198,8 @@ namespace Archery.Building
                     var slide = Mathf.Min(pull, distance - m_KeepAway) * (enemy.IsBoss ? 0.5f : 1f);
                     enemy.Push(toward / distance * slide * k_PushDecay);
                     enemy.Prepare(Preparation.Pulled, m_PulledPrepared);
+                    if (level >= m_SlowFromLevel)
+                        enemy.Slow(m_SlowMultiplier, 0.4f);
                 }
 
                 if (showBolts && bolts < m_MaxBolts)

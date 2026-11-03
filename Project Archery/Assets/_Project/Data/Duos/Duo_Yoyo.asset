@@ -25,11 +25,11 @@ MonoBehaviour:
       ennemi, le hisse \xE0 6 m et le fait claquer au sol trois fois, puis le l\xE2che
       de tout en haut."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Apr\xE8s les claques, il le lance sur le groupe le plus serr\xE9,
       qu'il renverse."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Le lustre : six fils de plus sur un anneau qui tourne ; sept ennemis
       montent et descendent en cadence, puis le lustre s'emballe et les jette tous
       au loin, o\xF9 ils s'\xE9crasent."

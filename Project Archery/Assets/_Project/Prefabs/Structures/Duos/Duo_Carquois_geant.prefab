@@ -8213,19 +8213,20 @@ MonoBehaviour:
   - 20
   - 26
   - 1000
-  m_VolleyAtPerLevel: 0a0000000a0000001e000000
+  m_VolleyAtPerLevel: 060000000600000014000000
   m_BoltsPerArrowPerLevel: 010000000100000003000000
   m_BoltPrefab: {fileID: 601999198628292811, guid: 0e0428e26e5e1a0af55b3175001a27f4, type: 3}
   m_Range: 40
   m_BoltDamagePerLevel:
-  - 30
-  - 32
-  - 34
+  - 50
+  - 55
+  - 60
   m_Spread: 3.5
   m_DropHeight: 22
   m_BoltSpeed: 42
   m_BlastRadius: 2.2
   m_BlastDamage: 15
+  m_AutoInterval: 2
   m_CatchClip: {fileID: 8300000, guid: 10b765359bc13a94b87a7a39db0d20a4, type: 3}
   m_VolleyClip: {fileID: 8300000, guid: 60696dd005f234948b8e40f318eda6d5, type: 3}
 --- !u!1 &6318260992744540445

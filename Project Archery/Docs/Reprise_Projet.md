@@ -93,9 +93,59 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   corrigé ; F4 pose une défense aérienne et donne 20 000 PV. **Le joueur valide les nouvelles tours** (commit `d512b9f`, poussé).
   Puis, le même soir, l'équilibrage (partie 12.31, **pas commité, pas essayé**) : les bâtiments ne suivent plus que la racine
   carrée de la force des ennemis (le joueur tenait jusqu'à la vague 45 avec les seules tourelles de F4), et leurs dégâts baissent
-  de 20 % (`Editor/StructurePowerBaker`). **LA PROCHAINE TÂCHE** (pour l'autre compte Claude, dans une conversation neuve) : **le
-  tableau Excel d'équilibrage des 10 tours**, décrit en entier dans `Refonte_TowerDefense.md`, partie **12.32**. Ensuite : les ultimes.
-Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, posée à plusieurs niveaux).
+  de 20 % (`Editor/StructurePowerBaker`). Le 2 novembre, **le tableau d'équilibrage est fait** (partie 12.33) :
+  `Docs/Equilibrage_Tours.xlsx` (les 10 tours, les 13 duos, les 7 trios, niveau par niveau ; les changements proposés par Claude),
+  écrit par `Tools/equilibrage_tours.py` d'après les prefabs ; **rien n'est changé dans le jeu**. Le même jour, le plafond
+  d'ennemis à la fois passe de 40 à 150 (partie 12.34, `Editor/EnemyCapBaker` ; il ne compte qu'à partir de la vague 13). Le joueur a rempli sa colonne et **tout est
+  appliqué** (partie 12.35 : `Editor/BalanceBaker`, le code ; ses idées : la boule du Bowling, Minuit du Beffroi en noir et blanc),
+  compilé, **pas encore vu dans Unity ni testé**. Puis les deux roguelikes liés (partie 12.36) : les parchemins du joueur
+  valent aussi pour les tours (force, adresse, vigueur), et les tourelles ne suivent plus les vagues. Puis **le coffre unique** (12.38 : un parchemin, une
+  tourelle, une tourelle ou un objet ; le coffre de boss : deux objets ou 3 plans). Le soir, la puissance des tours baissée (12.39 : Normal 0,5, Difficile 0,81,
+  Impossible 1,19). Puis **le premier essai du joueur** (« tout aux tours ») et ce qu'il en retient (12.40, 12.41) : 4 coffres au gong
+  d'un seul côté de la forêt, le chantier de la partie (3 bâtiments, un de plus par boss), un coffre parchemin / tourelle / objet, le
+  coffre de boss à 2 objets, un plan par lot et par niveau (duo 2, trio 3), la grille (cailloux, mannequins, gué, la raison affichée),
+  la régénération du joueur, MK ×2. Le 2 novembre, **le deuxième essai** (12.42 : les places refusées signalées par le joueur, la
+  partie de sa sœur) : 2 plans par coffre, la courbe des PV relevée (pas MK), les tours ×1,2, des vagues plus courtes, la grille
+  (plus de limite de distance, habillage des falaises ignoré, la voie réservée à la terre des voies, demi-cases en clairière) ;
+  compilé, pas encore vu dans Unity. **LA PROCHAINE TÂCHE** : ouvrir Unity (les bakers), un nouvel essai au casque
+  (`Checklist_Demo.md`, « Le deuxième essai du 2 novembre », puis « Le premier essai du 2 novembre »), relancer le tableau
+  d'équilibrage ; ensuite : les ultimes. Le même soir : le centre d'entraînement sur la voie du milieu (5 mannequins, dont deux
+  qui vont et viennent, avec le visage dessiné par le joueur ; plus de cibles) et les torches au bord des voies (12.43,
+  `Editor/TrainingLaneBaker` ; enregistrer la scène après Unity). Les ultimes : règles décidées (12.44 : le niveau 4 d'un trio
+  au niveau 3, 10 plans, une par partie, une par famille, 3 en tout) ; choisies : le Colosse de forge, le Grand Manège, la Grande
+  Horloge, qui reprend Minuit (l'arrêt du temps) ; le niveau 3 du Beffroi devient le Phare du passé (12.45 : codé,
+  `Editor/BeffroiPhareBaker`, pas encore vu dans Unity). Puis **le système des ultimes et le Colosse de forge** (12.46 :
+  `Building/TowerUltimate.cs`, `UltimeColosse.cs`, `FinalBoss/DragonBoss.Pin.cs`, le modèle dans `Tools/allure_tours/ultimes.py`,
+  fait par `Editor/TowerDefenseLookBaker` ; compilé, pas encore vu dans Unity ; tests : `Checklist_Demo.md`, « Le Colosse de
+  forge »). Puis, après l'essai du joueur, **le Colosse refait** (12.47 : l'éveil, le ciel de forge, un éclair à chaque coup,
+  la rivière de fonte, le fer martelé et les veines qui luisent ; `Shaders/MoltenIron.shader`, `Editor/ColosseFinitionBaker`,
+  `World/SkyController.SetOverlay` et `Strike`). Puis, après son deuxième essai, **le Colosse à deux mains** (12.48, le choix
+  du joueur : la main gauche bat le lingot sur l'enclume, un éclat à chaque coup, le lingot et la foudre au 5e ; la droite lance
+  un marteau sur chaque flèche qui touche, 5 par seconde au plus ; le ciel de forge seulement à l'éveil et pendant la coulée ;
+  compilé, pas encore vu dans Unity ; tests : `Checklist_Demo.md`, « Le Colosse de forge, à deux mains »). Puis, au troisième
+  essai, **des marteaux imposants et la force au tableau** (12.49 : aussi grands que le sien, la foudre à chaque coup, 160 dans
+  6 m, la forge renforcée ; `Editor/ColosseForceBaker` ; le Colosse dans `Tools/equilibrage_tours.py`, à relancer après Unity),
+  et les dégâts sur les boss des vagues (12.50, MK inchangé). **Validé par le joueur** (« ok, la tour me paraît bien »).
+  Puis, le même soir, **la deuxième ultime, le Grand Manège** (12.51, faite d'après `Docs/Ultimes_Cahier.md` ; le choix du joueur :
+  la ronde, la grande éjection, le feu d'artifice, MK étourdi) : un carrousel géant perché sur son mât ; son ruban fait tourner les
+  ennemis sur le manège, au 5e coup il les éjecte tous sur le groupe le plus serré ; un cheval de bois saute sur chaque ennemi que
+  touche ta flèche (5 par seconde au plus) ; ses chevaux chargent sur toute la voie ; dans l'arène, leur charge étourdit MK
+  (`Building/UltimeManege.cs`, `FinalBoss/DragonBoss.Daze.cs`, `World/SkySettings.Fete`, le modèle dans `Tools/allure_tours/ultimes.py`,
+  `Editor/ManegeFinitionBaker`, `Editor/ManegeSonsBaker`, `Tools/texture_bois_peint.py`) ; au tableau d'équilibrage (relancé) : seul,
+  un trio moyen ; avec deux flèches par seconde, comme le Colosse. Compilé, **pas encore vu dans Unity ni testé au casque** (tests :
+  `Checklist_Demo.md`, « Le Grand Manège ») ; ses sons (l'orgue, la fanfare, le galop, le hennissement, la fusée, le bouquet ;
+  freesound, CC0, téléchargés par le joueur) sont découpés et crédités ; le joueur l'a lancé dans Unity : « parfait ». Puis, le
+  même soir, **la troisième ultime, la Grande Horloge** (12.52, d'après le cahier ; les choix du joueur en deux séries : les
+  chiffres, Minuit après le XII et le dégel qui brise, l'écho du temps, l'aurore, l'horloge astronomique, Minuit dans l'arène) : une
+  horloge astronomique de glace et d'or qui flotte ; à chaque tic, un de ses douze chiffres romains tombe sur un ennemi ; après le
+  XII, le Minuit du Beffroi (9 s sur toute la carte), puis le givre de tous les figés éclate ; chaque flèche qui touche est rejouée
+  par une flèche de glace géante ; dans l'arène, Minuit arrête MK (`Building/UltimeHorloge.cs`, `FinalBoss/DragonBoss.TimeStop.cs`,
+  `World/SkySettings.Minuit`, `Editor/HorlogeFinitionBaker`, `HorlogeSonsBaker`, `Tools/texture_glace.py`). Compilé, **pas encore vu
+  dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « La Grande Horloge ») ; ses sons (le tic, la cloche, le temps qui
+  s'arrête et qui reprend, la glace qui éclate, le carillon ; freesound, CC0, téléchargés par le joueur) sont découpés et crédités.
+  **Les trois ultimes sont faites** ; ensuite, leurs essais. Plus tard (idée du
+  joueur) : une lumière sous chaque tourelle pendant le boss final.
+Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, chaque trio, puis chaque ultime, posée à plusieurs niveaux).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
 

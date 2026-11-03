@@ -14,7 +14,8 @@ namespace Archery.EditorTools
     /// Replace les cibles d'entraînement (objet « Training ») dans la zone dégagée entre la voie du milieu et celle de
     /// droite, vues depuis la tour (17 octobre) : elles étaient sur la voie du milieu, contre une torche, au-dessus de
     /// la rivière ou dans le décor. Autour de chaque place prévue, il cherche un sol plat sans obstacle, loin des voies,
-    /// de la rivière et des socles de construction.
+    /// de la rivière et des socles de construction. Depuis le 2 novembre au soir, les cibles sont retirées et les mannequins
+    /// sont sur la voie du milieu (<c>TrainingLaneBaker</c>) : sans cible dans le groupe, ce baker et son menu ne font plus rien.
     /// </summary>
     /// <remarks>
     /// À l'ouverture de la scène, une seule fois (tant que le groupe a son ancienne orientation, 45°) ; le menu

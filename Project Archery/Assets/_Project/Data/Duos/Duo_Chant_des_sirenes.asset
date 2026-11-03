@@ -25,11 +25,11 @@ MonoBehaviour:
       rose, il change de camp 6 s, se jette sur les autres ennemis, les renverse
       et les blesse."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Deux \xE0 la fois ; \xE0 la fin, la bulle \xE9clate en deux bulles
       qui charment ses voisins."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "La m\xEAl\xE9e : tout ce qui est \xE0 20 m change de camp ; chacun
       se jette sur son voisin."
   lotSize: 0

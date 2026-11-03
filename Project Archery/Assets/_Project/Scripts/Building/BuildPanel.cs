@@ -205,6 +205,7 @@ namespace Archery.Building
             var duo = structure as TowerDuo;
             if (m_TitleText != null)
                 m_TitleText.text = structure == null ? $"Construire · {Socket.DisplayName}"
+                    : duo is TowerUltimate ? $"Ultime · {structure.DisplayName}"
                     : duo != null ? $"{BuildManager.FusionLabel(duo)} · {structure.DisplayName} · niveau {structure.Level}"
                     : $"{structure.DisplayName} · niveau {structure.Level}";
 
@@ -261,8 +262,21 @@ namespace Archery.Building
 
             if (structure.Level >= definition.MaxLevel)
             {
-                var info = ShopOffer.Info($"{definition.displayName} · niveau {structure.Level}", "Niveau maximal atteint.", definition.color);
-                info.Subtitle = "Niveau " + structure.Level;
+                // Un trio au niveau 3 : son niveau 4, l'ultime de sa famille (2 novembre), avec les plans de ses trois tours.
+                string problem = null;
+                var ultimate = builds != null ? builds.UltimateOf(structure, out problem, out _) : null;
+                if (ultimate != null && structure is TowerDuo trio)
+                {
+                    var next = BuildOffer(ultimate.definition, 1, builds, owned);
+                    next.Title = $"Ultime : {ultimate.displayName}";
+                    next.Subtitle = problem ?? $"Transformation · {Owned(owned ?? 0)} ({BuildManager.SourceNames(trio)})";
+                    return next;
+                }
+
+                var isUltimate = structure is TowerUltimate;
+                var info = ShopOffer.Info(isUltimate ? $"Ultime : {definition.displayName}" : $"{definition.displayName} · niveau {structure.Level}",
+                                          "Niveau maximal atteint.", definition.color);
+                info.Subtitle = isUltimate ? "Ultime" : "Niveau " + structure.Level;
                 info.Icon = definition.icon;
                 return info;
             }
@@ -275,7 +289,7 @@ namespace Archery.Building
 
         static string Owned(int plans) => plans == 0 ? "aucun plan" : plans == 1 ? "1 plan" : plans + " plans";
 
-        // Un plan par construction ou par niveau (refonte du 27 octobre), deux aux niveaux 4 et 5 (29 octobre) ; le sous-titre
+        // Un plan par construction ou par niveau (refonte du 27 octobre ; deux aux niveaux 4 et 5 du 29 octobre au 2 novembre) ; le sous-titre
         // dit combien on en a.
         static ShopOffer BuildOffer(StructureDefinition definition, int level, BuildManager builds, int? ownedPlans = null)
         {

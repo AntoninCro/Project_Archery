@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Waves.WaveSettings
   wavesToWin: 6
   finalBossOnLastWave: 1
-  firstWaveDuration: 120
-  durationIncrease: 15
-  calmFraction: 0.4
+  firstWaveDuration: 90
+  durationIncrease: 12
+  calmFraction: 0.35
   riseDurationScale: 0.5
   firstWaveBudget: 20
   budgetIncrease: 10
   calmBudgetShare: 0.15
   maxAlive: 12
-  maxAliveCap: 40
+  maxAliveCap: 150
   maxSpeedScale: 2
   enemies:
   - prefab: {fileID: 6903302324361441440, guid: 32d7dcaea9ac7914691301441a437f4b, type: 3}
@@ -90,11 +90,11 @@ MonoBehaviour:
     firstWave: 5
     weight: 0.4
   healthPerWave:
-  - 0.8
-  - 1.03
-  - 1.42
-  - 1.62
-  - 1.8
+  - 0.85
+  - 1.29
+  - 1.99
+  - 2.51
+  - 3.06
   countPerWave:
   - 0.85
   - 1
@@ -102,6 +102,8 @@ MonoBehaviour:
   - 1.25
   - 1.38
   firstWaveCalmShare: 0.07
+  structureStrengthExponent: 0
+  structureScrollShare: 1
   endlessHealthGrowth: 1.25
   endlessDamageGrowth: 1.14
   endlessCountGrowth: 1.19

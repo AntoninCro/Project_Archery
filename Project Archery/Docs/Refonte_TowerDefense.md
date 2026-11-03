@@ -97,6 +97,72 @@ compilé, pas encore essayé). Puis : « les tours sont déséquilibrées les un
 l'autre compte Claude : le tableau d'équilibrage des 10 tours** (un fichier Excel, DPS par niveau et par vague, DPS de zone,
 utilité de contrôle, changements proposés), décrite en entier en **12.32**. Les ultimes viennent après.
 
+**2 novembre : le tableau d'équilibrage est fait** (12.33) : `Docs/Equilibrage_Tours.xlsx`, écrit par `Tools/equilibrage_tours.py`
+d'après les prefabs, pour les 10 tours et aussi, à la demande du joueur, les 13 duos et les 7 trios ; les changements proposés par
+Claude y sont, ligne « Équilibrage » de chaque bâtiment. Le même jour, le plafond d'ennemis à la fois passe à 150 (12.34), puis le
+joueur remplit sa colonne et **tout est appliqué** (12.35 : `Editor/BalanceBaker` et le code ; ses idées en plus : la boule du
+Bowling qui se met en place, Minuit du Beffroi en bulle noir et blanc sur toute la carte). Compilé, **pas encore vu dans Unity ni
+testé au casque**. Ensuite : les essais (`Checklist_Demo.md`, « L'équilibrage du 2 novembre »), puis les ultimes.
+
+**2 novembre au soir : le premier essai du joueur** (12.40, 12.41). Une partie « tout aux tours » : trop de course aux coffres,
+des plans éparpillés sur les 10 tours, l'arc assez fort sans aucune pièce, MK trop facile, des places de construction
+bloquées. **Appliqué** (12.41) : 4 coffres au gong, d'un seul côté de la forêt ; le chantier de la partie (3 bâtiments, un de
+plus après chaque boss) ; le coffre : un parchemin, une tourelle, un objet ; le coffre de boss : 2 objets ; un plan par lot
+et par niveau de tour, 2 par niveau de duo, 3 de trio ; la grille (cailloux et mannequins sous les bâtiments, le gué, la
+raison affichée) ; la régénération du joueur et MK deux fois plus fort. Compilé, **pas encore vu dans Unity ni testé au
+casque**. Ensuite : un nouvel essai (`Checklist_Demo.md`, « Le premier essai du 2 novembre »).
+
+**2 novembre : le deuxième essai** (12.42). Les places refusées que le joueur signale (captures), puis une partie de sa sœur :
+pas un duo en ouvrant tous les coffres, des vagues et des boss trop faciles avec un arc ordinaire, MK bien réglé, des vagues trop
+longues maintenant que les coffres sont d'un seul côté. **Appliqué** (12.42) : 2 plans par coffre ; la courbe des PV relevée
+(+6 à +70 % aux vagues 1 à 5, pas MK) ; les tours ×1,2 ; des vagues plus courtes (accalmie d'un tiers, montée d'un cinquième) ;
+la grille (plus de limite de distance, l'habillage des falaises ignoré, la voie réservée à la terre des
+tuiles des voies, les demi-cases de la voie du milieu en clairière, le nom de ce qui bloque en test, l'image de la grille dans
+`Logs/BuildGrid.png`). Compilé, **pas encore vu dans Unity ni testé
+au casque**. Ensuite : un nouvel essai (`Checklist_Demo.md`, « Le deuxième essai du 2 novembre »), relancer le tableau
+d'équilibrage une fois Unity passé.
+
+**2 novembre au soir : les ultimes** (12.44 : les règles, les trois choisies ; 12.45 : le Beffroi au niveau 3 devient le Phare du
+passé). Puis **le système des ultimes et la première, le Colosse de forge** (12.46) : le niveau 4 de l'Enclume ou de la Grande
+bombarde, 10 plans posés entre les vagues, une seule par partie ; un géant de fer à genoux qui lance son marteau où tombe ta
+flèche, verse une coulée de fonte sur toute la voie et, dans l'arène, plaque MK au sol. Compilé, modèle dessiné hors de Unity
+sans faces superposées ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Le Colosse de forge »).
+Ensuite : les essais du joueur (F4), puis le Grand Manège et la Grande Horloge. Le même soir, les sons de la fonte (freesound, CC0),
+puis **l'essai du joueur** : l'attaque et la coulée manquent de puissance, le modèle doit être plus fini ; **refait** (12.47) :
+l'éveil (il sort de terre, la foudre, le marteau abattu), le ciel de forge, un éclair à chaque coup, l'impact (onde de choc, roche,
+sol fendu de fonte), une vraie rivière de fonte, le fer martelé et les veines de fonte qui luisent, des particules partout.
+Puis **le deuxième essai** : mieux à voir et à entendre, mais un coup de temps en temps ne fait sentir ni sa puissance ni le nombre,
+et le ciel de forge doit être passager ; **le Colosse à deux mains** (12.48, le choix du joueur) : de la main gauche, il bat le
+lingot sur son enclume (un éclat de fonte à chaque coup, le lingot chauffé à blanc et la foudre au 5e), de la droite il lance un
+marteau sur chaque flèche qui touche (5 par seconde au plus) ; le ciel de forge seulement pendant l'éveil et la coulée. Puis **le
+troisième essai** : les marteaux trop petits et trop faibles ; **des marteaux imposants et la force au tableau** (12.49 : aussi grands
+que le sien, la foudre et l'onde à chaque coup, 160 dans 6 m ; la forge renforcée ; le Colosse dans le tableau d'équilibrage, avec
+les trios ; `Editor/ColosseForceBaker`). Compilé, **pas encore vu dans Unity ni testé au casque** ; relancer le tableau après Unity.
+Puis les dégâts sur les boss des vagues (12.50) ; **le joueur valide le Colosse** (« ok, la tour me paraît bien ») ; ce qu'il a
+appris est dans `Docs/Ultimes_Cahier.md`.
+À faire plus tard (idée du joueur) : une lumière sous chaque tourelle pendant le boss final.
+
+**2 novembre, tard : la deuxième ultime, le Grand Manège** (12.51 ; le Gonfleur, le Colisée ou les Montagnes russes au niveau 4). Le
+choix du joueur : la ronde, la grande éjection, le feu d'artifice, MK étourdi. Un carrousel géant perché sur son mât : toutes les
+1,2 s, son ruban doré attrape un ennemi et le fait tourner parmi les chevaux ; au 5e coup, tous ceux qui tournent sont éjectés d'un
+coup sur le groupe le plus serré ; un cheval de bois saute sur chaque ennemi que touche ta flèche (5 par seconde au plus) ; toutes les
+25 s, ses chevaux chargent sur toute la voie ; le feu d'artifice à chaque coup, le ciel de fête passager, l'éveil en boîte à musique ;
+dans l'arène, sa charge étourdit MK (`FinalBoss/DragonBoss.Daze.cs`). Au tableau (relancé) : seul 87 / 484, 247 / 1 218 avec une flèche
+qui touche par seconde, 407 / 1 951 avec deux. Compilé, modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans
+Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Le Grand Manège ») ; ses sons (l'orgue, la fanfare, le galop, le
+hennissement, la fusée, le bouquet), choisis sur freesound et téléchargés par le joueur le même soir, sont découpés (à écouter en jeu).
+Le joueur l'a lancé dans Unity le même soir (le journal : « Grand Manège : 4938 dégâts, 15 éliminations », aucune erreur) : « parfait ».
+
+**2 novembre, tard : la troisième ultime, la Grande Horloge** (12.52 ; le Bowling ou le Beffroi au niveau 4). Les choix du joueur : les
+chiffres, Minuit après le XII (sa version du Beffroi, 9 s sur toute la carte) et le dégel qui brise, l'écho du temps, l'aurore,
+l'horloge astronomique, Minuit dans l'arène. Une horloge astronomique de glace et d'or qui flotte : à chaque tic, l'un de ses douze
+chiffres romains de glace part sur un ennemi ; après le XII, « Za Warudo ! » : le temps s'arrête 9 s sur toute la carte, puis le givre
+de tous les figés éclate ; chaque flèche qui touche est rejouée par une flèche de glace géante (5 par seconde au plus) ; dans l'arène,
+Minuit arrête MK (`FinalBoss/DragonBoss.TimeStop.cs`). Au tableau : seule 134 / 413, 294 / 1 146 avec une flèche par seconde,
+454 / 1 880 avec deux. Compilé, modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni testé au casque**
+(tests : `Checklist_Demo.md`, « La Grande Horloge ») ; ses sons, téléchargés par le joueur, sont découpés (le 3 novembre). Les
+trois ultimes sont faites.
+
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
 `compile_check_editor.py` sans erreur ni avertissement), **pas encore testées en entier dans Unity ni au casque** (tests :
@@ -1984,6 +2050,9 @@ avertissement ; **pas encore revu dans Unity ni testé au casque**) :
 - **La vitrine (F4)** : au premier appui, elle pose aussi une **défense aérienne qui reste** (un lance-filet et une baliste au
   niveau 5 dans chacune des deux clairières, à 11 m de la tour, que F4 ne retire jamais) et donne **20 000 PV au joueur et à la
   tour**, remontés si une amélioration de Vitalité les change.
+  Depuis le 2 novembre au soir (le joueur : « laisse juste les défenses uniquement anti-aériennes ») : plus de baliste, qui tirait
+  aussi sur les ennemis au sol, et le lance-filet au niveau 3 (le barillet) au lieu de 5 : au niveau 4, son filet électrique vise
+  aussi les ennemis au sol. Les bâtiments montrés ont les ennemis au sol pour eux seuls.
 - **Volcan** : « tout le concept est à revoir ». Propositions ci-dessous, **à trier** ; rien n'est recodé.
 - **Montagnes russes** (le « manège » du joueur) : « il ne semble prendre qu'un ennemi sur 30 », le modèle et les ennemis dans les
   wagons sont bugués, l'aspect est à revoir, et « ce n'est pas logique que les ennemis reviennent vers le joueur » ; le concept doit
@@ -2127,7 +2196,7 @@ Avec la racine carrée, à la vague 6 en Normal, un bâtiment fait ainsi 57 % de
 à la vague 10, 27 %. Les dégâts par niveau de chaque tour (leurs prefabs) ne changent pas : si les niveaux 4 et 5 restent trop
 forts par rapport aux premiers, c'est eux qu'il faudra revoir.
 
-### 12.32 À FAIRE : le tableau d'équilibrage des tours (demandé le 1er novembre au soir, pour l'autre compte Claude)
+### 12.32 Le tableau d'équilibrage des tours : la demande (1er novembre au soir ; fait le 2 novembre, 12.33)
 
 Le joueur : « les tours sont déséquilibrées les unes par rapport aux autres, il faudrait toutes les équilibrer ». Rien n'est
 commencé : la session du 1er novembre n'avait plus assez d'utilisation pour le faire. **La demande, telle quelle** :
@@ -2172,3 +2241,1000 @@ Excel ; puis seulement, à la main, les colonnes « ce que fait la tour », l'ut
 avant de l'installer (ou passer par la compétence Excel de Claude si elle est là). Rien n'est à changer dans le jeu avant que le
 joueur ait rempli sa colonne : les changements se feront ensuite par un baker (les prefabs, une fois, seulement les valeurs encore
 à l'ancienne).
+
+### 12.33 Le tableau d'équilibrage, fait (2 novembre)
+
+Fait par Claude (l'autre compte) le 2 novembre, d'après 12.32 ; le joueur a demandé en cours de route d'y ajouter **les duos et les
+trios**, dans le même fichier. **Rien n'est changé dans le jeu** : ce sont des chiffres et des propositions.
+
+**Les fichiers** :
+- `Docs/Equilibrage_Tours.xlsx` : la feuille **Méthode** (les formules, les hypothèses, ce qui n'est pas compté, le constat), la
+  **Synthèse** (une ligne par niveau des 30 bâtiments, les chiffres qui comparent, triables), **Tours**, **Duos**, **Trios** (une
+  ligne par niveau, puis la ligne « Équilibrage » : les changements proposés par Claude, en jaune pâle, et « Changements du
+  joueur », en jaune, vide), **Vagues** (la force des bâtiments et les PV de l'ennemi type, vague par vague, en formules : changer
+  un réglage en bleu change tout le tableau), **Ennemis**.
+- `Tools/equilibrage_tours.py` : lit les réglages par niveau dans les prefabs (YAML), la difficulté Normal, les Wave Settings et les
+  ennemis, calcule chaque niveau et écrit le fichier. **Les valeurs des prefabs font foi** : après un changement, relancer
+  `py Tools/equilibrage_tours.py` (depuis `Project Archery/`) ; la colonne du joueur est relue et gardée. `--print` affiche les
+  chiffres sans écrire le fichier. Il faut openpyxl (`py -m pip install openpyxl`, installé sur ce PC le 2 novembre).
+
+**Les colonnes** : par vague (2, 3, 4, 5, 8, 10, 12, 15), le DPS sur une cible, la part des PV d'un ennemi type par seconde, le DPS sur
+un groupe de 5 ennemis serrés, les ennemis types tués par seconde ; puis le contrôle (secondes de chemin perdues par seconde), le
+soutien (phare, Chaîne de forçats), un ennemi seul et un groupe qui passent (vague 5), et les données de la ligne : la portée,
+l'exposition, les dégâts de base et la part des PV max par seconde (sur une cible, sur le groupe), le calcul. **Le DPS à la vague v =
+dégâts de base × force des bâtiments (v) + part des PV max × PV de l'ennemi type (v)** : la première partie suit la racine carrée de
+la force des ennemis (12.31), la seconde (chutes, éclats de glace, le choc du Boulet fou, les morts de la rampe) suit leurs PV.
+Les hypothèses (combien d'ennemis un coup touche, la durée d'un cycle, un débit de 2 ennemis par seconde au plus pour les tours qui
+éjectent…) sont dans la feuille Méthode et dans la colonne « Calcul » de chaque ligne.
+
+**Ce que dit le tableau** (vague 5, Normal) :
+1. **Les fusions font perdre de la force** : la plupart des duos et des trios au niveau 1 font moins de dégâts que ce qu'ils
+   remplacent (le Marteau-pilon tue 0,23 ennemi par seconde, la barricade et les piques au niveau 3 en tuaient 4 ; l'Enclume 0,19, à
+   la place d'un mortier au niveau 3 qui en tuait 1,7). Seuls le Boulet fou, le Toboggan, l'Avalanche et la Boussole folle s'en
+   sortent, par leur contrôle. Règle proposée : un duo au niveau 1 vaut au moins ses deux tours au niveau 3, un trio au niveau 1 au
+   moins son duo et sa tour.
+2. **La rampe de lancement** (Tremplin niveau 5) tue chaque lancé, quelle que soit la vague : 3,9 tués par seconde à la vague 5, 2,3
+   à la vague 15 (le mortier au niveau 5 : 0,6). Elle ne décroche jamais.
+3. Entre les tours : la baliste est trop faible aux niveaux 1 et 2 (moins qu'un mortier, même sur une cible), puis le titan triple
+   son niveau 5 ; le mortier fait un bond au niveau 3 ; les niveaux 4 de l'aimant, de la bulle et du phare n'aident que les flèches du
+   joueur ; le lance-filet ne fait presque rien au sol.
+4. **Un défaut** : le verglas de la tour de givre (niveau 4) fait glisser l'ennemi en avant, dans le sens de sa marche
+   (`FrostTower.Slip`, 4 m/s pendant 0,7 s) : il gagne du chemin.
+5. **Une erreur de 12.31** (et du GDD, corrigé) : la courbe vague par vague (×1,8) vaut aussi au-delà de la vague 6 ; les ennemis ont
+   ×15,5 PV à la vague 10 (pas ×8,6), ×32 à la vague 12.
+
+**Les changements proposés** (le détail, chiffré, est dans la ligne « Équilibrage » de chaque bâtiment) : la baliste plus forte aux
+niveaux 1 à 3 et un titan moins fort ; le mortier moins fort aux niveaux 3 à 5 ; la rampe toutes les 4 s et 4 ennemis au plus ; le
+verglas vers la forêt ; l'aimant, le lance-filet au sol, le phare au niveau 4 un peu plus forts ; rien pour la barricade, les piques,
+la bulle (sauf son niveau 1). Duos : Marteau-pilon, Feu d'artifice, Chant des sirènes, Lanceur de baudruches, Boule à neige,
+Carquois géant nettement plus forts ; la Loupe tire dès le niveau 1 ; les niveaux 3 de l'Avalanche, du Yo-yo, du Toboggan revus ; la
+Chaîne de forçats partage moins (×3,4 des dégâts sur 5 liés : le soutien le plus fort du jeu) ; rien pour le Boulet fou. Trios :
+tous plus forts, de deux à dix fois (l'Enclume, le Gonfleur et le Beffroi le plus) ; le Colisée n'est plus bloqué par ses champions
+(une arène toutes les 30 s au niveau 1). Certains changements sont à coder (le verglas, le ralentissement de l'aimant, le nombre de
+passagers du Toboggan par niveau, la baliste de la Loupe au niveau 1, le tir seul du Carquois, la cloche du Beffroi qui blesse).
+
+**La suite** : le joueur lit le tableau et remplit sa colonne « Changements du joueur » (ou écrit « OK » sous ceux de Claude). Puis :
+un baker (`Editor/`, comme `StructurePowerBaker`) qui change les prefabs une fois, seulement les valeurs encore à l'ancienne ; le
+code des changements « à coder » ; relancer le script pour vérifier les nouveaux chiffres ; et l'essai au casque (F4). Ensuite :
+les ultimes.
+
+### 12.34 Le plafond d'ennemis à la fois : 150 (2 novembre)
+
+Le joueur : « passe la limite d'ennemis à 150 en même temps ». Le plafond des Wave Settings (*Max Alive Cap*) passe de 40 à 150
+(`Editor/EnemyCapBaker`, une fois, seulement si la valeur est encore 40 ; la valeur par défaut du script aussi). Le maximum de chaque
+vague ne change pas (`WaveManager.MaxAlive` : 12 × le nombre d'ennemis de la difficulté × la racine carrée de la hausse de leur
+nombre) : en Normal, 17 à la vague 5, 29 à la vague 10, puis 43 à la vague 13 (40 avant), 56 à la vague 15, 108 à la vague 20, 150
+à partir de la vague 23. Rien ne change donc avant la vague 13. Le nombre total d'ennemis d'une vague ne change pas non plus : il
+suit le budget de la vague, le plafond ne fait que les laisser venir plus nombreux à la fois. Les boss gardent leur propre limite
+pour les ennemis qu'ils invoquent autour d'eux (pas s'il y en a déjà 10 en vie, `Boss.m_MaxEnemiesAlive`).
+
+Le tableau d'équilibrage (12.33) montre le maximum de chaque vague (feuille « Vagues », dernière colonne) ; ses chiffres de tours
+n'en dépendent pas (ils comptent un groupe de 5), mais des groupes plus gros avantagent les tours de zone, les pièges et la rampe.
+**À mesurer** : les performances au-delà de 40 ennemis (tous animés en permanence : `Audit_Performance_Quest.md`, partie 4).
+
+### 12.35 L'équilibrage appliqué (2 novembre)
+
+Le joueur a rempli sa colonne du tableau : « si je laisse une case vide, je laisse tes corrections se mettre en place ». Tout est
+fait, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), **pas encore vu dans Unity ni testé au casque** (tests :
+`Checklist_Demo.md`, « L'équilibrage du 2 novembre »).
+
+**Ses changements à lui** (les cases remplies) :
+- **Piques** : en plus de l'intervalle proposé (0,8 / 0,7 / 0,6 s), **−30 % sur tous ses dégâts** (pointes 8,4 à 23,8, saignement 2,8,
+  mine 42, mâchoire 84) : « il peut très bien synergiser avec une barricade pour faire des dégâts assez monstrueux ».
+- **Tour-aimant** : la singularité toutes les **10 s** (proposé : 12), et « un poil plus stylée avec une vraie texture » : le trou noir
+  a une texture (`Art/TowerDefense/Trou_noir.png`, dessinée par `Tools/texture_trou_noir.py` : des pôles noirs, un disque d'accrétion
+  violet, magenta puis presque blanc à l'équateur, des bras en spirale qui tournent avec la sphère), en couleur et en émission.
+- **Phare** : les changements proposés, et **l'anneau de feu** (niveau 4) plus grand (rayon 1,3 → 2,2 m) et **centré sur la voie** :
+  le tracé des voies n'en suit pas toujours le milieu ; l'anneau se met maintenant au milieu, entre les bords du NavMesh de part et
+  d'autre (`StructureLighthouse.CenterOnLane` ; s'il manque un bord à 12 m, il garde le tracé).
+- **Feu d'artifice** : « ne buff pas les dégâts mais augmente légèrement les buffs que mettent ébloui » : les dégâts ne changent pas ;
+  l'éblouissement (étourdi et préparé pour les flèches) dure 2,5 / 2,8 / 3,6 s (2 / 2,2 / 3 avant) et touche à 6 m (5). Lu ainsi par
+  Claude : le bonus des ennemis préparés « Sonné ! » est commun à plusieurs tours, il n'est pas touché.
+- **Bowling** : « la boule se met en place mais ne tire pas avant 2 secondes ; si le joueur tire dans la boule pendant ces
+  2 secondes, le tir est plus gros et plus fort ». Fait : la boule apparaît sous l'arche, tourne sur elle-même et respire 2 s
+  (« Tire dans la boule ! » les trois premières fois), puis roule ; ta flèche pendant ce temps : « Boule chargée ! », elle part
+  aussitôt, 1,6 fois plus grosse et 1,75 fois plus forte (réglages *Windup Time*, *Charged Scale*, *Charged Damage*). Les quilles
+  l'attendent (leur charme est prolongé). Pas pour le spare ni la partie parfaite ; une flèche dans une boule déjà lancée la givre
+  toujours.
+- **Beffroi** : sans les dégâts de la cloche ; pour le niveau 3, « une grande bulle s'étend très rapidement sur toute la map, et le
+  monde devient noir et blanc à l'intérieur de la bulle qui arrête le temps ; l'arrêt du temps doit durer 9 secondes ». Fait : à
+  Minuit, une bulle (le verre de la bulle, vue des deux côtés) part du beffroi et atteint 300 m en 0,8 s ; le temps s'arrête à son
+  passage (ennemis, flèches) ; dès qu'elle a passé le joueur, l'image passe en noir et blanc (un volume global à part, saturation
+  −100, au-dessus de celui de la carte, qui n'est pas touché) ; douze coups en 9 s, puis les couleurs reviennent. Les autres
+  propositions du Beffroi sont faites (rembobinage de 8 s : la mémoire du chemin passe à 12,8 s ; toutes les 6 / 5 / 4 s ; figés
+  3 s ; Minuit toutes les 20 s).
+  Puis, à la demande du joueur, les messages de Minuit : « Za Warudo ! Temps, arrête-toi ! » quand le temps s'arrête (« Le temps
+  s'arrête… » avant), « Le temps reprend son cours » quand il repart (« Minuit ! » avant).
+
+**Les propositions de Claude, telles quelles** (les cases vides) : toutes celles des lignes « Équilibrage », sauf les deux qui ne
+changeaient rien (Barricade, Boulet fou ; l'onde de la barricade toutes les 3 s n'était qu'une option, pas faite : elle aurait ajouté
+des dégâts, à l'inverse de la remarque du joueur sur les piques et la barricade).
+
+**Comment** :
+- `Editor/BalanceBaker` : tous les réglages des prefabs (69), une fois, chacun seulement s'il a encore sa valeur d'avant ; aussi le
+  matériau de la bulle de Minuit et la texture du trou noir. La console donne la liste.
+- Le code : le verglas glisse vers la forêt à 2 m/s (`FrostTower`, *Slip Speed*) ; l'aimant ralentit de 25 % à partir du niveau 4
+  (`StructureMagnet`, *Slow From Level*, *Slow Multiplier*) ; le Toboggan prend 3 / 3 / 5 passagers (`DuoToboggan`, *Max Riders Per
+  Level*) ; la Loupe tire dès le niveau 1, 30 toutes les 2 s, puis 45 toutes les 1,6 s (`DuoLoupe`, *Bolt Damage / Interval Per
+  Level* ; au niveau 1 le carreau part du haut de la tour, la baliste du modèle n'apparaissant qu'au niveau 2) ; le Carquois géant
+  tire seul un carreau toutes les 2 s (`DuoCarquoisGeant`, *Auto Interval*) ; le Bowling et le Beffroi ci-dessus.
+- Le tableau (`Tools/equilibrage_tours.py`) suit ces changements ; sa ligne « Équilibrage » dit ce qui a été fait, puis la
+  proposition de départ. **Ses chiffres ne seront à jour qu'après le passage dans Unity** (les bakers) : relancer le script.
+
+**À surveiller aux tests** : la bulle de Minuit (300 m : le plan de coupe de la caméra ; le noir et blanc au casque) ; la boule du
+Bowling sous l'arche (les ennemis qui passent à travers pendant les 2 s) ; l'anneau du phare sur chaque voie ; l'équilibre lui-même :
+le tableau est une estimation, les essais décident.
+
+### 12.36 Les deux roguelikes liés : les parchemins valent pour les tours (2 novembre)
+
+Le joueur, après l'équilibrage : les tourelles lui semblent plus fortes que le tir de base ; « on joue deux roguelikes en un, une
+run sur notre arc et une run sur nos tourelles », sans lien entre eux. Deux pistes : les lier, ou gagner de deux façons (50 % du
+temps chacune). Claude conseille de les lier (un jeu VR de tir à l'arc : une run « tourelles » qui gagne seule ferait du joueur un
+spectateur ; deux voies à 50 / 50 sont très difficiles à tenir) ; le joueur choisit de **les lier**, puis donne son idée : **les
+parchemins marchent pour le joueur et les tours**, et **on enlève le scale des tourelles par vagues**. Fait, compilé (le jeu et les
+outils d'éditeur, sans erreur ni avertissement), **pas encore essayé** :
+- **Force** (+12 % de dégâts au joueur par parchemin) : +12 % aux dégâts de tous les bâtiments, duos et trios compris
+  (`Structure.ScrollStrength`, dans `Structure.Strength`).
+- **Adresse** (+10 % de vitesse d'anneau) : +10 % de cadence à tous les bâtiments (`Structure.ScrollRate`, dans `OverchargeRate`, que
+  suivent leurs minuteries).
+- **Vigueur** (+25 PV au joueur, 12,5 % de ses 200 PV) : +12,5 % de PV à la tour (3 000 PV ; `PlayerUpgrades.Apply`) et aux
+  barricades (`StructureBarricade`, aussi en cours de partie).
+- Réglage commun : Wave Settings, *Structure Scroll Share* (1 : autant que le joueur ; 0 : rien).
+- **Plus de suivi des vagues** : *Structure Strength Exponent* 0,5 → 0 (`Editor/BalanceBaker`, une fois). Un bâtiment ne grandit
+  plus qu'avec ses niveaux, ses fusions et les parchemins du joueur. Ce qui compte en part des PV des ennemis (les chutes, le pic de
+  glace, les éjections mortelles : la rampe, le saut à ski, l'orbe céleste…) les suit toujours, et devient l'essentiel en mode
+  infini.
+- Un premier essai de Claude, remplacé par l'idée du joueur avant d'être essayé : les bâtiments suivaient la moitié de tous les
+  bonus de dégâts de l'arc. Ce qui en reste : la baliste n'a plus sa part à elle des bonus de l'arc (`m_BowBonusShare`, retiré) ;
+  elle suit les parchemins comme les autres.
+- Le bilan de fin de vague (la console) donne aussi les multiplicateurs des parchemins pour les bâtiments.
+
+**Ce que ça change** (le tableau, `Docs/Equilibrage_Tours.xlsx`, avec l'hypothèse d'un demi-parchemin de force et d'un demi
+d'adresse par vague) : les dégâts des bâtiments, cadence comprise, valent ×1,2 à la vague 5 (×1,4 avant, avec le suivi des vagues),
+×1,8 à la vague 10 (×3,2), ×2,5 à la vague 15 (×7,8), pendant que les PV des ennemis font ×3, ×15 et ×95. Les tours seules
+décrochent vite en mode infini ; investir dans les parchemins les fait tenir, et la feuille « Vagues » montre l'effet d'une run
+riche ou pauvre en parchemins (ses colonnes en bleu). **À surveiller aux essais** : le message « Défenses : X % des dégâts » de fin
+de vague (le but proposé : 30 à 70 % pour les bâtiments) ; si les tours décrochent trop tôt, remettre un peu de suivi des vagues
+(*Structure Strength Exponent* 0,25) ou monter *Structure Scroll Share*.
+
+**La suite proposée** (Claude, à trier) : les deux autres leviers de la discussion. Les tours préparent, le joueur achève (moins de
+dégâts directs aux niveaux 1 à 3, plus de bonus sur les ennemis préparés, moins d'or pour une élimination d'un bâtiment) ; et des
+récompenses à choisir entre l'arc et les tours (un coffre de boss : une pièce de flèche ou 3 plans).
+
+**La puissance des bâtiments par difficulté** (le même jour) : le joueur demande si les vagues 1 à 5 restent bonnes par rapport à
+l'ancienne méthode. Claude compare la force des tours (dégâts × cadence, un demi-parchemin de force et d'adresse par vague), nouvelle
+sur ancienne : en Normal, 1,12 / 1,02 / 0,90 / 0,86 / 0,84 (vagues 1 à 5) ; en Facile, 1,20 à 1,37 ; en Difficile, 0,94 à 0,58 ; en
+Impossible, 1,12 à 0,44. L'ancienne méthode suivait les PV des ennemis de la difficulté, qui grimpent bien plus vite en Difficile et en
+Impossible (×6,6 et ×11,6 à la vague 5, ×3,2 en Normal). Le joueur valide la correction : *Structure Power* 0,6 → **0,5** (Facile),
+0,8 (Normal, inchangé), 1 → **1,3** (Difficile), 1,28 → **1,9** (Impossible), par `Editor/BalanceBaker` (une fois, seulement les
+valeurs encore à l'ancienne). Après : à la vague 5, 1,14 (Facile), 0,84 (Normal), 0,75 (Difficile ; 1,05 avec un parchemin de chaque
+par vague, ces difficultés donnant plus d'or), 0,65 (Impossible ; 0,90). En Impossible, les tours sont plus fortes qu'avant au tout
+début (×1,66 à la vague 1, où les ennemis sont encore faibles).
+
+### 12.37 Lier encore l'arc et les tours (proposé par Claude, 2 novembre, à trier)
+
+Le joueur : « même si les parchemins sont une bonne idée, je pense qu'il faut continuer de corréler ». Propositions de Claude,
+dans les deux sens, en tenant compte des décisions passées : **les plans en boutique** ont été écartés le 29 octobre (12.2, 12.5),
+et **tirer sur un bâtiment ne le déclenche pas pour tous** (réservé au talisman de l'ingénieur, 27 et 29 octobre). Aujourd'hui, une
+élimination d'un bâtiment rapporte autant de points (donc d'or) que la tienne (`ScoreManager.OnEnemyKilled`).
+
+**Les tours nourrissent l'arc** :
+1. **L'assistance** : un ennemi tué par un bâtiment ne rapporte ses points (et l'or) en entier que si tu l'as touché dans les 5
+   dernières secondes (« Assisté ! ») ; sinon, la moitié. Les tours n'enrichissent la run que si tu tires. *Simple.*
+2. **Les emblèmes** : un bâtiment au niveau 5 (et chaque duo, chaque trio) donne à tes flèches un petit pouvoir de sa famille tant
+   qu'il est debout, pris parmi les effets qui existent déjà : baliste, +1 ennemi traversé (*Piercing*) ; mortier, une petite
+   explosion (*Explosive*) ; givre, ralentit (*Frost*) ; aimant, la flèche guidée (*Homing*) ; phare, la foudre en chaîne
+   (*ChainLightning*)… On choisit ses tours aussi pour son arc. *Moyen* (un bonus de niveau sur des effets existants).
+
+**L'arc nourrit les tours** (en plus des parchemins, 12.36) :
+3. **Ton combo accélère les tours** : 10 touches d'affilée, +10 % de cadence aux bâtiments ; 25, +25 % ; un raté, retour à zéro
+   (`ScoreManager.Combo`). Bien jouer à l'arc fait mieux tirer les tours. *Très simple.*
+4. **Tes tirs parfaits surchargent** : un tir parfait (l'anneau vert) qui touche un ennemi surcharge 1 s les bâtiments à 12 m de
+   lui (comme le talisman de l'ingénieur, en plus court). Tu tires sur les ennemis, pas sur les bâtiments : la règle du 29 octobre
+   tient. *Simple.*
+5. **Les pièces de flèche ont un écho sur les tours** : quelques pièces choisies changent aussi une tour (la corde triple : la
+   baliste tire trois carreaux en éventail ; le détonateur : les obus du mortier rebondissent une fois…). *Lourd* (un écho par
+   pièce) : à faire pour quelques pièces seulement.
+
+**Une seule économie** :
+6. **Le coffre de boss au choix** : une pièce de flèche ou 3 plans. *Simple.*
+7. **Les caisses de l'ingénieur** donnent parfois un parchemin, **les coffres** parfois un plan. *Simple.*
+
+**Les tours préparent, tu achèves** (la piste A du 29 octobre, poussée plus loin) :
+8. **Le coup de grâce** : un ennemi que les bâtiments descendent sous 20 % de ses PV ne meurt pas d'eux ; il tombe à genoux 3 s
+   (« À achever ! », préparé) ; ta flèche l'achève (points ×2), sinon il se relève. Les tours ne finissent plus seules : le lien le
+   plus fort, et le plus risqué (les vagues peuvent s'entasser si le joueur ne suit pas). *Moyen.* À essayer après les autres.
+
+**Conseil de Claude** : commencer par 1, 3 et 2 (l'assistance, le combo, les emblèmes) : les deux sens, peu de code, sans toucher
+aux décisions passées ; puis 6 ; garder 8 pour un essai à part.
+
+**Le tri du joueur** (le même jour) : il aime **6 et 7**, et va plus loin : **supprimer les deux sortes de caisses** (les coffres dorés
+et les caisses de l'ingénieur) pour **un seul coffre**. **1, 2 et 3 non** : de bonnes idées, mais des règles de plus, alors que le jeu
+est déjà complexe ; il cherche à le simplifier (sa règle de la complexité : GDD, section 1, « Le fil rouge » ; `CLAUDE.md`). 4, 5 et
+8 tombent pour la même raison. Il a pensé à un arbre de talents qui débloquerait au fil des parties ce qui existe (commencer sans les
+tourelles, puis la grenade, la glissade…), mais le trouve plus frustrant qu'autre chose. À décider ensuite : le coffre unique.
+
+### 12.38 Le coffre unique (2 novembre)
+
+Le joueur : « supprimer carrément les deux types de caisses différentes pour ne faire qu'un seul coffre » ; puis le contenu : **dans le
+premier emplacement, un parchemin ; dans le deuxième, une tourelle ; dans le troisième, une chance sur deux de tourelle, une chance sur
+deux d'amélioration** ; **le coffre de boss : deux améliorations au choix, ou une dernière orbe avec 3 plans aléatoires**. Fait, compilé
+(le jeu et les outils d'éditeur, sans erreur ni avertissement), **pas encore essayé** :
+- **Le coffre** (`ChestRewards.Roll`) : un parchemin ; une tourelle (un lot de plans, tiré comme dans l'ancienne caisse : la rareté
+  d'abord) ; puis, avec la chance *Tower Chance* du prefab `Chest` (0,5), une autre tourelle (un autre bâtiment), sinon un objet (comme
+  en boutique). Le fragment de l'arc légendaire peut remplacer le parchemin. Sans objet à donner : une tourelle ; sans tower defense :
+  un objet. **Le bonus temporaire n'est plus proposé** (son tirage et ses couleurs sont retirés ; les bonus eux-mêmes restent dans le
+  code, `PlayerUpgrades.AddBuff`).
+- **Le coffre de boss** (`ChestRewards.RollBoss`) : deux objets, puis une orbe violette « 3 plans, de tourelles au hasard »
+  (*Boss Plans*, 3) : trois plans, chacun d'un bâtiment tiré au hasard (la rareté d'abord) ; le message les nomme.
+- **Une seule sorte de coffre** : le générateur des caisses (`CrystalSpawner`, ses emplacements et son nombre : 3 au début de la
+  vague, un de plus toutes les 2 vagues, 6 au plus) pose maintenant le même coffre doré (« 3 coffres sont apparus ! ») ; le Chest
+  Spawner garde les siens (2 ou 3 pendant la vague) et le coffre de boss. La caisse violette (`Chest.MakeEngineerCrate`) est retirée.
+  Il y a donc autant de coffres qu'avant de coffres et de caisses ensemble (5 à 9 par vague) ; chacun est un choix entre l'arc et les
+  tours.
+- Les textes : le tutoriel (« Ouvrir les coffres »), « Pas de plan : ouvre les coffres », le raccourci **V** (un coffre).
+
+**À surveiller aux essais** : le nombre de coffres (5 à 9 par vague : peut-être trop ; les réglages du Crystal Spawner et du Chest
+Spawner dans la scène) ; l'équilibre entre les parchemins, les tourelles et les objets pris (les objets sont plus rares qu'avant : une
+orbe sur deux au troisième emplacement, et le coffre de boss) ; les plans (un lot par coffre au lieu d'un par caisse).
+
+### 12.39 Trois façons de jouer, simulées ; la puissance des tours baissée (2 novembre au soir)
+
+Le joueur demande ce que donnerait une partie pour trois joueurs : tout pour l'arc, tout pour les tourelles, moitié-moitié, et la
+comparaison avec l'ancienne version. Simulation grossière de Claude (400 parties par cas, Normal ; un script hors du dépôt, d'après
+`Tools/equilibrage_tours.py`) : le joueur ouvre tous les coffres ; ses dégâts : 14 par seconde, 60 % du temps, +12 % par parchemin
+de force, +5 % d'adresse, +20 % par objet ; les tours : la moitié de leur DPS sur un groupe, sans fusions ; le besoin : les PV de
+toute la vague sur sa durée ; ni la boutique, ni les boss. Part du besoin couverte (et part des dégâts des tours) :
+
+| Vague | Ancienne version (tout le monde a tout) | Tout l'arc | Toutes les tours | Moitié-moitié |
+|---|---|---|---|---|
+| 2 | 420 % (68 %) | 161 % | 590 % (87 %) | 286 % (55 %) |
+| 5 | 367 % (89 %) | 78 % | 362 % (97 %) | 292 % (87 %) |
+| 8 | 191 % (94 %) | 31 % | 140 % (99 %) | 118 % (89 %) |
+| 10 | 110 % (97 %) | 14 % | 70 % | 60 % |
+
+L'ancienne version donnait déjà 70 à 95 % des dégâts aux tours (l'impression du joueur était juste) ; dans la nouvelle, le chemin
+des tours écrase celui de l'arc : un niveau de tour rapporte bien plus qu'un objet (et chaque coffre propose une tourelle : un joueur
+« tout aux tours » a deux fois plus de niveaux qu'avant). Moins de coffres ne rééquilibre pas les deux chemins (tout devient plus
+dur). Le modèle de l'arc est le plus incertain (les pièces qui frappent des groupes valent sûrement plus que +20 %).
+
+Le joueur : **la puissance des tours en Normal passe de 0,8 à 0,5**, et **Difficile et Impossible dans la même proportion**
+(×0,625) : 1,3 → **0,81**, 1,9 → **1,19** ; le Facile ne change pas (0,5 : il vaut maintenant le Normal). Par `Editor/BalanceBaker`.
+**À essayer le 3 novembre** (le joueur) : trois parties jusqu'à la vague 6, tout pour l'arc, tout pour les tours, moitié-moitié ; à
+chaque fin de vague, « Défenses : X % des dégâts » et si la vague a tenu.
+
+### 12.40 Le premier essai : « tout aux tours » ; le brainstorming qui suit (2 novembre)
+
+La partie du joueur : **que des tourelles**, aucune amélioration d'arc, l'argent seulement pour des parchemins, avec l'arc puissant.
+Ses remarques :
+
+- **Un simulateur de randonnée** : on passe son temps à courir dans la forêt chercher les coffres ; on voit très peu ce que font les
+  tours, qui deviennent oubliables, et le tir à l'arc aussi. (Les deux générateurs donnent 5 à 8 coffres par vague, une trentaine
+  avant MK : le Crystal Spawner, 3 puis 5 au début de la vague ; le Chest Spawner, 2 ou 3, dont deux pendant la montée, à 45 et 70 %
+  du chrono.)
+- **L'arc n'est pas faible** : sans aucune pièce (mais avec les parchemins de force, qui valent aussi pour lui), il faisait beaucoup de
+  dégâts à chaque vague et a tué MK sans les meilleurs soutiens.
+- **Avec tous les plans, un seul trio et un ou deux duos, pas améliorés** : les plans tombent au hasard sur 10 bâtiments, et un duo
+  demande deux tours précises au niveau 3.
+- **MK** : il doit faire plus de dégâts, avec en échange une régénération des PV du joueur quand il n'est pas touché pendant un moment,
+  et des soins qui apparaissent sur la carte.
+
+Ses premières idées : les coffres n'apparaissent que dans une des deux moitiés de la forêt, et aucun pendant la vague ; une partie sans
+amélioration d'arc ne devrait pas être possible : le coffre de boss perd peut-être sa dernière orbe (3 plans au hasard).
+
+Les propositions de Claude (à décider ; chacune dit ce qu'elle retire, règle du fil rouge) :
+
+1. **Les coffres** : un seul générateur (les deux font la même chose depuis le coffre unique) ; tous les coffres au gong, dans une
+   moitié de la forêt (l'autre à la vague suivante, annoncée), aucun pendant la montée (le combat, où l'on voit ses tours) ; 4 par
+   vague au lieu de 5 à 8.
+2. **Le chantier de la partie** : au départ, 3 bâtiments tirés au hasard ; les coffres ne proposent qu'eux ; un de plus après chaque
+   boss. Les plans se concentrent (les duos et les trios arrivent), on n'apprend que 3 tours au début (la complexité dosée), et chaque
+   partie a sa couleur. Plus discret : l'orbe de tourelle propose 2 fois sur 3 un bâtiment déjà posé.
+3. **L'arc obligatoire** : le coffre de boss, 2 objets seulement (l'orbe « 3 plans » retirée) ; la troisième orbe du coffre, toujours
+   un objet (plus de pile ou face) : un coffre = un parchemin (les deux), une tourelle (les tours), un objet (l'arc).
+4. **MK** : la régénération du joueur (déjà dans `Combat/Health` : `m_RegenPerSecond` après `m_RegenDelay`, les mannequins s'en
+   servent), partout ; les dégâts de MK ×1,5 à ×2 (8,33 depuis le 15 octobre, 25 avant) ; des soins seulement dans l'arène, au pied
+   des piliers à chaque changement de phase, et seulement si la régénération ne suffit pas.
+
+### 12.41 Ce que le joueur retient du premier essai, appliqué (2 novembre au soir)
+
+Le joueur garde les quatre propositions de 12.40 (le chantier dans sa version principale) et ajoute : **un seul plan par lot**
+(la barricade et les piques, qui venaient par 2, valaient bien plus que les autres), **un seul plan par niveau de tour** (plus
+2 aux niveaux 4 et 5), **2 plans par niveau de duo et 3 de trio** (4 avant), et **les places bloquées** (des endroits de la
+rivière, des cailloux, les mannequins et les cibles d'entraînement sur les voies). Compilé (`compile_check` et
+`compile_check_editor` sans erreur ni avertissement), **pas encore vu dans Unity ni testé au casque**.
+
+- **Les coffres** (`Building/CrystalSpawner`, `Chests/ChestSpawner`) : un seul générateur. **4 coffres** par vague (réglage
+  *Count* ; avant 3, puis 4, 5…), tous 3 s après le gong, **d'un seul côté de la forêt** vu de la tour face aux ennemis (l'axe :
+  de la tour vers le milieu des points d'apparition des ennemis), l'autre côté à la vague suivante, le premier au hasard ;
+  « 4 coffres sont apparus, côté gauche ! ». Plus rien pendant la montée. Le Crystal Spawner prend aussi les 6 emplacements du
+  Chest Spawner (18 en tout, 9 de chaque côté), qui ne garde que le coffre du boss et les touches C et X.
+- **Le coffre** (`Chests/ChestReward`, `Chest`) : un parchemin, une tourelle (un plan d'un bâtiment du chantier), **un objet**
+  (toujours ; une deuxième tourelle seulement s'il n'y a plus d'objet à donner). Le coffre de boss : **2 objets**, l'orbe des
+  3 plans au hasard est retirée (*Tower Chance* et *Boss Plans* n'existent plus). Au moins 5 objets d'arc par partie.
+- **Le chantier de la partie** (`Building/BuildManager`, *Starting Structures* 3, *Structures Per Boss* 1) : au lancement, 3
+  bâtiments tirés au hasard (la rareté d'abord : 60 % commune, 30 % rare, parmi celles qui restent) ; les coffres ne proposent
+  que leurs plans (au hasard, sans rareté). Au premier gong : « Ton chantier : Baliste, Givre et Mortier » ; à la fin de chaque
+  vague (pas à la victoire contre MK), un bâtiment de plus : « Nouveau au chantier : Phare ! ». Le raccourci **B** met aussi
+  toutes les tours au chantier. *À surveiller* : un chantier de départ sans tour qui fait des dégâts (barricade, bulle, filet)
+  est possible ; à revoir si l'essai le montre.
+- **Les plans** (`StructureDefinition.LotSize` et `PlansFor`) : un plan par lot et par niveau de tour ; les duos et les trios
+  par `Editor/FirstTestBaker` (le réglage *Plans* de leurs niveaux 2 et 3 : 4 → 2 et 4 → 3). Une tour du niveau 1 au niveau 5 :
+  5 plans (7 avant) ; un duo : 6, 8, 10 plans (6, 10, 14) ; un trio : 9, 12, 15 (9, 13, 17), ou 11 et 13 en montant d'abord la
+  tour à son niveau maximal (un trio naît un niveau plus haut quand sa tour est au niveau 5). Le tableau d'équilibrage est relancé
+  avec ces coûts.
+- **La grille** (`Building/BuildGrid`) : les **cailloux du kit** (`rock_small…`, `stone_small…` : au ×3 du kit, beaucoup étaient
+  plus gros que les petits cailloux déjà ignorés) et les **mannequins et cibles d'entraînement** (qui comptaient comme des
+  ennemis, donc comme des obstacles, au lancement de la grille) ne bloquent plus : un bâtiment posé dessus les fait disparaître,
+  et ils reviennent s'il est déplacé. Les grands rochers (`stone_tall…`) bloquent toujours. **Le gué** : le lit de la rivière à
+  moins de 3 m du chemin des ennemis, à son niveau et sur leur NavMesh, compte comme la voie (barricade, piques). **La raison
+  affichée** : l'étiquette de l'hologramme dit ce qui bloque (« un arbre ou un rocher », « le sol n'est pas plat », « trop près
+  de la tour », « les ennemis arrivent là », « la place d'un coffre », « ça déborde sur la voie », « trop loin d'une voie ») :
+  si une place gêne encore, le joueur peut dire laquelle.
+- **La régénération** (`Player/PlayerHealth`, *Regen Delay* 5 s, *Regen Percent Per Second* 4) : après 5 s sans être touché,
+  les PV remontent de 4 % des PV max par seconde, partout. **MK** (`Data/Enemies/Boss_Dragon`, par `Editor/FirstTestBaker`) :
+  dégâts de base 8,33 → 16,67. Les soins dans l'arène (au pied des piliers, à chaque phase) ne sont pas faits : seulement si la
+  régénération ne suffit pas.
+- Le tutoriel (« Ouvrir les coffres ») dit le nouveau coffre et le chantier.
+
+### 12.42 Le deuxième essai : les places refusées, la partie de sa sœur (2 novembre)
+
+**Les places où l'on devrait pouvoir construire** (le joueur, avec cinq captures) : (1) des endroits au bord des voies, sous « un
+caillou qui est en l'air pour le décor » ; (2) les cases au bord de la voie du milieu, mi-voie mi-clairière, à compter comme la
+voie ; (3) la voie de droite qui s'élargit, des piques posables au milieu, alors qu'elle devrait rester droite ; (4) une grande
+zone à gauche, près de la montée du milieu ; (5) la même, symétrique, à droite (« trop loin d'une voie »).
+
+Unity ouvert, Claude ne voit pas la carte : il en a tiré un plan vu de dessus du fichier de la scène (la position de chaque objet,
+calculée de parent en parent ; scripts hors du dépôt). Ce qu'il a trouvé et fait (`Building/BuildGrid`) :
+1. **L'habillage des falaises** (`Map > Dressing > Cliffs`, 726 pièces, et une rangée de 9 `cliff_top_rock` au sol le long de la
+   voie de gauche, de z = 48 à 75) : des faces et des rebords de 80 cm d'épaisseur, posés devant les blocs du terrain ; plusieurs,
+   à 3 m et plus au bord des voies, débordent au-dessus de leur dernière rangée de cases. La grille prenait leur dessus pour le sol :
+   la case n'était « pas plate ». Désormais, une pièce `cliff_…` qui n'est ni un bloc (`cliff_block…`) ni un escalier
+   (`cliff_steps…`) n'est ni sol ni obstacle : la grille prend le terrain dessous. Un bâtiment posé au pied d'une falaise peut la
+   mordre de quelques dizaines de centimètres.
+2. **Les demi-cases** : la voie du milieu suit la diagonale, ses cases de bord sont coupées en deux (un triangle de terre, un
+   d'herbe). Une case qui touche la terre de la voie, près du chemin, à son niveau et sur le NavMesh, est maintenant sur la voie
+   (avant : « ça déborde sur la voie »). Les voies droites ont leurs bords sur les lignes de la grille : rien ne change pour elles.
+3. **La voie de droite au gué** : la rivière y tourne juste après le passage (`ground_pathBend` en (19,5 ; 4,5) et (22,5 ; 4,5)), et
+   le chemin des ennemis n'est pas au milieu de la voie. La règle du premier essai (le lit de la rivière à moins de 3 m du chemin compte
+   comme la voie) y ajoutait une ou deux rangées. Retirée : seuls les passages (`…_lane`, de la terre) sont la voie ; le lit à côté
+   se construit comme le bord de la voie.
+4. et 5. **Les clairières** au pied de la voie du milieu (à gauche, celle des mannequins ; à droite, celle de la rivière et de la
+   cible mobile) font une dizaine de mètres de profondeur ; la bande du bord de la voie n'en faisait que 4,5. Elle passe à **12 m**
+   (comptés depuis les cases de la voie, à peu près au même niveau). Les terrasses : **en hauteur de 1,5 à 7,5 m** au-dessus de la
+   voie (2 m et sans limite avant : entre 1,5 et 2 m, rien n'allait ; les montagnes ne comptent plus), jusqu'à **25 m** du chemin
+   des ennemis (15 avant) : presque toute la jungle.
+- **En test** (éditeur et build de développement), l'étiquette de l'hologramme ajoute le nom de ce qui bloque et celui de son
+  parent : « Pas ici : le sol n'est pas plat (cliff_stone · Cliffs) ». Si une place gêne encore, le joueur peut dire l'objet.
+
+**La partie de sa sœur** (Normal) : en ouvrant tous les coffres, pas un duo (pas assez de plans) ; les vagues et les boss trop
+faciles, avec un arc « pas si incroyable » ; MK bien réglé ; des vagues trop longues, maintenant que tout est d'un seul côté.
+Appliqué :
+- **2 plans par coffre** (`BuildManager`, *Plans Per Chest* 2, multiplié par le lot du bâtiment, 1 partout) : l'orbe de tourelle
+  donne 2 plans de son bâtiment (1 avant).
+- **La courbe des PV relevée** (`Editor/SecondTestBaker`, *Wave Settings*, *Health Per Wave* ; toutes les difficultés sauf le
+  Facile) : ×0,8 / 1,03 / 1,42 / 1,62 / 1,8 → **×0,85 / 1,29 / 1,99 / 2,51 / 3,06** aux vagues 1 à 5 (+6 %, +25 %, +40 %, +55 %,
+  +70 %), boss des vagues compris. En Normal, les PV d'un ennemi font ×0,85 / 1,48 / 2,63 / 3,82 / 5,35 : à peu près la courbe
+  d'avant le 1er novembre (×0,85 / 1,31 / 2,34 / 3,71 / 5,72). **MK ne change pas** : la vague du boss final ne suit pas cette
+  courbe, et la croissance par vague (×1,15) reste.
+- **Les tours ×1,2** (*Structure Power*) : Normal 0,5 → **0,6**, Difficile 0,81 → **0,97**, Impossible 1,19 → **1,43** ; le Facile
+  garde 0,5.
+- **Des vagues plus courtes** (*Wave Settings*) : un chrono de **90 s** à la vague 1 (120), **+12 s** par vague (15), l'accalmie
+  **35 %** du chrono (40 %). En Normal : vague 1, accalmie 48 → **32 s** et montée 36 → **29 s** ; vague 5, accalmie 72 → **48 s**
+  et montée 54 → **45 s**. Les ennemis de la montée sont aussi nombreux, donc plus serrés.
+- Le tutoriel (`Resources/TutorialContent`, par le même baker) : la fenêtre « Ouvrir les caisses de l'ingénieur », restée d'avant
+  le coffre unique, devient « Ouvrir les coffres » (deux plans d'un bâtiment du chantier).
+- Compilé (`compile_check` et `compile_check_editor` sans erreur ni avertissement), **pas encore vu dans Unity ni testé au
+  casque**. *À surveiller* : avec deux fois plus de plans, les tours vont monter bien plus vite ; la courbe relevée doit suivre.
+  Tout se règle dans *Wave Settings* (*Health Per Wave*, la durée) et dans chaque difficulté (*Structure Power*).
+
+**Le même jour, le joueur revient** (une capture) : la voie de droite s'élargit toujours par endroits ; et les demi-cases de la
+voie du milieu devaient être de la **clairière**, pas la voie (Claude avait compris l'inverse). Fait (`Building/BuildGrid`) :
+- **La voie, seulement la terre des voies** : celle des tuiles rangées sous `Map > Lanes` et des passages de la rivière
+  (`…_lane`). La terre d'autres modèles (les blocs rocheux et les marches du kit ont un matériau « dirt ») ne compte plus
+  (`Surface.Earth`) ; la règle d'avant le 28 octobre (un sol inconnu à moins de 3 m du chemin, *Lane Half Width*) est retirée :
+  les deux ponts de la carte passent au-dessus de la voie du milieu, en hauteur. Si les tuiles des voies quittent le groupe
+  `Lanes`, plus rien ne se pose sur la voie (la console le dit).
+- **Les demi-cases** : une case de la voie dont un coin (à 10 % du bord) est sur autre chose que sa terre, à sa hauteur, est au
+  bord de la voie : on y pose les tours, pas les pièges. Elles débordent d'une demi-case au plus sur la terre.
+- **Pas trouvé** : Claude ne voit, dans le fichier de la scène, aucune terre de voie hors de la bande droite de la voie de
+  droite, sauf la place devant la tour (la tuile de (−3 ; 3) à (9 ; 9), où les trois voies se rejoignent ; la terre y est
+  vraiment). Si l'élargissement reste ailleurs, l'image de la grille le montrera.
+- **L'image de la grille** (éditeur seulement) : à chaque lancement, `Logs/BuildGrid.png` (hors de Git) montre la grille vue de
+  dessus, une couleur par sorte de case et par raison, le chemin des ennemis en blanc. Claude la lit lui-même : plus besoin de
+  décrire les places.
+- **Le soir, l'image de la grille lue** (le joueur : tout va, sauf « les hauteurs, c'est un peu le bordel ») : sur les terrasses,
+  une grande zone « trop loin d'une voie » près de l'antre (les terrasses à 6 m : le chemin des ennemis du milieu part de
+  l'apparition du milieu, à mi-voie, et l'antre est à plus de 25 m de tout chemin), des pierres dressées (`stone_tall…`) prises
+  pour du sol « pas plat », et les arbres. Fait : **plus de limite de distance** (*Roadside Width* et *Height Reach* retirés) :
+  tout sol plat se construit, au niveau des voies (au bord) ou sur une terrasse de 1,5 à 7,5 m plus haute (en hauteur) ; au-delà,
+  « trop haut » (les montagnes). Les pierres (`stone…`, sauf les petites qui disparaissent sous un bâtiment) sont des obstacles,
+  comme les rochers. Les arbres restent des obstacles (leur feuillage couvre plusieurs cases).
+  La nouvelle image le confirme : les terrasses à 3 et 6 m se construisent presque partout. Le haut de la voie du milieu, entre
+  l'apparition du milieu et l'antre (de la terre de voie où aucun ennemi ne passe), reste non constructible : choix du joueur.
+
+### 12.43 Le centre d'entraînement sur la voie du milieu, les torches au bord des voies (2 novembre au soir)
+
+Le joueur : les torches et les mannequins sont mal placés. **Les torches** doivent être collées au bord des voies ; **les
+cibles** pour viser sont retirées (moins utiles que les mannequins) ; **les mannequins** vont en plein milieu de la voie du
+milieu : un près de la tour qui fait des droite-gauche, un groupe de 3 un peu plus loin, un dernier qui fait des droite-gauche
+plus loin encore ; et sur leur visage, son dessin fait sur Paint (« en gardant les bonnes couleurs »). Fait par
+`Editor/TrainingLaneBaker` (la scène, une fois, tant que le groupe « Training » a ses cibles ; puis Ctrl+S) :
+- **Les cibles** (16, 24 et 33 m, la cible mobile) sont supprimées de la scène ; le script et le prefab restent.
+- **Les mannequins**, tournés vers la tour, sur l'axe de la voie du milieu (de la tour vers l'apparition du milieu) : un à
+  **14 m** qui va et vient en travers de la voie (±2,8 m, 1,2 m/s), un **groupe de 3** serré en triangle à **24 m**, un à
+  **42 m**, juste après le gué, qui va et vient aussi (1,5 m/s). Le doublon du « Mannequin groupe 1 » et l'ancien mannequin
+  seul sont retirés. Le va-et-vient : un `PingPongMover` sur le mannequin, que `TrainingDummy` reprend (sa place glisse, il revient
+  toujours après une poussée, il s'arrête à terre et pendant les vagues ; sa vitesse compte pour l'auto-visée). La grille de
+  construction prend tout son trajet pour le cacher sous un bâtiment.
+- `Editor/RoguelikeTuningBaker` n'ajoute plus de mannequins : il ne comptait pas celui qui va et vient et en avait posé un de
+  trop (le doublon).
+- **Les torches sur pied des voies** (les torches murales sont déjà sur les parois) : posées à 3,3 m du chemin des ennemis, qui
+  n'est pas au milieu de la voie, certaines étaient dans la voie (voie de gauche, voie de droite, voie du milieu, la place devant
+  la tour), une autre à 2 m de son bord. Chacune va au bord de la terre de la voie le plus proche, en travers de la voie, 40 cm
+  dehors, tournée vers la voie ; 30 cm dedans, contre le bord, si dehors n'est pas un sol plat au niveau de la voie (l'eau, une
+  paroi). Celles de la forêt et des terrasses ne bougent pas.
+- **Le visage** : `Art/Training/Visage_Mannequin.png` (le dessin du joueur recadré : traits noirs, fond transparent, 256 px),
+  sur un masque courbe qui épouse l'avant de la tête (`Visage_Mannequin_Masque.asset`, enfant `Visage` de `Head` dans le prefab
+  `Training Dummy`), matériau URP Unlit découpé (`Visage_Mannequin.mat`) : les traits restent noirs à toute lumière, la toile
+  de jute de la tête garde sa couleur.
+- Compilé (`compile_check` et `compile_check_editor` sans erreur ni avertissement), **pas encore vu dans Unity ni testé au
+  casque**.
+
+### 12.44 Les ultimes : les règles décidées, les idées à trier (2 novembre au soir)
+
+Le joueur : pas de règle nouvelle (le cœur du boss proposé par Claude est refusé : une ressource de plus) ; l'ultime doit être
+intuitive, **pas à chaque partie**, et **méritée** : on ne doit pas pouvoir l'avoir facilement avant la vague 5, ni pendant.
+**Décidé** :
+- **L'ultime est le niveau 4 d'un trio au niveau 3** : on pose des plans dessus, comme pour un niveau ordinaire (des plans de
+  l'une de ses trois tours), et elle se transforme **entre les vagues**, comme les fusions. Pas de cadenas de vague.
+- **Elle coûte 10 plans de plus** (3 pour un niveau de trio) : environ 25 plans dans la même lignée. Estimation de Claude : un
+  joueur qui prend la tourelle à chaque coffre a au plus 32 plans avant la vague 5, répartis sur 3 à 6 bâtiments du chantier ;
+  l'ultime arrive au mieux à la pause avant MK, sinon en mode infini, ou jamais (à vérifier en jouant).
+- **Une seule par partie.**
+- **Une par famille de trios, 3 en tout** : la forge et la poudre (Enclume, Grande bombarde) ; la fête foraine (Montagnes
+  russes, Gonfleur, Colisée) ; la glace et le temps (Bowling, Beffroi).
+- Proposé et gardé : elle grandit (environ deux fois un trio), a une action avec la flèche du joueur (comme les trios), suit le
+  joueur dans l'arène de MK (comme les balistes et les tours de givre) ; les boss ne sont jamais tués d'un coup.
+
+**Les idées de Claude**, par famille (le joueur en garde une par famille) :
+- **Forge et poudre** : le **Colosse de forge** (un géant de fer agenouillé, une fournaise dans la poitrine ; son marteau tombe
+  où tombe ta flèche ; la coulée de fonte sur toute la voie ; il plaque MK au sol) ; la **Bombarde de siège** (un canon de 15 m
+  dont l'obus traverse la carte ; ta flèche marque la cible ; le tir de barrage ; un boulet enchaîné immobilise MK) ;
+  l'**Enclume céleste** (une forge volante tient une enclume grande comme une maison au bout de ses chaînes ; ta flèche coupe
+  la chaîne ; le ciel de fer ; l'enclume cloue MK au sol) ; le **Volcan éveillé** (le volcan retiré le 1er novembre, en géant :
+  ta flèche dans le cratère le fait entrer en éruption ; toute la voie en coulée de lave ; des bombes de lave sur MK).
+- **Fête foraine** : le **Grand Chapiteau** (le chapiteau avale l'ennemi visé par ta flèche et le recrache par son canon humain ;
+  la grande parade, toute une voie figée à danser ; des ballons explosifs sur MK) ; la **Grande Roue** (ses nacelles ramassent
+  les ennemis et les lâchent d'en haut ; ta flèche décroche une nacelle pleine sur un groupe ; la roue folle qui roule sur la
+  voie ; un crochet attrape l'aile de MK) ; le **Grand Manège** (des chevaux de bois géants ; les ennemis tournent et sont
+  éjectés ; ta flèche l'emballe ; la charge, tous les chevaux descendent la voie au galop ; ils chargent MK).
+- **Glace et temps** : la **Grande Horloge** (de glace ; à chaque heure, les ennemis du cadran sont rembobinés et givrés ; ta
+  flèche arrête le temps sur une zone, tes flèches attendent en l'air ; Minuit éternel, toute la carte gelée 6 s ; MK figé en
+  vol) ; le **Sablier géant** (son ombre ralentit le temps ; ta flèche fait couler le sable sur un groupe, figé dedans ; le
+  retournement, toute une voie renvoyée à son départ ; MK ralenti) ; le **Géant des glaces** (un yéti de 10 m ; son souffle
+  givre la voie ; ta flèche lui fait lancer une boule de neige géante ; l'ère glaciaire, un glacier avance sur la voie et
+  enferme tous les ennemis, ta flèche les brise d'un coup ; il gèle les ailes de MK, qui tombe).
+
+**Le choix du joueur (2 novembre au soir)** : les trois conseillées par Claude, le **Colosse de forge** (forge et poudre), le
+**Grand Manège** (fête foraine) et la **Grande Horloge** (glace et temps). Le joueur : la Grande Horloge reprend l'arrêt du
+temps du Beffroi au niveau 3 (Minuit, qu'il a réglé sur toute la carte : 9 s toutes les 20 s) ; **Minuit passe donc à
+l'ultime**, et le niveau 3 du Beffroi reçoit autre chose. Le code de Minuit (la bulle, le noir et blanc, les flèches arrêtées,
+« Za Warudo ! Temps, arrête-toi ! » et « Le temps reprend son cours ») est gardé pour la Grande Horloge. Rien n'est codé.
+
+**Le nouveau niveau 3 du Beffroi, les propositions de Claude** (aucune règle nouvelle : chacune pousse le rembobinage des niveaux
+1 et 2 ; à choisir par le joueur) :
+- **Le Phare du passé** (conseillé) : toutes les 20 s, avec cinq ennemis à portée, la lanterne du sommet (celle du niveau 2)
+  s'allume et un grand faisceau sépia fait un tour complet autour du beffroi en 6 s, sur toute la carte, comme un phare ; chaque
+  ennemi au sol qu'il balaie est rembobiné (8 s de son chemin) puis figé 3 s. Le phare du trio (Boussole folle + Phare) en
+  démesure ; rien ne ressemble à Minuit (ni bulle, ni noir et blanc, ni flèches arrêtées) ; le joueur voit venir le faisceau.
+- **Le Grand Rembobinage** : douze coups en 6 s ; à chaque coup, tous les ennemis au sol de la carte reculent d'une demi-seconde
+  sur leur chemin, dans un monde sépia (un vieux film qu'on rembobine), puis figés 3 s. Plus simple à coder (la bulle et les
+  douze coups de Minuit), mais il ressemble trop à Minuit.
+- **Le Pendule** : un balancier doré de 15 m descend sous le beffroi et balaie la voie d'un bord à l'autre pendant 10 s, au
+  rythme du tic-tac ; chaque ennemi touché est rembobiné. Très visible, mais seulement sur sa voie, et un balayage proche de
+  l'Avalanche et du Boulet fou ; une pièce de modèle en plus.
+- La progression : rembobiner autour de lui (1), figés à l'arrivée (2), toute la carte rembobinée (3), puis le temps arrêté (la
+  Grande Horloge, l'ultime). Les boss et les volants ne sont toujours pas rembobinés.
+
+### 12.45 Le Beffroi au niveau 3 : le Phare du passé (2 novembre au soir)
+
+Le joueur choisit le **Phare du passé** parmi les trois propositions de 12.44. Codé (`Building/TrioBeffroi.cs`), compilé
+(`compile_check` et `compile_check_editor` sans erreur ni avertissement) ; **pas encore vu dans Unity ni testé au casque**
+(tests : `Checklist_Demo.md`, « Le Beffroi, son nouveau niveau 3 »).
+- **Le Phare du passé** : toutes les 20 s, avec au moins cinq ennemis à 15 m de la cloche, « Le Phare du passé ! », la cloche
+  sonne et un faisceau sépia part de la lanterne du sommet (celle du niveau 2) : une part de lumière de 6° qui descend jusqu'au
+  sol et va à 110 m (toute la carte) ; il fait un tour complet en 6 s, en partant vers l'ennemi le plus proche. Chaque ennemi au
+  sol qu'il balaie est rembobiné comme par la cloche (8 s de son chemin, à reculons en 1,2 s), puis figé 3 s (le niveau 2) ; une
+  fois par tour. Les aiguilles tournent à l'envers à toute vitesse pendant le tour. Les boss et les volants ne sont pas
+  rembobinés. La cloche continue de sonner à côté (toutes les 4 s au niveau 3).
+- Pour rembobiner toute la carte, le beffroi note au niveau 3 le chemin de tous les ennemis au sol à 110 m (une position tous les
+  dixièmes de seconde, comme avant à 23 m). Les ennemis rembobinés par le faisceau ont une traînée sépia plus clairsemée que ceux
+  de la cloche (une gerbe toutes les 0,3 s au lieu de 0,08 s) et le bruit de cassette joue au plus toutes les 1,5 s : toute la
+  carte recule en même temps (le Quest).
+- Les réglages sont en tête du script (partie « Le Phare du passé ») : la lanterne, l'intervalle, la portée, la durée du tour, la
+  largeur, le matériau. `Editor/BeffroiPhareBaker` (chaque étape une fois, avec sa garde) : le matériau
+  `Art/TowerDefense/Faisceau_du_passe.mat` (la lumière transparente du Rayon du jugement, en sépia) ; le prefab (ce matériau et la
+  lanterne) ; le texte du niveau 3 de la fiche, s'il est encore celui de Minuit (« Le Phare du passé : la lanterne s'allume et son
+  faisceau fait le tour de toute la carte ; chaque ennemi qu'il balaie rembobine son chemin, puis reste figé. »).
+- **Minuit** reste dans le code du Beffroi, en sommeil : il ne joue qu'au niveau 4, celui de l'ultime, que rien n'atteint tant que
+  la Grande Horloge n'est pas codée ; ses réglages du prefab (ceux du joueur : toutes les 20 s, toute la carte, 9 s) sont gardés.
+  Le modèle du niveau 3 ne change pas (la lune, l'étoile, les douze heures).
+- Le tableau d'équilibrage (`Tools/equilibrage_tours.py`) compte le Phare du passé au niveau 3 à la place de Minuit (à relancer
+  après Unity) ; `Tools/allure_tours/trios.py` a le nouveau texte.
+
+### 12.46 Les ultimes dans le code : le système et le Colosse de forge (2 novembre au soir)
+
+Le joueur : « partons sur les 3 ultimes, fais le premier ». Codé, compilé (`compile_check` et `compile_check_editor` sans erreur
+ni avertissement), le modèle dessiné hors de Unity sans faces superposées (`Tools/allure_tours/apercu.py`, « Duo:Colosse de
+forge ») ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Le Colosse de forge »). Aucun asset
+téléchargé : le géant est fait de formes simples, comme les trios ; les sons sont ceux du projet (à remplacer si le joueur le veut,
+voir plus bas). Textes et chiffres : des propositions, à revoir aux essais.
+
+**Le système** (la règle de 12.44, sans rien de plus) :
+- Une ultime est une tour (`Building/TowerUltimate.cs`, hérite de `TowerTrio`) : elle garde les trois tours de son trio, et le trio
+  dont elle est née (`FromTrio`). Sa définition (`Data/Duos/Ultime_Colosse`) n'a **qu'un niveau**, dont les plans (10) sont ceux de la
+  transformation ; elle se pose partout (*Anywhere*) sur 4 × 4 cases (celles de l'Enclume et de la Grande bombarde) : elle reste à la
+  place de son trio, sur la voie ou au bord. Le catalogue `Resources/TowerDuos` a une liste à part, **Ultimes** (son nom, sa
+  définition, les trios de sa famille).
+- **La transformer** : un plan de l'une des trois tours du trio, sorti de la montre et posé sur le trio au niveau 3 (l'hologramme
+  dit « Ultime : Colosse de forge (10 plans) »), ou la carte « Ultime » du panneau du trio. Entre les vagues seulement (« L'ultime se
+  bâtit entre les vagues »), **une seule par partie** (« Une seule ultime par partie »), 10 plans de ses trois tours
+  (`BuildManager.UltimateOf`, `BuildUltimate`). Le trio disparaît, l'ultime apparaît en plan bleu à sa place, et le joueur la bâtit
+  avec ses marteaux (3 coups), comme un niveau ordinaire ; finie : « Ultime : Colosse de forge ! » et ce qu'elle fait.
+- La vitrine **F4** la montre après les trios (une seule, sur la voie du centre ; sinon dans la clairière de droite).
+- **L'arène de MK** (`FinalBoss/ArenaTurrets`) : l'ultime y descend la première, avant les balistes et les tours de givre, réduite
+  aux deux tiers (0,65 : la voûte est à 22,5 m près des parois, le plateau à 5 m), et retrouve sa taille et sa place à la fin.
+- Pour MK, un état nouveau : **plaqué au sol** (`FinalBoss/DragonBoss.Pin.cs`, `DragonBoss.Pin(durée)`) : en vol, il tombe sous lui
+  (hors des piliers), s'étend à terre (l'animation « Sleep »), puis se relève et reprend le combat (en vol s'il est dans sa phase en
+  vol). Pas pendant l'intro, un rugissement (il change de phase) ni s'il l'est déjà.
+
+**Le Colosse de forge** (`Building/UltimeColosse.cs`, l'Enclume ou la Grande bombarde au niveau 4) : un géant de fer de 18 m, à genoux,
+les genoux écartés (sur la voie, les ennemis passent entre eux, sous son bassin) ; une fournaise dorée dans la poitrine, deux
+cheminées qui fument dans le dos, des yeux de braise, une crête dorée, des épaulières de bronze ; son marteau à la main droite, la
+tête posée au sol devant son genou ; une grande enclume cerclée d'or à côté de lui. Le buste se tourne vers sa cible (120° au plus
+de chaque côté). Modèle : `Tools/allure_tours/ultimes.py` (partie « ultimes » du fichier d'allure, faite par le baker). Les
+réglages sont en tête du script :
+- **Son marteau tombe où tombe ta flèche** : une flèche tirée qui touche à 30 m de lui (le sol, un ennemi, un volant), et il lève
+  son marteau par-dessus sa tête et le lance là ; le marteau tourne en l'air, frappe, reste planté un instant, puis revient à sa
+  main. L'impact : 140 de dégâts au centre, 70 au bord, dans 5 m ; tout ce qui survit vole en l'air (« Au vol ! ») ; le sol rougit
+  sous la tête du marteau (une flaque de fonte en feu, 3 s). Un ennemi touché par la flèche est suivi ; un volant, frappé en l'air.
+  Si le marteau est en vol, ta flèche reste sa cible 3 s : il y va dès qu'il l'a rattrapé (un coup toutes les 2,5 s environ).
+- **Sans flèche**, il le lance de lui-même au plus toutes les 5 s, sur l'ennemi au sol qui a le plus de voisins à sa portée.
+- **Un boss** n'est jamais projeté ni tué d'un coup : 1,5 % de ses PV max par coup de marteau.
+- **La coulée de fonte** : toutes les 25 s, avec au moins six ennemis au sol sur la voie la plus proche, entre lui et la forêt
+  (« La coulée de fonte ! ») : la fonte coule de sa poitrine jusqu'au sol (1,2 s, un jet lumineux), puis descend la voie vers la
+  forêt sur 70 m (14 m/s, 7 m de large) : 80 de dégâts et une brûlure (40 sur 3 s) à ceux qu'elle touche, repoussés vers la forêt
+  en l'air (pas les boss) ; elle laisse la fonte au sol 4 s (des flaques sans flammes : il y en a une vingtaine, le Quest). Une
+  lueur orange suit le front.
+- **Dans l'arène de MK** : ta flèche dans MK, et le marteau le **plaque au sol** 3 s (« Plaqué au sol ! »), au plus toutes les
+  12 s ; il y perd 3 % de ses PV max. Rien d'autre là-bas (pas de coulée ni de coup de lui-même). À l'arrivée : « Le Colosse de
+  forge est là ! Touche MK : son marteau le plaque au sol ».
+- Les cadences suivent les parchemins d'adresse et le phare (*Overcharge Rate*) ; les dégâts, la force des bâtiments (*Strength*).
+
+**Les sons** : le lancer (le souffle rapide), l'impact (`impactPlate_heavy`, grave), le marteau rattrapé (`impactMetal_heavy`),
+ceux du projet. Pour la fonte, le joueur a choisi le même soir quatre sons CC0 de freesound.org, qu'il télécharge lui-même (il faut
+un compte) : la fournaise de fonderie d'iankath (173991), la boucle de lave de Fission9 (474850), le grésillement de magnuswaker
+(540080), le souffle de feu de hnhnh (244926) ; les originaux sont dans `Audio/` (20 Mo). Découpés par Claude en trois fichiers
+courts (mono, 16 bits, 48 kHz, 1,1 Mo en tout ; détail dans `Credits_Licences.md`) : `Audio/Colosse_Fournaise` (3,8 s : le souffle
+sur 3,5 s du grondement de la fournaise, au début de la coulée), `Audio/Colosse_Gresillement` (1,3 s : sous la tête du marteau, et
+là où la fonte touche le sol) et `Audio/Colosse_Coulee` (6 s bouclées par un fondu enchaîné : elle suit le jet puis le front de la
+coulée, monte vite et s'éteint doucement avec elle) ; réglages *Pour Clip*, *Sizzle Clip*, *Flow Clip*. Unity a fait le prefab
+pendant que le joueur téléchargeait : ces trois réglages y sont vides. `Editor/ColosseSonsBaker` les pose, une fois, s'ils sont
+vides (ou encore `fire_loop`, le son provisoire) et que les fichiers existent : à l'ouverture de Unity, et quand l'un des sons
+est importé. Écoutés seulement en forme d'onde (pas de claquement au raccord de la boucle) : **à écouter en jeu**.
+
+**À surveiller aux tests** : la place sur la voie (4 × 4 cases, le géant en déborde : ses genoux à 3 m de part et d'autre, l'enclume
+à 5,6 m) ; le marteau qui revient bien à la main (le poing bouge pendant le retour) ; la pose sur un trio (l'hologramme, le panneau)
+et le refus pendant une vague ; le corps de MK quand il est plaqué (au sol, hors des piliers ; l'animation « Sleep ») ; la vue
+depuis la tour (18 m de haut, le marteau levé à 24 m) ; la coulée sur les voies qui tournent ; le Quest (la lueur, les gerbes).
+
+**Pas encore fait** : l'ultime dans le tableau d'équilibrage (`Tools/equilibrage_tours.py`) ; une flèche dorée « ULTIME » au-dessus
+d'un trio prêt à se transformer, comme les flèches « DUO » et « TRIO » (proposé, à décider par le joueur) ; le Grand Manège et la
+Grande Horloge.
+
+### 12.47 Le Colosse refait : « on doit ressentir sa puissance » (2 novembre au soir)
+
+L'essai du joueur (F4) : « son attaque est loin d'être impressionnante, de même pour sa coulée de lave qui manque de peps ; de
+manière générale il faut que le total du modèle soit plus fini : plus texturé, plus lumineux, avec plus de particules, et une
+animation de spawn, le ciel qui change, à chaque coup de marteau un éclair qui tombe ; on doit ressentir sa puissance ». Aucune
+règle ne change (le marteau où tombe ta flèche, la coulée, MK plaqué) : tout est dans l'allure, le son et la force des coups.
+Compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), le modèle dessiné hors de Unity sans faces superposées ;
+**pas encore revu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « Le Colosse de forge, refait »).
+
+**L'éveil** (son apparition ; bâti au marteau, ou posé par F4) : « Le Colosse de forge s'éveille ! » ; le sol se fend de fonte en
+étoile, une mare de fonte en feu, et il **sort de terre** (14 m, en 2,4 s) dans la roche qui vole, la poussière et les
+éclaboussures de fonte, le sol qui tremble sous les mains (les manettes vibrent) ; un éclair au loin. Debout, sa fonte s'allume
+(veines, yeux, fournaise), la fournaise crache le feu et rugit, ses braises et sa fumée partent. Il lève son marteau, **la foudre le
+frappe**, et il l'**abat** devant lui : « LE COLOSSE DE FORGE ! », l'onde de choc renverse tous les ennemis à 22 m (100 de dégâts),
+le sol se fend, la roche vole. Il se bat 1,5 s plus tard.
+
+**Le ciel de forge** (`World/SkySettings.Forge`, posé par-dessus celui de la difficulté : `SkyController.SetOverlay`, nouveau) :
+un orage de braise, noir et rouge, le soleil comme une fournaise, des éclairs au loin, les nuages et la lumière de la carte avec.
+Plein pendant l'éveil, fort pendant la coulée (85 %), léger tant que le Colosse est là (35 %) ; rien dans l'arène de MK. Le ciel
+sait aussi lancer un éclair à la demande (`SkyController.Strike`) : toute la carte s'éclaire.
+
+**Le coup de marteau** : en haut du geste, **un éclair tombe sur le marteau levé** (le ciel s'éclaire, le tonnerre) ; le marteau
+chargé vole avec une traînée de feu et crépite d'éclairs ; à l'impact, **un second éclair tombe avec lui**. Puis : une onde de choc
+de lumière qui s'élargit au ras du sol (13 m), la poussière en anneau, la roche qui vole (des éclats, dont des éclats de fonte), le
+feu, des fissures de fonte qui partent de l'impact et refroidissent, le sol en feu sous la tête, un éclat de lumière, les manettes
+qui vibrent ; le grand impact, le coup, le tonnerre, le grésillement. Plus fort : 160 de dégâts dans 6 m, les survivants projetés
+plus haut. Un peu plus lent, pour que chaque coup soit un événement : lever 0,7 s, de lui-même toutes les 6 s.
+
+**La coulée de fonte** : la fournaise explose en flammes ; un **torrent** de fonte animée (1,9 m d'épaisseur) coule de sa poitrine
+jusqu'au sol, qui éclabousse, fume et flambe ; puis une **rivière de fonte** (une bande de 7 m qui suit la voie et le sol, la fonte
+animée qui coule vers la forêt, plus froide sur les bords) s'allonge derrière sa **vague** (un dos de fonte qui roule en tête, des
+flammes, des éclaboussures, la lumière qui la suit). La vague : 90 de dégâts, une brûlure, « Fondu ! », projetés vers la forêt ; la
+rivière encore chaude brûle ceux qui y marchent (30 par seconde) ; au bout, elle refroidit (la croûte noire gagne, 6 s), s'enfonce et
+disparaît. Des braises montent de la rivière. La coulée est un peu plus lente (12 m/s) pour qu'on la voie descendre.
+
+**Le modèle fini** (une nouvelle passe, « Finition du 2 novembre », qui refait le modèle ; `Tools/allure_tours/ultimes.py`) :
+- **la fonte** : un shader nouveau, `Shaders/MoltenIron.shader` (« Archery/MoltenIron », la lave de l'arène sans ses réglages
+  d'arène, qui refroidit morceau par morceau), et son matériau `Art/TowerDefense/Fonte_en_fusion.mat` : la fournaise, les yeux, des
+  veines sur la poitrine, le ventre, les bras, les cuisses et les tibias, des fentes dans les genouillères, la bouche des cheminées,
+  un évent dans le dos, une croix sur chaque face du marteau et une veine autour de sa tête, et les fissures d'un socle de basalte
+  sous lui. Leur éclat palpite, s'emballe à la foudre et pendant la coulée ;
+- **le fer martelé** : `Tools/texture_fer_martele.py` dessine `Art/TowerDefense/Colosse_Fer.png` (la couleur : creux, grain, suie,
+  rouille, rayures) et `Colosse_Fer_Relief.png` (le relief) ; `Editor/ColosseFinitionBaker` les pose sur les matériaux du Colosse
+  (`Palettes/Ultime_Colosse_*`), une fois : le fer métallique et un peu poli, le bronze et le cuivre brillants, l'or très poli qui
+  luit un peu ;
+- **des détails** : des cornes et des pointes d'épaulières dorées, des tuyaux de cuivre dans le dos, les plaques de tibia et leurs
+  rivets, des rivets sur la ceinture, le socle de basalte fendu ;
+- **des particules qui ne s'arrêtent pas** : les braises de la fournaise, la fumée et les étincelles des cheminées, les gouttes de
+  fonte du marteau ; **une lumière** dans la fournaise, qui éclaire autour de lui.
+
+**Les sons** : le tonnerre et le grand impact, choisis par le joueur le même soir (freesound, CC0, téléchargés par lui dans
+`Audio/`) : *thunder crack.wav* de cognito perceptu (347853 ; découpé par Claude en `Audio/Colosse_Tonnerre.wav` : 4,5 s depuis le
+claquement, en mono, 48 kHz) et *Cinematic Trailer Hit Explosion CC0.mp3* de Wakerone (513110, tel quel). Le fichier d'allure les
+nomme ; `Editor/ColosseSonsBaker` les pose aussi s'ils arrivent après le prefab (à la place de l'explosion provisoire).
+
+**À surveiller aux tests** : les éclairs fréquents (un toutes les 3 s environ, guidé par tes flèches : *Strike Flash* les rend plus
+doux dans le ciel) ; le ciel de forge (trop rouge ou pas assez : *Sky Idle*, *Sky Flow*) ; la rivière sur les voies qui tournent et
+les ponts (elle suit le sol, section par section) ; la sortie de terre (le géant traverse le sol, la vitrine F4 aussi) ; le Quest
+(les lumières : la fournaise, la coulée, les éclats ; les explosions de feu de la vague).
+
+### 12.48 Le Colosse à deux mains : la forge, et un marteau par flèche (2 novembre, tard)
+
+Le deuxième essai du joueur (F4) : le son et le visuel vont mieux, « même s'il faudrait retirer le changement de ciel après la
+construction, cela doit être temporaire » ; mais « son attaque est très décevante, on ne ressent pas sa puissance puisqu'il
+n'attaque qu'une fois tous les certains temps, on ne ressent pas le nombre ». Son idée : un marteau sur chaque flèche tirée, qui irait
+bien avec la pluie de flèches et le multishot, mais il craint les lags au casque. Claude propose quatre pistes (la forge qui bat sans
+arrêt, un grand coup au 5e ; le marteau qui ricoche d'ennemi en ennemi ; son idée plafonnée : ses flèches donnent la cadence ; la
+colère, qui remplacerait la coulée) et conseille la forge et le ricochet. **Le choix du joueur : la forge et son idée** : « d'une main
+il frappe sa forge, de l'autre il envoie des marteaux à chaque flèche (cap à 5 par seconde) ». Compilé (le jeu et les outils
+d'éditeur, sans erreur ni avertissement), le modèle dessiné hors de Unity sans faces superposées ; **pas encore vu dans Unity ni
+testé au casque** (tests : `Checklist_Demo.md`, « Le Colosse de forge, à deux mains »).
+
+**La forge, de la main gauche** : le bras gauche devient un bras articulé, comme celui du marteau, qui tient une masse de forge ;
+devant le genou gauche, sur un billot de basalte, la grande enclume (2,4 fois celle de l'Enclume, sa bigorne vers lui) et **un
+lingot de fonte** sur sa table (le modèle : « Les deux mains du 2 novembre », `Tools/allure_tours/ultimes.py`, qui calcule l'angle
+du bras pour que la masse repose sur le lingot). Il le bat sans arrêt, **un coup toutes les 1,2 s** (les parchemins d'adresse et la
+surcharge l'accélèrent ; 2,5 fois moins souvent sans ennemi à 30 m) : il lève la masse et l'abat, les étincelles jaillissent, le fer
+sonne, plus aigu à mesure que le lingot chauffe (*impactBell_heavy_001*, du pack de Kenney déjà dans le projet, CC0). Chaque coup
+lance **un éclat de fonte** en cloche sur un ennemi au sol, au hasard, à sa portée (30 de dégâts dans 2,5 m). Le lingot chauffe :
+rouge sombre et croûté, puis blanc. **Au 5e coup, le grand coup** : il lève sa masse par-dessus la tête, **la foudre la frappe** (le
+ciel s'éclaire), il l'abat ; une onde autour de l'enclume, le fer battu, et **le lingot chauffé à blanc part** en cloche sur le
+groupe le plus serré, en crépitant d'éclairs. Il tombe avec la foudre : c'est le coup de 12.47 (160 de dégâts dans 6 m, les
+survivants projetés, l'onde de choc, la roche, le sol fendu de fonte, le sol en feu). Un lingot neuf revient sur l'enclume. Sans
+ennemi à portée, il garde son lingot chauffé à blanc pour le coup suivant. Le buste se penche en arrière quand la masse se lève ;
+**il ne se tourne plus** (la masse doit retomber sur l'enclume) : seul le bras du marteau se tourne, à l'épaule.
+
+**Les marteaux, de la main droite** : chaque flèche tirée qui touche un ennemi à 30 m, et il lance sur lui **un marteau de fonte**
+(une copie du sien, à 55 %, qui tournoie dans une traînée de feu) : 40 de dégâts dans 3 m, les survivants sautent, un petit éclair
+crépite, le coup sonne. Une flèche dans le sol : le marteau va sur l'ennemi au sol le plus proche (5 m au plus), sinon rien. Celles
+de la pluie de flèches et du multishot comptent : **5 marteaux par seconde au plus** (le plafond du joueur) ; les flèches attendent
+leur marteau (8 au plus, les plus anciennes s'effacent ; 2 s au plus). Le bras se lève par-dessus la tête tant que des flèches
+attendent, donne un coup sec par marteau, tourné à l'épaule vers la cible (de 35° vers le dedans à 110° vers le dehors), et se
+repose 0,9 s après le dernier. Il ne lance plus son marteau de lui-même : sans toi, la forge travaille seule ; avec toi, il se
+déchaîne.
+
+**Pour le casque** : ce qu'il lance (marteaux, éclats, lingot) est réutilisé d'un lancer à l'autre ; les étincelles et la poussière
+des petits coups viennent de deux systèmes de particules à lui, déplacés là où ça frappe (pas d'objet neuf par coup), sans lumière ni
+éclair du ciel. Les lumières, l'éclair du ciel, les explosions et la roche qui vole restent au grand coup (toutes les 6 s environ).
+
+**Le ciel de forge, passager** : pendant l'éveil, puis le temps d'une coulée ; le reste du temps, le ciel de la partie (le réglage
+*Sky Idle* est retiré). Après l'éveil, il revient en 4 s.
+
+**Dans l'arène de MK** : tes flèches dans MK y envoient les marteaux (0,1 % de ses PV max chacun), les éclats de la forge le visent
+aussi, et **le lingot le plaque au sol** (3 s, 3 % de ses PV max, au plus toutes les 12 s ; entre deux, le grand coup attend). À
+l'arrivée : « Touche MK : ses marteaux suivent tes flèches, son lingot le plaque au sol ».
+
+**Les textes** de la carte et du niveau décrivent les deux mains (les anciens sont remplacés s'ils n'ont pas été changés à la main).
+
+**La puissance** (à régler aux essais, et à mettre au tableau d'équilibrage) : seule, la forge fait environ 25 dégâts par seconde
+(les éclats) et 27 (le grand coup), comme le marteau d'avant ; les marteaux s'ajoutent selon tes tirs, 40 par flèche qui touche,
+jusqu'à 200 par seconde au plafond. Les réglages sont sur le prefab : *Forge Interval*, *Chunk Damage*, *Strikes Per Ingot*,
+*Throw Interval*, *Queue Size*, *Hammer Damage*, *Hammer Radius*, *Hammer Scale*…
+
+**À surveiller aux tests** : la masse qui retombe juste sur le lingot ; le bras du marteau à 5 coups par seconde (trop frénétique ?) ;
+le fer qui sonne à chaque coup (lassant ?) ; les lags sous la pluie de flèches ; le grand coup qui attend quand il n'y a personne.
+
+**Une idée du joueur, pour plus tard** (le même soir) : une lumière sous chaque tourelle pendant le boss final, pour mieux les voir
+(`FinalBoss/ArenaTurrets.cs`).
+
+### 12.49 Des marteaux imposants, et la force au tableau (2 novembre, tard)
+
+Le troisième essai du joueur : « les marteaux doivent être bien plus imposants, comme la précédente version, et garder les mêmes
+dégâts (les dégâts actuels sont vraiment faibles, j'ai l'impression) ; compare avec les autres trios du Excel ». Compilé (le jeu et
+les outils d'éditeur, sans erreur ni avertissement) ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`,
+« Le Colosse de forge, la force »).
+
+**Ce que Claude a trouvé** : le Colosse essayé avait encore les chiffres de 12.46 (le marteau : 140 dans 5 m ; la coulée : 80) ; les
+hausses de 12.47 (160 dans 6 m, la coulée plus forte) n'avaient jamais atteint le prefab : le baker de l'allure refait le modèle à
+chaque marque, mais garde les réglages déjà posés. Au tableau (la méthode de `Tools/equilibrage_tours.py` : Normal, sans bonus, le
+groupe de 5 ennemis serrés), le Colosse de 12.48 faisait **79 dégâts par seconde sur une cible et 307 sur le groupe** (une flèche qui
+touche par seconde ; seule, la forge : 39 et 140), quand l'Enclume au niveau 3 fait 169 et 884 et la Grande bombarde 246 et 737 :
+l'ultime valait moins que ses propres trios, à peu près une Enclume au niveau 1.
+
+**La force** (`Editor/ColosseForceBaker`, une fois, seulement les réglages qui ont encore leur valeur d'avant ; le code a les mêmes) :
+- **les marteaux**, ceux du marteau d'avant : **160 dans 6 m**, les survivants projetés en vrille (8 et 12 m/s) ;
+- **la forge**, pour que seule elle vaille un trio moyen au niveau 3 : les éclats **30 → 70 dans 3 m** (2,5 avant), le lingot **140 →
+  450 dans 7 m** (5 avant ; la grande enclume de l'Enclume : 350 dans 6 m), projetés plus loin ; le sol en feu un peu plus large et
+  plus brûlant ;
+- **la coulée de 12.47**, enfin posée : 12 m/s, 90 de dégâts, 50 de brûlure, repoussés à 12 m/s, 1,4 s de torrent, 6 s pour refroidir.
+
+Au tableau, après : **270 sur une cible et 1 158 sur le groupe** avec une flèche qui touche par seconde (1,3 fois l'Enclume au niveau 3),
+**430 et 1 891** avec deux (le double de l'Enclume : la règle des ultimes, « environ deux fois un trio »), **910 et 4 091** au plafond de
+5 marteaux par seconde (la pluie de flèches, le multishot) ; seule, la forge : **110 et 424** (un trio moyen au niveau 3 : Bowling 484,
+Colisée 390). Le Colosse est dans le tableau, avec les trios (`colosse()`, une flèche qui touche par seconde : `HITS_PER_SECOND`) :
+relancer `py Tools/equilibrage_tours.py` une fois Unity passé (le prefab a alors ses nouveaux chiffres).
+
+**Des marteaux imposants** (comme le marteau d'avant, 12.47) : chaque marteau lancé est **aussi grand que le sien** (*Hammer Scale* 0,55
+→ 1), part de son poing, tournoie haut dans sa traînée de feu en crépitant d'éclairs, se remet tête en bas et frappe : **la foudre tombe
+avec lui**, l'onde de choc, l'explosion de feu, la poussière en anneau, les étincelles, le coup et le grand impact ; il **reste planté**
+0,3 s, puis s'enfonce dans le sol. Au début d'une salve, **la foudre frappe son marteau levé** (au plus toutes les 4 s).
+
+**Pour le casque** (jusqu'à 5 coups par seconde) : les éclairs et les explosions sont réutilisés (`LightningBolt`, `ExplosionFx`), les
+étincelles et la poussière viennent de ses deux systèmes de particules ; le **coup complet** (l'éclat de lumière, le tonnerre, la roche
+qui vole, le sol fendu de fonte et en feu, les manettes qui vibrent) au plus toutes les 0,5 s (*Heavy Interval*) ; **l'éclair dans le
+ciel** au plus toutes les 1,2 s (*Sky Flash Interval* ; ceux de la masse levée et du grand coup passent toujours) : pas de ciel qui
+clignote. Un boss perd 0,2 % de ses PV max par marteau (*Hammer Boss Share* : 1 % par seconde au plus).
+
+**À surveiller aux tests** : la puissance (trop forte avec la pluie de flèches ? *Hammer Damage*, *Throw Interval*) ; la fluidité sous
+la pluie de flèches ; les marteaux plantés qui gênent la vue ; le bruit (le coup, le grand impact, le tonnerre).
+
+### 12.50 Les dégâts du Colosse sur les boss des vagues (2 novembre, tard)
+
+Le joueur : « les dégâts de la tour devraient aussi marcher sur les boss » ; puis « pas MK, on garde son effet actuel ». Jusqu'ici, un
+boss sous un coup du Colosse ne perdait qu'une part de ses PV max (12.44 : 1,5 % sous le lingot, 0,2 % sous un marteau, 0,1 % sous un
+éclat, 1,5 % à l'éveil). Désormais **un boss des vagues prend les mêmes dégâts que les autres** (le marteau, le lingot, l'éclat, l'onde
+de l'éveil ; la coulée le blessait déjà), **et en plus** cette part de ses PV max ; il n'est toujours jamais projeté. Comme la Grande
+bombarde, qui blesse les boss sans les projeter. **MK, dans l'arène, ne change pas** : ses parts seulement (0,2 % par marteau, 0,1 % par
+éclat, 3 % quand le lingot le plaque au sol). Compilé (sans erreur ni avertissement) ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.51 Le Grand Manège, la deuxième ultime (2 novembre, tard)
+
+Le joueur : « cette conversation aura pour but la création de la deuxième tourelle ultime ». Fait d'emblée avec tout ce que le
+Colosse a appris (`Docs/Ultimes_Cahier.md`). Ce qui n'était pas décidé, le joueur l'a choisi parmi les propositions de Claude :
+- **l'action seule et continue** : **la ronde** (conseillée ; les autres : les fers à cheval, le tourbillon) ;
+- **le grand coup régulier** : **la grande éjection** (pas le cheval d'or conseillé) ;
+- **le signe de chaque coup** : **le feu d'artifice** (conseillé ; l'autre : confettis et fanfare) ;
+- **MK** : **étourdi** (conseillé ; l'autre : renversé et repoussé).
+
+Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), le modèle dessiné hors de Unity sans faces superposées
+(`Tools/allure_tours/apercu.py`, « Duo:Grand Manège ») ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`,
+« Le Grand Manège »). Textes et chiffres : des propositions, à revoir aux essais.
+
+**Le modèle** (`Tools/allure_tours/ultimes.py`, « Manège du 2 novembre » ; le Gonfleur, le Colisée ou les Montagnes russes au niveau 4,
+4 × 4 cases, partout comme le Colosse) : un carrousel de 19 m de haut et 15 m de large, **perché sur son mât** (le plateau à 3,6 m :
+sur la voie, les ennemis passent dessous, autour du socle). Le mât rouge et crème cerclé d'or, ses huit miroirs ; huit jambes de force
+sous le plateau ; l'orgue (dix tuyaux dorés qui fument) et son tambour ; le plateau de planches, son bord doré, sa frise rouge et crème ;
+**huit grands chevaux de bois** au galop (3,5 m, chacun sa robe, son tapis de selle et son plumet ; la crinière, la queue et les sabots
+dorés) et quatre petits au milieu, sur leurs barres dorées ; le plafond et sa rosace ; la frise du chapiteau (24 panneaux, un miroir
+ovale cerclé d'or sur chacun, des pampilles dorées) ; le toit rayé rouge et crème (16 pans, des nervures dorées) ; la lanterne, la
+boule dorée, le fanion ; cent quatre ampoules. Le manège tourne, les chevaux montent et descendent sur leurs barres.
+- **Ce qui luit** : les ampoules, en trois groupes (« Ampoule A », « B », « C » : trois copies du matériau
+  `Art/TowerDefense/Ampoule_de_manege.mat`, animées), qui s'allument **en chenille** (plus vite quand il s'emballe), clignotent toutes
+  ensemble avant la grande éjection et s'emballent aux grands moments ; une lumière sous le chapiteau, qui passe doucement de l'or au rose.
+- **La texture** : le bois peint et verni d'un carrousel (`Tools/texture_bois_peint.py` : `Art/TowerDefense/Manege_Bois.png`, le fil du
+  bois sous la peinture, les coups de pinceau, quelques éclats ; `Manege_Bois_Relief.png`, le relief). `Editor/ManegeFinitionBaker` la
+  pose sur ses matériaux (`Palettes/Ultime_Manege_*`), une fois : la peinture brillante, l'or très poli qui luit un peu, les miroirs.
+- **Les particules qui ne s'arrêtent pas** : des confettis qui tombent du bord du chapiteau, des paillettes dorées du sommet, la vapeur
+  de l'orgue.
+- **Pour le casque** : ses 940 pièces sont fondues au lancement (avant le plan bleu) en un maillage par matériau ; chaque cheval en un
+  maillage (il bouge seul) ; les ampoules en trois maillages (la chenille).
+
+**L'éveil** (bâti au marteau, ou posé par F4) : « Le Grand Manège s'éveille ! » ; il **sort de terre en tournant**, comme une boîte à
+musique, de moins en moins vite (17 m, 2,6 s), dans la terre qui vole, la poussière et les confettis, le sol qui tremble ; une fusée
+monte. Debout, ses ampoules s'allument, l'orgue sonne la fanfare, ses confettis partent ; **six fusées** partent du toit en éventail et
+éclatent en bouquets ; les chevaux se cabrent et hennissent ; puis **l'onde de confettis** sous un anneau de six bouquets : « LE GRAND
+MANÈGE ! », elle renverse tous les ennemis à 22 m (100 de dégâts). Il se bat 0,6 s plus tard.
+
+**Le ciel de fête** (`World/SkySettings.Fete`, posé par-dessus celui de la partie, comme le ciel de forge) : une nuit violette et rose,
+une grosse lune dorée, des aurores roses, des étoiles filantes. **Passager** : plein pendant l'éveil, fort pendant la charge (85 %),
+rien le reste du temps ni dans l'arène.
+
+**Le feu d'artifice, le signe de chaque coup** (ce qu'est la foudre pour le Colosse) : un bouquet de couleur éclate à 11 m au-dessus de
+chaque coup (une sphère d'étoiles, un cœur blanc, des paillettes qui retombent ; un seul système de particules, déplacé là où ça
+éclate) ; aux grands moments, une fusée monte en sifflant avec sa traînée dorée et éclate, et le ciel s'éclaire.
+
+**Les trois couches du rythme** (`Building/UltimeManege.cs`) :
+- **La ronde, seul et sans arrêt** : toutes les 1,2 s, un **ruban doré** part du bord du chapiteau, attrape l'ennemi au sol le plus
+  avancé vers ta tour, à 30 m (60 de dégâts, « Dans la ronde ! »), et l'amène sur le manège en cloche ; il y tourne parmi les chevaux, à
+  sa place (8 places, entre les grands chevaux), pris de **tournis** (il tourne sur lui-même, 70 de dégâts par seconde). Un boss ou un
+  volant n'est jamais attrapé : le ruban le fouette (ses dégâts ; un boss, plus 0,1 % de ses PV max).
+- **La grande éjection, au 5e coup de la ronde** (toutes les 6,9 s), qu'on voit venir : le manège **s'emballe**, les ampoules clignotent
+  ensemble, l'orgue sonne la fanfare, une fusée monte du toit (0,9 s) ; puis **tous ceux qui tournent sont éjectés d'un coup**, en vrille,
+  chacun vers sa place autour du groupe le plus serré à sa portée (sans groupe : sur la voie, vers la forêt), guidés en vol. Chacun y
+  retombe sous un bouquet : 200 de dégâts pour lui (plus sa chute, 18 % de ses PV), 100 dans 5 m autour, les survivants projetés,
+  l'onde dorée, les confettis. Sans personne sur le manège, elle attend le premier.
+- **Un cheval par flèche qui touche** (l'action du joueur) : chaque flèche tirée qui touche un ennemi à 30 m (ou le sol à 5 m de lui),
+  et **le grand cheval le plus proche saute du manège** (une copie, aussi grande que lui) et galope dans les airs jusqu'à la cible en se
+  balançant, dans une traînée de paillettes ; il la **piétine** debout : 160 de dégâts dans 6 m (ceux des marteaux du Colosse, que le
+  joueur a validés), le bouquet au-dessus, l'onde dorée, les confettis, les survivants projetés en vrille ; il reste cabré un instant,
+  puis s'efface dans une gerbe de paillettes. Ceux de la pluie de flèches et du multishot comptent : **5 par seconde au plus** (le plafond
+  du joueur) ; les flèches attendent (8 au plus, 2 s au plus). Le manège tourne plus vite tant que des flèches attendent (il s'emballe),
+  et son orgue monte avec lui. Pour le casque, comme le Colosse : le coup complet (la lumière, le grand impact, les manettes) au plus
+  toutes les 0,5 s, l'éclair du ciel toutes les 1,2 s.
+
+**La charge** (« tous les chevaux descendent la voie au galop », 12.44) : toutes les 25 s, avec au moins six ennemis au sol sur la voie la
+plus proche, entre lui et la forêt : « La charge ! », la fanfare, le hennissement, les chevaux se cabrent, trois fusées ; le ciel de fête.
+**Les huit grands chevaux sautent du manège sur la voie** (deux rangs, en travers), touchent le sol (l'onde, le grand impact), puis la
+**descendent au galop** vers la forêt sur 70 m (12 m/s) : chaque ennemi croisé, 90 de dégâts, « Piétiné ! », projeté vers la forêt en
+vrille ; la poussière, les confettis, un bouquet au-dessus de la troupe toutes les 0,55 s, le galop qui la suit. Au bout, ils
+s'effacent dans une gerbe de paillettes.
+
+**Les boss** : un boss des vagues prend tous ses dégâts comme les autres, plus une part de ses PV max (1 % sous un éjecté ou la charge,
+0,2 % sous un cheval, 0,1 % sous le ruban), sans jamais être attrapé ni projeté (la règle de 12.50).
+
+**Dans l'arène de MK** (il y descend comme le Colosse, à 0,65) : « Le Grand Manège est là ! Touche MK : ses chevaux suivent tes flèches ;
+au 5e tour, ils le chargent et l'étourdissent ». Tes flèches dans MK y envoient les chevaux (0,2 % de ses PV max chacun) ; à chaque coup
+de la ronde, le ruban le fouette (0,1 %) ; au 5e, **tous ses chevaux le chargent dans les airs**, l'un après l'autre, et le premier
+l'**étourdit** 3 s (3 % de ses PV max ; au plus toutes les 12 s). **MK étourdi** (`FinalBoss/DragonBoss.Daze.cs`, un état nouveau,
+`DragonBoss.Daze`) : il n'attaque plus ; en vol, il flotte sur place en tournant sur lui-même et dodeline ; au sol, il reste planté et
+tourne en titubant ; des étoiles dorées et **quatre petits chevaux tournent autour de sa tête** ; puis il reprend le combat (en vol, son
+cercle). Seulement en plein vol en cercle, ou au sol pendant le combat (pas pendant une ruée, un perchoir, un salto, l'intro) : sinon,
+la charge attend la suivante.
+
+**La force, au tableau d'équilibrage** (`Tools/equilibrage_tours.py`, `manege()`, dans la feuille « Trios » sous le Colosse ; Normal, sans
+bonus, le groupe de 5 ennemis serrés ; le tableau relancé le même soir, les 6 changements du joueur repris) :
+- **seul, sans le joueur** : **87 sur une cible et 484 sur le groupe** (et la chute des éjectés : 2,6 % des PV d'une cible par seconde) ;
+  la cible du cahier : un trio moyen au niveau 3 (environ 110 et 400 à 500 ; le Colosse seul : 110 et 424). Plus fort sur les groupes,
+  un peu moins sur une cible : la ronde est faite pour les foules ;
+- **avec une flèche qui touche par seconde** : **247 et 1 218** (le meilleur trio au niveau 3 : la Grande bombarde, 246 sur une cible ;
+  l'Enclume, 884 sur le groupe ; le Colosse : 270 et 1 158) ;
+- **avec deux** : **407 et 1 951** (environ deux fois le meilleur trio ; le Colosse : 430 et 1 891) ; au plafond de 5 : 887 et 4 151.
+- La charge (toutes les 25 s) n'est pas comptée, comme la coulée du Colosse. Le tournis est passé de 60 à 70 par seconde pour que la
+  ronde seule approche un trio moyen (avant le premier passage dans Unity : la valeur du code suffit, le prefab n'existe pas encore).
+
+**Les sons** : demandés au joueur dès le début, comme le veut le cahier ; Claude a proposé des sons CC0 de freesound, le joueur les a
+téléchargés dans `Audio/` le même soir (licences vérifiées : CC0) : *Carousel Organ.aif* d'Ohrwurm (64562), *Trumpet Fanfare* de
+bevibeldesign (350428), *a_herd_of_horses.wav* de gurek (547967), *Horse_neighing.wav* de Lydmakeren (510903), *Whistle and Explosion
+Single_Firework* de Rudmer_Rotteveel (336008). Découpés par Claude en Python (mono, 16 bits ; détail dans `Credits_Licences.md` ; les
+outils dans `Tools/sons/`, réutilisables : `decoupe_manege.py` refait les sept fichiers), lus seulement en forme d'onde et en spectre
+(**à écouter en jeu**) :
+- `Audio/Manege_Orgue.wav` (*Organ Clip*, en boucle, doux, plus aigu quand il s'emballe) : 16,4 s de musique, bouclées par un fondu
+  enchaîné de 0,6 s là où le rythme de la fin ressemble le plus à celui du début (cherché sur l'enveloppe des attaques) ;
+- `Manege_Fanfare.wav` (*Fanfare Clip* : l'éveil, la charge ; 7 s) et `Manege_Fanfare_Courte.wav` (*Flourish Clip*, un réglage
+  nouveau : sa première phrase, 1,6 s, pour la grande éjection, qui revient toutes les 7 s ; elle ne joue pas par-dessus la fanfare
+  entière) ;
+- `Manege_Galop.wav` (*Gallop Clip*, en boucle, la charge) : 2,66 s de la troupe au plus fort, au niveau égalisé (la troupe passe et
+  enfle), bouclées de même ;
+- `Manege_Hennissement.wav` (*Neigh Clip*) : un hennissement, 1,5 s ;
+- `Manege_Fusee.wav` (*Rocket Clip*) : le sifflement (un son pur qui descend de 6 000 à 4 400 Hz), sans ses graves, remonté de 35 dB
+  (il était très bas) ; `Manege_Bouquet.wav` (*Burst Clip*, le signe de chaque coup) : l'explosion, 0,95 s.
+Le fichier d'allure les nomme (le prefab n'était pas encore fait) ; `Editor/ManegeSonsBaker` les pose aussi s'ils arrivent après le
+prefab (la leçon de 12.46). Ceux du projet restent : le sabot (`impactWood_heavy`), le ruban (`impactSoft_medium`), le souffle, le grand
+impact de Wakerone.
+
+**Le système** ne change pas : le catalogue a une deuxième ultime (ses trios : Gonfleur, Colisée, Montagnes russes) ; la vitrine **F4**
+montre le Colosse, puis le Manège, sur la voie du centre. Une seule ultime par partie, toujours.
+
+**À surveiller aux tests** : la place (15 m de large : il déborde de la voie des deux côtés) et la vue depuis la tour (19 m) ; les
+ennemis qui tournent (bien à leur place sur le plateau, pas dans les chevaux) ; la grande éjection (ils retombent bien sur le groupe) ;
+les chevaux lancés (assez imposants ? trop nombreux sous la pluie de flèches ?) ; le feu d'artifice (lisible de loin, pas trop chargé à
+5 par seconde) ; la chenille des ampoules (assez lumineuse ? la lumière dorée et rose) ; le toit (de fines fentes entre les pans près de
+la pointe) ; la charge sur les voies qui tournent et les ponts (elle suit la voie et le sol) ; MK étourdi (en vol, au sol ; les petits
+chevaux autour de sa tête) ; le Quest (la fonte des pièces au lancement, les lumières des grands coups, les bouquets).
+
+### 12.52 La Grande Horloge, la troisième ultime (2 novembre, tard)
+
+Le joueur : « parfait, partons sur l'horloge, fais-moi des propositions avec choix comme le carrousel ». Faite d'emblée d'après
+`Docs/Ultimes_Cahier.md` (et sa partie 7, ce que le Manège a appris). Les choix du joueur, en deux séries de questions :
+- **l'action seule** : **les chiffres** (conseillés ; les autres : les heures au sol, le rembobinage) ;
+- **le grand coup** : sa réponse à lui, **Minuit après les douze chiffres** : « on reprend l'ancien Beffroi avec son Za Warudo qui dure
+  9 secondes, une fois que les 12 sont passés » (les propositions : le coup de l'heure, le rembobinage de l'heure, la chute des heures) ;
+- **sa flèche** : **l'écho du temps** (pas l'aiguille conseillée ; l'autre : la bulle du temps) ;
+- **le signe de chaque coup** : **l'aurore** (pas le cadran fantôme conseillé ; l'autre : les pics de glace) ;
+- **le modèle** : **l'horloge astronomique** (pas la tour-horloge conseillée ; l'autre : l'horloge comtoise) ;
+- **la fin de Minuit** : **le dégel qui brise** (conseillé ; l'autre : comme le Beffroi) ;
+- **MK** : **Minuit dans l'arène** (pas « figé en plein vol » conseillé ; l'autre : rembobiné).
+
+Codé, compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement), le modèle dessiné hors de Unity sans faces superposées
+(`Tools/allure_tours/apercu.py`, « Duo:Grande Horloge ») ; **pas encore vu dans Unity ni testé au casque** (tests : `Checklist_Demo.md`,
+« La Grande Horloge »). Textes et chiffres : des propositions, à revoir aux essais.
+
+**Le modèle** (`Tools/allure_tours/ultimes.py`, « Horloge du 2 novembre » ; le Bowling ou le Beffroi au niveau 4, 4 × 4 cases, partout) :
+une horloge astronomique de 18 m de haut et 16,6 m de large, **qui flotte** au-dessus de son socle de glace cerclé d'or (elle monte et
+descend doucement, reliée au socle par un rayon de glace qui luit ; trois grands cristaux autour). **Le cadran** (8 m) : la glace bleue
+cerclée d'or, le ciel de nuit étoilé au milieu, un soleil d'or et une lune d'argent, les marques dorées des heures, **les douze chiffres
+romains en glace qui luit** (des barres de glace, lisibles de face, dans le bon ordre), les trois aiguilles, le capuchon doré ; derrière,
+trois engrenages qui tournent ; au sommet, la cloche sous son arche dorée ; dessous, des stalactites. **Trois grands anneaux** tournent
+autour (7,8 m de glace, 6,9 m d'argent penché à 70°, 6,2 m d'or penché à 25°, des gemmes de glace qui luit, le soleil et la lune sur le
+premier). **Le cadran se tourne vers le joueur** (on lit toujours ses chiffres) ; l'arrière est d'or, avec ses engrenages.
+- **Ce qui luit** : les chiffres, les étoiles, les gemmes, les cristaux, le rayon : le matériau `Art/TowerDefense/Givre_lumineux.mat`,
+  copié en jeu et animé (il palpite, monte à mesure que le XII approche, s'emballe aux grands moments) ; une lumière froide au cadran.
+- **La texture** : une glace taillée (`Tools/texture_glace.py` : `Art/TowerDefense/Horloge_Glace.png`, des fêlures, des bulles, du
+  givre ; `Horloge_Glace_Relief.png`) ; `Editor/HorlogeFinitionBaker` la pose (`Palettes/Ultime_Horloge_*`), une fois : la glace très lisse
+  qui luit à peine, la nuit du cadran polie, l'argent et l'or très polis.
+- **Les particules** : des flocons autour d'elle, des éclats de givre autour des anneaux, la brume froide au pied.
+- **Pour le casque** : fondue au lancement, une pièce par partie qui bouge (le cadran, chaque aiguille, chaque engrenage, chaque anneau,
+  chaque chiffre, la cloche) ; ce qu'elle lance est une copie fondue, réutilisée ; dix aurores au plus.
+
+**L'éveil** : « La Grande Horloge s'éveille ! » ; le sol se couvre de givre, elle sort de terre (14 m, 2,4 s), ses anneaux à toute vitesse,
+dans la glace qui vole et la brume ; une aurore tombe sur elle. Debout, sa glace s'allume, ses **douze chiffres apparaissent un à un**
+(un tic chacun, de plus en plus aigu) ; ses aiguilles tournent à l'envers à toute vitesse et s'arrêtent sur midi ; la cloche sonne :
+« LA GRANDE HORLOGE ! », l'onde de givre fige tous les ennemis à 22 m (100 de dégâts, figés 2 s), sous un anneau de six aurores.
+
+**Le ciel de Minuit** (`World/SkySettings.Minuit`) : une nuit d'hiver bleu profond, une grande lune pâle presque au zénith, de grandes
+aurores, des étoiles filantes. Passager : plein pendant l'éveil, fort pendant Minuit (et quand les aiguilles se rejoignent), rien le reste
+du temps ni dans l'arène.
+
+**L'aurore, le signe de chaque coup** : trois rubans de lumière verte, bleue et violette tombent du ciel sur le coup (26 m), ondulent et
+s'effacent (1,1 s) ; sur chaque chiffre, chaque écho, chaque figé qui éclate.
+
+**Le rythme** (`Building/UltimeHorloge.cs`) :
+- **Les chiffres, seule et sans arrêt** : un tic toutes les 1,2 s (la trotteuse saute, le tic sonne) ; s'il y a un ennemi à 30 m (au sol
+  ou en vol), **le chiffre suivant se détache du cadran** (I, puis II, puis III…) et part en cloche sur un ennemi au hasard, en tournant :
+  220 de dégâts dans 4,5 m, ceux qui survivent figés de givre 1 s, l'aurore, son nom en lettres de glace (« IV »). L'aiguille des heures
+  avance avec les chiffres partis, celle des minutes fait un tour à chaque tic : **on voit venir le XII**. Sans ennemi, l'horloge attend.
+- **Minuit, après le XII** (le Beffroi au niveau 3 d'avant, avec les réglages du joueur : la bulle sur toute la carte, 300 m, 9 s, les
+  boss figés 2 s) : les aiguilles se rejoignent sur midi (1 s ; le ciel de Minuit) ; « Za Warudo ! Temps, arrête-toi ! » : la bulle part
+  de l'horloge, le monde en noir et blanc, tout s'arrête sauf toi (tes flèches attendent en l'air ; les boss des vagues aussi) ; l'horloge aussi s'arrête (ses
+  anneaux, ses aiguilles). Douze coups de cloche (« Dong ! 1 »…), **un chiffre repousse à chacun**. Au douzième, **le dégel qui brise** :
+  « Le temps reprend son cours », tes flèches repartent toutes ensemble, et **le givre de tous les ennemis figés éclate d'un coup** (500
+  de dégâts à chacun ; les huit premiers ont leur aurore et « Brisé ! »). Puis le I au tic suivant. Un tour : 23,4 s.
+- **L'écho du temps, à chaque flèche qui touche** : chaque flèche tirée qui touche un ennemi à 30 m (ou le sol à 5 m de lui) est **rejouée
+  1 s plus tard** par une **flèche de glace géante** (4,3 m) qui part du cadran, file droit sur la cible et la frappe : 160 de dégâts dans
+  6 m (les marteaux du Colosse, les chevaux du Manège), les survivants projetés et figés 1 s, l'aurore, l'onde ; elle reste plantée
+  0,5 s, puis éclate en givre. **5 par seconde au plus** ; 8 en attente au plus. Pendant Minuit, tes flèches attendent en l'air : leurs
+  échos viennent après le dégel.
+- Le coup complet (la lumière, l'éclair du ciel, les éclats de glace, le givre au sol, les manettes) au plus toutes les 0,5 s.
+
+**Les boss** : un boss des vagues prend tous ses dégâts, plus une part de ses PV max (0,2 % sous un chiffre ou un écho, 2 % au dégel), figé
+par Minuit toute la durée comme les autres (3 novembre, le joueur ; le Beffroi ne les figeait que 2 s), jamais projeté.
+
+**Dans l'arène de MK** (à 0,65) : « La Grande Horloge est là ! Touche MK : tes flèches sont rejouées ; après le XII, Minuit arrête toute
+l'arène ». Ses chiffres partent sur MK (0,2 % de ses PV max chacun), ses échos aussi ; **après le XII, Minuit arrête toute l'arène 6 s**,
+MK compris (`FinalBoss/DragonBoss.TimeStop.cs`, `DragonBoss.StopTime` : il s'arrête là où il est, en vol ou au sol, son animation figée,
+ses boules de feu en vol aussi, ce qu'il préparait s'éteint ; puis il reprend exactement où il en était) ; le noir et blanc, tes flèches
+qui attendent et le frappent toutes ensemble à la fin ; au dégel, MK perd 3 % de ses PV max (sa part seulement, pas les 500).
+
+**La force, au tableau** (`manege()` et `horloge()`, feuille « Trios » ; le tableau relancé, les 6 changements du joueur repris) :
+- **seule** : **134 sur une cible et 413 sur le groupe** (la cible : un trio moyen ; le Colosse seul : 110 et 424) ;
+- **avec une flèche qui touche par seconde** : **294 et 1 146** (le Colosse : 270 et 1 158) ;
+- **avec deux** : **454 et 1 880** (le Colosse : 430 et 1 891) ; au plafond de 5 : 934 et 4 080.
+- Le tableau ne compte que le groupe de 5 : le dégel brise **tous** les figés de la carte (300 m), et Minuit fige tout 8 s sur 23 :
+  c'est son vrai poids. À surveiller aux essais (*Shatter Damage*, *Midnight Time*).
+
+**Les sons** : demandés au joueur dès le début (freesound, CC0 ; licences vérifiées), téléchargés par lui le 3 novembre, découpés par
+Claude (`Tools/sons/decoupe_horloge.py` ; détail dans `Credits_Licences.md`), lus seulement en forme d'onde et en spectre (**à écouter
+en jeu**) :
+- `Audio/Horloge_Tic.wav` (*Tick Clip*) : le tic le plus net de *Clock ticking* (Mortifreshman, 237210), très bas dans l'enregistrement
+  (à peine au-dessus de son souffle, grave) : coupé court (87 ms), sans ses graves, qui s'éteint vite ;
+- `Horloge_Cloche.wav` (*Bell Clip*, les douze coups) : un coup de *church bells strike 12 midday* (Astounded, 481969), jusqu'au
+  suivant (2,7 s), ramené de 96 à 48 kHz ; à Minuit, un coup toutes les 0,75 s : ils se chevauchent ;
+- `Horloge_Arret.wav` (*Stop Clip*) : la dernière seconde de *Reverse Crash Cymbal Projection* (383903), qui enfle et se coupe net ; il
+  part maintenant quand les aiguilles se rejoignent (1 s avant Minuit), pour que son sommet tombe quand le temps s'arrête ;
+  `Horloge_Reprise.wav` (*Resume Clip*, le dégel) : la même cymbale remise à l'endroit, le coup qui s'éteint ;
+- `Horloge_Bris.wav` (*Shatter Clip*, le dégel) : la série de craquements de *Ice break* (humanoide9000, 329744) ; `Horloge_Eclat.wav`
+  (*Impact Clip* : chaque chiffre, chaque écho, chaque figé qui éclate) : trois craquements serrés ; un peu écrêtés tous les deux (très
+  brefs, ils sonnaient maigres) ;
+- `Horloge_Carillon.wav` (*Chime Clip*, les échos) : *GLEAM-GLOW-SFX-CHIME* (newagesoup, 351408), depuis son attaque.
+Unity avait déjà fait le prefab avec les sons provisoires : `Editor/HorlogeSonsBaker` les remplace (il passe quand les sons sont
+importés) ; le fichier d'allure nomme les nouveaux. Restent ceux du projet : le souffle, le grand impact de Wakerone.
+
+**Le Beffroi** garde son Minuit en sommeil (rien ne l'atteint) : l'Horloge a le sien, repris de lui.
+
+**À surveiller aux tests** : la place (16,6 m de large ; les anneaux passent à 4,5 m du sol au plus bas) et la vue depuis la tour ; le
+cadran qui se tourne vers toi ; les chiffres lisibles de loin ; le tic toutes les 1,2 s (lassant ?) ; Minuit toutes les 23 s environ
+(trop souvent ? le noir et blanc 8 s sur 23) ; le dégel sur une grande vague (beaucoup de figés d'un coup : le casque) ; les échos sous la
+pluie de flèches ; les aurores (lisibles, pas trop chargées) ; MK arrêté (en vol, au sol, pendant une ruée) et ses boules de feu figées.
+
+**Le 3 novembre, la première retouche du joueur** (après un essai dans Unity : « les particules de glace au pied de la tour et à
+l'impact des flèches sont trop grosses, réduis-les, de même pour les aurores des chiffres ; arrête le temps pour les boss de vagues pour
+la même durée que le reste (9 secondes) ») : la brume froide au pied (0,4 à 0,8 m, au lieu de 1,2 à 2,2, et elle grossit moins), la
+poussière de glace des coups (0,25 à 0,55 m, au lieu de 0,8 à 1,6), les éclats de givre (0,05 à 0,14 m) et les éclats de glace qui volent
+(deux fois plus petits) ; l'aurore d'un chiffre à 0,5 de sa taille (13 m de haut ; celle d'un écho reste à 1,1) ; Minuit fige les boss
+des vagues toute la durée (le réglage *Boss Stop Time* du Beffroi, 2 s, est retiré de l'Horloge ; MK, dans l'arène, a son temps arrêté à
+lui). Ces tailles sont dans le code (les particules sont faites en jeu) : rien à poser sur le prefab. Compilé ; **à revoir dans Unity**.

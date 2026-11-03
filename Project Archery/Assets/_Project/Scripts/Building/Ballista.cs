@@ -44,11 +44,6 @@ namespace Archery.Building
         [SerializeField]
         int[] m_PiercePerLevel = { 0, 0, 2 };
 
-        [Tooltip("Part des bonus de dégâts de l'arc (améliorations, bonus des coffres) dont profite la baliste.")]
-        [Range(0f, 1f)]
-        [SerializeField]
-        float m_BowBonusShare = 0.5f;
-
         [Header("Évolutions (29 octobre)")]
         [Tooltip("Niveau du scorpion : un deuxième carreau sur une deuxième cible.")]
         [SerializeField]
@@ -129,7 +124,6 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_FireClip;
 
-        Bow m_Bow;
         Enemy m_Target;
         Vector3 m_TargetPrevious;
         Vector3 m_TargetVelocity;
@@ -383,17 +377,12 @@ namespace Archery.Building
             enemy.Launch(flat.normalized * m_TitanCarry + Vector3.up * 4f, this);
         }
 
-        /// <summary>Dégâts d'un carreau : ceux du niveau, suivant la force des ennemis, plus une part des bonus de dégâts de l'arc.</summary>
-        public float Damage
-        {
-            get
-            {
-                if (m_Bow == null)
-                    m_Bow = FindAnyObjectByType<Bow>();
-                var bonus = m_Bow != null ? Mathf.Max(0f, m_Bow.DamageMultiplier - 1f) : 0f;
-                return ValueFor(m_DamagePerLevel, Mathf.Max(1, Level), 15f) * Strength * (1f + bonus * m_BowBonusShare);
-            }
-        }
+        /// <summary>
+        /// Dégâts d'un carreau : ceux du niveau, × la force des bâtiments (les parchemins de force du joueur depuis le 2 novembre,
+        /// <see cref="Structure.ScrollStrength"/>). Avant, la baliste prenait la moitié des bonus de dégâts de l'arc
+        /// (<c>m_BowBonusShare</c>, retiré).
+        /// </summary>
+        public float Damage => ValueFor(m_DamagePerLevel, Mathf.Max(1, Level), 15f) * Strength;
 
         protected virtual void OnDrawGizmosSelected()
         {

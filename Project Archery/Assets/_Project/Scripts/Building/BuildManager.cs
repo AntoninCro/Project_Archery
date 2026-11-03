@@ -87,6 +87,29 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_DuoClip;
 
+        [Header("Ultimes (2 novembre)")]
+        [Tooltip("Son de la transformation d'un trio en ultime, et de l'ultime terminée. Vide : celui de la fusion.")]
+        [SerializeField]
+        AudioClip m_UltimateClip;
+
+        [Header("Chantier de la partie (2 novembre)")]
+        [Tooltip("Bâtiments tirés au hasard au début de la partie : les coffres ne proposent que leurs plans (le joueur, après son " +
+                 "premier essai : les plans s'éparpillaient sur les 10 tours, et les duos n'arrivaient pas).")]
+        [Min(1)]
+        [SerializeField]
+        int m_StartingStructures = 3;
+
+        [Tooltip("Bâtiments qui rejoignent le chantier après chaque boss vaincu (à la fin de chaque vague).")]
+        [Min(0)]
+        [SerializeField]
+        int m_StructuresPerBoss = 1;
+
+        [Tooltip("Plans donnés par l'orbe de tourelle d'un coffre, multipliés par le lot du bâtiment (Lot Size, 1 partout). " +
+                 "2 novembre au soir, deuxième essai (sa sœur, en ouvrant tous les coffres : pas un duo) : 2 ; 1 avant.")]
+        [Min(1)]
+        [SerializeField]
+        int m_PlansPerChest = 2;
+
         [Header("Bilan")]
         [Tooltip("À la fin de chaque vague, un message donne la part des dégâts faite par les bâtiments et leurs éliminations " +
                  "(la console détaille chaque type de bâtiment). Utile pour régler l'équilibre en jouant.")]
@@ -100,7 +123,11 @@ namespace Archery.Building
         int m_StructureKills;
 
         readonly Dictionary<StructureDefinition, int> m_Plans = new Dictionary<StructureDefinition, int>();
+        readonly List<StructureDefinition> m_RunStructures = new List<StructureDefinition>();
+        static readonly List<StructureDefinition> s_Pool = new List<StructureDefinition>();
+        static readonly float[] k_RarityWeights = { 0.6f, 0.3f, 0.1f };
         Structure m_Current;
+        bool m_UltimateBuilt;
         readonly List<BuildHammer> m_Hammers = new List<BuildHammer>();
         Bow m_Bow;
         WaveManager m_Waves;
@@ -110,6 +137,16 @@ namespace Archery.Building
         public static BuildManager Instance { get; private set; }
 
         public IReadOnlyList<StructureDefinition> Structures => m_Structures;
+
+        /// <summary>
+        /// Le chantier de la partie (2 novembre) : les bâtiments dont les coffres proposent les plans. 3 au début, tirés au hasard,
+        /// un de plus après chaque boss. On n'apprend que quelques tours au début, les plans se concentrent (les duos et les trios
+        /// arrivent), et chaque partie a sa couleur.
+        /// </summary>
+        public IReadOnlyList<StructureDefinition> RunStructures => m_RunStructures;
+
+        /// <summary>Plans d'un bâtiment donnés par l'orbe de tourelle d'un coffre (2 depuis le 2 novembre), avant son lot.</summary>
+        public int PlansPerChest => Mathf.Max(1, m_PlansPerChest);
 
         /// <summary>Une construction est en cours (les marteaux sont sortis).</summary>
         public bool IsBuilding => m_Current != null;
@@ -165,6 +202,55 @@ namespace Archery.Building
             return true;
         }
 
+        /// <summary>Un bâtiment que les coffres peuvent proposer : ni retiré, ni un duo.</summary>
+        public static bool IsOffered(StructureDefinition definition) =>
+            definition != null && definition.prefab != null && !definition.retired && definition.kind != StructureKind.Duo;
+
+        // Un bâtiment de plus au chantier, parmi ceux qui n'y sont pas encore : la rareté d'abord (60 % commune, 30 % rare, 10 %
+        // légendaire, parmi celles qui restent : la règle des coffres du 28 octobre), puis au hasard dans elle. Null : tous y sont.
+        StructureDefinition AddRunStructure()
+        {
+            s_Pool.Clear();
+            foreach (var definition in m_Structures)
+            {
+                if (IsOffered(definition) && !m_RunStructures.Contains(definition) && !s_Pool.Contains(definition))
+                    s_Pool.Add(definition);
+            }
+
+            if (s_Pool.Count == 0)
+                return null;
+
+            var total = 0f;
+            for (var rarity = 0; rarity < k_RarityWeights.Length; rarity++)
+            {
+                if (s_Pool.Exists(d => (int)d.rarity == rarity))
+                    total += k_RarityWeights[rarity];
+            }
+
+            var roll = Random.value * total;
+            var chosen = -1;
+            for (var rarity = 0; rarity < k_RarityWeights.Length && chosen < 0; rarity++)
+            {
+                if (!s_Pool.Exists(d => (int)d.rarity == rarity))
+                    continue;
+                roll -= k_RarityWeights[rarity];
+                if (roll <= 0f)
+                    chosen = rarity;
+            }
+
+            var candidates = s_Pool.FindAll(d => chosen < 0 || (int)d.rarity == chosen);
+            var picked = candidates.Count > 0 ? candidates[Random.Range(0, candidates.Count)] : s_Pool[Random.Range(0, s_Pool.Count)];
+            m_RunStructures.Add(picked);
+            return picked;
+        }
+
+        static string NamesOf(List<StructureDefinition> definitions)
+        {
+            var names = definitions.ConvertAll(d => d.displayName);
+            return names.Count > 1 ? string.Join(", ", names.GetRange(0, names.Count - 1)) + " et " + names[names.Count - 1]
+                : names.Count == 1 ? names[0] : "";
+        }
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -197,6 +283,9 @@ namespace Archery.Building
 
         void Start()
         {
+            for (var i = 0; i < m_StartingStructures; i++)
+                AddRunStructure();
+
             m_Waves = WaveManager.Instance;
             if (m_Waves == null)
                 return;
@@ -332,7 +421,8 @@ namespace Archery.Building
 
         /// <summary>
         /// Le niveau où naît le duo de ces deux tours : 1 (deux tours au niveau 3), 2 (l'une au niveau maximal), 3 (les deux). Un
-        /// duo coûte ainsi autant de plans qu'on le fasse tôt puis le monte (4 plans par niveau), ou tard (31 octobre). Un trio
+        /// duo coûte ainsi autant de plans qu'on le fasse tôt puis le monte (2 plans par niveau depuis le 2 novembre, 4 avant), ou
+        /// tard (31 octobre ; une tour monte du niveau 3 au niveau 5 pour 2 plans depuis le 2 novembre). Un trio
         /// (1er novembre) : le niveau du duo, un de plus si la tour est à son niveau maximal (3 au plus).
         /// </summary>
         public static int DuoLevelFrom(Structure a, Structure b)
@@ -414,8 +504,98 @@ namespace Archery.Building
             return ShopResult.Done($"{entry.Label} : {entry.displayName}", entry.color);
         }
 
-        /// <summary>« Duo » ou « Trio » : ce qu'est ce bâtiment fusionné, pour les messages.</summary>
-        public static string FusionLabel(TowerDuo duo) => duo is TowerTrio ? "Trio" : "Duo";
+        /// <summary>« Duo », « Trio » ou « Ultime » : ce qu'est ce bâtiment fusionné, pour les messages.</summary>
+        public static string FusionLabel(TowerDuo duo) => duo is TowerUltimate ? "Ultime" : duo is TowerTrio ? "Trio" : "Duo";
+
+        // ---- Les ultimes (2 novembre ; Docs/Refonte_TowerDefense.md, 12.44) : le niveau 4 d'un trio au niveau 3. Des plans de
+        // l'une de ses trois tours posés dessus (10), entre les vagues : le trio se transforme, puis on bâtit l'ultime au marteau.
+        // Une par famille de trios, une seule par partie.
+
+        /// <summary>Une ultime a déjà été bâtie dans cette partie (il n'y en a qu'une).</summary>
+        public bool HasUltimate => m_UltimateBuilt;
+
+        /// <summary>
+        /// L'ultime que deviendrait ce bâtiment (un trio à son niveau maximal, dont la famille a son ultime ; null sinon), ses plans
+        /// dans <paramref name="plans"/>, et ce qui l'empêche en ce moment dans <paramref name="problem"/> (null si rien).
+        /// </summary>
+        public TowerDuoCatalog.Entry UltimateOf(Structure structure, out string problem, out int plans)
+        {
+            problem = null;
+            plans = 0;
+            if (!(structure is TowerTrio trio) || structure is TowerUltimate || !structure.IsBuilt || structure.Level < structure.MaxLevel)
+                return null;
+
+            var entry = TowerDuoCatalog.FindUltimate(structure.Definition);
+            if (entry == null)
+                return null;
+
+            plans = entry.definition.PlansFor(1);
+            if (structure.IsUnderConstruction)
+                problem = "Construction en cours";
+            else if (m_UltimateBuilt)
+                problem = "Une seule ultime par partie";
+            else if (!CanMove)
+                problem = "L'ultime se bâtit entre les vagues";
+            else if (PlansOf(trio) < plans)
+                problem = $"Il te faut {plans} plans : {SourceNames(trio, " ou ")}";
+            return entry;
+        }
+
+        // Le trio devient son ultime, en plan bleu : ses plans payés, à sa place, sur ses cases ; le marteau la bâtit.
+        ShopResult BuildUltimate(TowerTrio trio, StructureDefinition spentFrom, XRBaseInputInteractor hand)
+        {
+            var entry = UltimateOf(trio, out var problem, out var plans);
+            if (entry == null)
+                return ShopResult.Failed("Niveau maximal atteint");
+            if (problem != null)
+                return ShopResult.Failed(problem);
+
+            var definition = entry.definition;
+            var socket = trio.Socket;
+            if (socket == null)
+                return ShopResult.Failed("Aucun emplacement");
+
+            var grid = BuildGrid.Instance;
+            var cells = new List<int>();
+            var spot = default(BuildGrid.Spot);
+            var reclaim = grid != null && socket.IsCandidate;
+            if (reclaim)
+            {
+                spot = grid.EvaluateInPlace(definition, socket, null, cells);
+                if (!spot.Valid)
+                    return ShopResult.Failed($"Pas la place pour l'ultime ici : {spot.Reason}");
+            }
+
+            if (!TrySpendDuoPlans(trio, spentFrom, plans))
+                return ShopResult.Failed($"Il te faut {plans} plans : {SourceNames(trio, " ou ")}");
+
+            var first = trio.First;
+            var second = trio.Second;
+            var third = trio.Third;
+            var from = trio.Definition;
+            var localRotation = trio.transform.localRotation;
+            socket.Detach();
+            Destroy(trio.gameObject);
+            if (reclaim)
+                grid.Reclaim(socket, spot, cells);
+
+            var ultimate = (TowerUltimate)socket.Place(definition);
+            ultimate.transform.localRotation = localRotation;
+            ultimate.SetupUltimate(entry, first, second, third, from);
+            m_UltimateBuilt = true;
+
+            ultimate.BeginConstruction(1, m_BlueprintMaterial);
+            m_Current = ultimate;
+            m_Strikes = 0;
+            m_FarTime = 0f;
+            HandOverHammers(hand);
+
+            var top = socket.transform.position + Vector3.up * 4f;
+            Sfx.Play(m_UltimateClip != null ? m_UltimateClip : m_DuoClip != null ? m_DuoClip : m_CompleteClip, top, 1f);
+            FloatingText.Spawn(top + Vector3.up, $"Ultime : {entry.displayName} !", entry.color, 2.2f, 2.5f);
+            Announce($"Ultime : {entry.displayName}\n<size=70%>Frappe le plan {m_StrikesToBuild} fois avec tes marteaux</size>");
+            return ShopResult.Done($"Ultime : {entry.displayName}", entry.color);
+        }
 
         /// <summary>Les noms des tours dont les plans font monter ce duo (ou ce trio), séparés par des virgules.</summary>
         public static string SourceNames(TowerDuo duo, string separator = ", ")
@@ -516,10 +696,16 @@ namespace Archery.Building
 
             var level = structure != null ? structure.Level + 1 : 1;
             if (level > definition.MaxLevel)
+            {
+                // Un trio au niveau 3 : son niveau 4, l'ultime de sa famille (2 novembre).
+                if (structure is TowerTrio trio && UltimateOf(structure, out _, out _) != null)
+                    return BuildUltimate(trio, spentFrom, hand);
                 return ShopResult.Failed("Niveau maximal atteint");
+            }
 
             // Refonte du 27 octobre : un plan du bâtiment à la place des matériaux, pour le construire comme pour l'améliorer ;
-            // deux aux niveaux 4 et 5 (29 octobre). Un duo (31 octobre) : 4 plans par niveau, de l'une ou l'autre de ses tours.
+            // un seul par niveau depuis le 2 novembre (deux aux niveaux 4 et 5 avant). Un duo (31 octobre), de l'une ou l'autre de
+            // ses tours : 2 plans par niveau, un trio 3 (le joueur, 2 novembre ; 4 avant, réglage du niveau dans Data/Duos).
             var plans = definition.PlansFor(level);
             if (structure is TowerDuo duo)
             {
@@ -661,6 +847,15 @@ namespace Archery.Building
             var text = structure.Level == 1 ? $"{structure.DisplayName} : construction terminée !" : $"{structure.DisplayName} : niveau {structure.Level} !";
             FloatingText.Spawn(new Vector3(center.x, structure.ConstructionBounds.max.y + 0.4f, center.z), text,
                                structure.Definition != null ? structure.Definition.color : m_MessageColor, 1.1f, 2f);
+
+            // L'ultime bâtie (2 novembre) : son nom et ce qu'elle fait, comme une fusion.
+            if (structure is TowerUltimate ultimate && ultimate.Entry != null)
+            {
+                var entry = ultimate.Entry;
+                Sfx.Play(m_UltimateClip != null ? m_UltimateClip : m_DuoClip, center, 1f);
+                HeadMessages.Show($"Ultime : {entry.displayName} !" +
+                                  (string.IsNullOrEmpty(entry.description) ? "" : $"\n<size=65%>{entry.description}</size>"), entry.color, 7f);
+            }
         }
 
         void Announce(string text)
@@ -676,6 +871,27 @@ namespace Archery.Building
             m_StructureDamage = 0f;
             m_StructureKills = 0;
             m_ReportByName.Clear();
+
+            // Au premier gong, le chantier de la partie (2 novembre).
+            if (wave == 1 && m_RunStructures.Count > 0)
+                HeadMessages.Show($"Ton chantier : {NamesOf(m_RunStructures)}\n<size=70%>Les coffres donnent leurs plans ; un bâtiment " +
+                                  "de plus après chaque boss</size>", m_MessageColor, 6f);
+        }
+
+        // Après chaque boss (la fin de la vague), des bâtiments rejoignent le chantier (2 novembre).
+        void GrowRunStructures()
+        {
+            var added = new List<StructureDefinition>();
+            for (var i = 0; i < m_StructuresPerBoss; i++)
+            {
+                var definition = AddRunStructure();
+                if (definition != null)
+                    added.Add(definition);
+            }
+
+            if (added.Count > 0)
+                HeadMessages.Show($"Nouveau au chantier : {NamesOf(added)} !\n<size=70%>Les coffres proposent aussi ses plans</size>",
+                                  added[0].color, 5f);
         }
 
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
@@ -705,6 +921,9 @@ namespace Archery.Building
 
         void OnWaveEnded(int wave)
         {
+            // Pas à la victoire contre le boss final (le joueur est dans l'arène).
+            if (!(m_Waves.HasWon && wave == m_Waves.WavesToWin))
+                GrowRunStructures();
             if (!m_ShowWaveReport || m_StructureDamage <= 0f || m_WaveDamage <= 0f)
                 return;
 
@@ -714,7 +933,10 @@ namespace Archery.Building
 
             m_Builder.Clear();
             m_Builder.Append("Bilan des bâtiments, vague ").Append(wave).Append(" : ").Append(share).Append(" % des dégâts infligés aux ennemis, ")
-                     .Append(kills).Append(" (force des ennemis ×").Append(Structure.EnemyStrength.ToString("0.00")).Append(')');
+                     .Append(kills).Append(" (force des ennemis ×").Append(Structure.EnemyStrength.ToString("0.00"))
+                     .Append(", parchemins : dégâts ×").Append(Structure.ScrollStrength.ToString("0.00"))
+                     .Append(", cadence ×").Append(Structure.ScrollRate.ToString("0.00"))
+                     .Append(", PV ×").Append(Structure.ScrollHealthMultiplier.ToString("0.00")).Append(')');
             foreach (var pair in m_ReportByName)
                 m_Builder.Append("\n  ").Append(pair.Key).Append(" : ").Append(Mathf.RoundToInt(pair.Value.x)).Append(" dégâts, ")
                          .Append((int)pair.Value.y).Append(" éliminations");
@@ -750,7 +972,8 @@ namespace Archery.Building
         }
 #endif
 
-        // Raccourcis de test au clavier (éditeur) : B donne 2 plans de chaque bâtiment non retiré (50 matériaux avant le 27 octobre), H termine
+        // Raccourcis de test au clavier (éditeur) : B donne 2 plans de chaque bâtiment non retiré (50 matériaux avant le 27 octobre)
+        // et les met tous au chantier (2 novembre), H termine
         // la construction en cours, F3 projette en l'air les ennemis à moins de 15 m du joueur (l'état « projeté » des
         // constructions physiques, Enemy.Launch.cs, 27 octobre).
         void UpdateDebugKey()
@@ -766,9 +989,11 @@ namespace Archery.Building
                 {
                     if (definition != null && definition.prefab != null && !definition.retired)
                         AddPlans(definition, 2);
+                    if (IsOffered(definition) && !m_RunStructures.Contains(definition))
+                        m_RunStructures.Add(definition);
                 }
 
-                Announce("Test : 2 plans de chaque tour");
+                Announce("Test : 2 plans de chaque tour, toutes au chantier");
             }
             if (keyboard.hKey.wasPressedThisFrame)
                 FinishNow();

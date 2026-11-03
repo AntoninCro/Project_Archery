@@ -18,7 +18,7 @@ namespace Archery.Chests
         /// <summary>Un morceau de l'arc légendaire.</summary>
         BowPart,
 
-        /// <summary>Un lot de plans de construction (caisse de l'ingénieur, refonte du tower defense du 27 octobre).</summary>
+        /// <summary>Des plans de construction : un lot d'un bâtiment (le coffre, depuis le 2 novembre ; la caisse de l'ingénieur avant).</summary>
         Plans,
     }
 
@@ -100,25 +100,24 @@ namespace Archery.Chests
     public static class ChestRewards
     {
         static readonly List<Upgrade> s_Candidates = new List<Upgrade>();
-        static readonly TemporaryBuff[] s_Buffs = { TemporaryBuff.DoubleDamage, TemporaryBuff.PerfectShots, TemporaryBuff.FastRing };
         static readonly List<ArrowSlot> s_TakenSlots = new List<ArrowSlot>();
         static readonly List<StructureDefinition> s_Structures = new List<StructureDefinition>();
 
         /// <summary>
-        /// Les récompenses d'un coffre de vague, toujours dans cet ordre (refonte du 25 octobre) : un objet (avec la chance
-        /// <paramref name="objectChance"/>, tiré comme en boutique ; toujours depuis le 27 octobre au soir) ou un parchemin, un
-        /// parchemin, puis un bonus temporaire. Un fragment de l'arc légendaire peut remplacer la deuxième orbe. Plus d'objet à
-        /// donner (tous au niveau maximal) : deux parchemins différents.
+        /// Le coffre (2 novembre, le joueur : un seul coffre à la place du coffre doré et de la caisse de l'ingénieur ; les deux
+        /// roguelikes, l'arc et les tourelles, se disputent chaque coffre), toujours dans cet ordre : un parchemin (pour l'arc et les
+        /// tours) ; une tourelle (un lot de plans d'un bâtiment du chantier) ; un objet (pour l'arc), tiré comme en boutique. Un
+        /// fragment de l'arc légendaire peut remplacer le parchemin. Sans plan à donner (pas de tower defense) : un objet à la place ;
+        /// sans objet à donner (tous au niveau maximal) : une autre tourelle.
+        /// (Avant : un objet, un parchemin et un bonus temporaire ; la caisse de l'ingénieur, trois lots de plans. Le matin du
+        /// 2 novembre, la troisième orbe était une tourelle une fois sur deux ; le soir, après le premier essai, toujours un objet :
+        /// une partie sans pièce d'arc ne doit pas être possible.)
         /// </summary>
-        public static List<ChestReward> Roll(float buffDuration, ChestColors colors, float objectChance)
+        public static List<ChestReward> Roll()
         {
             var rewards = new List<ChestReward>();
-            var wantsObject = Random.value < objectChance;
-            if (TryRollUpgrade(wantsObject ? UpgradeKind.Object : UpgradeKind.Scroll, rewards, out var first) ||
-                (wantsObject && TryRollUpgrade(UpgradeKind.Scroll, rewards, out first)))
-                rewards.Add(first);
-            if (TryRollUpgrade(UpgradeKind.Scroll, rewards, out var second))
-                rewards.Add(second);
+            if (TryRollUpgrade(UpgradeKind.Scroll, rewards, out var scroll))
+                rewards.Add(scroll);
 
             var legendaryBow = LegendaryBow.Instance;
             if (legendaryBow != null && legendaryBow.RollPartDrop())
@@ -130,24 +129,38 @@ namespace Archery.Chests
                     Subtitle = $"{legendaryBow.Parts + 1} / {legendaryBow.PartsNeeded}",
                     Color = legendaryBow.Color,
                 };
-                if (rewards.Count >= 2)
-                    rewards[1] = part;
+                if (rewards.Count >= 1)
+                    rewards[0] = part;
                 else
                     rewards.Add(part);
             }
 
-            rewards.Add(RollBuff(buffDuration, colors));
+            // La deuxième orbe : une tourelle ; la troisième : un objet (deux tourelles différentes si plus d'objet à donner).
+            var plans = RollPlans(2);
+            if (plans.Count > 0)
+                rewards.Add(plans[0]);
+            else if (TryRollUpgrade(UpgradeKind.Object, rewards, out var instead))
+                rewards.Add(instead);
+
+            if (TryRollUpgrade(UpgradeKind.Object, rewards, out var item))
+                rewards.Add(item);
+            else if (plans.Count > 1)
+                rewards.Add(plans[1]);
+            else if (TryRollUpgrade(UpgradeKind.Scroll, rewards, out var other))
+                rewards.Add(other);
+
             return rewards;
         }
 
         /// <summary>
-        /// Le coffre de boss (refonte du 25 octobre) : <paramref name="count"/> objets différents, un seul à prendre ; des
-        /// parchemins quand il ne reste plus d'objet à donner.
+        /// Le coffre de boss : <paramref name="objects"/> objets différents (des parchemins quand il ne reste plus d'objet à
+        /// donner), un seul à prendre. (Le matin du 2 novembre, une dernière orbe de 3 plans au hasard ; retirée le soir par le
+        /// joueur, après son premier essai : le coffre de boss est pour l'arc.)
         /// </summary>
-        public static List<ChestReward> RollBoss(int count)
+        public static List<ChestReward> RollBoss(int objects)
         {
             var rewards = new List<ChestReward>();
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < objects; i++)
             {
                 if (TryRollUpgrade(UpgradeKind.Object, rewards, out var reward) || TryRollUpgrade(UpgradeKind.Scroll, rewards, out reward))
                     rewards.Add(reward);
@@ -157,12 +170,11 @@ namespace Archery.Chests
         }
 
         /// <summary>
-        /// La caisse de l'ingénieur (refonte du tower defense, 27 octobre) : <paramref name="count"/> lots de plans de bâtiments
-        /// différents, un seul à prendre. Un lot donne un ou plusieurs plans du même bâtiment (<see cref="StructureDefinition.LotSize"/> :
-        /// les bâtiments communs viennent par lots). Depuis le 28 octobre (étape 5), chaque orbe tire d'abord une rareté (60 %
-        /// commune, 30 % rare, 10 % légendaire, parmi celles qui restent), puis un bâtiment de cette rareté. Depuis le 29 octobre,
-        /// les bâtiments retirés (<see cref="StructureDefinition.retired"/>) ne sont plus proposés : les deux légendaires l'étant,
-        /// il ne reste que commune et rare (2 chances sur 3, 1 sur 3).
+        /// <paramref name="count"/> lots de plans de bâtiments différents, tirés au hasard dans le chantier de la partie
+        /// (<see cref="BuildManager.RunStructures"/>, 2 novembre ; tous les bâtiments proposés s'il est vide). Un lot donne
+        /// <see cref="BuildManager.PlansPerChest"/> × <see cref="StructureDefinition.LotSize"/> plans : 2 depuis le 2 novembre au soir
+        /// (1 avant ; avant, 2 pour la barricade et les piques, 1 pour les autres). (Du 28 octobre au 2 novembre, chaque orbe
+        /// tirait d'abord une rareté parmi tous les bâtiments ; la rareté sert maintenant à tirer les bâtiments du chantier.)
         /// </summary>
         public static List<ChestReward> RollPlans(int count)
         {
@@ -172,19 +184,28 @@ namespace Archery.Chests
                 return rewards;
 
             s_Structures.Clear();
-            foreach (var definition in builds.Structures)
+            foreach (var definition in builds.RunStructures)
             {
-                if (definition != null && definition.prefab != null && !definition.retired && !s_Structures.Contains(definition))
+                if (BuildManager.IsOffered(definition) && !s_Structures.Contains(definition))
                     s_Structures.Add(definition);
+            }
+
+            if (s_Structures.Count == 0)
+            {
+                foreach (var definition in builds.Structures)
+                {
+                    if (BuildManager.IsOffered(definition) && !s_Structures.Contains(definition))
+                        s_Structures.Add(definition);
+                }
             }
 
             while (rewards.Count < count && s_Structures.Count > 0)
             {
-                var index = PickStructure();
+                var index = Random.Range(0, s_Structures.Count);
                 var definition = s_Structures[index];
                 s_Structures.RemoveAt(index);
 
-                var lot = definition.LotSize;
+                var lot = builds.PlansPerChest * definition.LotSize;
                 var owned = builds.PlansOf(definition);
                 var subtitle = lot > 1 ? lot + " plans" : "1 plan";
                 if (owned > 0)
@@ -202,51 +223,6 @@ namespace Archery.Chests
             }
 
             return rewards;
-        }
-
-        static readonly float[] k_StructureRarityWeights = { 0.6f, 0.3f, 0.1f };
-
-        // Un bâtiment de la liste : la rareté d'abord (pondérée, parmi celles qui ont encore un bâtiment), puis au hasard dans elle.
-        static int PickStructure()
-        {
-            var total = 0f;
-            for (var rarity = 0; rarity < k_StructureRarityWeights.Length; rarity++)
-            {
-                if (HasRarity(rarity))
-                    total += k_StructureRarityWeights[rarity];
-            }
-
-            var roll = Random.value * total;
-            var chosen = -1;
-            for (var rarity = 0; rarity < k_StructureRarityWeights.Length && chosen < 0; rarity++)
-            {
-                if (!HasRarity(rarity))
-                    continue;
-                roll -= k_StructureRarityWeights[rarity];
-                if (roll <= 0f)
-                    chosen = rarity;
-            }
-
-            var start = Random.Range(0, s_Structures.Count);
-            for (var i = 0; i < s_Structures.Count; i++)
-            {
-                var index = (start + i) % s_Structures.Count;
-                if (chosen < 0 || (int)s_Structures[index].rarity == chosen)
-                    return index;
-            }
-
-            return start;
-        }
-
-        static bool HasRarity(int rarity)
-        {
-            foreach (var definition in s_Structures)
-            {
-                if ((int)definition.rarity == rarity)
-                    return true;
-            }
-
-            return false;
         }
 
         // Un objet : comme en boutique, la rareté d'abord (chance comprise), puis un objet de cette rareté. Un parchemin : au hasard.
@@ -300,22 +276,6 @@ namespace Archery.Chests
             return true;
         }
 
-        // L'icône d'une amélioration de la boutique qui a cet effet (les bonus reprennent celle qui leur ressemble).
-        static Sprite ShopIcon(UpgradeEffect effect)
-        {
-            var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
-            if (catalog == null)
-                return null;
-
-            foreach (var upgrade in catalog.upgrades)
-            {
-                if (upgrade != null && upgrade.effect == effect && upgrade.icon != null)
-                    return upgrade.icon;
-            }
-
-            return null;
-        }
-
         static bool PickUpgrade(ShopCatalog catalog, UpgradeKind kind, UpgradeRarity rarity, PlayerUpgrades owned, List<ChestReward> taken,
                                 bool sameRarity, out Upgrade upgrade)
         {
@@ -343,47 +303,5 @@ namespace Archery.Chests
 
             return false;
         }
-
-        // Un des trois bonus, au hasard, dans sa couleur.
-        static ChestReward RollBuff(float buffDuration, ChestColors colors)
-        {
-            var buff = s_Buffs[Random.Range(0, s_Buffs.Length)];
-            return new ChestReward
-            {
-                Kind = ChestRewardKind.Buff,
-                Buff = buff,
-                Title = PlayerUpgrades.NameOf(buff),
-                Subtitle = Mathf.RoundToInt(buffDuration) + " s",
-                Color = buff switch
-                {
-                    TemporaryBuff.DoubleDamage => colors.damage,
-                    TemporaryBuff.PerfectShots => colors.perfect,
-                    _ => colors.fastRing,
-                },
-                // Dégâts doublés : l'épée ; tirs parfaits : la cible ; anneau rapide : l'anneau de Charge rapide.
-                Icon = ShopIcon(buff switch
-                {
-                    TemporaryBuff.DoubleDamage => UpgradeEffect.Damage,
-                    TemporaryBuff.PerfectShots => UpgradeEffect.Precision,
-                    _ => UpgradeEffect.QuickCharge,
-                }),
-            };
-        }
-    }
-
-    /// <summary>Couleurs des orbes de bonus. Les améliorations prennent la couleur de leur rareté, comme en boutique.</summary>
-    [System.Serializable]
-    public struct ChestColors
-    {
-        public Color damage;
-        public Color perfect;
-        public Color fastRing;
-
-        public static ChestColors Default => new ChestColors
-        {
-            damage = new Color(1f, 0.35f, 0.3f),
-            perfect = new Color(0.3f, 0.92f, 0.35f),
-            fastRing = new Color(0.35f, 0.85f, 1f),
-        };
     }
 }

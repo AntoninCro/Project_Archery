@@ -367,15 +367,15 @@ MonoBehaviour:
   - {fileID: 8768219410737685123}
   m_FollowEnemyStrength: 1
   m_DamagePerLevel:
-  - 12
-  - 18
-  - 27
-  - 30
-  - 34
+  - 8.4
+  - 12.6
+  - 18.9
+  - 21
+  - 23.8
   m_IntervalPerLevel:
   - 0.8
-  - 0.65
-  - 0.5
+  - 0.7
+  - 0.6
   m_SlowFromLevel: 3
   m_SlowMultiplier: 0.8
   m_Size: {x: 2.6, y: 2.6}
@@ -387,11 +387,11 @@ MonoBehaviour:
   - 0.38
   - 0.46
   m_StabClip: {fileID: 8300000, guid: b0ea14426cae1c44eaacbff76a75f6d5, type: 3}
-  m_BleedDamage: 4
+  m_BleedDamage: 2.8
   m_BleedTime: 3
   m_WideScale: 2
   m_Mine: {fileID: 5547168129058653582}
-  m_MineDamage: 60
+  m_MineDamage: 42
   m_MineRadius: 3
   m_MineRearm: 20
   m_MineTrigger: 1.3
@@ -399,7 +399,7 @@ MonoBehaviour:
   m_JawInterval: 12
   m_JawLength: 20
   m_JawHeight: 4
-  m_JawDamage: 120
+  m_JawDamage: 84
   m_JawLaunch: 9
   m_JawBossShare: 0.1
   m_JawClip: {fileID: 8300000, guid: 52a64334d21c47a4ebc751cb043c5fb4, type: 3}

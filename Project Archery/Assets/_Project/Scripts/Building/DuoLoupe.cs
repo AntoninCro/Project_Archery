@@ -59,11 +59,14 @@ namespace Archery.Building
         [SerializeField]
         Transform m_Bow;
 
+        [Tooltip("Le tir de la baliste, par niveau : temps entre deux carreaux (s) et leurs dégâts (vague 1, Normal ; ×2 dans la tête). " +
+                 "Dès le niveau 1 depuis le 2 novembre (le tableau d'équilibrage : au niveau 1, la Loupe ne faisait rien d'elle-même ; " +
+                 "elle tirait 45 toutes les 1,6 s à partir du niveau 2).")]
         [SerializeField]
-        float m_BoltInterval = 1.6f;
+        float[] m_BoltIntervalPerLevel = { 2f, 1.6f, 1.6f };
 
         [SerializeField]
-        float m_BoltDamage = 45f;
+        float[] m_BoltDamagePerLevel = { 30f, 45f, 45f };
 
         [SerializeField]
         float m_BoltSpeed = 55f;
@@ -150,8 +153,7 @@ namespace Archery.Building
 
             Aim();
             Grow();
-            if (level >= 2)
-                UpdateBolts();
+            UpdateBolts(level);
             if (level >= 3)
                 UpdateRay();
             else
@@ -338,8 +340,8 @@ namespace Archery.Building
             SetRay(null);
         }
 
-        // La baliste (niveau 2) : un carreau dans la plus grosse tête du champ, le plus proche d'abord.
-        void UpdateBolts()
+        // La baliste (dès le niveau 1 depuis le 2 novembre) : un carreau dans la plus grosse tête du champ, le plus proche d'abord.
+        void UpdateBolts(int level)
         {
             if (m_BoltPrefab == null || Time.time < m_NextBolt)
                 return;
@@ -360,14 +362,15 @@ namespace Archery.Building
 
             if (target == null)
                 return;
-            m_NextBolt = Time.time + m_BoltInterval / OverchargeRate;
-            var from = m_Bow != null ? m_Bow.position : transform.position + Vector3.up * 5f;
+            m_NextBolt = Time.time + ValueFor(m_BoltIntervalPerLevel, level, 1.6f) / OverchargeRate;
+            // La baliste du modèle n'apparaît qu'au niveau 2 : au niveau 1, le carreau part du haut de la tour.
+            var from = m_Bow != null && m_Bow.gameObject.activeInHierarchy ? m_Bow.position : transform.position + Vector3.up * 5f;
             var head = HeadPoint(target);
             var time = Vector3.Distance(from, head) / m_BoltSpeed;
             var aim = head + target.Velocity * time;
             var direction = (aim - from).normalized;
             var bolt = Instantiate(m_BoltPrefab, from, Quaternion.LookRotation(direction));
-            bolt.Launch(direction * m_BoltSpeed, m_BoltDamage * Strength, 0, this);
+            bolt.Launch(direction * m_BoltSpeed, ValueFor(m_BoltDamagePerLevel, level, 45f) * Strength, 0, this);
             Sfx.Play(m_BoltClip, from, 0.8f, Random.Range(0.95f, 1.1f));
         }
 

@@ -51,6 +51,11 @@ namespace Archery.EditorTools
     /// <c>duo</c> nomme la définition du duo dont ils naissent, <c>kinds</c> leur troisième tour, et ils vont dans la liste des
     /// trios du catalogue.
     /// </para>
+    /// <para>
+    /// Les <b>ultimes</b> (2 novembre, partie « ultimes ») aussi (une <see cref="TowerUltimate"/>), après les trios : leur
+    /// <c>trios</c> nomme les définitions des trios de leur famille, dont elles sont le niveau 4 ; leur définition n'a qu'un niveau
+    /// (ses plans : ceux de la transformation), se pose partout (<c>anywhere</c>), et elles vont dans la liste des ultimes.
+    /// </para>
     /// </remarks>
     [InitializeOnLoad]
     static class TowerDefenseLookBaker
@@ -173,6 +178,23 @@ namespace Archery.EditorTools
             // catalogue ; leurs fichiers (prefab, définition, script) restent.
             if (look.TryGetValue("retiredTrios", out var retired) && retired is List<object> retiredList && retiredList.Count > 0)
                 RetireTrios(retiredList);
+
+            // Les ultimes (2 novembre), après les trios : chacune est le niveau 4 des trios de sa famille, qui doivent avoir leur
+            // définition.
+            if (look.TryGetValue("ultimates", out var ultimates) && ultimates is List<object> ultimateList)
+            {
+                foreach (Dictionary<string, object> ultimate in ultimateList)
+                {
+                    try
+                    {
+                        ApplyDuo(ultimate, palettes);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("Ultimes : " + Text(ultimate, "name") + ", " + e);
+                    }
+                }
+            }
         }
 
         static void RetireTrios(List<object> names)
@@ -864,6 +886,9 @@ namespace Archery.EditorTools
             var footprint = Floats(duo, "footprint");
             if (footprint.Length == 2)
                 definition.footprint = new Vector2Int(Mathf.RoundToInt(footprint[0]), Mathf.RoundToInt(footprint[1]));
+
+            // Partout (2 novembre : une ultime reste à la place de son trio, sur la voie ou au bord).
+            definition.anywhere = Flag(duo, "anywhere");
             AssetDatabase.CreateAsset(definition, path);
             Debug.Log("Duos : " + Text(duo, "name") + ", définition créée (" + path + ").");
             return definition;
@@ -917,8 +942,26 @@ namespace Archery.EditorTools
                 }
             }
 
+            // Une ultime (2 novembre : « trios », les définitions des trios de sa famille) va dans la liste des ultimes.
+            var fromTrios = new List<StructureDefinition>();
+            if (duo.TryGetValue("trios", out var triosValue) && triosValue is List<object> trioNames)
+            {
+                foreach (var trioName in trioNames)
+                {
+                    var trioDefinition = AssetDatabase.LoadAssetAtPath<StructureDefinition>(k_DuoDataFolder + trioName + ".asset");
+                    if (trioDefinition == null)
+                    {
+                        Debug.LogWarning("Ultimes : " + name + ", le trio " + trioName + " n'a pas encore sa définition (" + k_DuoDataFolder + ").");
+                        return;
+                    }
+
+                    fromTrios.Add(trioDefinition);
+                }
+            }
+
+            var isUltimate = fromTrios.Count > 0;
             var serialized = new SerializedObject(catalog);
-            var list = serialized.FindProperty(fromDuo != null ? "m_Trios" : "m_Duos");
+            var list = serialized.FindProperty(isUltimate ? "m_Ultimates" : fromDuo != null ? "m_Trios" : "m_Duos");
             for (var i = 0; i < list.arraySize; i++)
             {
                 var existing = list.GetArrayElementAtIndex(i);
@@ -950,17 +993,22 @@ namespace Archery.EditorTools
             list.arraySize++;
             var entry = list.GetArrayElementAtIndex(list.arraySize - 1);
             entry.FindPropertyRelative("displayName").stringValue = name;
-            SetEnum(entry.FindPropertyRelative("first"), kinds != null && kinds.Count > 0 ? kinds[0] as string : null);
-            if (fromDuo == null)
+            if (!isUltimate)
+                SetEnum(entry.FindPropertyRelative("first"), kinds != null && kinds.Count > 0 ? kinds[0] as string : null);
+            if (fromDuo == null && !isUltimate)
                 SetEnum(entry.FindPropertyRelative("second"), kinds != null && kinds.Count > 1 ? kinds[1] as string : null);
             entry.FindPropertyRelative("definition").objectReferenceValue = definition;
             if (ColorUtility.TryParseHtmlString(Text(duo, "color") ?? "", out var color))
                 entry.FindPropertyRelative("color").colorValue = color;
             entry.FindPropertyRelative("description").stringValue = Text(duo, "description") ?? "";
             entry.FindPropertyRelative("duo").objectReferenceValue = fromDuo;
+            var triosProperty = entry.FindPropertyRelative("trios");
+            triosProperty.arraySize = fromTrios.Count;
+            for (var i = 0; i < fromTrios.Count; i++)
+                triosProperty.GetArrayElementAtIndex(i).objectReferenceValue = fromTrios[i];
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssetIfDirty(catalog);
-            Debug.Log((fromDuo != null ? "Trios : " : "Duos : ") + name + ", inscrit au catalogue (" + k_CatalogPath + ").");
+            Debug.Log((isUltimate ? "Ultimes : " : fromDuo != null ? "Trios : " : "Duos : ") + name + ", inscrit au catalogue (" + k_CatalogPath + ").");
         }
 
         static void EnsureFolder(string folder)

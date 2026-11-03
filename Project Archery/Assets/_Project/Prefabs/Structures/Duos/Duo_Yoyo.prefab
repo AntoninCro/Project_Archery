@@ -1351,7 +1351,7 @@ MonoBehaviour:
   m_SlamDamagePerLevel:
   - 30
   - 40
-  - 45
+  - 70
   m_SlamRadius: 2.5
   m_SlamSplash: 12
   m_Cooldown: 1.2
@@ -1362,7 +1362,7 @@ MonoBehaviour:
   m_FlingWindup: 1.2
   m_FlingSpeed: 24
   m_FlingLift: 5
-  m_FlingSmashShare: 0.45
+  m_FlingSmashShare: 0.6
   m_SlamClip: {fileID: 8300000, guid: e9ba561cc9004bc4f91f5df6c6304752, type: 3}
   m_GrabClip: {fileID: 8300000, guid: 6a1b034f08ed98a4f9a6c3fd614f9de2, type: 3}
   m_FlingClip: {fileID: 8300000, guid: 281fd56ec6e693445bbe7df5ebf9716b, type: 3}

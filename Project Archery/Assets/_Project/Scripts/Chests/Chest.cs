@@ -9,11 +9,11 @@ namespace Archery.Chests
 {
     /// <summary>
     /// Un coffre de la forêt (GDD, section 13), gratuit. On l'ouvre en le visant (gâchette ou gâchette de prise, à quelques mètres) :
-    /// le temps ralentit, trois orbes sortent du coffre, et on en prend une de la même façon. Depuis le 27 octobre au soir
-    /// (demandé par le joueur) : un objet, un parchemin, et un bonus temporaire (dégâts doublés, tirs parfaits ou anneau rapide) ;
-    /// un fragment de l'arc légendaire peut prendre la place du parchemin. (De la refonte du 25 octobre jusque-là : un objet une
-    /// fois sur 4, sinon un parchemin, puis un autre parchemin, et le bonus.)
-    /// Le coffre de boss (<see cref="MakeBossChest"/>), plus grand, ne propose que des objets.
+    /// le temps ralentit, trois orbes sortent du coffre, et on en prend une de la même façon. Depuis le 2 novembre (le joueur) :
+    /// **un seul coffre**, à la place du coffre doré et de la caisse de l'ingénieur ; ses orbes : un parchemin, une tourelle (un lot
+    /// de plans du chantier de la partie), un objet ; un fragment de l'arc légendaire peut prendre la place du parchemin. (Du 27
+    /// octobre au soir jusque-là : un objet, un parchemin et un bonus temporaire ; la caisse de l'ingénieur, trois lots de plans.)
+    /// Le coffre de boss (<see cref="MakeBossChest"/>), plus grand : deux objets (et trois plans au hasard, le 2 novembre seulement).
     /// </summary>
     /// <remarks>
     /// Un rayon de lumière le signale de loin ; il s'éteint à l'ouverture. Le coffre disparaît à la fin de la vague
@@ -63,15 +63,9 @@ namespace Archery.Chests
         float m_DespawnAfterOpen = 15f;
 
         [Header("Récompenses")]
-        [Tooltip("Durée (s) des bonus temporaires.")]
+        [Tooltip("Durée (s) des bonus temporaires (plus proposés par les coffres depuis le 2 novembre).")]
         [SerializeField]
         float m_BuffDuration = 30f;
-
-        [Tooltip("Chance (0 à 1) que la première orbe d'un coffre de vague soit un objet plutôt qu'un parchemin (25 octobre). 1 depuis " +
-                 "le 27 octobre au soir (demandé par le joueur : plus de pièces par partie, plus de liberté pour le build) ; 0,25 avant.")]
-        [Range(0f, 1f)]
-        [SerializeField]
-        float m_ObjectChance = 1f;
 
         [Tooltip("Objets proposés par le coffre de boss (un seul à prendre).")]
         [Min(1)]
@@ -82,14 +76,6 @@ namespace Archery.Chests
         [SerializeField]
         float m_BossScale = 1.3f;
 
-        [Tooltip("Lots de plans proposés par une caisse de l'ingénieur (refonte du tower defense, 27 octobre ; un seul à prendre).")]
-        [Min(1)]
-        [SerializeField]
-        int m_CrateLots = 3;
-
-        [SerializeField]
-        ChestColors m_Colors = ChestColors.Default;
-
         [Header("Sons")]
         [SerializeField]
         AudioClip m_OpenClip;
@@ -99,8 +85,6 @@ namespace Archery.Chests
 
         [SerializeField]
         AudioClip m_VanishClip;
-
-        static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
 
         readonly List<ChestOrb> m_Orbs = new List<ChestOrb>();
         float m_SlowMotionLeft;
@@ -114,7 +98,7 @@ namespace Archery.Chests
         /// <summary>Une orbe a été prise.</summary>
         public bool IsLooted { get; private set; }
 
-        /// <summary>Le coffre laissé par le boss de la vague : des objets seulement (refonte du 25 octobre).</summary>
+        /// <summary>Le coffre laissé par le boss de la vague : des objets (refonte du 25 octobre).</summary>
         public bool IsBossChest { get; private set; }
 
         /// <summary>En fait un coffre de boss, plus grand. À appeler juste après sa création, avant son ouverture.</summary>
@@ -123,33 +107,6 @@ namespace Archery.Chests
             IsBossChest = true;
             m_BaseScale *= m_BossScale;
             transform.localScale = m_BaseScale;
-        }
-
-        /// <summary>
-        /// La caisse de l'ingénieur (refonte du tower defense, 27 octobre) : des lots de plans de construction, à la place des
-        /// anciens gisements de cristaux (<c>Building/CrystalSpawner</c>).
-        /// </summary>
-        public bool IsEngineerCrate { get; private set; }
-
-        /// <summary>
-        /// En fait une caisse de l'ingénieur, dans sa couleur. À appeler juste après sa création, avant son ouverture. Le rayon
-        /// prend la couleur de la caisse, pour la distinguer de loin d'un coffre doré ; le coffre est teinté en attendant le
-        /// modèle de la caisse (étape 1 de la refonte : les modèles).
-        /// </summary>
-        public void MakeEngineerCrate(Color color)
-        {
-            IsEngineerCrate = true;
-            var block = new MaterialPropertyBlock();
-            foreach (var renderer in GetComponentsInChildren<Renderer>(true))
-            {
-                if (renderer is ParticleSystemRenderer || (m_OpenEffect != null && renderer.transform.IsChildOf(m_OpenEffect.transform)))
-                    continue;
-
-                var isBeam = m_Beam != null && renderer.transform.IsChildOf(m_Beam.transform);
-                renderer.GetPropertyBlock(block);
-                block.SetColor(k_BaseColorId, isBeam ? color : Color.Lerp(Color.white, color, 0.55f));
-                renderer.SetPropertyBlock(block);
-            }
         }
 
         void Awake()
@@ -224,8 +181,7 @@ namespace Archery.Chests
         }
 
         // Les orbes sortent du coffre et s'alignent au-dessus. Vues par le joueur, qui fait face au coffre, de gauche à droite :
-        // l'objet ou le parchemin, l'autre parchemin, puis le bonus temporaire ; ou les objets du coffre de boss ; ou les lots de
-        // plans de la caisse de l'ingénieur.
+        // le parchemin, la tourelle, puis l'objet ; ou les objets du coffre de boss.
         void SpawnOrbs()
         {
             if (m_OrbPrefab == null)
@@ -234,9 +190,7 @@ namespace Archery.Chests
                 return;
             }
 
-            var rewards = IsEngineerCrate ? ChestRewards.RollPlans(m_CrateLots)
-                : IsBossChest ? ChestRewards.RollBoss(m_BossObjects)
-                : ChestRewards.Roll(m_BuffDuration, m_Colors, m_ObjectChance);
+            var rewards = IsBossChest ? ChestRewards.RollBoss(m_BossObjects) : ChestRewards.Roll();
             var anchor = m_OrbAnchor != null ? m_OrbAnchor.position : transform.position + transform.up * 1.1f;
             var from = transform.position + transform.up * 0.4f;
             for (var i = 0; i < rewards.Count; i++)

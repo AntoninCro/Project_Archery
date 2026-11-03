@@ -17,13 +17,51 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 - **Deuxième chantier** (27 et 28 octobre) : la refonte du tower defense (caisses de l'ingénieur, plans, grille, pose à la
   montre, ennemis projetés, puis constructions nouvelles et fusions) ; son état et l'étape suivante sont dans
   `Project Archery/Docs/Refonte_TowerDefense.md`, partie « Avancement ». Raccourcis : **B** (2 plans de chaque bâtiment),
-  **V** (une caisse), **F2** (le menu des plans sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque
+  **V** (un coffre ; le coffre unique depuis le 2 novembre), **F2** (le menu des plans sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque
   tour, puis chaque duo, puis chaque trio, posée à plusieurs niveaux ; `Building/BuildShowcase.cs`). Les trios (1er novembre) :
   un duo plus une tour, `Building/TowerTrio.cs`, modèles dans `Tools/allure_tours/trios.py` (partie « trios » du fichier d'allure).
-  **La tâche suivante (1er novembre au soir)** : le tableau Excel d'équilibrage des 10 tours, demandé par le joueur et décrit en
-  entier dans `Refonte_TowerDefense.md`, partie 12.32 (rien n'est commencé ; le scaling des bâtiments vient de changer : 12.31).
+  **Le tableau d'équilibrage (2 novembre)** : `Docs/Equilibrage_Tours.xlsx`, écrit par `Tools/equilibrage_tours.py` d'après les
+  prefabs (les 10 tours, les 13 duos, les 7 trios ; `Refonte_TowerDefense.md`, 12.32 et 12.33). Le joueur a rempli sa colonne : **tout
+  est appliqué** (12.35, `Editor/BalanceBaker` et le code), pas encore vu dans Unity. Puis les parchemins du joueur valent aussi pour les tours, qui ne suivent plus les vagues
+  (12.36). Puis le coffre unique (12.38) et la puissance des tours baissée (12.39). Puis le premier essai du joueur et ses suites
+  (12.40, 12.41 : coffres au gong d'un seul côté, le chantier de la partie, un plan par niveau, la grille, la régénération, MK ×2).
+  Puis le deuxième essai (12.42, 2 novembre : 2 plans par coffre, courbe des PV relevée, tours ×1,2, vagues plus courtes, la grille ;
+  `Editor/SecondTestBaker`). **La tâche suivante** : un nouvel essai (`Checklist_Demo.md`, « Le deuxième essai du 2 novembre ») et
+  relancer le tableau après Unity ; puis les ultimes (choisies : Colosse de forge, Grand Manège, Grande Horloge, qui prend
+  Minuit au Beffroi ; 12.44 ; le Beffroi au niveau 3 devient le Phare du passé, 12.45). **Le système des ultimes et le Colosse de
+  forge sont codés** (12.46 : `Building/TowerUltimate.cs`, `UltimeColosse.cs`, `FinalBoss/DragonBoss.Pin.cs`, le modèle dans
+  `Tools/allure_tours/ultimes.py`) ; le Colosse refait après l'essai du joueur (12.47 : « on doit ressentir sa puissance »),
+  puis à deux mains après le deuxième (12.48 : la forge à gauche, un marteau par flèche à droite, 5 par seconde au plus ; le
+  ciel de forge passager), puis des marteaux imposants et la force au tableau (12.49 : `Editor/ColosseForceBaker` ; le Colosse
+  est dans `Tools/equilibrage_tours.py`, à relancer après Unity), puis les dégâts sur les boss des vagues (12.50, MK inchangé).
+  **Le joueur a validé le Colosse** (2 novembre, tard : « ok, la tour me paraît bien »). **Piège** : le baker de l'allure
+  refait un modèle à chaque marque mais garde les réglages déjà posés sur le prefab ; changer une valeur par défaut dans le code
+  ne l'atteint pas : passer par un baker (la leçon de 12.47). **Le Grand Manège, la deuxième ultime, est codé** (2 novembre, tard ;
+  12.51 : la ronde, la grande éjection, un cheval par flèche, la charge, le feu d'artifice, MK étourdi ; `Building/UltimeManege.cs`,
+  `FinalBoss/DragonBoss.Daze.cs`, le modèle dans `Tools/allure_tours/ultimes.py`, `Editor/ManegeFinitionBaker`, `ManegeSonsBaker`) ;
+  pas encore vu dans Unity ; ses sons (freesound, CC0, téléchargés par le joueur) sont découpés en `Audio/Manege_*.wav` et crédités
+  (les outils pour les sons, réutilisables : `Tools/sons/` ; lire un WAV ou un AIFF, l'enveloppe, le spectre, chercher une boucle qui
+  se raccorde au rythme, découper) ; le joueur l'a lancé : « parfait ». **La Grande Horloge, la troisième, est codée** (2 novembre,
+  tard ; 12.52 : les chiffres, Minuit après le XII et le dégel qui brise, l'écho du temps, l'aurore, l'horloge astronomique, Minuit
+  dans l'arène ; `Building/UltimeHorloge.cs`, `FinalBoss/DragonBoss.TimeStop.cs`, `Editor/HorlogeFinitionBaker`, `HorlogeSonsBaker`) ;
+  pas encore vue dans Unity ; ses sons (freesound, CC0, téléchargés par le joueur) sont découpés (`Tools/sons/decoupe_horloge.py`) et
+  crédités. **Les trois ultimes sont faites ; ensuite, leurs essais.** **Pour en refaire ou en changer une : lire d'abord
+  `Project Archery/Docs/Ultimes_Cahier.md`**, tout ce que le joueur a demandé pour le Colosse, à faire dès le premier jet (le
+  modèle fini, l'apparition, le ciel passager, un signe à chaque coup, le rythme en trois couches dont une action par flèche
+  plafonnée à 5 par seconde, des coups à l'échelle du modèle, la force vérifiée au tableau, les boss, les sons, le casque), et ses parties
+  7 (ce que le Manège a appris : fondre un modèle de centaines de pièces au lancement) et 8 (l'Horloge).
 - **Le chantier en cours** (26 octobre) : la refonte de la partie roguelike, « la flèche en pièces » ; son état et ses étapes
   sont dans `Project Archery/Docs/Refonte_Roguelike.md`, partie « Avancement ».
+
+## Le fil rouge du jeu : la complexité (règle du joueur, 2 novembre)
+
+- **Simple à jouer, riche par les combinaisons.** Un fonctionnement simple qui laisse de grandes possibilités vaut mieux qu'un jeu
+  compliqué. Le jeu a eu beaucoup d'ajouts : le but est maintenant de **réduire la complexité**. Ne pas proposer de règle ou de
+  système de plus sans dire ce qu'il remplace ou retire ; préférer élargir ce qui existe (les parchemins qui valent aussi pour les
+  tours) à une mécanique nouvelle.
+- **La bonne complexité arrive au fil de la partie**, une fois que le joueur maîtrise ses outils, et reste dosée. Les modèles : les
+  pièces de flèche (chacune simple, la profondeur par les combinaisons) ; les 10 tours de base, puis les duos et les trios.
+- GDD, section 1 (« Le fil rouge »).
 
 ## Façon de travailler
 
@@ -64,7 +102,8 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 
 - **Unity est-il ouvert ?** `Get-Process Unity` en PowerShell (`tasklist` dans Git Bash ne le voit pas). Ouvert, il recompile
   dès qu'un `.cs` change : modifier d'abord les fichiers dont un nouveau script dépend. Il ne réimporte qu'en reprenant le focus.
-- **Fins de ligne** : la plupart des scripts et des docs sont en CRLF, quelques-uns en LF (vérifier avant). Jamais `sed -i` de
+- **Fins de ligne** : la plupart des scripts et des docs sont en CRLF, quelques-uns en LF (vérifier avant, en Python avec
+  `open(p, 'rb')` : `grep $'\r'` de Git Bash répond à tort qu'il n'y en a pas, vu le 2 novembre). Jamais `sed -i` de
   Git Bash sur un fichier CRLF (il le passe en LF) ; l'outil Edit les garde ; en Python, lire et écrire en binaire. Un nouveau
   fichier prend la fin de ligne de ses voisins. Les assets YAML sont en CRLF : écrire le `.meta` avant l'asset (GUID choisi).
 - **Git en PowerShell** : rafraîchir le PATH d'abord :
@@ -74,7 +113,10 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   Unity dans `Thunk VR\Project Archery`). Unity Hub y a **deux versions** : 6000.5.10f1 (celle du projet) et 6000.6.7f1 ;
   toujours ouvrir avec la 6000.5.10f1 (l'autre convertirait le projet). Python 3.13 (`py` et `python` marchent tous les deux,
   avec numpy, Pillow et python-pptx), SDK .NET 8 et 10, Git et Git LFS (le dépôt n'utilise pas LFS), installés par winget. Les
-  deux `compile_check` passent sans erreur ni avertissement. Les packs d'assets téléchargés mais pas importés étaient hors du
+  deux `compile_check` passent sans erreur ni avertissement. Depuis le 2 novembre : **openpyxl** (pip) et **LibreOffice** (winget,
+  `C:\Program Files\LibreOffice\program\soffice.exe`) ; pour recalculer un `.xlsx` et en lire les valeurs :
+  `soffice --headless --convert-to xlsx --outdir <dossier> <fichier>` (le `recalc.py` de la compétence Excel ne marche pas sous
+  Windows : `AF_UNIX`). Les packs d'assets téléchargés mais pas importés étaient hors du
   dépôt, dans `projet archery/Assets_TowerDefense/` sur l'ancien PC : ils ne sont pas dans Git, ni sur ce PC.
 
 ## Ce que Claude a retenu (la mémoire du PC d'avant, reprise ici le 31 octobre)

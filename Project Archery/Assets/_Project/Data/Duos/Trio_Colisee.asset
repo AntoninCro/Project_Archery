@@ -26,11 +26,11 @@ MonoBehaviour:
       c\xF4t\xE9, couronn\xE9 de laurier, et frappe ceux qui passent. Ta fl\xE8che
       \xE9limine le gladiateur qu'elle touche."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Deux champions \xE0 la fois ; un champion qui tombe \xE9clate en
       bulles qui hypnotisent ses voisins."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "Les jeux du cirque : l'ar\xE8ne s'\xE9largit sur toute la voie
       et avale un groupe entier ; le vainqueur devient g\xE9ant, en armure dor\xE9e,
       et marche \xE0 contre-sens sur la voie."

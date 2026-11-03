@@ -15,15 +15,19 @@ namespace Archery.Building
     /// 4 au centre, 5 à droite. Un bâtiment hors de la voie se pose au centre des deux clairières près de la tour : niveau 3 à
     /// droite, 4 à gauche (un bâtiment de la tour, sur deux emplacements de la tour). F4 encore retire ceux que la vitrine vient de
     /// poser et passe au bâtiment suivant ; après les bâtiments de base viennent les duos, puis les trios (1er novembre), aux
-    /// niveaux 1, 2 et 3 au lieu de 3, 4 et 5. Après le dernier, F4 retire tout, puis recommence ; Maj + F4 revient en arrière.
+    /// niveaux 1, 2 et 3 au lieu de 3, 4 et 5, puis les ultimes (2 novembre), une seule, sur la voie du centre. Après le dernier,
+    /// F4 retire tout, puis recommence ; Maj + F4 revient en arrière.
     /// </summary>
     /// <remarks>
     /// Seulement dans l'éditeur et les builds de développement. Créé par le <see cref="BuildManager"/> : rien à poser dans la
     /// scène. Chaque bâtiment prend la place libre qui lui convient la plus proche du point visé : un bâtiment du joueur déjà là
     /// pousse celui de la vitrine à côté. Les bâtiments du joueur ne sont jamais retirés.
     /// <para>Au premier appui (1er novembre, demandé par le joueur), la vitrine pose aussi une défense aérienne qui reste (un
-    /// lance-filet et une baliste au niveau maximal dans chacune des deux clairières, plus près de la tour que les bâtiments
-    /// montrés), et donne 20 000 PV au joueur et à la tour, tenus tant que la partie dure : de quoi regarder sans être dérangé.</para>
+    /// lance-filet dans chacune des deux clairières, plus près de la tour que les bâtiments montrés), et donne 20 000 PV au joueur
+    /// et à la tour, tenus tant que la partie dure : de quoi regarder sans être dérangé. Depuis le 2 novembre au soir (le joueur :
+    /// « laisse juste les défenses uniquement anti-aériennes »), plus de baliste, qui tirait aussi sur les ennemis au sol, et le
+    /// lance-filet au niveau 3 au lieu de 5 : au niveau 4, son filet électrique vise aussi les ennemis au sol. Les bâtiments
+    /// montrés ont ainsi les ennemis au sol pour eux seuls.</para>
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildShowcase : MonoBehaviour
@@ -44,7 +48,11 @@ namespace Archery.Building
         // montrés, à 20 m), et les PV du joueur et de la tour.
         const float k_AirDefenseDistance = 11f;
         const float k_ShowcaseHealth = 20000f;
-        static readonly StructureKind[] k_AirDefense = { StructureKind.NetLauncher, StructureKind.Ballista };
+        static readonly StructureKind[] k_AirDefense = { StructureKind.NetLauncher };
+
+        // Le plus haut niveau du lance-filet qui ne vise que les volants (le barillet : deux filets à la fois) ; au niveau 4, le
+        // filet électrique vise aussi les ennemis au sol (2 novembre au soir).
+        const int k_AirDefenseLevel = 3;
 
         static readonly float[] k_LaneSides = { 0f, 1.5f, -1.5f, 3f, -3f };
         static readonly string[] k_LaneNames = { "voie de gauche", "voie du centre", "voie de droite" };
@@ -128,7 +136,7 @@ namespace Archery.Building
 
                     // Posée comme une tour de la vitrine, puis sortie de sa liste : F4 ne la retire pas.
                     var before = m_Placed.Count;
-                    if (PlaceAround(grid, clearing, k_ClearingSearch, default, definition, definition.MaxLevel))
+                    if (PlaceAround(grid, clearing, k_ClearingSearch, default, definition, Mathf.Min(k_AirDefenseLevel, definition.MaxLevel)))
                         placed++;
                     if (m_Placed.Count > before)
                         m_Placed.RemoveAt(m_Placed.Count - 1);
@@ -208,6 +216,13 @@ namespace Archery.Building
                     steps.Add(new Step { Duo = entry });
             }
 
+            // Puis les ultimes (2 novembre) : une seule, sur la voie du centre.
+            foreach (var entry in catalog.Ultimates)
+            {
+                if (entry != null && entry.IsUltimate && entry.definition != null && entry.definition.prefab is TowerUltimate)
+                    steps.Add(new Step { Duo = entry });
+            }
+
             return steps;
         }
 
@@ -217,6 +232,19 @@ namespace Archery.Building
             m_Missed.Clear();
             var tower = Tower.Instance != null ? Tower.Instance.transform.position : grid.transform.position;
             var lanes = SortedLanes(grid, tower);
+
+            // Une ultime (2 novembre) : une seule, sur la voie du centre (les ennemis passent entre ses genoux), sinon dans la
+            // clairière de droite.
+            if (step.Duo != null && step.Duo.IsUltimate)
+            {
+                if (lanes.Count > 0 && PlaceOnLane(grid, lanes[lanes.Count / 2], tower, step, definition, 1))
+                    return "sur la voie du centre";
+                if (lanes.Count >= 2 && PlaceAround(grid, ClearingCenter(lanes[lanes.Count - 2], lanes[lanes.Count - 1], tower),
+                                                    k_ClearingSearch, step, definition, 1))
+                    return "dans la clairière de droite";
+                m_Missed.Add("la voie du centre et la clairière de droite");
+                return "sur la voie du centre";
+            }
 
             if (definition.slot == BuildSlot.Lane)
             {
@@ -326,7 +354,17 @@ namespace Archery.Building
         {
             var structure = socket.Place(definition);
             level = Mathf.Clamp(level, 1, Mathf.Max(1, structure.MaxLevel));
-            if (step.Duo != null && structure is TowerTrio trio)
+            if (step.Duo != null && structure is TowerUltimate ultimate)
+            {
+                // Une ultime : les trois tours du premier trio de sa famille, comme si elle en était née.
+                var trioEntry = TrioEntryOf(step.Duo.trios.Count > 0 ? step.Duo.trios[0] : null);
+                var duoEntry = trioEntry != null ? DuoEntryOf(trioEntry.duo) : null;
+                ultimate.SetupUltimate(step.Duo, duoEntry != null ? DefinitionOf(duoEntry.first) : null,
+                                       duoEntry != null ? DefinitionOf(duoEntry.second) : null,
+                                       trioEntry != null ? DefinitionOf(trioEntry.first) : null, trioEntry != null ? trioEntry.definition : null);
+                ultimate.SetLevelImmediate(level);
+            }
+            else if (step.Duo != null && structure is TowerTrio trio)
             {
                 // Un trio : les deux tours de son duo, sa troisième tour, puis son niveau d'un coup.
                 var duoEntry = DuoEntryOf(step.Duo.duo);
@@ -371,6 +409,22 @@ namespace Archery.Building
             }
 
             m_Placed.Clear();
+        }
+
+        // L'entrée du trio de cette définition (pour les trois tours d'une ultime).
+        static TowerDuoCatalog.Entry TrioEntryOf(StructureDefinition trio)
+        {
+            var catalog = TowerDuoCatalog.Instance;
+            if (catalog == null || trio == null)
+                return null;
+
+            foreach (var entry in catalog.Trios)
+            {
+                if (entry != null && entry.definition == trio)
+                    return entry;
+            }
+
+            return null;
         }
 
         // L'entrée du duo de cette définition (pour les deux tours d'un trio).

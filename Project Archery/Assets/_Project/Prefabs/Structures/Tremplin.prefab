@@ -2719,7 +2719,7 @@ MonoBehaviour:
   - 2.2
   - 3.5
   - 3
-  - 2
+  - 4
   m_BackSpeed: 3
   m_Size: {x: 2.4, y: 2.4}
   m_Plate: {fileID: 2104833129121049609}
@@ -2743,7 +2743,7 @@ MonoBehaviour:
   m_RampTargetRange: 30
   m_RampSteerSpeed: 60
   m_RampBackSpeed: 4
-  m_RampMax: 6
+  m_RampMax: 4
   m_RampZoneScale: 1.4
   m_BossDamageShare: 0.1
   m_TrailMaterial: {fileID: 2100000, guid: 6ab2d0a1adfeba34196b4fb6a582c3a6, type: 2}

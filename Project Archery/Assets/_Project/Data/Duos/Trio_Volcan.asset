@@ -26,11 +26,11 @@ MonoBehaviour:
       les groupes autour et br\xFBlent le sol. Ta fl\xE8che qui traverse le panache
       s'enflamme."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "La lave coule autour du c\xF4ne, et les bombes en laissent l\xE0
       o\xF9 elles tombent : le sol br\xFBle."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "L'\xE9ruption : la montagne grandit sous tes yeux, la lumi\xE8re
       rougit, et une coul\xE9e de lave descend la voie \xE0 contre-sens sur 30 m
       ; elle repousse vers la for\xEAt tout ce qu'elle touche et le br\xFBle."

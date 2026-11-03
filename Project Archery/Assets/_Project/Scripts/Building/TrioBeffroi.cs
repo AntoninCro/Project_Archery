@@ -4,6 +4,8 @@ using Archery.Core;
 using Archery.Enemies;
 using Archery.UI;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Archery.Building
 {
@@ -15,15 +17,24 @@ namespace Archery.Building
     /// <list type="bullet">
     /// <item>1 : la cloche toutes les 10 s ;</item>
     /// <item>2 : à l'arrivée, ils restent figés 2 s (étourdis : préparés) ;</item>
-    /// <item>3, <b>Minuit</b> : en plus, toutes les 30 s, douze coups ; le temps s'arrête 6 s dans tout le rayon, sauf pour toi :
-    /// les ennemis sont figés, tes flèches s'arrêtent en l'air, et au douzième coup elles repartent toutes ensemble.</item>
+    /// <item>3, <b>le Phare du passé</b> (2 novembre au soir, choisi par le joueur ; <c>Docs/Refonte_TowerDefense.md</c>, 12.45) :
+    /// en plus, toutes les 20 s, avec cinq ennemis à portée, la lanterne du sommet s'allume et un grand faisceau sépia fait le tour
+    /// du beffroi en 6 s, sur toute la carte, comme un phare ; chaque ennemi au sol qu'il balaie rembobine son chemin, puis reste
+    /// figé.</item>
     /// </list>
+    /// <b>Minuit</b>, l'ancien niveau 3 (douze coups ; une grande bulle part du beffroi et couvre toute la carte ; dedans, le monde
+    /// en noir et blanc, le temps s'arrête 9 s sauf pour toi, tes flèches attendent en l'air et repartent toutes ensemble au
+    /// douzième coup), passe à la <b>Grande Horloge</b>, l'ultime de la glace et du temps (12.44) : le joueur, le 2 novembre au
+    /// soir, « elle reprend le principe du Beffroi au niveau 3 ». Son code reste ici, en sommeil : il ne joue qu'au niveau 4, que
+    /// le Beffroi n'atteint pas ; la Grande Horloge (<see cref="UltimeHorloge"/>, 2 novembre, tard) a le sien, repris d'ici avec les
+    /// réglages du joueur.
     /// </summary>
     /// <remarks>
-    /// Le beffroi note le chemin des ennemis au sol près de lui (une position tous les dixièmes de seconde, 4 s). Rembobiner, c'est
-    /// tenir l'ennemi (<see cref="Enemy.Hold"/>) et le ramener le long de ce chemin, à l'envers, en 1,2 s, puis le lâcher. Le temps
-    /// arrêté : les ennemis gelés (<see cref="Enemy.Freeze"/>, sans glace), les flèches arrêtées comme celles du fût suspendu
-    /// (<see cref="Arrow.Hover"/>). Les boss ne sont jamais rembobinés, et figés moins longtemps ; les volants pas rembobinés.
+    /// Le beffroi note le chemin des ennemis au sol près de lui (une position tous les dixièmes de seconde, 12,8 s ; sur toute la
+    /// portée du faisceau au niveau 3). Rembobiner, c'est tenir l'ennemi (<see cref="Enemy.Hold"/>) et le ramener le long de ce
+    /// chemin, à l'envers, en 1,2 s, puis le lâcher. Le temps arrêté : les ennemis gelés (<see cref="Enemy.Freeze"/>, sans glace),
+    /// les flèches arrêtées comme celles du fût suspendu (<see cref="Arrow.Hover"/>). Les boss ne sont jamais rembobinés, et figés
+    /// moins longtemps ; les volants pas rembobinés.
     /// </remarks>
     public class TrioBeffroi : TowerTrio
     {
@@ -63,7 +74,32 @@ namespace Archery.Building
         [SerializeField]
         float m_ArrivalStun = 2f;
 
-        [Header("Minuit (niveau 3)")]
+        [Header("Le Phare du passé (niveau 3)")]
+        [Tooltip("La lanterne du sommet (celle du niveau 2) : le faisceau en part. Vide : au-dessus de la cloche.")]
+        [SerializeField]
+        Transform m_Lantern;
+
+        [Tooltip("Temps (s) entre deux tours du faisceau ; il faut au moins cinq ennemis à portée de la cloche.")]
+        [SerializeField]
+        float m_BeamInterval = 20f;
+
+        [Tooltip("Portée (m, à plat) du faisceau, et sa longueur : toute la carte.")]
+        [SerializeField]
+        float m_BeamRadius = 110f;
+
+        [Tooltip("Durée (s) d'un tour complet du faisceau.")]
+        [SerializeField]
+        float m_BeamTurnTime = 6f;
+
+        [Tooltip("Largeur (°) du faisceau.")]
+        [SerializeField]
+        float m_BeamWidth = 6f;
+
+        [Tooltip("Le matériau du faisceau (sépia, transparent). Vide : le faisceau ne se voit pas, il rembobine quand même.")]
+        [SerializeField]
+        Material m_BeamMaterial;
+
+        [Header("Minuit (la Grande Horloge, l'ultime ; en sommeil)")]
         [Tooltip("Temps (s) entre deux Minuit ; il faut au moins cinq ennemis à portée.")]
         [SerializeField]
         float m_MidnightInterval = 30f;
@@ -79,6 +115,20 @@ namespace Archery.Building
         [SerializeField]
         float m_BossStopTime = 2f;
 
+        [Tooltip("La bulle du temps arrêté (2 novembre, le joueur) : elle part du beffroi et atteint le rayon de Minuit en tant de " +
+                 "secondes ; le temps ne s'arrête qu'à son passage. Dedans, le monde est en noir et blanc.")]
+        [SerializeField]
+        float m_BubbleGrowTime = 0.8f;
+
+        [Tooltip("Le matériau de la bulle (le verre de la bulle). Vide : la bulle ne se voit pas, le noir et blanc reste.")]
+        [SerializeField]
+        Material m_BubbleMaterial;
+
+        [Tooltip("La saturation dans la bulle (−100 : noir et blanc).")]
+        [Range(-100f, 0f)]
+        [SerializeField]
+        float m_BubbleSaturation = -100f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_BellClip;
@@ -88,7 +138,7 @@ namespace Archery.Building
 
         class Track
         {
-            public readonly Vector3[] Points = new Vector3[64];
+            public readonly Vector3[] Points = new Vector3[128]; // 12,8 s (8 s rembobinées depuis le 2 novembre ; 64 avant)
             public int Head;
             public int Count;
             public float Seen;
@@ -100,6 +150,7 @@ namespace Archery.Building
             public readonly List<Vector3> Path = new List<Vector3>();
             public float Time;
             public float NextFx;
+            public float FxEvery;
         }
 
         class Stopped
@@ -126,6 +177,21 @@ namespace Archery.Building
         float m_NextStroke;
         float m_MidnightEnd;
         float m_NextArrowScan;
+        float m_MidnightStart = -1f;
+        Transform m_Bubble;
+        Volume m_Grayscale;
+        VolumeProfile m_GrayProfile;
+        static Mesh s_TwoSidedSphere;
+        readonly HashSet<Enemy> m_Swept = new HashSet<Enemy>();
+        float m_NextBeam;
+        float m_BeamStart = -1f;
+        float m_BeamFrom;
+        float m_NextBeamSound;
+        Transform m_Beam;
+        Mesh m_BeamMesh;
+
+        // Il faut au moins tant d'ennemis à portée de la cloche pour le faisceau (et Minuit).
+        const int k_Crowd = 5;
 
         protected override void OnDestroy()
         {
@@ -137,6 +203,16 @@ namespace Archery.Building
 
             EndMidnight();
             m_Rewinds.Clear();
+            if (m_Beam != null)
+                Destroy(m_Beam.gameObject);
+            if (m_BeamMesh != null)
+                Destroy(m_BeamMesh);
+            if (m_Bubble != null)
+                Destroy(m_Bubble.gameObject);
+            if (m_Grayscale != null)
+                Destroy(m_Grayscale.gameObject);
+            if (m_GrayProfile != null)
+                Destroy(m_GrayProfile);
             base.OnDestroy();
         }
 
@@ -145,13 +221,21 @@ namespace Archery.Building
             base.Update();
             UpdateRewinds();
             AnimateClock();
+            UpdateBubble();
             if (!IsBuilt || IsUnderConstruction)
+            {
+                if (m_BeamStart >= 0f)
+                    EndBeam();
                 return;
+            }
 
-            Record();
             var level = Mathf.Max(1, Level);
-            if (level >= 3 && UpdateMidnight())
+            Record(level >= 3 ? Mathf.Max(m_Range + 8f, m_BeamRadius) : m_Range + 8f);
+            // Minuit : la Grande Horloge (l'ultime, le niveau 4 ; en sommeil tant qu'elle n'est pas codée).
+            if (level >= 4 && UpdateMidnight())
                 return;
+            if (level >= 3)
+                UpdateBeam();
 
             if (Time.time < m_NextRing || EnemiesNear(transform.position, m_Range).Count == 0)
                 return;
@@ -163,14 +247,15 @@ namespace Archery.Building
 
         // ---------------------------------------------------------------- le chemin des ennemis
 
-        // Une position tous les dixièmes de seconde pour chaque ennemi au sol près du beffroi ; les autres sont oubliés.
-        void Record()
+        // Une position tous les dixièmes de seconde pour chaque ennemi au sol à moins de reach m du beffroi (toute la portée du
+        // faisceau au niveau 3) ; les autres sont oubliés.
+        void Record(float reach)
         {
             if (Time.time < m_NextSample)
                 return;
             m_NextSample = Time.time + k_Sample;
 
-            foreach (var enemy in EnemiesNear(transform.position, m_Range + 8f))
+            foreach (var enemy in EnemiesNear(transform.position, reach))
             {
                 if (enemy.IsHeld || enemy.IsBoss)
                     continue;
@@ -199,9 +284,11 @@ namespace Archery.Building
 
         // ---------------------------------------------------------------- rembobiner
 
+        int RewindSamples => Mathf.Clamp(Mathf.RoundToInt(m_RewindSeconds / k_Sample), 2, 127);
+
         void RewindAll()
         {
-            var samples = Mathf.Clamp(Mathf.RoundToInt(m_RewindSeconds / k_Sample), 2, 63);
+            var samples = RewindSamples;
             var count = 0;
             m_Scratch.Clear();
             m_Scratch.AddRange(EnemiesNear(transform.position, m_Range));
@@ -209,26 +296,8 @@ namespace Archery.Building
             {
                 if (count >= m_MaxRewound)
                     break;
-                if (!enemy.CanBeLaunched || enemy.IsAirborne || IsRewinding(enemy) || !m_Tracks.TryGetValue(enemy, out var track) ||
-                    track.Count < 3)
-                    continue;
-
-                // Son chemin, du plus récent au plus ancien, en commençant là où il est.
-                var rewind = new Rewind { Enemy = enemy };
-                rewind.Path.Add(enemy.transform.position);
-                for (var k = 1; k <= Mathf.Min(samples, track.Count); k++)
-                {
-                    var index = (track.Head - k + track.Points.Length * 2) % track.Points.Length;
-                    rewind.Path.Add(track.Points[index]);
-                }
-
-                if (!enemy.Hold(this))
-                    continue;
-
-                track.Count = 0;
-                m_Rewinds.Add(rewind);
-                count++;
-                FloatingText.Spawn(enemy.transform.position + Vector3.up * 2f, "<< Rembobiné !", k_Sepia, 1.2f, 1.3f);
+                if (StartRewind(enemy, samples, 0.08f))
+                    count++;
             }
 
             if (count > 0)
@@ -236,6 +305,32 @@ namespace Archery.Building
                 m_HandSpeed = -24f;
                 Sfx.Play(m_RewindClip, transform.position + Vector3.up * 4f, 0.8f, 0.7f);
             }
+        }
+
+        // Tenu, il repartira à reculons le long de son chemin (sa traînée sépia toutes les fxEvery s) ; faux s'il ne peut pas (en
+        // l'air, tenu par autre chose, déjà rembobiné, pas assez de chemin noté).
+        bool StartRewind(Enemy enemy, int samples, float fxEvery)
+        {
+            if (!enemy.CanBeLaunched || enemy.IsAirborne || IsRewinding(enemy) || !m_Tracks.TryGetValue(enemy, out var track) ||
+                track.Count < 3)
+                return false;
+
+            // Son chemin, du plus récent au plus ancien, en commençant là où il est.
+            var rewind = new Rewind { Enemy = enemy, FxEvery = fxEvery };
+            rewind.Path.Add(enemy.transform.position);
+            for (var k = 1; k <= Mathf.Min(samples, track.Count); k++)
+            {
+                var index = (track.Head - k + track.Points.Length * 2) % track.Points.Length;
+                rewind.Path.Add(track.Points[index]);
+            }
+
+            if (!enemy.Hold(this))
+                return false;
+
+            track.Count = 0;
+            m_Rewinds.Add(rewind);
+            FloatingText.Spawn(enemy.transform.position + Vector3.up * 2f, "<< Rembobiné !", k_Sepia, 1.2f, 1.3f);
+            return true;
         }
 
         bool IsRewinding(Enemy enemy)
@@ -270,7 +365,7 @@ namespace Archery.Building
                 enemy.transform.position = Vector3.Lerp(rewind.Path[index], rewind.Path[index + 1], along - index);
                 if (Time.time >= rewind.NextFx)
                 {
-                    rewind.NextFx = Time.time + 0.08f;
+                    rewind.NextFx = Time.time + rewind.FxEvery;
                     Burst(enemy.Center, k_Sepia, 5, 1f, 0.3f, 0.5f, -0.1f);
                 }
 
@@ -288,7 +383,169 @@ namespace Archery.Building
             }
         }
 
-        // ---------------------------------------------------------------- Minuit (niveau 3)
+        // ---------------------------------------------------------------- le Phare du passé (niveau 3, 2 novembre au soir)
+
+        // Toutes les 20 s, avec du monde à portée de la cloche : le faisceau fait un tour complet et rembobine tout ce qu'il balaie.
+        void UpdateBeam()
+        {
+            if (m_BeamStart < 0f)
+            {
+                if (Time.time < m_NextBeam || EnemiesNear(transform.position, m_Range).Count < k_Crowd)
+                    return;
+                StartBeam();
+            }
+
+            var swept = Mathf.Clamp01((Time.time - m_BeamStart) / Mathf.Max(0.5f, m_BeamTurnTime)) * 360f;
+            Sweep(swept);
+            ShowBeam(swept);
+            if (swept >= 360f)
+                EndBeam();
+        }
+
+        void StartBeam()
+        {
+            m_BeamStart = Time.time;
+            m_NextBeam = Time.time + m_BeamInterval / OverchargeRate;
+            m_Swept.Clear();
+
+            // Il part vers l'ennemi le plus proche : le premier est rembobiné tout de suite, on voit d'où vient l'effet.
+            var origin = transform.position;
+            var nearest = float.MaxValue;
+            var toward = transform.forward;
+            foreach (var enemy in EnemiesNear(origin, m_BeamRadius))
+            {
+                var flat = enemy.transform.position - origin;
+                flat.y = 0f;
+                if (flat.sqrMagnitude < nearest)
+                {
+                    nearest = flat.sqrMagnitude;
+                    toward = flat;
+                }
+            }
+
+            m_BeamFrom = Heading(toward) - m_BeamWidth * 0.5f;
+            m_HandSpeed = -120f;
+            Ring(1.2f);
+            Sfx.Play(m_RewindClip, transform.position + Vector3.up * 4f, 1f, 0.6f);
+            m_NextBeamSound = Time.time + 1.5f;
+            HeadMessages.Show("Le Phare du passé !", k_Sepia, 2.5f);
+        }
+
+        static float Heading(Vector3 flat) => Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
+
+        // Chaque ennemi au sol que le faisceau a dépassé depuis son départ (swept degrés) est rembobiné, une fois par tour.
+        void Sweep(float swept)
+        {
+            var origin = transform.position;
+            var samples = RewindSamples;
+            var count = 0;
+            m_Scratch.Clear();
+            m_Scratch.AddRange(EnemiesNear(origin, m_BeamRadius));
+            foreach (var enemy in m_Scratch)
+            {
+                if (m_Swept.Contains(enemy))
+                    continue;
+                var flat = enemy.transform.position - origin;
+                flat.y = 0f;
+                if (Mathf.Repeat(Heading(flat) - m_BeamFrom, 360f) > swept + m_BeamWidth)
+                    continue;
+
+                // Une seule fois par tour, même s'il n'a pas pu être rembobiné (tenu par autre chose) : pas de retard derrière le faisceau.
+                m_Swept.Add(enemy);
+                // Une traînée plus clairsemée que celle de la cloche : toute la carte recule en même temps (le Quest).
+                if (StartRewind(enemy, samples, 0.3f))
+                    count++;
+            }
+
+            if (count > 0 && Time.time >= m_NextBeamSound)
+            {
+                m_NextBeamSound = Time.time + 1.5f;
+                Sfx.Play(m_RewindClip, transform.position + Vector3.up * 4f, 0.7f, 0.65f);
+            }
+        }
+
+        void EndBeam()
+        {
+            m_BeamStart = -1f;
+            m_Swept.Clear();
+            if (m_Beam != null)
+                m_Beam.gameObject.SetActive(false);
+        }
+
+        Vector3 BeamOrigin => m_Lantern != null ? m_Lantern.position : Top + Vector3.up * 2f;
+
+        // Le faisceau part de la lanterne et tourne ; il s'allonge en un instant au départ.
+        void ShowBeam(float swept)
+        {
+            if (m_BeamMaterial == null)
+                return;
+
+            EnsureBeam();
+            m_Beam.gameObject.SetActive(true);
+            m_Beam.position = BeamOrigin;
+            m_Beam.rotation = Quaternion.Euler(0f, m_BeamFrom + swept + m_BeamWidth * 0.5f, 0f);
+            var grow = Mathf.Clamp01((Time.time - m_BeamStart) / 0.3f);
+            m_Beam.localScale = new Vector3(1f, 1f, Mathf.Max(0.01f, grow));
+        }
+
+        void EnsureBeam()
+        {
+            if (m_Beam != null)
+                return;
+
+            var height = Mathf.Max(2f, BeamOrigin.y - transform.position.y);
+            m_BeamMesh = BeamMesh(height, m_BeamRadius, m_BeamWidth * 0.5f);
+            var go = new GameObject("Faisceau du passé (effet)");
+            go.AddComponent<MeshFilter>().sharedMesh = m_BeamMesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = m_BeamMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            m_Beam = go.transform;
+        }
+
+        // Une part de lumière, vue des deux côtés : de la lanterne (l'origine) jusqu'au sol du beffroi à ses pieds et, au loin, un
+        // bord de 4 m de haut posé au sol ; halfAngle degrés de chaque côté de l'avant.
+        static Mesh BeamMesh(float height, float length, float halfAngle)
+        {
+            Vector3 Far(float side, float up)
+            {
+                var angle = side * halfAngle * Mathf.Deg2Rad;
+                return new Vector3(Mathf.Sin(angle) * length, up - height, Mathf.Cos(angle) * length);
+            }
+
+            var apex = Vector3.zero;
+            var foot = new Vector3(0f, -height, 0f);
+            Vector3 leftLow = Far(-1f, 0f), rightLow = Far(1f, 0f), leftHigh = Far(-1f, 4f), rightHigh = Far(1f, 4f);
+            var faces = new[]
+            {
+                apex, foot, leftLow, apex, leftLow, leftHigh, // le côté gauche
+                apex, rightLow, foot, apex, rightHigh, rightLow, // le côté droit
+                apex, leftHigh, rightHigh, // le dessus
+                leftHigh, leftLow, rightLow, leftHigh, rightLow, rightHigh, // le bout
+            };
+
+            // Chaque triangle deux fois, à l'endroit et à l'envers, avec ses propres sommets (les normales de chaque face).
+            var vertices = new Vector3[faces.Length * 2];
+            var triangles = new int[faces.Length * 2];
+            for (var i = 0; i < faces.Length; i += 3)
+            {
+                for (var k = 0; k < 3; k++)
+                {
+                    vertices[i + k] = faces[i + k];
+                    triangles[i + k] = i + k;
+                    vertices[faces.Length + i + k] = faces[i + 2 - k];
+                    triangles[faces.Length + i + k] = faces.Length + i + k;
+                }
+            }
+
+            var mesh = new Mesh { name = "Faisceau du passé", vertices = vertices, triangles = triangles };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        // ---------------------------------------------------------------- Minuit (la Grande Horloge, l'ultime ; en sommeil)
 
         // Douze coups ; vrai pendant qu'ils sonnent.
         bool UpdateMidnight()
@@ -307,32 +564,48 @@ namespace Archery.Building
                 if (m_Strokes == 0)
                 {
                     EndMidnight();
-                    HeadMessages.Show("Minuit !", k_Gold, 2f);
+                    // Les mots du joueur (2 novembre) ; « Minuit ! » avant.
+                    HeadMessages.Show("Le temps reprend son cours", k_Gold, 2.5f);
                     m_NextRing = Time.time + 2f;
                 }
 
                 return true;
             }
 
-            if (Time.time < m_NextMidnight || EnemiesNear(transform.position, m_Range).Count < 5)
+            if (Time.time < m_NextMidnight || EnemiesNear(transform.position, m_Range).Count < k_Crowd)
                 return false;
 
             m_NextMidnight = Time.time + m_MidnightInterval / OverchargeRate;
             m_Strokes = 12;
             m_NextStroke = Time.time;
+            m_MidnightStart = Time.time;
             m_MidnightEnd = Time.time + m_MidnightTime + 0.2f;
             m_HandSpeed = -240f;
-            HeadMessages.Show("Le temps s'arrête…", k_Night, 2.5f);
+            // Les mots du joueur (2 novembre) ; « Le temps s'arrête… » avant.
+            HeadMessages.Show("Za Warudo ! Temps, arrête-toi !", k_Night, 3f);
             return true;
         }
 
         Vector3 Top => m_Bell != null ? m_Bell.position : transform.position + Vector3.up * 10f;
 
-        // Le temps arrêté : les ennemis du rayon figés (un boss un instant), tes flèches arrêtées en l'air.
+        // Le rayon atteint par la bulle de Minuit : elle part vite, puis ralentit en arrivant au bord.
+        float MidnightReach
+        {
+            get
+            {
+                if (m_MidnightStart < 0f)
+                    return 0f;
+                var t = Mathf.Clamp01((Time.time - m_MidnightStart) / Mathf.Max(0.05f, m_BubbleGrowTime));
+                return m_MidnightRadius * (1f - (1f - t) * (1f - t));
+            }
+        }
+
+        // Le temps arrêté : les ennemis dans la bulle figés (un boss un instant), tes flèches arrêtées en l'air.
         void FreezeTime()
         {
             var left = Mathf.Max(0.1f, m_MidnightEnd - Time.time);
-            foreach (var enemy in EnemiesNear(transform.position, m_MidnightRadius, false))
+            var reach = MidnightReach;
+            foreach (var enemy in EnemiesNear(transform.position, reach, false))
             {
                 if (!m_Frozen.Add(enemy))
                     continue;
@@ -342,7 +615,7 @@ namespace Archery.Building
             if (Time.time < m_NextArrowScan)
                 return;
             m_NextArrowScan = Time.time + 0.05f;
-            var radius = m_MidnightRadius * m_MidnightRadius;
+            var radius = reach * reach;
             foreach (var arrow in FindObjectsByType<Arrow>())
             {
                 if (arrow == null || arrow.IsHovering || Stops(arrow))
@@ -394,6 +667,93 @@ namespace Archery.Building
             m_Stopped.Clear();
             m_Frozen.Clear();
             m_Strokes = 0;
+            m_MidnightStart = -1f;
+        }
+
+        // ---------------------------------------------------------------- la bulle de Minuit (2 novembre, le joueur)
+
+        // La bulle qui grandit (sa paroi se voit pendant qu'elle passe, puis elle s'efface), et le noir et blanc pour qui est dedans :
+        // un volume global à part, au-dessus de celui de la carte, dont le poids suit la bulle (celui de la carte n'est pas touché).
+        void UpdateBubble()
+        {
+            var reach = MidnightReach;
+            var growing = m_MidnightStart >= 0f && Time.time - m_MidnightStart < m_BubbleGrowTime + 0.4f;
+            if (m_BubbleMaterial != null && (growing || (m_Bubble != null && m_Bubble.gameObject.activeSelf)))
+            {
+                EnsureBubble();
+                m_Bubble.gameObject.SetActive(growing);
+                m_Bubble.position = transform.position;
+                m_Bubble.localScale = Vector3.one * (2f * Mathf.Max(0.1f, reach));
+            }
+
+            var viewer = Camera.main != null ? Camera.main.transform.position : transform.position;
+            var inside = m_MidnightStart >= 0f && (viewer - transform.position).sqrMagnitude <= reach * reach;
+            if (!inside && m_Grayscale == null)
+                return;
+
+            EnsureGrayscale();
+            m_Grayscale.weight = Mathf.MoveTowards(m_Grayscale.weight, inside ? 1f : 0f, Time.deltaTime * (inside ? 6f : 2.5f));
+            m_Grayscale.enabled = m_Grayscale.weight > 0.001f;
+        }
+
+        void EnsureBubble()
+        {
+            if (m_Bubble != null)
+                return;
+
+            var go = new GameObject("Bulle de Minuit (effet)");
+            go.AddComponent<MeshFilter>().sharedMesh = TwoSidedSphere();
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = m_BubbleMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            m_Bubble = go.transform;
+        }
+
+        void EnsureGrayscale()
+        {
+            if (m_Grayscale != null)
+                return;
+
+            m_GrayProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+            var adjustments = m_GrayProfile.Add<ColorAdjustments>(true);
+            adjustments.saturation.Override(m_BubbleSaturation);
+            var go = new GameObject("Minuit, noir et blanc (effet)");
+            m_Grayscale = go.AddComponent<Volume>();
+            m_Grayscale.isGlobal = true;
+            m_Grayscale.priority = 100f;
+            m_Grayscale.sharedProfile = m_GrayProfile;
+            m_Grayscale.weight = 0f;
+        }
+
+        // Une sphère vue des deux côtés : sa paroi se voit en arrivant, et encore de l'intérieur quand elle est passée.
+        static Mesh TwoSidedSphere()
+        {
+            if (s_TwoSidedSphere != null)
+                return s_TwoSidedSphere;
+
+            var primitive = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var source = primitive.GetComponent<MeshFilter>().sharedMesh;
+            var triangles = source.triangles;
+            var both = new int[triangles.Length * 2];
+            triangles.CopyTo(both, 0);
+            for (var i = 0; i < triangles.Length; i += 3)
+            {
+                both[triangles.Length + i] = triangles[i];
+                both[triangles.Length + i + 1] = triangles[i + 2];
+                both[triangles.Length + i + 2] = triangles[i + 1];
+            }
+
+            s_TwoSidedSphere = new Mesh
+            {
+                name = "Sphère deux faces",
+                vertices = source.vertices,
+                normals = source.normals,
+                uv = source.uv,
+                triangles = both,
+            };
+            Destroy(primitive);
+            return s_TwoSidedSphere;
         }
 
         // ---------------------------------------------------------------- la cloche, l'horloge
@@ -414,7 +774,7 @@ namespace Archery.Building
                 m_Bell.localRotation = Quaternion.Euler(Mathf.Sin(Time.time * 7f) * 28f * m_Swing, 0f, 0f);
             }
 
-            m_HandSpeed = Mathf.MoveTowards(m_HandSpeed, -1f, Time.deltaTime * (m_Strokes > 0 ? 0f : 40f));
+            m_HandSpeed = Mathf.MoveTowards(m_HandSpeed, -1f, Time.deltaTime * (m_Strokes > 0 || m_BeamStart >= 0f ? 0f : 40f));
             for (var i = 0; i < m_Hands.Length; i++)
             {
                 if (m_Hands[i] == null)

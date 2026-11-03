@@ -25,11 +25,11 @@ MonoBehaviour:
       mortier tire une enclume sur l'ennemi le plus avanc\xE9 ; aplati comme une
       cr\xEApe, il avance tout plat, deux fois moins vite, 6 s."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "L'enclume rebondit et aplatit un deuxi\xE8me ennemi ; l'onde du
       choc fait tomber ceux qui sont autour."
   - cost: 0
-    plans: 4
+    plans: 3
     description: "La pluie d'enclumes : vingt enclumes tombent du ciel sur les ennemis
       \xE0 port\xE9e, puis une enclume de 10 m au milieu du groupe le plus serr\xE9
       ; les petits meurent net, tous les autres sont aplatis."

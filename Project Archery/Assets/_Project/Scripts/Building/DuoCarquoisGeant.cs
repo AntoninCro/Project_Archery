@@ -76,6 +76,11 @@ namespace Archery.Building
         [SerializeField]
         float m_BlastDamage = 15f;
 
+        [Tooltip("L'arbalète tire aussi seule : un carreau toutes les N s sur l'ennemi le plus proche à portée, à ses dégâts du niveau " +
+                 "(2 novembre, le tableau d'équilibrage : tout dépendait des flèches ratées du joueur). 0 : jamais.")]
+        [SerializeField]
+        float m_AutoInterval = 2f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_CatchClip;
@@ -88,6 +93,7 @@ namespace Archery.Building
         int m_Caught;
         int m_Burning;
         bool m_Firing;
+        float m_NextAutoShot;
 
         protected override void Start()
         {
@@ -106,8 +112,43 @@ namespace Archery.Building
                 return;
 
             var level = Mathf.Max(1, Level);
+            if (m_AutoInterval > 0f && Time.time >= m_NextAutoShot)
+                AutoShot(level);
             if (m_Caught >= ValueFor(m_VolleyAtPerLevel, level, 10) && TryTargets(level))
                 StartCoroutine(Volley(level));
+        }
+
+        // Le tir seul : un carreau tendu sur l'ennemi le plus proche, là où il sera ; il explose au niveau 2 comme ceux de la volée.
+        void AutoShot(int level)
+        {
+            Enemy target = null;
+            var best = m_Range * m_Range;
+            foreach (var enemy in EnemiesNear(transform.position, m_Range, false))
+            {
+                var distance = (enemy.transform.position - transform.position).sqrMagnitude;
+                if (distance < best)
+                {
+                    best = distance;
+                    target = enemy;
+                }
+            }
+
+            if (target == null || m_BoltPrefab == null)
+            {
+                m_NextAutoShot = Time.time + 0.4f;
+                return;
+            }
+
+            m_NextAutoShot = Time.time + m_AutoInterval / OverchargeRate;
+            var from = m_Crossbow != null ? m_Crossbow.position : transform.position + Vector3.up * 5f;
+            var time = Vector3.Distance(from, target.Center) / m_BoltSpeed;
+            var direction = (target.Center + target.Velocity * time - from).normalized;
+            var bolt = Instantiate(m_BoltPrefab, from, Quaternion.LookRotation(direction));
+            var damage = ValueFor(m_BoltDamagePerLevel, level, 30f) * Strength;
+            if (level >= 2)
+                bolt.Launch(direction * m_BoltSpeed, damage, 0, this, (enemy, dir) => Blast(enemy, false));
+            else
+                bolt.Launch(direction * m_BoltSpeed, damage, 0, this);
         }
 
         void OnArrowStuck(Arrow arrow, Collider collider)

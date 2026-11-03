@@ -107,6 +107,11 @@ namespace Archery.Building
         [SerializeField]
         float m_SlipChance = 0.25f;
 
+        [Tooltip("Vitesse (m/s) de la glissade, vers la forêt (2 novembre : elle partait dans le sens de sa marche, à 4 m/s, et lui " +
+                 "faisait gagner du chemin ; le tableau d'équilibrage, Docs/Equilibrage_Tours.xlsx).")]
+        [SerializeField]
+        float m_SlipSpeed = 2f;
+
         [Tooltip("Temps (s) entre deux tempêtes du cœur de l'hiver (niveau 5).")]
         [SerializeField]
         float m_StormInterval = 15f;
@@ -320,13 +325,10 @@ namespace Archery.Building
                     Random.value > m_SlipChance)
                     continue;
 
-                // Il glisse en avant, les pieds partent, il tournoie et retombe (29 octobre au soir : on ne voyait pas la glissade).
-                var slide = enemy.Velocity;
-                slide.y = 0f;
-                var direction = slide.sqrMagnitude > 0.1f ? slide.normalized : enemy.transform.forward;
-                direction.y = 0f;
-                direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : Vector3.forward;
-                if (enemy.Launch(direction * 4f + Vector3.up * 3.5f, this))
+                // Il glisse, les pieds partent, il tournoie et retombe (29 octobre au soir : on ne voyait pas la glissade). Vers la
+                // forêt depuis le 2 novembre : en avant, il gagnait plus de chemin qu'il n'en perdait.
+                var direction = TowardForest(enemy);
+                if (enemy.Launch(direction * m_SlipSpeed + Vector3.up * 3.5f, this))
                     enemy.Tumble(Vector3.Cross(direction, Vector3.up) * 520f + Vector3.up * Random.Range(-360f, 360f));
             }
         }

@@ -87,7 +87,20 @@ namespace Archery.Building
         [SerializeField]
         float m_KnockUp = 7f;
 
-        [Header("La boule givrée (ta flèche)")]
+        [Header("La mise en place (2 novembre, le joueur)")]
+        [Tooltip("La boule se met en place sous l'arche et attend ce temps (s) avant de rouler ; ta flèche dedans pendant ce temps la " +
+                 "lance tout de suite, plus grosse et plus forte. Pas pour le spare ni la partie parfaite.")]
+        [SerializeField]
+        float m_WindupTime = 2f;
+
+        [Tooltip("La boule chargée par ta flèche : sa taille et ses dégâts, multipliés.")]
+        [SerializeField]
+        float m_ChargedScale = 1.6f;
+
+        [SerializeField]
+        float m_ChargedDamage = 1.75f;
+
+        [Header("La boule givrée (ta flèche, la boule déjà lancée)")]
         [Tooltip("Touchée par une flèche, elle va plus vite ; au premier ennemi, elle éclate en glace dans ce rayon.")]
         [SerializeField]
         float m_ShotSpeedFactor = 1.8f;
@@ -149,6 +162,9 @@ namespace Archery.Building
             public float Speed;
             public float Radius;
             public float Damage;
+            public Vector3 Scale;
+            public float Wait;
+            public bool Charged;
             public bool Frozen;
             public bool Spare;
             public bool Giant;
@@ -174,6 +190,7 @@ namespace Archery.Building
         float m_NextPerfect;
         int m_PerfectLeft;
         float m_NextPerfectBall;
+        int m_Hints;
 
         protected override void OnDestroy()
         {
@@ -225,7 +242,7 @@ namespace Archery.Building
                 var big = m_NextBig;
                 m_NextBig = false;
                 Roll(lane, along, level, m_BallRadius * (big ? 2f : 1f), ValueFor(m_DamagePerLevel, level, 45f) * (big ? 1.5f : 1f), false,
-                     false, false);
+                     false, false, m_WindupTime);
                 m_NextBall = Time.time + m_BallInterval / OverchargeRate;
             }
         }
@@ -336,7 +353,8 @@ namespace Archery.Building
 
         // ---------------------------------------------------------------- les boules
 
-        void Roll(MapScan.Lane lane, float along, int level, float radius, float damage, bool spare, bool giant, bool perfect)
+        void Roll(MapScan.Lane lane, float along, int level, float radius, float damage, bool spare, bool giant, bool perfect,
+                  float windup = 0f)
         {
             if (m_BallTemplate == null)
                 return;
@@ -361,17 +379,56 @@ namespace Archery.Building
                 Giant = giant,
                 Perfect = perfect,
                 PinsAtLaunch = m_Pins.Count,
+                Scale = body.localScale,
+                Wait = Mathf.Max(0f, windup),
             };
             ball.Target = body.gameObject.AddComponent<DuoShotTarget>();
             ball.Target.Shot = target => OnBallShot(ball);
             Place(ball, lane);
             m_Balls.Add(ball);
-            Sfx.Play(m_RollClip, body.position, 0.9f, giant ? 0.5f : Random.Range(0.85f, 1f));
+            if (ball.Wait > 0f)
+            {
+                // La mise en place : elle brille, et les premières fois, on dit au joueur qu'il peut tirer dedans. Les quilles
+                // l'attendent (leur charme, 4 s, finirait avant qu'elle arrive).
+                Burst(body.position, k_Gold, 25, 4f, 0.25f, 0.6f, 0.4f);
+                foreach (var pin in m_Pins)
+                {
+                    if (pin.Enemy != null && pin.Enemy.IsAlive)
+                        pin.Enemy.Charm(ball.Wait + 2f, SlotPosition(lane, along, pin.Slot));
+                }
+                if (m_Hints < 3)
+                {
+                    m_Hints++;
+                    FloatingText.Spawn(body.position + Vector3.up * (radius + 1f), "Tire dans la boule !", k_Gold, 1.1f, ball.Wait);
+                }
+            }
+            else
+            {
+                Sfx.Play(m_RollClip, body.position, 0.9f, giant ? 0.5f : Random.Range(0.85f, 1f));
+            }
         }
 
         void OnBallShot(Ball ball)
         {
-            if (ball.Frozen || ball.Body == null)
+            if (ball.Body == null)
+                return;
+
+            // Pendant la mise en place (2 novembre, le joueur) : elle part tout de suite, plus grosse et plus forte.
+            if (ball.Wait > 0f)
+            {
+                ball.Wait = 0f;
+                ball.Charged = true;
+                ball.Radius *= m_ChargedScale;
+                ball.Damage *= m_ChargedDamage;
+                ball.Scale *= m_ChargedScale;
+                ball.Body.localScale = ball.Scale;
+                FloatingText.Spawn(ball.Body.position + Vector3.up * (ball.Radius + 0.6f), "Boule chargée !", k_Gold, 1.4f, 1.2f);
+                Burst(ball.Body.position, k_Gold, 50, 8f, 0.3f, 0.8f, 0.6f);
+                Sfx.Play(m_RollClip, ball.Body.position, 1f, 0.75f);
+                return;
+            }
+
+            if (ball.Frozen)
                 return;
             ball.Frozen = true;
             ball.Speed *= m_ShotSpeedFactor;
@@ -407,6 +464,20 @@ namespace Archery.Building
                         Destroy(ball.Body.gameObject);
                     m_Balls.RemoveAt(i);
                     continue;
+                }
+
+                // La mise en place : elle attend sous l'arche en tournant sur elle-même et en respirant, sans toucher personne.
+                if (ball.Wait > 0f)
+                {
+                    ball.Wait -= Time.deltaTime;
+                    Place(ball, lane);
+                    ball.Body.Rotate(Vector3.up, 120f * Time.deltaTime, Space.World);
+                    ball.Body.localScale = ball.Scale * (1f + 0.06f * Mathf.Sin(Time.time * 12f));
+                    if (ball.Wait > 0f)
+                        continue;
+
+                    ball.Body.localScale = ball.Scale;
+                    Sfx.Play(m_RollClip, ball.Body.position, 0.9f, Random.Range(0.85f, 1f));
                 }
 
                 ball.Rolled += ball.Speed * Time.deltaTime;

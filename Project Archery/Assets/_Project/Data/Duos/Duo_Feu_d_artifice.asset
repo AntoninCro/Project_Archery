@@ -25,11 +25,11 @@ MonoBehaviour:
       : \xE9blouis, les ennemis s'arr\xEAtent sous une pluie d'\xE9tincelles qui
       br\xFBle ; ta fl\xE8che qui traverse le bouquet s'enflamme."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Des fus\xE9es \xE0 deux \xE9tages : chaque bouquet en fait \xE9clater
       deux autres, \xE0 c\xF4t\xE9."
   - cost: 0
-    plans: 4
+    plans: 2
     description: "Le bouquet final : vingt fus\xE9es d'un coup sur tous les ennemis
       \xE0 port\xE9e ; le ciel s'allume, tous sont \xE9blouis et br\xFBl\xE9s."
   lotSize: 0

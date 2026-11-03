@@ -8803,7 +8803,7 @@ MonoBehaviour:
   - {fileID: 3072856925663595183}
   m_GlowMaterial: {fileID: 2100000, guid: a090117ec1991b24d8c9c1c587af5a36, type: 2}
   m_FeedRadius: 18
-  m_KillCharge: 0.08
+  m_KillCharge: 0.12
   m_ArrowCharge: 0.12
   m_ChargeRatePerLevel:
   - 1
@@ -8818,9 +8818,9 @@ MonoBehaviour:
   m_ArcHeight: 12
   m_BombRadius: 3
   m_BombDamagePerLevel:
-  - 45
-  - 55
-  - 65
+  - 120
+  - 140
+  - 160
   m_Push: 3
   m_Lift: 6
   m_ShakeRadius: 10

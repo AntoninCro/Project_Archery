@@ -1025,17 +1025,26 @@ MonoBehaviour:
   - {fileID: 1838667427660268664}
   m_Range: 15
   m_IntervalPerLevel:
-  - 10
-  - 8.5
-  - 7
-  m_RewindSeconds: 4
+  - 6
+  - 5
+  - 4
+  m_RewindSeconds: 8
   m_RewindTime: 1.2
   m_MaxRewound: 12
-  m_ArrivalStun: 2
-  m_MidnightInterval: 30
-  m_MidnightRadius: 20
-  m_MidnightTime: 6
+  m_ArrivalStun: 3
+  m_Lantern: {fileID: 3314017580015547465}
+  m_BeamInterval: 20
+  m_BeamRadius: 110
+  m_BeamTurnTime: 6
+  m_BeamWidth: 6
+  m_BeamMaterial: {fileID: 2100000, guid: aa93033511c34144486e02c4bcfae410, type: 2}
+  m_MidnightInterval: 20
+  m_MidnightRadius: 300
+  m_MidnightTime: 9
   m_BossStopTime: 2
+  m_BubbleGrowTime: 0.8
+  m_BubbleMaterial: {fileID: 2100000, guid: 6bcc62f2de48562408fcc65b27a673ba, type: 2}
+  m_BubbleSaturation: -100
   m_BellClip: {fileID: 8300000, guid: 834649c20e24170439fa0f06ea14fc3f, type: 3}
   m_RewindClip: {fileID: 8300000, guid: c2a9ecf94201d824fb2d4e3f7b10c2e9, type: 3}
 --- !u!1 &1516313274092312542

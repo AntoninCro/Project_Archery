@@ -54,9 +54,12 @@ namespace Archery.Building
         [SerializeField]
         float m_ClimbSpeed = 4f;
 
-        [Tooltip("Ennemis sur le toboggan en même temps, au plus (les autres passent dessous).")]
+        [Tooltip("Ennemis sur le toboggan en même temps, au plus, par niveau (les autres passent dessous). 5 au niveau 3 depuis le " +
+                 "2 novembre (le tableau d'équilibrage : l'échelle limitait le saut à ski à moins d'un ennemi par seconde).")]
         [SerializeField]
-        int m_MaxRiders = 3;
+        int[] m_MaxRidersPerLevel = { 3, 3, 5 };
+
+        int MaxRiders => ValueFor(m_MaxRidersPerLevel, Mathf.Max(1, Level), 3);
 
         [Header("La piste de glace")]
         [Tooltip("Le dessus de la plate-forme (m), où la piste commence (z), et son bas avant le tremplin (z, hauteur de la glace).")]
@@ -285,7 +288,7 @@ namespace Archery.Building
         // Ceux qui passent sous la plate-forme sont pris (une fois chacun) ; sans place sur le toboggan, ils passent dessous.
         void CatchNewcomers()
         {
-            if (m_Riders.Count >= m_MaxRiders)
+            if (m_Riders.Count >= MaxRiders)
                 return;
 
             foreach (var enemy in GroundEnemies())
@@ -306,7 +309,7 @@ namespace Archery.Building
                 if (!enemy.Hold(this))
                     continue;
                 m_Riders.Add(new Rider { Enemy = enemy, Phase = Phase.Hop, From = local, Yaw = Random.Range(0f, 360f) });
-                if (m_Riders.Count >= m_MaxRiders)
+                if (m_Riders.Count >= MaxRiders)
                     return;
             }
         }

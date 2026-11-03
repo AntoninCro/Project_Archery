@@ -9,7 +9,8 @@ namespace Archery.Building
     /// </summary>
     /// <remarks>
     /// Il naît de <see cref="BuildManager.Fuse"/> au niveau du duo, un de plus si la tour est à son niveau maximal (3 au plus) : à
-    /// 4 plans par niveau, un trio coûte 9, 13 ou 17 plans par n'importe quel chemin. Il ne refusionne pas.
+    /// 3 plans par niveau depuis le 2 novembre (4 avant), un trio coûte 9, 12 ou 15 plans en le montant (11 ou 13 en montant d'abord
+    /// la tour à son niveau maximal). Il ne refusionne pas.
     /// </remarks>
     public abstract class TowerTrio : TowerDuo
     {

@@ -21,16 +21,21 @@ MonoBehaviour:
   headSize: 0.75
   damageTaken: 1.8
   enemyCount: 1.6
+  bossHealth: 1
+  waveDuration: 1
+  lateEnemyCount: 1
   goldBandWidth: 0.7
   aimGuideMode: 0
-  scoreMultiplier: 2
-  structurePower: 1.6
   healthGrowthPerWave: 1.34
   damageGrowthPerWave: 1.19
   countGrowthPerWave: 1.21
   speedGrowthPerWave: 1.07
   earlyStrength: 0.5
   fullStrengthWave: 3
+  waveCurve: 1
+  scoreMultiplier: 2
+  structurePower: 1.43
+  ballistaFireRate: 1
   sky:
     elevation: 22
     azimuth: 0

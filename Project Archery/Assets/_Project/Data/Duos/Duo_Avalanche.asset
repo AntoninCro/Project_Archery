@@ -25,10 +25,10 @@ MonoBehaviour:
       : elle roule vers la for\xEAt, grossit et avale ceux qu'elle touche ; au bout,
       ou sous ta fl\xE8che, elle \xE9clate et ils volent en l'air."
   - cost: 0
-    plans: 4
+    plans: 2
     description: Elle roule plus loin, plus grosse, et avale aussi les gros.
   - cost: 0
-    plans: 4
+    plans: 2
     description: "L'avalanche : une boule g\xE9ante d\xE9vale toute la voie jusqu'\xE0
       la for\xEAt, avale tout ce qu'elle croise et \xE9clate en une explosion de
       neige qui co\xFBte la moiti\xE9 de leurs PV \xE0 tous."

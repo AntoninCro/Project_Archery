@@ -8169,9 +8169,9 @@ MonoBehaviour:
   m_TemplateHeight: 1.88
   m_Range: 38
   m_IntervalPerLevel:
-  - 7
   - 6
-  - 6
+  - 5
+  - 5
   m_MaxDolls: 3
   m_FlightTime: 1.1
   m_FlightHeight: 8
@@ -8186,10 +8186,13 @@ MonoBehaviour:
   m_HitsPerLevel: 060000000800000008000000
   m_HitInterval: 0.9
   m_Lifetime: 12
+  m_FlyerLureFactor: 2.5
+  m_RangedLureFactor: 2
+  m_RangedReach: 8
   m_ConfettiDamagePerLevel:
-  - 35
-  - 45
-  - 50
+  - 90
+  - 110
+  - 130
   m_ConfettiRadius: 3.5
   m_ShotBonus: 1.5
   m_HitsPerBounce: 3
@@ -8200,7 +8203,7 @@ MonoBehaviour:
   m_FloatHits: 40
   m_FloatLifetime: 20
   m_FloatConfettiRadius: 9
-  m_FloatDamage: 60
+  m_FloatDamage: 100
   m_FloatShare: 0.35
   m_FireClip: {fileID: 8300000, guid: f4ca353acdf1b23428d18d6e4f849fad, type: 3}
   m_SqueakClip: {fileID: 8300000, guid: ada38024553d3ab45875cb8aefae0555, type: 3}
