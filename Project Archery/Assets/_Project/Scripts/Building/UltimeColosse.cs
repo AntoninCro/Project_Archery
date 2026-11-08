@@ -395,6 +395,7 @@ namespace Archery.Building
             public Vector3 SpinAxis;
             public float Spin;
             public float NextCrackle;
+            public float Power = 1f;
         }
 
         // Une flèche qui attend son marteau : sa cible (un ennemi suivi, ou MK) et où elle a touché.
@@ -404,6 +405,7 @@ namespace Archery.Building
             public DragonBoss Dragon;
             public Vector3 Point;
             public float At;
+            public float Power;
         }
 
         class Debris
@@ -996,7 +998,7 @@ namespace Archery.Building
             {
                 var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
                 if (dragon != null)
-                    Enqueue(null, dragon, hit.Point);
+                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
             }
 
@@ -1012,15 +1014,28 @@ namespace Archery.Building
             if (enemy == null)
                 enemy = NearestGround(hit.Point, m_SeekRadius);
             if (enemy != null)
-                Enqueue(enemy, null, hit.Point);
+                Enqueue(enemy, null, hit.Point, ShotPower(hit));
         }
 
-        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point)
+        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point, float power)
         {
-            // Les plus anciennes s'effacent : il suit tes derniers tirs.
+            // La file pleine, la plus faible s'efface (3 novembre : un marteau frappe selon la force de sa flèche,
+            // TowerUltimate.ShotPower) ; à force égale, la plus ancienne : il suit tes derniers tirs.
             while (m_Orders.Count >= Mathf.Max(1, m_QueueSize))
-                m_Orders.RemoveAt(0);
-            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time });
+            {
+                var weakest = 0;
+                for (var i = 1; i < m_Orders.Count; i++)
+                {
+                    if (m_Orders[i].Power < m_Orders[weakest].Power)
+                        weakest = i;
+                }
+
+                if (m_Orders[weakest].Power > power)
+                    return;
+                m_Orders.RemoveAt(weakest);
+            }
+
+            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time, Power = power });
         }
 
         // L'ennemi au sol le plus proche de ce point, à ce rayon au plus.
@@ -1138,7 +1153,9 @@ namespace Archery.Building
             m_LastThrow = Time.time;
             var air = order.Dragon != null || (order.Enemy != null && order.Enemy.IsFlyer);
             var from = m_Hammer != null ? m_Hammer.position : HeadPoint;
-            Throw(ShotKind.Hammer, from, order.Enemy, order.Dragon, OrderPoint(order), air);
+            var shot = Throw(ShotKind.Hammer, from, order.Enemy, order.Dragon, OrderPoint(order), air);
+            if (shot != null)
+                shot.Power = order.Power;
             Sfx.Play(m_ThrowClip, HeadPoint, 0.8f, Random.Range(0.7f, 0.85f));
         }
 
@@ -1163,6 +1180,7 @@ namespace Archery.Building
             shot.Born = Time.time;
             shot.LandedAt = -1f;
             shot.NextCrackle = 0f;
+            shot.Power = 1f;
             shot.SpinAxis = distance > 0.01f ? Vector3.Cross(Vector3.up, flat / distance) : transform.right;
             Quaternion rotation;
             switch (kind)
@@ -1344,7 +1362,7 @@ namespace Archery.Building
             switch (shot.Kind)
             {
                 case ShotKind.Hammer:
-                    HammerImpact(shot.Point, shot.Air, shot.Dragon);
+                    HammerImpact(shot.Point, shot.Air, shot.Dragon, shot.Power);
                     break;
                 case ShotKind.Chunk:
                     ChunkImpact(shot.Point, shot.Air, shot.Dragon);
@@ -1414,14 +1432,15 @@ namespace Archery.Building
         // Un marteau frappe (le joueur, 12.48 : « bien plus imposants, comme la précédente version, et garder les mêmes dégâts ») :
         // la foudre tombe avec lui, l'onde de choc, l'explosion, la poussière en anneau ; tout ce qui survit vole en vrille. Le coup
         // complet (l'éclat de lumière, le tonnerre, la roche qui vole, le sol fendu et en feu, les manettes) au plus toutes les Heavy
-        // Interval s : il en tombe jusqu'à 5 par seconde, et le casque doit suivre (les éclairs et les explosions sont réutilisés).
-        void HammerImpact(Vector3 point, bool air, DragonBoss dragon)
+        // Interval s : il en tombe jusqu'à 5 par seconde, et le casque doit suivre (les éclairs et les explosions sont réutilisés). Ses
+        // dégâts (et sa part des PV d'un boss) suivent la force de la flèche qui l'a lancé (power, 3 novembre).
+        void HammerImpact(Vector3 point, bool air, DragonBoss dragon, float power)
         {
             // MK garde sa part de PV seulement (le joueur, 12.50 : « pas MK, on garde son effet actuel »).
             if (dragon != null)
-                HurtShare(dragon.GetComponentInParent<Enemy>(), m_HammerBossShare, point);
+                HurtShare(dragon.GetComponentInParent<Enemy>(), m_HammerBossShare * power, point);
             else
-                Smash(point, air, m_HammerDamage, m_HammerRadius, m_HammerPush, m_HammerLift, m_HammerBossShare);
+                Smash(point, air, m_HammerDamage * power, m_HammerRadius, m_HammerPush, m_HammerLift, m_HammerBossShare * power);
 
             var heavy = Time.time >= m_NextHeavy;
             if (heavy)
@@ -2551,5 +2570,8 @@ namespace Archery.Building
             t = Mathf.Clamp01(t);
             return t * t;
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

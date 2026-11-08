@@ -7,6 +7,7 @@ using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
 using UnityEngine;
+using UnityEngine.AI;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using UnityEngine.InputSystem;
 #endif
@@ -49,6 +50,28 @@ namespace Archery.Building
         [SerializeField]
         float m_SpawnDelay = 3f;
 
+        [Header("Les gardiens (4 novembre)")]
+        [Tooltip("Chaque coffre de la vague a ses gardiens : des ennemis de la vague (au sol), là dès l'apparition du coffre, qui " +
+                 "vadrouillent autour au hasard en faisant des pauses, et attaquent le joueur qui approche (l'idée du joueur, 4 novembre : " +
+                 "les coffres étaient « une randonnée »). Le coffre n'est pas verrouillé : on peut foncer dessus, au prix de ses PV.")]
+        [SerializeField]
+        bool m_Guards = true;
+
+        [Tooltip("Gardiens par coffre, vague par vague (le dernier vaut pour les suivantes).")]
+        [SerializeField]
+        int[] m_GuardsPerWave = { 2, 2, 3, 3, 4 };
+
+        [Tooltip("Ils vadrouillent à tant de mètres du coffre (Guard Radius), attaquent le joueur à tant de mètres d'eux (Guard Aggro), et " +
+                 "ne le poursuivent pas quand il est à plus de tant de mètres du coffre (Guard Leash).")]
+        [SerializeField]
+        float m_GuardRadius = 5f;
+
+        [SerializeField]
+        float m_GuardAggro = 15f;
+
+        [SerializeField]
+        float m_GuardLeash = 30f;
+
         [Header("Retours")]
         [Tooltip("Optionnel : son de l'apparition des coffres.")]
         [SerializeField]
@@ -58,6 +81,7 @@ namespace Archery.Building
         Color m_MessageColor = new Color(0.72f, 0.55f, 1f);
 
         readonly List<Chest> m_Crates = new List<Chest>();
+        readonly List<WaveEnemy> m_GuardChoices = new List<WaveEnemy>();
         readonly List<Transform> m_AllSpots = new List<Transform>();
         readonly List<Transform> m_FreeSpots = new List<Transform>();
         bool m_HasAllSpots;
@@ -68,6 +92,9 @@ namespace Archery.Building
         int m_Side;
 
         public static CrystalSpawner Instance { get; private set; }
+
+        /// <summary>Un coffre vient d'apparaître avec ses gardiens (combien, où) : le journal de partie le note.</summary>
+        public static event System.Action<int, Vector3> GuardsCameOut;
 
         /// <summary>
         /// Tous les emplacements de coffres, les siens et ceux du Chest Spawner (la grille de construction n'y pose pas
@@ -220,8 +247,10 @@ namespace Archery.Building
                 var index = Random.Range(0, m_FreeSpots.Count);
                 var spot = m_FreeSpots[index];
                 m_FreeSpots.RemoveAt(index);
-                SpawnAt(spot.position, tower);
+                var crate = SpawnAt(spot.position, tower);
                 spawned++;
+                if (m_Guards && crate != null)
+                    SpawnGuards(crate.transform.position);
             }
 
             if (spawned == 0)
@@ -235,6 +264,72 @@ namespace Archery.Building
             var side = m_Side < 0 ? "gauche" : "droit";
             var title = spawned == 1 ? $"Un coffre est apparu, côté {side} !" : $"{spawned} coffres sont apparus, côté {side} !";
             Announce(title + "\n<size=70%>Vu de la tour, face aux ennemis ; un parchemin, une tourelle, un objet</size>");
+        }
+
+        // ---------------------------------------------------------------- les gardiens (4 novembre)
+
+        // Ses gardiens apparaissent avec le coffre, au hasard autour de lui (le joueur, 4 novembre : « ils sont là dès le début et
+        // vadrouillent un peu au hasard en prenant des pauses de temps en temps » ; d'abord, ils sortaient des fourrés à son approche).
+        void SpawnGuards(Vector3 chest)
+        {
+            var wave = Mathf.Max(1, m_Waves.WaveNumber);
+            var count = m_GuardsPerWave != null && m_GuardsPerWave.Length > 0
+                ? m_GuardsPerWave[Mathf.Clamp(wave - 1, 0, m_GuardsPerWave.Length - 1)]
+                : 2;
+
+            var spawned = 0;
+            for (var i = 0; i < count; i++)
+            {
+                var prefab = PickGuard(wave);
+                if (prefab == null)
+                    break;
+                var offset = Random.insideUnitCircle.normalized * Random.Range(2f, Mathf.Max(2.5f, m_GuardRadius));
+                var point = chest + new Vector3(offset.x, 0f, offset.y);
+                if (!NavMesh.SamplePosition(point, out var hit, 3f, NavMesh.AllAreas) &&
+                    !NavMesh.SamplePosition(chest, out hit, 4f, NavMesh.AllAreas))
+                    continue;
+
+                var enemy = Instantiate(prefab, hit.position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+                if (!enemy.Guard(chest, m_GuardRadius, m_GuardAggro, m_GuardLeash, false))
+                {
+                    Destroy(enemy.gameObject);
+                    continue;
+                }
+
+                spawned++;
+            }
+
+            if (spawned > 0)
+                GuardsCameOut?.Invoke(spawned, chest);
+        }
+
+        // Un ennemi de cette vague, au sol (pas un volant, ni un boss), tiré au sort selon son poids, comme ceux des voies.
+        Enemy PickGuard(int wave)
+        {
+            var settings = m_Waves.Settings;
+            if (settings == null)
+                return null;
+
+            m_GuardChoices.Clear();
+            var total = 0f;
+            foreach (var entry in settings.enemies)
+            {
+                if (entry == null || entry.prefab == null || entry.firstWave > wave || entry.weight <= 0f ||
+                    entry.prefab.GetComponent<EnemyBehaviour>() != null || entry.prefab.GetComponent<Boss>() != null)
+                    continue;
+                m_GuardChoices.Add(entry);
+                total += entry.weight;
+            }
+
+            var roll = Random.value * total;
+            foreach (var entry in m_GuardChoices)
+            {
+                roll -= entry.weight;
+                if (roll <= 0f)
+                    return entry.prefab;
+            }
+
+            return m_GuardChoices.Count > 0 ? m_GuardChoices[m_GuardChoices.Count - 1].prefab : null;
         }
 
         // Les emplacements libres de ce côté, assez loin de la tour.

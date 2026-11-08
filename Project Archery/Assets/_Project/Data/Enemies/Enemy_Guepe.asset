@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_Guepe
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: "Gu\xEApe"
-  maxHealth: 12
+  maxHealth: 6
   moveSpeed: 6
   attackDamage: 6
   attackRange: 1

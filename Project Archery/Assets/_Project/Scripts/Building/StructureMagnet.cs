@@ -398,5 +398,8 @@ namespace Archery.Building
             Gizmos.DrawWireSphere(transform.position, ValueFor(m_RangePerLevel, Mathf.Max(1, Level), 8f));
             Gizmos.DrawWireSphere(transform.position, m_SingularityRange);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => ValueFor(m_RangePerLevel, Mathf.Max(1, level), 8f);
     }
 }

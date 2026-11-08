@@ -47,6 +47,11 @@ namespace Archery.Building
         [SerializeField]
         float m_WeakPointScale = 2f;
 
+        [Tooltip("Dans l'arène de MK (3 novembre) : sa tête ne grossit que jusque-là (fois la sienne) ; trois fois, elle traverserait la " +
+                 "voûte. Son point faible grossit comme celui des autres boss.")]
+        [SerializeField]
+        float m_ArenaBossHead = 1.5f;
+
         [Tooltip("Temps (s) pour que la tête grossisse ou dégonfle.")]
         [SerializeField]
         float m_GrowTime = 0.35f;
@@ -167,7 +172,7 @@ namespace Archery.Building
                 pair.Value.InField = false;
 
             var forward = Forward();
-            foreach (var enemy in EnemiesNear(transform.position, m_Range, false))
+            foreach (var enemy in EnemiesNear(transform.position, Range, false))
             {
                 var to = enemy.transform.position - transform.position;
                 to.y = 0f;
@@ -211,7 +216,7 @@ namespace Archery.Building
 
                 if (target == null)
                 {
-                    foreach (var enemy in EnemiesNear(transform.position, m_Range, false))
+                    foreach (var enemy in EnemiesNear(transform.position, Range, false))
                     {
                         target = enemy;
                         break;
@@ -270,11 +275,12 @@ namespace Archery.Building
             foreach (var pair in m_Big)
             {
                 var big = pair.Value;
+                var bossHead = InArena && pair.Key != null && pair.Key.IsBoss ? Mathf.Min(head, m_ArenaBossHead) : head;
                 foreach (var part in big.Parts)
                 {
                     if (part.Transform == null)
                         continue;
-                    var factor = Mathf.Lerp(1f, part.WeakPoint ? m_WeakPointScale : head, Mathf.SmoothStep(0f, 1f, big.Grow));
+                    var factor = Mathf.Lerp(1f, part.WeakPoint ? m_WeakPointScale : bossHead, Mathf.SmoothStep(0f, 1f, big.Grow));
                     part.Transform.localScale = part.Scale * factor;
                 }
             }
@@ -421,7 +427,8 @@ namespace Archery.Building
                     return;
 
                 m_Burning = true;
-                var share = target.IsBoss ? m_BossBurnShare : m_BurnShare;
+                // Dans l'arène, MK n'en perd que 2 % au plus (ShareFor, 3 novembre) : 15 % à chaque passage du rayon le tuait vite.
+                var share = ShareFor(target, target.IsBoss ? m_BossBurnShare : m_BurnShare);
                 m_BurnLeft = (m_BurnDamage + target.Health.Max * share / Mathf.Max(0.01f, Strength));
                 m_NextBurnTick = Time.time;
                 Explosion(head, 1.2f);
@@ -432,7 +439,7 @@ namespace Archery.Building
             if (Time.time < m_NextBurnTick)
                 return;
             m_NextBurnTick = Time.time + 0.25f;
-            var tick = Mathf.Min(m_BurnLeft, (m_BurnDamage + target.Health.Max * (target.IsBoss ? m_BossBurnShare : m_BurnShare) /
+            var tick = Mathf.Min(m_BurnLeft, (m_BurnDamage + target.Health.Max * ShareFor(target, target.IsBoss ? m_BossBurnShare : m_BurnShare) /
                                                 Mathf.Max(0.01f, Strength)) * 0.25f / Mathf.Max(0.25f, m_BurnTime));
             m_BurnLeft -= tick;
             Burst(target.Center, new Color(1f, 0.5f, 0.1f, 1f), 14, 3f, 0.35f, 0.6f, -0.5f);
@@ -472,5 +479,17 @@ namespace Archery.Building
             scale.z = Mathf.Max(0.1f, Vector3.Distance(m_Ray.position, head) / Mathf.Max(0.01f, m_Ray.parent != null ? m_Ray.parent.lossyScale.z : 1f));
             m_Ray.localScale = scale;
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        // Sa portée : plus grande dans l'arène de MK, où elle tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
+        /// <summary>
+        /// Elle rejoint l'arène de MK (3 novembre) : la tête de MK y grossit moins (<see cref="m_ArenaBossHead"/>), son point faible
+        /// autant ; la baliste vise sa tête, et le rayon ne lui coûte que 2 % de ses PV max à chaque fois.
+        /// </summary>
+        public override bool FightsInArena => true;
     }
 }

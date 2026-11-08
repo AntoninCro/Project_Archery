@@ -19,7 +19,8 @@ namespace Archery.FinalBoss
     /// <item>« Soleil » : les rayons de soleil qui percent la voûte à la victoire (cachés jusque-là) ;</item>
     /// <item>« Piliers » (<see cref="PillarLights"/>) : lumière d'en bas, couronne de cristaux, abri au sol ;</item>
     /// <item>en jeu seulement, sous « En jeu » : bulles et vapeur de la lave, sol brûlant, sol qui chauffe avant le
-    /// souffle, onde de lumière aux changements de phase, runes sous les tourelles, lueur du joueur.</item>
+    /// souffle, onde de lumière aux changements de phase, runes sous les tourelles et leur lumière (3 novembre), lueur du
+    /// joueur.</item>
     /// </list>
     /// En jeu aussi : flèches traçantes, craquelures qui flashent avant le slam, braseros et lave qui s'embrasent à
     /// l'envol et à la rage ; à la victoire, la lave s'éteint et les cristaux blanchissent.
@@ -88,8 +89,15 @@ namespace Archery.FinalBoss
         class Rune
         {
             public MeshRenderer Renderer;
+            public Light Light;
             public float Age;
         }
+
+        // La lumière sous chaque tourelle de l'arène (3 novembre, l'idée du joueur : mieux les voir pendant le combat) : une
+        // lumière ponctuelle à ras du plateau, qui éclaire la tourelle d'en bas et respire avec sa rune.
+        const float k_TurretLightHeight = 0.5f;
+        const float k_TurretLightRange = 8f;
+        const float k_TurretLightIntensity = 2.2f;
 
         class Sunbeam
         {
@@ -1276,15 +1284,24 @@ namespace Archery.FinalBoss
 
         void OnTurretLanded(Vector3 position)
         {
-            if (!isActiveAndEnabled || m_Settings.glowMaterial == null)
+            if (!isActiveAndEnabled)
                 return;
 
-            m_RuneMesh ??= Own(MapGameplayLights.BuildRuneMesh());
-            m_RuneMaterial ??= Own(EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.runeColor, 1.4f, "Runes des tourelles"));
-            var renderer = CreateRenderer("Rune de la tourelle", EffectBuild.Group(m_RuntimeGroup, "Runes des tourelles"), m_RuneMesh, m_RuneMaterial);
-            renderer.transform.SetPositionAndRotation(position + Vector3.up * 0.06f, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
-            renderer.transform.localScale = Vector3.one * 1.5f;
-            m_Runes.Add(new Rune { Renderer = renderer });
+            var group = EffectBuild.Group(m_RuntimeGroup, "Runes des tourelles");
+            var light = CreateLight("Lumière de la tourelle", group, Color.Lerp(m_Settings.runeColor, Color.white, 0.35f), k_TurretLightRange, 0f);
+            light.transform.position = position + Vector3.up * k_TurretLightHeight;
+
+            MeshRenderer renderer = null;
+            if (m_Settings.glowMaterial != null)
+            {
+                m_RuneMesh ??= Own(MapGameplayLights.BuildRuneMesh());
+                m_RuneMaterial ??= Own(EffectBuild.GlowMaterial(m_Settings.glowMaterial, m_Settings.runeColor, 1.4f, "Runes des tourelles"));
+                renderer = CreateRenderer("Rune de la tourelle", group, m_RuneMesh, m_RuneMaterial);
+                renderer.transform.SetPositionAndRotation(position + Vector3.up * 0.06f, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+                renderer.transform.localScale = Vector3.one * 1.5f;
+            }
+
+            m_Runes.Add(new Rune { Renderer = renderer, Light = light });
         }
 
         void UpdateRunes(float level, float deltaTime)
@@ -1292,13 +1309,17 @@ namespace Archery.FinalBoss
             var spin = Quaternion.Euler(0f, 10f * deltaTime, 0f);
             foreach (var rune in m_Runes)
             {
+                rune.Age += deltaTime;
+                var breath = 0.85f + 0.15f * Mathf.Sin(Time.time * 1.6f + rune.Age);
+                var flash = Mathf.Exp(-rune.Age * 3f);
+                // La lumière ne baisse pas avec celle de l'arène (au plus sombre, c'est là qu'il faut voir ses tourelles).
+                if (rune.Light != null)
+                    rune.Light.intensity = k_TurretLightIntensity * (breath + 2f * flash);
                 if (rune.Renderer == null)
                     continue;
 
-                rune.Age += deltaTime;
                 rune.Renderer.transform.rotation = spin * rune.Renderer.transform.rotation;
-                var breath = 0.85f + 0.15f * Mathf.Sin(Time.time * 1.6f + rune.Age);
-                SetGlow(rune.Renderer, m_Settings.runeColor, (1.4f * breath + 3f * Mathf.Exp(-rune.Age * 3f)) * Mathf.Max(level, 0.3f));
+                SetGlow(rune.Renderer, m_Settings.runeColor, (1.4f * breath + 3f * flash) * Mathf.Max(level, 0.3f));
             }
         }
 

@@ -163,6 +163,12 @@ Minuit arrête MK (`FinalBoss/DragonBoss.TimeStop.cs`). Au tableau : seule 134 /
 (tests : `Checklist_Demo.md`, « La Grande Horloge ») ; ses sons, téléchargés par le joueur, sont découpés (le 3 novembre). Les
 trois ultimes sont faites.
 
+**3 novembre : les retouches du joueur.** L'Horloge (12.52, fin) : ses particules de glace et les aurores des chiffres plus petites,
+les boss des vagues figés les 9 s de Minuit, les trois cristaux du socle retirés. **Le chantier du début** (12.53) : les 3 tours d'un
+trio tiré au hasard, plus la Barricade (ou un autre bâtiment si le trio l'a déjà) : 4 bâtiments. Le silence de Minuit et son bruit d'arrêt du temps (12.52, fin ; puis 12.54, plus progressif et moins fort). L'action
+par flèche des trois ultimes suit la force du tir (12.54 : parfait ×2, moyen ×0,8, la pluie moins). Compilé ; **pas encore vu dans
+Unity**.
+
 **Où on en est (28 octobre)** : le joueur a fait de premiers tests le soir ; ses retours (un bug, la pose à revoir, deux
 modèles) sont traités juste en dessous, à tester. Étapes 2, 3 et 4 codées et compilées (`py Tools/compile_check.py` et
 `compile_check_editor.py` sans erreur ni avertissement), **pas encore testées en entier dans Unity ni au casque** (tests :
@@ -1077,9 +1083,9 @@ Par lots, chacun codé puis testé au casque avant le suivant :
    tour (10 tours, 4 capacités chacune : le plus gros lot, en plusieurs fois, avec des modèles provisoires exagérés).
 3. **L'ennemi préparé** (piste A), dont beaucoup d'évolutions se servent (*codé le 30 octobre, pas encore testé* : 12.12).
 4. **Le soutien et le placement lisible** : le phare (dégâts et cadence) ; pendant la pose, la portée au sol, la longueur de voie
-   couverte, les renforts reçus.
-5. **Les menaces par voie** (piste C), annoncées pendant la pause.
-6. **Tenir le front** (piste B) : l'alerte de la montre, l'état des voies, l'équilibrage des gardiens.
+   couverte, les renforts reçus. (*La pose lisible codée le 3 novembre* : 12.55.)
+5. **Les menaces par voie** (piste C), annoncées pendant la pause. (*Codé le 3 novembre, mis en sommeil le même jour* : 12.56.)
+6. **Tenir le front** (piste B) : l'alerte de la montre, l'état des voies, l'équilibrage des gardiens. (*L'alerte de la montre est remplacée le 3 novembre par le cor et le rayon de la tour*, au choix du joueur : 12.59.)
 7. **Les fusions** (12.9) : les duos, les trios, puis les ultimes (*commencé le 31 octobre : le système et 4 duos, pas encore
    testés* : 12.13).
 
@@ -2557,7 +2563,7 @@ rivière, des cailloux, les mannequins et les cibles d'entraînement sur les voi
   que leurs plans (au hasard, sans rareté). Au premier gong : « Ton chantier : Baliste, Givre et Mortier » ; à la fin de chaque
   vague (pas à la victoire contre MK), un bâtiment de plus : « Nouveau au chantier : Phare ! ». Le raccourci **B** met aussi
   toutes les tours au chantier. *À surveiller* : un chantier de départ sans tour qui fait des dégâts (barricade, bulle, filet)
-  est possible ; à revoir si l'essai le montre.
+  est possible ; à revoir si l'essai le montre. **Changé le 3 novembre** (12.53) : les 3 tours d'un trio, plus la Barricade.
 - **Les plans** (`StructureDefinition.LotSize` et `PlansFor`) : un plan par lot et par niveau de tour ; les duos et les trios
   par `Editor/FirstTestBaker` (le réglage *Plans* de leurs niveaux 2 et 3 : 4 → 2 et 4 → 3). Une tour du niveau 1 au niveau 5 :
   5 plans (7 avant) ; un duo : 6, 8, 10 plans (6, 10, 14) ; un trio : 9, 12, 15 (9, 13, 17), ou 11 et 13 en montant d'abord la
@@ -3238,3 +3244,521 @@ poussière de glace des coups (0,25 à 0,55 m, au lieu de 0,8 à 1,6), les écla
 (deux fois plus petits) ; l'aurore d'un chiffre à 0,5 de sa taille (13 m de haut ; celle d'un écho reste à 1,1) ; Minuit fige les boss
 des vagues toute la durée (le réglage *Boss Stop Time* du Beffroi, 2 s, est retiré de l'Horloge ; MK, dans l'arène, a son temps arrêté à
 lui). Ces tailles sont dans le code (les particules sont faites en jeu) : rien à poser sur le prefab. Compilé ; **à revoir dans Unity**.
+Le même jour (le joueur : « retirer les 3 petits cristaux à la base de l'horloge ») : le socle n'a plus ses trois cristaux (leur
+cœur qui luisait compris). Le modèle a une nouvelle marque (« Horloge du 3 novembre ») et il est refait (*rebuild*) : à l'ouverture de
+Unity, le baker de l'allure retire toutes ses pièces et le reconstruit ; les réglages du script restent.
+
+Puis (le joueur : « pendant l'arrêt du temps de l'horloge, enlève les autres sons et musique, laisse juste les bruits de l'horloge et du
+joueur ») : **le silence de Minuit** (`Core/Sfx.Hush`, appelé à chaque image de Minuit ; `Sfx.Unhush` au douzième coup, et dans tous les
+cas où Minuit s'arrête). La musique, l'ambiance et toutes les sources du monde (les tours, les ennemis, MK et la musique de l'arène, les
+boucles des autres ultimes) sont coupées (*mute* : elles continuent sans qu'on les entende, et leurs scripts gardent la main sur leur
+volume), y compris celles qui commencent pendant (on les cherche 4 fois par seconde) ; les sons ponctuels déjà partis s'arrêtent, et les
+nouveaux ne passent que s'ils sont joués à moins de 2,5 m de la tête du joueur (son arc, sa montre, ses pas, ses coups de katana). Les sons
+de l'Horloge passent tous (`Sfx.PlayThroughHush`) : le tic, la cymbale qui monte avant Minuit, les douze coups, la reprise et le bris. Au
+douzième coup, tout revient d'un coup, avec la cymbale de la reprise. Compilé ; **à entendre dans Unity**.
+
+Puis (le joueur, avec un extrait du « Za Warudo » de JoJo : « j'aimerais que l'arrêt du temps se fasse vraiment ressentir ; juste après
+[la phrase], il y a un bruit assez saturé annonçant l'arrêt du temps, reproduis-le ») : **le bruit de l'arrêt du temps**. L'extrait, un
+MP3, est converti par le transcodeur de Windows (`Tools/sons/mp3_en_wav.ps1` : pas de décodeur MP3 en Python sur ce PC) et lu en forme
+d'onde et en spectre : après la voix, environ 1,9 s en deux temps, un bourdon grave saturé qui descend (134 → 116 Hz, comme une bande
+qui ralentit), puis un grave qui remonte (65 → 80 Hz, son 3e harmonique fort) avec un sifflement fixe (1,67 kHz, puis 3 kHz), et une
+coupure nette sur un claquement aigu. **Synthétisé** sur ce dessin (`Tools/sons/arret_du_temps.py` → `Audio/Horloge_Temps_Arrete.wav`,
+1,8 s ; rien de l'extrait n'est repris), plus court et plus lourd : un impact (une grosse caisse saturée qui tombe de 120 à 40 Hz), le
+bourdon qui descend (134 → 112 Hz, une dent de scie saturée qui palpite), le grave qui remonte (64 → 82 Hz) avec le sifflement, la
+coupure à 1,4 s (l'écho compris) sur un claquement, puis presque rien. Calculé à 192 kHz (la saturation ne se replie pas dans l'aigu),
+la présence relevée de 0,6 à 5 kHz, saturé deux fois ; son profil suit celui du modèle. **En jeu** (*Time Stop Clip*, *Time Stop Cut*
+1,4 s) : il part au début de Minuit, à plat (on l'entend partout, fort), avec une vibration des deux manettes ; il passe le silence ; le
+premier coup de cloche tombe sur sa coupure, les onze autres se serrent derrière (le douzième tombe au même moment qu'avant : 0,62 s
+entre deux coups au lieu de 0,75). La cymbale qui monte pendant que les aiguilles se rejoignent reste avant lui. Le son est posé sur le
+prefab par `Editor/HorlogeSonsBaker` (un réglage vide) ; le fichier d'allure le nomme. **L'extrait lui-même n'est pas utilisé** (une
+série animée, sous droits ; `Credits_Licences.md`) : rangé hors du dépôt, dans `Desktop/dev/Sons_modeles/`. Compilé ; **à entendre dans Unity**.
+
+### 12.53 Le chantier du début : un trio (3 novembre)
+
+Le joueur : « il faudrait que les 3 premiers bâtiments au début de chaque game soient forcément des bâtiments d'un trio du jeu, et
+augmenter la limite à 4 bâtiments : le 4e étant les barricades (ou un autre aléatoire si les barricades font partie du trio) ».
+
+**Codé** (`Building/BuildManager`, `PickStartingStructures`) : au lancement, un trio est tiré au hasard parmi les 7 ; ses 3 tours (les
+deux de son duo et la sienne) sont au chantier. Puis la **Barricade** ; si le trio l'a déjà (l'Enclume, le Bowling, le Colisée), un
+autre bâtiment, tiré comme ceux qui arrivent après chaque boss (la rareté d'abord). Un trio, et l'ultime de sa famille, est donc
+possible dans chaque partie, et la partie commence avec de quoi faire deux duos au moins (celui du trio, et souvent un autre avec la
+Barricade : le Boulet fou ou le Marteau-pilon). Au premier gong : « Ton chantier : Mortier, Bulle, Baliste et Barricade », puis « De
+quoi bâtir un trio : Gonfleur ». Un bâtiment de plus après chaque boss, comme avant.
+
+Les 7 trios et leur chantier : Enclume (Barricade, Pièges à piques, Mortier, + un au hasard), Gonfleur (Mortier, Bulle, Baliste,
+Barricade), Bowling (Mortier, Tour de givre, Barricade, + un), Beffroi (Pièges à piques, Tour-aimant, Phare, Barricade), Colisée
+(Phare, Bulle, Barricade, + un), Montagnes russes (Tour-aimant, Lance-filet, Tremplin, Barricade), Grande bombarde (Mortier, Phare,
+Tremplin, Barricade).
+
+Le réglage *Starting Structures* (3, dans la scène) est remplacé par *Extra Starting Structures* (1 : les bâtiments après ceux du
+trio) ; un réglage nouveau prend sa valeur du code : rien à enregistrer dans la scène. Sans catalogue de trios, le tirage d'avant
+(au hasard). Le tutoriel (« Ouvrir les coffres ») dit « 4 bâtiments au début (de quoi bâtir un trio) » : `Editor/StartingTrioBaker`,
+une fois, si la fenêtre a encore l'ancien texte mot pour mot. Compilé ; **pas encore vu dans Unity**.
+
+### 12.54 L'action par flèche des ultimes suit la force du tir ; le bruit de l'arrêt du temps, progressif (3 novembre)
+
+Le joueur : « fais en sorte que chaque action qui se passe à chaque flèche lancée par le joueur avec les ultimes scale en fonction de
+si le joueur fait un parfait, moyen, etc. ; de même, cela scale aussi avec la force de la flèche (la pluie réduit les dégâts, etc.) ».
+
+**Codé** (`Building/TowerUltimate.ShotPower`) : la force d'une flèche est ses dégâts à l'impact, rapportés à ceux d'un tir « Bon » du
+même arc avec les mêmes bonus (`Bow.MeleeDamage`), de 0,25 à 3. Les dégâts d'une flèche comptent déjà tout : la qualité du tir (les
+dégâts de `Data/ShotTuning` : raté 0,75, moyen 1, bon 1,25, très bon 1,6, parfait 2,5), l'arc plus ou moins bandé, la corde de siège,
+les flèches de la pluie et du multishot (moins fortes), les pièces qui changent les dégâts en vol. D'où : **parfait ×2, très bon ×1,28,
+bon ×1, moyen ×0,8, raté ×0,6**, une flèche de la pluie bien moins. Les parchemins n'y comptent pas (ils renforcent déjà les tours,
+*Structure Scroll Share*, 12.36), ni l'arc lui-même (les deux s'annulent dans le rapport). Le marteau du Colosse, le cheval du Manège
+et l'écho de l'Horloge frappent d'autant : leurs dégâts et leur part des PV d'un boss (MK compris) ; le rayon, le recul et les effets
+ne changent pas. La charge du Manège (sans flèche) reste à 1. File pleine (la pluie de flèches : 8 flèches en attente au plus), la plus
+faible laisse sa place à une plus forte (à force égale, la plus ancienne, comme avant) : un tir parfait n'est plus perdu sous la pluie.
+Au tableau, une flèche qui touche compte pour un tir « Bon » (le texte des trois ultimes le dit ; relancé, les changements du joueur
+gardés) : les chiffres ne changent pas.
+
+**Le bruit de l'arrêt du temps, retouché** (le joueur, après l'avoir entendu : « le bruit de JoJo d'arrêt du temps est plus progressif,
+et fais-le moins fort aussi ») : plus d'impact au départ (la grosse caisse et le souffle) ; à leur place, un très grave (42 Hz) qui
+enfle ; le bourdon monte en 0,4 s ; tout enfle jusqu'à la coupure (de −45 dB au départ à −9 dB juste avant) ; la crête à 0,8 (0,95), et
+joué à 0,6 en jeu (1) : environ 7 dB de moins en moyenne. La vibration des manettes passe du début de Minuit au premier coup de cloche,
+sur la coupure (0,6 au lieu de 0,8). `Tools/sons/arret_du_temps.py`, relancé.
+
+Compilé ; **pas encore vu ni entendu dans Unity**.
+
+**Le même jour, quatre erreurs dans la console de Unity** (« The same field name is serialized multiple times in the class or its
+parent class ») : `m_ArenaScale`, privé dans `TowerUltimate` (la taille hors de l'arène) et réglable dans chaque ultime (0,65), et
+`m_BoostUntil`, privé dans `Structure` et dans le Manège. Dans l'éditeur, Unity sérialise aussi les champs privés au rechargement
+des scripts, d'où le conflit ; le compilateur, lui, l'accepte. Renommés ceux qui ne portent pas de réglage (`m_ScaleOutsideArena`,
+`m_SpinBoostUntil`) : les réglages des prefabs restent. Un outil le cherche désormais : `Tools/champs_en_double.py` (aucun ailleurs).
+
+### 12.55 La flèche « ULTIME », la pose lisible, la lumière de l'arène, la fluidité (3 novembre)
+
+Le joueur : « fais tous les points 2 » (le point de Claude sur la suite de la refonte : ce qui aide à jouer sans rien ajouter à
+apprendre). Codé, compilé (`compile_check`, `compile_check_editor`, `champs_en_double` : rien), **pas encore vu dans Unity ni testé
+au casque** (tests : `Checklist_Demo.md`, « Le 3 novembre : la flèche ULTIME, la pose lisible, les menaces par voie »).
+- **La flèche « ULTIME »** (`Building/DuoHints`, avec les flèches « DUO » et « TRIO ») : entre les vagues, une flèche dorée droite
+  plonge sur chaque trio au niveau 3 dont la famille a son ultime, avec le mot « ULTIME », le nom de l'ultime et ses plans
+  (« 4 / 10 plans », de l'une de ses trois tours) ; même sans assez de plans : on voit ce qu'on vise. Plus aucune dès qu'une
+  ultime est bâtie (une par partie).
+- **La pose lisible** (le lot 4 de 12.7, sa deuxième moitié ; le phare de soutien de la première moitié était déjà fait à sa
+  façon) : pendant la pose (et le déplacement), la portée du bâtiment est dessinée au sol, dans la grille : un cercle de cases
+  dorées, et les cases de la voie à sa portée, dorées elles aussi ; et le texte de la pose dit « Portée 24 m · couvre 31 m de la
+  voie de gauche, 12 m de la voie du milieu » (la longueur du chemin des ennemis à portée, par pas d'un demi-mètre ; « aucune
+  voie à portée » sinon). Les pièges de la voie et la barricade, qui agissent sur leurs cases, n'ont pas de cercle. La portée :
+  `Structure.ReachAt(niveau)` (au niveau 1, ou au niveau du bâtiment déplacé), celle des réglages de chaque bâtiment : baliste
+  et lance-filet, tour de givre, mortier, tour-aimant, bulle, phare ; les duos, trios et ultimes qui ont une portée (*Range*),
+  la Boussole folle (sa rose). Les voies sont nommées de gauche à droite vues de la tour (`BuildGrid.SortedLanes`, `LaneName`).
+- **La lumière sous les tourelles de l'arène** (l'idée du joueur ; `FinalBoss/ArenaLights`) : à côté de la rune qui s'allume
+  sous chaque tourelle posée sur le plateau, une lumière ponctuelle à 50 cm du sol (8 m, sans ombre) qui l'éclaire d'en bas et
+  respire avec la rune ; elle ne baisse pas quand l'arène s'assombrit. Le Quest éclaire chaque objet par 2 lumières au plus.
+- **La fluidité au Quest** (sans casque : une relecture du code, pas une mesure) : l'arrêt du temps (Minuit de la Grande Horloge)
+  cherchait les flèches dans toute la scène vingt fois par seconde (`FindObjectsByType`, un tableau à chaque fois) : il lit
+  maintenant la liste des flèches actives (`Arrow.Active`, tenue par les flèches elles-mêmes). Les gerbes de particules des duos,
+  trios et ultimes (`TowerDuo.Burst`, des dizaines par seconde pour les ultimes) étaient un objet créé puis détruit à chaque
+  fois : elles sont en réserve (48 au plus ; une gerbe finie sert à la suivante). Le reste des recherches lourdes ne sert qu'à la
+  mise en place (fondre les modèles, au lancement). **À mesurer au casque** : une vague chargée avec les trois ultimes, la pluie de
+  flèches (`Docs/Audit_Performance_Quest.md`, partie 8 : les mesures du Quest).
+
+### 12.56 Les menaces par voie (le lot 5 de 12.7, 3 novembre)
+
+Le joueur : « fais […] le lot 5 » (la piste C du 29 octobre, 12.2 et 12.3 : chaque voie a une tendance, annoncée pendant la
+pause). Codé (`Waves/WaveManager.Lanes.cs`, `Waves/LaneThreatSigns.cs`, `EnemySpawner.Spawn(ennemi, point)`), compilé, **pas
+encore vu dans Unity ni testé au casque**.
+- **La règle** : à partir de la **vague 2** (la vague 1 reste comme avant : on apprend à jouer), chaque voie a sa **famille
+  d'ennemis**, tirée au hasard parmi celles de la vague : **volants**, **costauds**, **essaim**, **tireurs** ; une voie de trop
+  (à la vague 2, il n'y a que l'essaim et les tireurs) : **mélange**. Et une voie est **la plus chargée**. Rien au boss final.
+- **Ce qui change dans la vague** : seulement par où sortent les ennemis. Avant, chacun sortait d'un point d'apparition tiré au
+  hasard ; maintenant, **3 fois sur 4 par la voie de sa famille**, sinon (ou si sa famille n'a pas de voie) par une voie au
+  hasard, **la plus chargée deux fois plus souvent**. Combien et lesquels ne changent pas (le budget, les poids : rien de
+  l'équilibrage du joueur). Les boss des vagues sortent toujours au hasard ; leurs renforts suivent la règle.
+- **La famille d'un ennemi**, sans réglage : volant (`FlyingEnemy` : le volant, la guêpe, la gargouille), tireur
+  (`EnemyRangedAttack` : le tireur, la liche), sinon **costaud** s'il coûte au moins 1,8 dans le budget des vagues (le cactus, le
+  fantassin, la tortue, l'orc, la mimique), **essaim** sinon (les gluants, les champignons, l'étoile de mer, le rampant).
+- **L'annonce, pendant la pause qui précède** (les menaces sont tirées à la fin de la vague d'avant) :
+  - un message, sous celui de la fin de vague : « Vague 3 : par où ils viendront · Gauche : volants · Milieu : costauds ·
+    Droite : essaim (la plus chargée) » ;
+  - **au-dessus de chaque voie**, à 20 m de la tour et 5 m de haut, un grand mot de la couleur de sa famille (« VOLANTS » bleu
+    ciel, « COSTAUDS » rouge orangé, « ESSAIM » vert, « TIREURS » violet, « MÉLANGE » blanc), « la plus chargée » dessous, face
+    au joueur, toute la pause (comme les flèches « DUO ») ;
+  - puis la ligne dans le titre du début de la vague.
+- On s'adapte : les bâtiments se déplacent gratuitement entre les vagues (le lance-filet sur la voie des volants…).
+- **Ce que le joueur a à apprendre** (la règle de la complexité) : lire le mot de la voie. Ce que ça remplace : le point
+  d'apparition tiré au hasard.
+
+**Mis en sommeil le même jour** (le joueur, après l'essai : « les écritures pour chaque vague sont dans les murs et on ne les voit
+pas, il faudrait changer ce système pour éviter de complexifier le jeu » ; puis, devant les idées de Claude, « retirons cette
+mécanique pour le moment »). Les mots au-dessus des voies étaient posés à 20 m de la tour et 5 m au-dessus du chemin : là, les voies
+passent entre les terrasses de 3 et 6 m et dans des virages. Fait : `Waves/LaneThreatSigns.cs` (les mots) est supprimé ; le reste
+dort dans `Waves/WaveManager.Lanes.cs` (`s_LaneThreats` à faux) : rien n'est tiré ni annoncé, chaque ennemi sort de nouveau d'un
+point d'apparition au hasard. `EnemySpawner.Spawn(ennemi, point)` reste (sans point : au hasard). Compilé.
+
+**Les idées pour une autre annonce, si la mécanique revient** (Claude, le même jour) :
+1. *(conseillée)* **les fantômes de la vague** : pendant la pause, sur chaque voie, au milieu de la terre, à 12–15 m de la tour, des
+   silhouettes bleutées (la matière des hologrammes des plans) des ennemis qui vont venir ; trois sur la voie la plus chargée, une ou
+   deux ailleurs : ni mot ni couleur à apprendre, et plus besoin de « la plus chargée » ;
+2. **des panneaux sur la tour** : sur son rebord, face à chaque voie, un petit panneau de bois avec le mot, à un mètre du joueur ;
+3. **sur la montre** : une ligne pendant la pause ;
+4. **les torches de la voie colorées** : un code de couleurs à apprendre (déconseillé) ;
+5. **ne rien annoncer** : on découvre pendant la vague par où ils viennent (les torches) ; mais on ne s'y prépare plus.
+
+### 12.57 Le talisman de l'ingénieur surcharge tous les bâtiments (3 novembre)
+
+Le joueur demande comment marchent le talisman de l'ingénieur et son duo, et quelles tourelles rejoignent MK. Ce que Claude a
+relevé dans le code :
+- **Le talisman** (objet, talisman, 3 niveaux) : une flèche tirée dont le trajet traverse un bâtiment construit le **surcharge**,
+  une fois par flèche (« Surchargée ! », des éclairs bleus) : il tire 2 / 4 / 6 fois plus vite et sa portée double, pendant 5 / 7 /
+  9 s ; une flèche qui traverse une barricade debout lui rend 10 / 15 / 20 % de ses PV max. **Son duo, « Réseau »** (avec l'Arc
+  conducteur) : une flèche plantée se relie aussi, par un arc électrique, au bâtiment le plus proche à moins de 8 m, qui reste
+  surchargé tant que le lien dure (6 à 9 s).
+- **Le trou** : il ne surchargeait que les balistes (les lance-filets compris : dans le code, c'en est une) et les tours de
+  givre, les tourelles d'avant la refonte ; les 7 autres tours, les duos, les trios et l'ultime l'ignoraient, alors que tous savent
+  être surchargés (leur cadence et leur portée suivent `OverchargeRate` et `OverchargeRange`).
+- **Les tourelles de l'arène de MK** (`FinalBoss/ArenaTurrets`) : les balistes, les lance-filets, les tours de givre et l'ultime,
+  6 emplacements (l'ultime d'abord, puis les plus hauts niveaux), la portée doublée. La baliste : des dégâts seulement (son harpon
+  ne cloue pas MK, son pieu titan ne l'emporte pas). La tour de givre : des boules de glace à tour de rôle, qui ralentissent MK
+  sans le blesser (25 % au plus, son plafond) ; ses niveaux 3 à 5 ne jouent pas là. L'ultime : son effet sur MK (le Colosse le
+  plaque au sol, le Manège l'étourdit, l'Horloge le fige). **Le lance-filet n'y fait rien** : il ne vise que les volants, MK n'en
+  est pas un pour le jeu, et son filet électrique (niveau 4) ignore les boss. À décider par le joueur (proposé : il ne vient plus,
+  sa place va à une autre tourelle ; ou un filet qui ralentit MK).
+
+**Fait** (le joueur : « fais en sorte que le talisman puisse surcharger toutes les tourelles ») : le talisman et le Réseau
+prennent **tous les bâtiments construits** (`ArrowPieces.Lot3`, `RefreshBuildings` : `Structure.All` au lieu des balistes et des
+tours de givre cherchées dans la scène). Compilé ; **pas encore vu dans Unity ni testé au casque**. **Les textes ne sont pas
+changés** : la carte du talisman est celle que le joueur a refaite le 27 octobre (`Cartes_A_Refaire.xlsx` : « Une flèche dans ta
+baliste la fait tirer {2|4|6} fois plus vite pendant {5|7|9} s ; un tir dans la barricade la répare de {10 %|15 %|20 %} »), et le
+texte du duo Réseau (« Les arcs électriques relient tes flèches à tes balistes, qu'ils surchargent ») ; proposés par Claude, à
+changer par le joueur s'il le veut : « Une flèche dans une de tes tourelles la fait tirer {2|4|6} fois plus vite pendant {5|7|9} s ;
+un tir dans la barricade la répare de {10 %|15 %|20 %} » ; « Les arcs électriques relient tes flèches à tes tourelles, qu'ils
+surchargent ».
+
+**Puis le joueur : « oui, remplace »**. La carte : « dans ta baliste » devient « dans une de tes tourelles », le reste de son texte
+ne bouge pas (`Editor/EngineerTextBaker`, une fois, seulement si la carte dit encore « dans ta baliste » ; le texte de montée de
+niveau, « Cadence {×2|×4|×6} pendant {5 s|7 s|9 s} ; réparation {10 %|15 %|20 %} », reste juste). Le duo Réseau, dans le code
+(`Upgrades/ArrowDuos`) : « Les arcs électriques relient tes flèches à tes tourelles, qu'ils surchargent ». Compilé.
+
+### 12.58 Tous les bâtiments qui tirent rejoignent l'arène de MK (3 novembre)
+
+Le joueur : « rajoute toutes les tourelles qui tirent dans la liste des tourelles qui peuvent aller dans l'arène, et adapte-les pour
+qu'elles fonctionnent correctement ». Jusqu'ici : les balistes (les lance-filets compris), les tours de givre et l'ultime.
+
+**Ceux qui viennent** (`Structure.FightsInArena`) : la baliste, le lance-filet, la tour de givre et le **mortier** ; les duos
+**Avalanche**, **Feu d'artifice**, **Carquois géant**, **Loupe** et **Lanceur de baudruches** ; les trios **Enclume**, **Gonfleur** et
+**Grande bombarde** ; l'ultime. **Ceux qui ne viennent pas** (ils ne tirent pas : ils agissent sur la voie, autour d'eux, ou font tomber
+quelque chose du ciel) : la barricade, les piques, le tremplin, la tour-aimant, la bulle, le phare ; les duos Boulet fou,
+Marteau-pilon, Toboggan, Yo-yo, Chant des sirènes, Chaîne de forçats, Boussole folle, Boule à neige ; les trios Bowling, Beffroi,
+Colisée, Montagnes russes. Toujours 6 emplacements : **les plus forts d'abord**, l'ultime, puis les trios, les duos, les tours, et à
+égalité le plus haut niveau (`ArenaTurrets.Rank`).
+
+**Ce qui est commun** :
+- l'entrée et la sortie de l'arène sont celles de tous les bâtiments (`Structure.EnterArena`, `LeaveArena`, `InArena` : avant, les
+  ultimes seules) ; **les duos et les trios y sont réduits** pour tenir sur leur emplacement, sous la voûte (trois cases de large,
+  12 m de haut au plus, `TowerDuo.ArenaScale`, d'après leur taille ; les ultimes, 0,65 comme avant) ;
+- leur portée est doublée, comme celle des balistes (`RangeScale` : les duos et les trios ne s'en servaient pas) ;
+- **ce qu'ils lancent suit MK** : sur la carte, un obus, une boule, une enclume, une bombe tombe au sol, là où sera l'ennemi ; MK vole,
+  et tout tombait au sol sous lui. Dans l'arène, la fin de la cloche suit son corps à chaque image (`Structure.Arc`) : ça le
+  rattrape en vol comme au sol ;
+- **un coup « en pourcentage » ne lui coûte que 2 % de ses PV max au plus** (`Structure.ShareFor`, `k_ArenaBossShare`) : le char de
+  carnaval (35 %), le rayon de la Loupe (15 % à chaque passage), la grande enclume (8 %) l'auraient tué à eux seuls (le Colosse lui
+  en prend 3 % quand il le plaque au sol). Leurs dégâts ordinaires, eux, sont les mêmes.
+
+**Chacun** :
+- **le lance-filet** : MK se prend au filet à tous les niveaux (avant, il ne visait que les volants) ; il ne tombe pas (le Colosse
+  seul le plaque au sol) : un grand filet l'enveloppe (« Pris au filet ! ») et le ralentit pendant le temps d'un volant au sol (3 / 4
+  / 5 s ; 25 % au plus, son plafond) ; le filet électrique le blesse aussi ; la toile géante (niveau 5) le ralentit tant qu'il est
+  dessous. C'est la proposition « un filet qui ralentit MK » ;
+- **le mortier** : ses obus le rattrapent et éclatent sur lui (l'explosion compte depuis son corps, moins sa carrure de 2,5 m,
+  `Structure.BlastDistance`) ; le bombardement (niveau 5) pleut le long de son corps ; ni flaque de goudron ni sol en feu dans l'arène
+  (les obus y éclatent souvent en l'air) ;
+- **l'Avalanche** : pas de voie où rouler, et un boss n'est jamais avalé : le mortier de glace tire sa boule (plus grosse) droit
+  sur MK ; elle éclate sur lui en neige (« Boule de neige ! ») : les dégâts de l'éclatement, et il est ralenti 3 s ; au niveau 3,
+  l'avalanche, plus grosse, et 2 % de ses PV max ;
+- **le Feu d'artifice** : ses fusées le suivent et éclatent sur lui (et non 7 m au-dessus du sol) ; ébloui, il est ralenti, et la
+  pluie d'étincelles le brûle ; le bouquet final : vingt fusées tout autour de lui ;
+- **le Carquois géant** : il rattrape toutes tes flèches ratées dans l'arène ; ses volées partent de l'arbalète droit sur MK, là où il
+  sera (tombées du ciel, la voûte les arrêtait, et elles tombaient sous lui quand il vole) ;
+- **la Loupe** : la tête de MK n'y grossit que ×1,5 (×3, elle traverserait la voûte ; `m_ArenaBossHead`), son point faible ×2 comme
+  les autres boss ; sa baliste vise sa tête ; le rayon le brûle (2 % de ses PV max à chaque passage, au lieu de 15 %) ;
+- **le Lanceur de baudruches** : pas de voie où les poser, et un boss ne vient pas les frapper : le canon les lance sur MK, où elles
+  éclatent en confettis piquants ; au niveau 3, le char de carnaval aussi, toutes les 20 s (2 % de ses PV max) ;
+- **l'Enclume** : ses enclumes le rattrapent, en vol comme au sol, puis retombent au sol (elles restaient posées en l'air) ; il n'est
+  jamais aplati ; le rebond (niveau 2) va vers un autre ennemi que celui qu'elle vient de frapper (MK est seul : elle retombe) ; la
+  pluie d'enclumes (niveau 3) part sur lui seul (il en fallait trois à portée), de moins haut (la voûte), et la grande enclume lui
+  coûte 2 % de ses PV max ;
+- **le Gonfleur** : le harpon plante quand même le tuyau dans MK ; il ne gonfle pas (un boss ne change jamais de taille) ; la pompe le
+  ralentit pendant qu'elle souffle, puis le tuyau éclate (« Pan ! ») : deux fois les dégâts d'un ballon crevé. Le défilé (niveau 3) ne
+  joue pas dans l'arène (il faut quatre ennemis) ;
+- **la Grande bombarde** : comme sur la carte, ta flèche dans sa gueule la remplit et ta flèche dans la mèche l'allume (elle ne se
+  remplit plus aux ennemis tués : il n'y a que MK) ; ses bombes suivent MK et éclatent sur lui ; le bouquet final aussi.
+
+Compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement ; aucun champ en double) ; **pas encore vu dans Unity ni testé
+au casque** (tests : `Checklist_Demo.md`, « Le 3 novembre »). Les réglages nouveaux (le ralentissement du filet, de la neige et de la
+pompe, la tête de MK sous la Loupe) sont des propositions, sur les prefabs dès qu'Unity les enregistre.
+
+### 12.59 Le cor et le rayon : la tour attaquée (3 novembre)
+
+Le joueur : « j'aime pas trop l'alerte sur la montre, mais il faut bien que le joueur soit averti des dégâts de la tour, des
+propositions ? ». Claude en a proposé cinq (le cor de la tour, le rayon plus fort et la fumée, la flèche au bord de la vue, une
+vibration, un message devant les yeux) ; **le joueur a choisi le cor et le rayon**. Ils **remplacent l'alerte de la montre et l'état
+des trois voies** du lot 6 (piste B : « La montre prévient ») : rien sur la montre ni à l'écran, tout est dans le monde.
+
+Ce qui existait : l'anneau, la lumière et le rayon de la tour, vert, orange puis rouge selon ses PV, qui clignotent quand elle est
+touchée (`World/Lighting/MapGameplayLights`) ; on ne le voyait qu'en regardant la tour.
+
+**Une attaque** : des coups reçus à moins de 8 s d'écart (*Tower Attack Gap*, dans `Resources/MapLighting`, les réglages des
+lumières de la carte).
+- **Le cor** : au premier coup d'une attaque, un cor de guerre sonne depuis le sommet de la tour, en son 3D : où qu'on soit, on
+  l'entend venir de sa direction (une source à lui, qui porte jusqu'à 260 m en baissant doucement : celles des autres sons s'éteignent à
+  60 m). Une fois au-dessus de la moitié des PV, deux fois en dessous, trois sous le quart ; et de nouveau pendant l'attaque quand
+  les PV passent ces seuils. Pas si le joueur est sur la tour ou à moins de 15 m (il voit l'attaque), ni pendant le silence de Minuit.
+  Le son : synthétisé par Claude (`Tools/sons/cor_de_la_tour.py`, `Audio/Tour_Cor.wav`, 2,15 s : un do grave, la lèvre qui attaque un
+  peu bas, le son qui s'éclaircit en enflant, l'octave dessous, l'écho d'une vallée) ; posé par `Editor/TowerHornBaker` (une fois,
+  si le réglage est vide). À remplacer par un son de freesound si le joueur en trouve un meilleur.
+- **Le rayon** : pendant l'attaque (et 8 s après le dernier coup), il est deux fois et demie plus long et plus large (100 m au lieu
+  de 40, *Alarm Beam Scale*) et bat en rouge, bien visible même le jour ; il redescend doucement à la fin. Toujours caché quand le
+  joueur est sur la tour.
+- **La fumée** : sous la moitié de ses PV, une colonne de fumée noire monte de la tour, d'autant plus épaisse qu'elle est abîmée (60
+  particules au plus) : on la voit de toute la carte, jusqu'à ce que la tour remonte au-dessus de la moitié (les 15 % de fin de vague).
+
+Compilé (le jeu et les outils d'éditeur) ; **pas encore vu dans Unity ni testé au casque**. Le reste du lot 6 (l'état des voies,
+l'équilibrage des gardiens) n'est pas fait.
+
+### 12.60 Le troisième essai : volants, boss, PV du joueur, le combo, le Manège ; le rythme à revoir (3 novembre, tard)
+
+Le joueur a fait une partie entière (Normal, au casque ; le journal disait à tort « sans casque », corrigé le 4 novembre, 12.64), lue par Claude dans le premier **journal
+de partie** (`Logs/Parties/`, `Scripts/Journal/`) : victoire à la vague 8 en 21 min, MK tué en 54 s, la tour attaquée 3 fois
+(77 PV perdus sur 3 000 à 4 875), le joueur jamais sous 25 % de ses PV ; le chantier du début (Mortier, Bulle, Baliste, Barricade)
+fusionné en Gonfleur à la vague 3, le Grand Manège à la vague 7 (63 % des dégâts à la vague 8) ; Force ×14 à la fin (presque tout
+l'or en parchemins). Son ressenti : la partie était simple, mais il connaît le jeu par cœur et avait une bonne combinaison ; MK tué
+vite, « juste de la chance » (le ralenti tout le temps).
+
+**Fait** (le joueur : « fais tous ces changements ») ; les réglages par `Editor/ThirdTestBaker` (une fois, seulement s'ils ont
+encore leur valeur d'avant), le reste dans le code :
+- **les volants** (« vraiment casse-pieds » : avec un jeu de rebonds et de réactions en chaîne, ils étaient presque invincibles, et
+  les tours anti-aériennes n'arrivent parfois qu'à la fin) : **PV −50 %** (Volant 20 → 10, Guêpe 12 → 6, Gargouille 35 → 18) ;
+- **leur piqué** (« parfois ils ne nous attaquent pas : ils évitent trop de foncer dans le sol ») : dans ses 4 derniers mètres, un
+  volant ne s'écarte plus de rien (`FlyingEnemy`, `k_FinalApproach`), et il touche un peu plus loin (+0,3 m : Volant 1 → 1,3,
+  Guêpe 0,8 → 1,1, Gargouille 1,2 → 1,5) ;
+- **les boss des vagues** (« trop de PV : le seul moyen de les tuer était de leur foncer dessus et de tirer à bout portant ; ils
+  devraient pouvoir nous taper ») : ils **frappent le joueur à moins de 7 m** (*Player Aggro Range* 0 → 7, au même niveau que lui ;
+  ils ne frappaient que la tour et les barricades), et **PV −30 %** (Thomas 272 → 190, Jean 383 → 268, Gontrand 592 → 414, Francine
+  787 → 551, Nolan 868 → 608) ; MK ne change pas ;
+- **les PV du joueur ÷3** (« on ne ressent pas assez les coups ») **et une grande régénération** (« on aurait une solution pour éviter
+  de mourir ») : 200 → 67 PV ; les PV remontent après 3 s sans être touché (5 avant), de 10 % des PV max par seconde (4 avant) : de
+  presque rien au plein en 10 s (la scène : enregistrer, Ctrl+S). La **Vigueur** suit : +8 PV au lieu de +25 (la même part des PV de
+  base, que la tour et les barricades suivent aussi ; le nombre de sa carte avec, le reste de son texte ne change pas). Le Vampirisme
+  (+3 / 6 / 9 PV par tir à la tête) ne change pas : il pèse trois fois plus ;
+- **le combo « Le style, ça compte aussi » + corde triple** (le duo « 360 no scope headshot » : « tir parfait, ×9 et le temps
+  ralenti : en une seconde, 30 tirs parfaits ; on passe à 5 ») : la couronne tire **deux fois** les flèches de la corde triple au lieu
+  de trois : 5 / 9 / 13 flèches avec celle de l'arc (7 / 13 / 19 avant ; `SpecialArrows.k_CrownMultiplier`) ;
+- **le Grand Manège** (« même avec un bon build, mes dégâts étaient faibles par rapport aux carrousels » : il faisait deux fois les
+  dégâts du joueur, 280 par seconde contre 150) : **tous ses dégâts −35 %** (l'éveil 100 → 65, le ruban 60 → 39, le tournis 70 → 46,
+  l'éjection 100 → 65 et 200 → 130, le cheval 160 → 104, la charge 90 → 59 ; ses parts sur les boss ne changent pas). À relancer au
+  tableau (`Tools/equilibrage_tours.py`) après Unity ;
+- **le trio** (« quand j'ai construit le trio, j'ai eu l'impression de perdre de la puissance ») : rien pour l'instant. Au journal,
+  le Gonfleur faisait deux fois les dégâts des trois tours d'avant (39 par seconde contre 19), mais la Force du joueur est passée de 4
+  à 10 au même moment, et il n'y avait plus qu'un emplacement défendu au lieu de trois ; à revoir après un essai au casque ;
+- et deux corrections : une flèche tenue en main qui frappe ne change plus la vitesse d'un corps figé (`Arrow.StickInto`, 10
+  avertissements au journal) ; le journal compte mieux (les flèches qui touchent ne dépassent plus 100 %, une ultime qui sort de terre
+  n'est plus « déplacée », l'or dépensé à la pause va au bilan de la vague suivante, une partie arrêtée avant sa première vague tient
+  en une ligne).
+
+Compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement ; aucun champ en double) ; **pas encore vu dans Unity ni testé
+au casque**.
+
+**Le rythme, à revoir** (le joueur : « un grand problème de rythme ») :
+- on prend les coffres au début de la vague, puis on fonce frapper le gong : rien ne pousse à ne pas appeler le boss plus tôt (son
+  bonus d'or grandit avec le temps qui reste) ;
+- le chrono s'allonge de vague en vague (+12 s), mais aller chercher les coffres ne prend que quelques secondes de plus : les
+  premières vagues sont bien rythmées, puis on s'ennuie de plus en plus et on frappe le gong vite.
+
+Propositions de Claude pour le brainstorm (chacune dit ce qu'elle remplace) :
+1. **Les coffres à la pause** : ils apparaissent quand le boss meurt, et la pause (qui dure tant que le joueur ne frappe pas le gong)
+   sert à les ouvrir, construire et acheter ; la vague n'est plus que du combat. Remplace les coffres au gong et l'accalmie.
+2. **Une vague courte et fixe** : la même durée à chaque vague (environ 75 s), la difficulté passe par le nombre et la force des
+   ennemis. Remplace l'allongement de +12 s par vague.
+3. **Le boss quand la jauge est pleine** : chaque ennemi tué la remplit ; un joueur fort va plus vite, sans attendre. Remplace le
+   chrono, l'appel du boss au gong et son bonus.
+4. **Le gong sans bonus** : appeler le boss plus tôt fait gagner du temps, plus de l'or (le bonus le rendait toujours gagnant).
+5. **Des raisons de rester dehors** (la piste B, 12.2 : un totem au bout de chaque voie, protégé tant que le joueur est près) :
+   remplit le temps, mais c'est un système de plus (à éviter, la règle de la complexité).
+Conseil de Claude : 1 et 2 (le moins de règles : la pause pour préparer, la vague pour se battre) ; 3 si le joueur veut que le rythme
+suive sa force. À décider par le joueur.
+
+**Le joueur, ensuite** : la 2 (la vague courte et fixe) est bien. La 1 (les coffres à la pause) non : les coffres pendant la vague
+sont là pour varier la boucle (« pas juste faire la tourelle humaine pendant toute une vague »), mais tels qu'ils sont, c'est une
+randonnée : pas d'ennemis, pas de risque. Sa proposition : **des ennemis qui gardent les coffres**, qui vadrouillent dans la forêt et
+l'attaquent s'il s'approche ; il faut les tuer à l'arc pour prendre les coffres. Les pistes de Claude autour :
+- **les gardiens** (l'idée du joueur, précisée) : 2 à 4 par coffre, pris parmi les ennemis de la vague (ils grandissent avec elle),
+  qui restent autour de leur coffre et ne vont pas à la tour ; à 15 m ils attaquent, au-delà de 30 m ils y retournent ; le coffre
+  est enchaîné tant qu'un gardien vit. Une seule règle de plus (« un coffre s'ouvre quand ses gardiens sont morts »), qui remplace
+  les coffres gratuits. À trancher : visibles de la tour (on les abat de loin, puis on marche) ou **réveillés à l'approche**
+  (conseillé : l'action se passe au coffre) ;
+- **la mimique** : l'un des coffres est une Mimique (l'ennemi existe) qui se jette sur le joueur à l'ouverture ; une surprise ;
+- **les coffres sur le chemin des ennemis** (au bord des voies, dans le flot de la vague) : aucun comportement nouveau, mais on
+  reste près des voies ;
+- **le coffre à rapporter** à deux mains jusqu'à la tour, poursuivi : beaucoup de tension, mais lourd, et sans arc.
+Avec les gardiens, la vague fixe se remplit d'elle-même (les coffres prennent du temps et du risque qui grandissent avec la
+vague) ; le gong garde son bonus, devenu un vrai choix (appeler le boss, c'est renoncer aux coffres pas encore pris) ; pendant
+l'expédition, ce sont les tours qui tiennent, et le cor rappelle le joueur. À décider par le joueur.
+
+### 12.61 Les gardiens des coffres, la vague de durée fixe (4 novembre)
+
+Le joueur : « code les gardiens ; cependant le coffre n'est pas verrouillé, cela fait une règle de plus : le joueur peut courir vers
+les coffres s'il le souhaite, mais cela sera au détriment de ses PV ». Et la vague courte et fixe (12.60, la 2) : « bien ».
+
+**Les gardiens** (`Enemies/Enemy.Guard.cs`, `Building/CrystalSpawner`) :
+- chaque coffre de la vague a **ses gardiens** : 2 aux vagues 1 et 2, 3 aux vagues 3 et 4, 4 ensuite (*Guards Per Wave*), tirés au
+  sort parmi les ennemis de la vague, comme ceux des voies (au sol seulement : pas de volant, pas de boss) ; ils ont la force de la
+  vague ;
+- d'abord (le matin du 4 novembre), ils sortaient des fourrés quand le joueur approchait à 20 m du coffre ; **le joueur, ensuite :
+  « ils sont là dès le début et vadrouillent un peu au hasard en prenant des pauses de temps en temps »**. Ils apparaissent donc avec
+  le coffre, au hasard autour de lui (de 2 à 5 m) ;
+- un gardien **vadrouille au pas** autour de son coffre (à 5 m au plus), d'un point au hasard à l'autre ; arrivé, il s'arrête 6 fois
+  sur 10, de 1,5 à 4,5 s (`Enemy.Guard.cs`, `k_GuardPauseChance`, `k_GuardPause`) ; il attaque le joueur à 15 m de lui (ou s'il le
+  blesse), le poursuit tant que le joueur est à moins de 30 m du coffre, puis y retourne (*Guard Radius*, *Guard Aggro*, *Guard
+  Leash*) ; il ne va jamais à la tour ;
+- **le coffre n'est pas verrouillé** : on peut foncer dessus, au prix de ses PV (67 depuis le troisième essai) ;
+- ils ne comptent pas dans le maximum d'ennemis en vie de la vague (sinon une expédition aux coffres arrêtait les voies), ni dans
+  celui des renforts des boss ; à la fin de la vague, ils s'enfuient avec les autres ;
+- le journal de partie note chaque coffre gardé qui apparaît, chaque coffre ouvert avec les gardiens encore en vie (pour voir si l'on fonce ou si
+  l'on se bat), et au bilan de vague « Coffres : N ouverts ; gardiens : N sortis, N tués ».
+
+**La vague de durée fixe** (`Editor/ThirdTestBaker`) : toutes les vagues ont le chrono de la première (*Duration Increase* 12 → 0 s :
+en Normal, 32 s d'accalmie et 29 s de montée à chaque vague) ; la difficulté passe par le nombre et la force des ennemis. Avec les
+gardiens, l'expédition aux coffres prend d'elle-même plus de temps et de risque au fil des vagues ; le gong garde son bonus, devenu
+un vrai choix (appeler le boss, c'est renoncer aux coffres pas encore pris).
+
+Compilé (le jeu et les outils d'éditeur, sans erreur ni avertissement ; aucun champ en double) ; **pas encore vu dans Unity ni testé
+au casque**. À vérifier d'abord : que le NavMesh couvre les abords des coffres (sans NavMesh à moins de 3 à 4 m, un gardien
+n'apparaît pas : le journal n'écrit alors jamais « Un coffre apparaît, gardé par N ennemis »).
+
+### 12.62 Les ultimes −30 %, la tour à 1 500 PV, le contrôle plutôt que les dégâts (4 novembre)
+
+Après l'avis général de Claude sur le jeu (tirés du journal de la partie du 3 novembre : la tour avait perdu 77 PV sur 4 875 ; les
+bâtiments faisaient l'essentiel des dégâts aux vagues 1 à 3, puis un seul faisait le travail). Le joueur retient deux points :
+
+- **« La tour devrait avoir 2 fois moins de PV »** : 3 000 → **1 500 PV de base** (la scène, `Editor/UltimesTowerBaker`). La Vigueur
+  s'y ajoute toujours en part, et la réparation de fin de vague (15 % des PV max) suit. Le but : qu'une expédition aux coffres laisse
+  une trace sur la tour, que le cor serve, que « je reste ou je sors » soit un vrai choix.
+- **« Les tourelles qui contrôlent les adversaires sont plus fun que les tourelles de dégâts »** : c'est la direction pour choisir et
+  régler les bâtiments (ceux qui projettent, immobilisent, regroupent, ralentissent : ils préparent les tirs du joueur). Rien n'est
+  retiré ni ajouté pour autant. Mais **les tourelles ne font pas trop de dégâts, sauf les ultimes** (le joueur, contre l'avis de
+  Claude, qui proposait d'en couper) : **« nerf les dégâts de toutes les ultimes de 30 %, pas que le carrousel »**.
+
+**Les ultimes** (`Editor/UltimesTowerBaker`, les prefabs) : tous les dégâts −30 % (arrondis) ; le Grand Manège garde son −35 % du
+troisième essai (12.60) ; les parts des PV des boss ne changent pas (comme pour le Manège ; MK ne change pas).
+- **Le Colosse de forge** : l'éveil 100 → 70, les éclats 70 → 49, le lingot 450 → 315, le sol brûlant 15 → 11 par seconde, les marteaux
+  160 → 112, la coulée 90 → 63 et sa brûlure 50 → 35, la rivière de fonte 30 → 21 ;
+- **La Grande Horloge** : l'éveil 100 → 70, les chiffres 220 → 154, le dégel qui brise 500 → 350, l'écho du temps 160 → 112.
+
+Le tableau d'équilibrage (`Tools/equilibrage_tours.py`) est à relancer après Unity. Compilé ; **pas encore vu dans Unity ni testé au
+casque** (enregistrer la scène après le baker, Ctrl+S).
+
+### 12.63 Les plans par coffre : de 1 à 4, au hasard (4 novembre)
+
+Le joueur : « 2 plans par coffre n'est pas la meilleure solution : il faudrait entre 1 et 4 plans par coffre, aléatoirement ; les
+chances d'en avoir plus augmentent pendant la partie ; au total de la partie (manche 6), en moyenne, on doit en avoir légèrement plus
+qu'actuellement (10 % de plus) ». Ce n'est pas une règle de plus : le nombre fixe (2, 12.42) devient un tirage.
+
+L'orbe de tourelle d'un coffre donne **de 1 à 4 plans** de son bâtiment, tirés au sort à l'ouverture du coffre (l'orbe dit
+combien avant qu'on la prenne : « 3 plans » ; le choix entre les trois orbes en devient plus intéressant). Les chances, vague par
+vague (`BuildManager`, *Plan Chances* : une ligne par vague, la dernière vaut pour les suivantes ; des poids) :
+
+| Vague | 1 plan | 2 plans | 3 plans | 4 plans | En moyenne |
+|---|---|---|---|---|---|
+| 1 | 40 % | 45 % | 10 % | 5 % | 1,8 |
+| 2 | 30 % | 45 % | 20 % | 5 % | 2,0 |
+| 3 | 25 % | 40 % | 25 % | 10 % | 2,2 |
+| 4 | 20 % | 35 % | 30 % | 15 % | 2,4 |
+| 5 et après | 15 % | 30 % | 35 % | 20 % | 2,6 |
+
+**Sur la partie** : 4 coffres par vague, aux vagues 1 à 5 (aucun à la vague 6, celle de MK), soit 20 coffres ; **2,2 plans en moyenne
+par orbe, 44 plans si l'on prend toutes les orbes de tourelle, au lieu de 40 : +10 %**. Le début est un peu plus pauvre (1,8 à la
+vague 1), la fin plus riche (2,6 à la vague 5), au moment des duos, des trios et de l'ultime.
+
+Le journal de partie écrit chaque lot pris (« Plans : +3 Baliste »). Le réglage n'est pas encore dans la scène : les valeurs du code
+s'y posent à l'ouverture (l'ancien *Plans Per Chest*, 2, n'est plus lu). Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.64 Le quatrième essai : le Carquois géant limité, le journal corrigé (4 novembre)
+
+Le joueur a fait une partie entière **au casque** (Difficile, l'Arc légendaire ; celle du 3 novembre aussi était au casque : le
+journal disait à tort « sans casque », voir plus bas), lue dans le journal : victoire en 15 min 17, aucune mort ; vagues de 1:09 à
+1:32 ; les 20 coffres ouverts, 56 gardiens, 54 tués (le joueur tue les gardiens d'un coffre avant de l'ouvrir) ; jamais de gong ;
+30 plans pour 14 orbes de tourelle (2,1 en moyenne), tous dépensés ; la tour attaquée une fois (vague 1, avant tout bâtiment) ; les
+bâtiments à 65 % des dégâts hors MK (le Mortier au niveau 5, puis l'Avalanche) ; les boss tués en 10 à 23 s ; **MK tué en 24 s,
+88 % par le Carquois géant** (de 23 158 PV à 0 en 2 s : une seule nuée).
+
+Son ressenti : « les changements sur les coffres sont bons, on ne s'ennuie plus pareil niveau tempo » ; la partie était beaucoup trop
+simple, mais avec un build monstrueux (multishot explosif à détonation, l'Arc légendaire), « multiplié au Carquois qui ramassait
+l'entièreté des flèches loupées » : un cas extrême de très bonne synergie, des tourelles comme de l'arc. **« Le carquois devrait être
+limité dans ce qu'il peut prendre à la seconde. »**
+
+**Le Carquois géant** (`Building/DuoCarquoisGeant`, *Catches Per Second*) : **2 flèches rattrapées par seconde au plus** (une réserve
+de deux, qui se remplit à ce rythme ; au ralenti, avec le temps du jeu). Un tir à la fois n'est pas gêné ; un multishot dont les
+flèches explosent au sol (elles comptent comme ratées) ne remplit plus la nuée en quelques tirs : il faut au moins 15 s pour ses 30
+flèches. Pourquoi une nuée tuait MK : dans l'arène, ses 90 carreaux partent tous droit sur lui, et chacun compte la zone touchée (la
+tête, les points faibles) comme une flèche ; le plafond de 2 % de l'arène (12.58) ne vaut que pour les coups en pourcentage. À
+revoir au prochain essai : si une nuée reste trop forte sur MK, la limiter dans l'arène.
+
+**Le journal de partie** (`Scripts/Journal/`) :
+- **au casque ou au clavier** est noté au début de chaque vague (« Vague 1 : elle commence (… ; au casque) »), d'après l'affichage du
+  casque qui tourne et le jeu au clavier (`DesktopControls`) ; avant, l'en-tête le lisait au lancement du mode Jeu, avant que le
+  casque ne démarre, et écrivait « sans casque » (les parties du 3 et du 4 novembre, jouées au casque) ;
+- **les gardiens ne comptent plus parmi les ennemis tués** (ils ont leur ligne : « gardiens : N, N tués ») : il y avait plus de tués
+  que d'apparus (268 pour 261) ;
+- **les PV du joueur au plus bas**, à chaque bilan (« au plus bas : 31/99 PV ») : à 67 PV, est-on vraiment en danger ?
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.65 L'Avalanche n'avale qu'une fois ; la zone contre la monocible (4 novembre)
+
+**L'Avalanche** (le duo Mortier + Tour de givre, au niveau 3 à la vague 5 du quatrième essai : 67 % des dégâts) : le joueur, « elle
+me semblait surpuissante, aucune des trois voies ne pouvait avancer ; il faudrait soit augmenter son temps de recharge, soit limiter
+le fait qu'elle puisse faire rouler les ennemis à une fois ». Au niveau 3, toutes les 11 s (5,5 s avec le Talisman de l'ingénieur,
+porté à cette vague), sa boule dévale toute la voie jusqu'à la forêt et ramène tous ceux qu'elle avale : les mêmes ennemis
+repartaient sans cesse du début. Choisi par Claude : **un ennemi n'est avalé qu'une fois dans sa vie**, par toutes les Avalanches
+(`Building/DuoAvalanche`, *Swallow Once*) ; la fois suivante, la boule le renverse seulement, comme un gros ou un boss. Le spectacle
+reste entier sur les ennemis frais (le contrôle, ce que le joueur préfère : 12.62), et les voies avancent ; le temps de recharge ne
+change pas.
+
+**La zone contre la monocible** : le joueur sentait les builds de dégâts de zone bien plus forts que les monocibles, sans en être sûr.
+L'avis de Claude (le catalogue, le code, les deux journaux) : oui, pour quatre raisons : l'explosion du Tir explosif touche aussi
+l'ennemi frappé (sur une cible seule, +75 à +125 %, autant que le Chasseur de têtes, sans viser la tête) ; les cibles seules sont rares
+(5 boss et MK, tués en 10 à 25 s) ; la zone pardonne la visée (une explosion au sol près d'un groupe) ; et ce qui multiplie (Tir triple,
+Multitir, Déluge, la Force) multiplie aussi les explosions. Et les volants, dispersés, étaient le contre naturel de la zone (leurs PV
+divisés par deux le 3 novembre). **La décision du joueur : ne pas affaiblir la zone** (« nerf le multicible est une mauvaise idée ; à
+la limite, il faudrait renforcer le monocible et renforcer les ennemis ») ; il fera d'abord une partie avec des pièces monocibles
+(Pointe du chasseur, Transe, Surcharge, Bourreau…) pour comparer au journal. Rien n'est changé de ce côté.
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.66 Les ennemis au sol, 30 % plus rapides (4 novembre)
+
+Le joueur : « de manière générale, les ennemis au sol ne sont pas une vraie menace, puisqu'ils se font détruire par tout ; il ne
+faudrait pas augmenter leurs PV, ils deviendraient juste des sacs à PV ; à la place, on peut augmenter leur vitesse : +30 % pour
+toutes les difficultés, à part en Facile ». (Le journal va dans ce sens : au quatrième essai, 81 des 275 PV perdus par le joueur
+venaient d'ennemis au sol, surtout des gardiens, le reste des volants ; et la tour n'a plus été touchée une fois le premier bâtiment
+posé.)
+
+Un réglage de plus par difficulté, **Ground Speed** (`Difficulty/DifficultyDefinition`, posé par `Editor/GroundSpeedBaker`, une fois) :
+**×1,3 en Normal, Difficile et Impossible, ×1 en Facile**, en plus d'*Enemy Speed* et de la hausse par vague. Il vaut pour **les ennemis
+qui marchent** : ceux des voies, les gardiens des coffres et les boss des vagues ; pas les volants, ni MK, ni les mannequins (ceux qui ont
+un comportement à part, `Enemy.Awake`). Leurs jambes suivent (l'animation de course aussi vite). Ce qui change : ils traversent la
+portée des bâtiments 30 % plus vite (moins de coups chacun), arrivent plus tôt à la tour, et les gardiens rattrapent le joueur.
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.67 Une partie en Impossible : la corde des Akimbow, le voile rouge, 100 PV (4 novembre)
+
+Le joueur, après une partie en Impossible : « le mode Impossible est bien difficile, mais c'est ce qui était convenu » (rien à changer).
+
+- **Une corde apparaissait à côté du joueur** avec les Akimbow et le Multitir (ou toute pièce de corde) : la lueur de la corde
+  (`PieceLook`, la couleur de la pièce de la corde) se rallumait sur l'arc caché derrière les Akimbow, à sa place près du joueur.
+  Corrigé (`Bows/Bow`, `RefreshStringGlow`) : la lueur ne s'allume que sur l'arc visible (ni remplacé par les Akimbow ou le katana,
+  ni rangé pour une construction), et revient quand il réapparaît.
+- **« On ne voit pas assez le rouge sur le côté de l'écran quand on est sur le point de mourir »** (`Player/HurtVignette`) : sous
+  30 % des PV (25 % avant), le danger, le voile est presque à son plus fort (90 % de son opacité au moins) et bat nettement (de 55 à
+  100 % ; 80 à 100 % avant) ; son opacité la plus forte passe de 0,75 à 0,95 ; il suit les PV qui baissent en 0,12 s (0,8 s avant :
+  un gros coup n'était montré qu'après coup), ceux qui remontent toujours lentement ; il ne s'approche pas plus du centre (on vise).
+- **Les PV du joueur à 100** (67 depuis le troisième essai, 200 avant ; la régénération ne change pas : après 3 s, 10 % par seconde) :
+  `Editor/PlayerHealth100Baker`, la scène, à enregistrer (Ctrl+S). **La Vigueur passe à +12 PV** (le choix du joueur, « passer à
+  +12 » : la même part des PV de base qu'avant, 12 %, que la tour prend aussi ; le même baker, une fois, le nombre de sa carte avec).
+- **Pour plus tard** (le joueur) : un menu de toutes les constructions, duos, trios et ultimes, et comment les obtenir ; ceux qu'on
+  n'a pas encore obtenus restent grisés, sans dire comment les obtenir (GDD, section 21, « À faire ensuite »).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**.

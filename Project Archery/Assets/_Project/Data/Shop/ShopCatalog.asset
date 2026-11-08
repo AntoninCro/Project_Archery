@@ -294,14 +294,14 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Vigueur
-    description: +25 PV max
-    levelUpText: +25 PV max de plus
+    description: +12 PV max
+    levelUpText: +12 PV max de plus
     kind: 1
     slot: 0
     rarity: 0
     effect: 23
     trigger: 0
-    value: 25
+    value: 12
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Tir triple
@@ -555,9 +555,9 @@ MonoBehaviour:
     maxStacks: 3
     icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   - displayName: "Talisman de l'ing\xE9nieur"
-    description: "Une fl\xE8che dans ta baliste la fait tirer {2|4|6} fois plus vite
-      pendant {5|7|9} s ; un tir dans la barricade la r\xE9pare de {10 %|15 %|20
-      %}"
+    description: "Une fl\xE8che dans une de tes tourelles la fait tirer {2|4|6} fois
+      plus vite pendant {5|7|9} s ; un tir dans la barricade la r\xE9pare de {10
+      %|15 %|20 %}"
     levelUpText: "Cadence {\xD72|\xD74|\xD76} pendant {5 s|7 s|9 s} ; r\xE9paration
       {10 %|15 %|20 %}"
     kind: 0

@@ -819,5 +819,8 @@ namespace Archery.Building
             m_Fights.Add(fight);
             FloatingText.Spawn(ground + Vector3.up * 2.5f, "Hypnotisés !", k_Pink, 1.4f, 1.5f);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

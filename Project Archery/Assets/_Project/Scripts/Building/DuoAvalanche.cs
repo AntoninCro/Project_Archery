@@ -23,6 +23,8 @@ namespace Archery.Building
     /// Avaler, c'est tenir (<see cref="Enemy.Hold"/>) : seuls ceux qu'on peut projeter sont pris ; les boss sont poussés et
     /// blessés. La boule est une copie de la boule chargée dans la gueule du mortier (pièce du modèle), avec une
     /// <see cref="AvalancheBall"/> qui reçoit les flèches : crevée par une flèche, l'éclatement fait moitié plus de dégâts.
+    /// Depuis le 4 novembre, un ennemi n'est avalé qu'une fois (Swallow Once) : l'avalanche ne ramène plus sans cesse les mêmes à la
+    /// forêt, elle les renverse seulement.
     /// </remarks>
     public class DuoAvalanche : TowerDuo
     {
@@ -82,6 +84,12 @@ namespace Archery.Building
         [SerializeField]
         float m_BigHeight = 2.6f;
 
+        [Tooltip("Un ennemi n'est avalé qu'une fois dans sa vie (par toutes les Avalanches) : la fois suivante, la boule le renverse " +
+                 "seulement. Le joueur, 4 novembre, après une partie où l'avalanche du niveau 3 ramenait sans cesse tout le monde à la " +
+                 "forêt : « aucune des trois voies ne pouvait avancer ».")]
+        [SerializeField]
+        bool m_SwallowOnce = true;
+
         [Header("L'éclatement")]
         [Tooltip("Dégâts pour chaque ennemi avalé, par niveau ; au niveau 3, plus cette part de ses PV max.")]
         [SerializeField]
@@ -98,6 +106,15 @@ namespace Archery.Building
         [Tooltip("Dégâts pour ceux qui sont autour, sans avoir été avalés.")]
         [SerializeField]
         float m_SplashDamage = 25f;
+
+        [Header("Dans l'arène de MK (3 novembre)")]
+        [Tooltip("Pas de voie où rouler : la boule rattrape MK et éclate sur lui (les dégâts de l'éclatement ; au niveau 3, une part de " +
+                 "ses PV max, 2 % au plus). La neige le ralentit (0,6 : 40 % plus lent ; jamais plus de 25 %, son plafond) pendant ce temps (s).")]
+        [SerializeField]
+        float m_ArenaSlow = 0.6f;
+
+        [SerializeField]
+        float m_ArenaSlowTime = 3f;
 
         [Header("Sons")]
         [SerializeField]
@@ -128,10 +145,20 @@ namespace Archery.Building
             public float Radius;
             public Vector3 Scale;
             public readonly List<Swallowed> Inside = new List<Swallowed>();
+
+            // Dans l'arène : tirée sur MK (elle le suit en vol et éclate sur lui).
+            public bool AtBoss;
+            public Enemy Target;
         }
 
         readonly List<Ball> m_Balls = new List<Ball>();
         readonly HashSet<Enemy> m_Taken = new HashSet<Enemy>();
+
+        // Les ennemis déjà avalés une fois, par n'importe quelle Avalanche (Swallow Once, 4 novembre) ; les morts en sortent.
+        static readonly HashSet<Enemy> s_Swallowed = new HashSet<Enemy>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetSwallowed() => s_Swallowed.Clear();
         Enemy m_Target;
         MapScan.Lane m_TargetLane;
         float m_TargetAlong;
@@ -161,7 +188,7 @@ namespace Archery.Building
             if (Time.time >= m_NextScan)
             {
                 m_NextScan = Time.time + 0.25f;
-                m_Target = FrontEnemy(out m_TargetLane, out m_TargetAlong);
+                m_Target = InArena ? NearestEnemy(m_Range * RangeScale) : FrontEnemy(out m_TargetLane, out m_TargetAlong);
             }
 
             if (m_Target == null || !m_Target.IsAlive)
@@ -179,7 +206,11 @@ namespace Archery.Building
                 return;
 
             m_NextShot = Time.time + ValueFor(m_IntervalPerLevel, level, 6f) / OverchargeRate;
-            Fire(m_TargetLane, Mathf.Min(m_TargetLane.Length, m_TargetAlong + 4f), level);
+            s_Swallowed.RemoveWhere(enemy => enemy == null || !enemy.IsAlive);
+            if (InArena)
+                FireAt(m_Target, level);
+            else
+                Fire(m_TargetLane, Mathf.Min(m_TargetLane.Length, m_TargetAlong + 4f), level);
             m_Target = null;
         }
 
@@ -211,6 +242,23 @@ namespace Archery.Building
             var landing = lane.PointAt(along, out _);
             landing.y = GroundY(landing, 1.5f);
             var radius = ValueFor(m_StartRadiusPerLevel, level, 0.7f);
+            var ball = SpawnBall(level, radius);
+            ball.To = landing + Vector3.up * radius;
+            ball.Lane = lane;
+            ball.Along = along;
+        }
+
+        // Dans l'arène (3 novembre) : une boule plus grosse, qui rattrape MK ; au niveau 3, l'avalanche, plus grosse encore.
+        void FireAt(Enemy target, int level)
+        {
+            var ball = SpawnBall(level, ValueFor(m_StartRadiusPerLevel, level, 0.7f) * (level >= 3 ? 1.2f : 1.5f));
+            ball.AtBoss = true;
+            ball.Target = target;
+            ball.To = target.Center;
+        }
+
+        Ball SpawnBall(int level, float radius)
+        {
             var from = m_Muzzle != null ? m_Muzzle.position : transform.position + Vector3.up * 4f;
             var copy = Instantiate(m_BallTemplate.gameObject, from, Quaternion.identity);
             copy.name = level >= 3 ? "Avalanche" : "Boule de neige";
@@ -226,9 +274,7 @@ namespace Archery.Building
                 Level = level,
                 Flying = true,
                 From = from,
-                To = landing + Vector3.up * radius,
-                Lane = lane,
-                Along = along,
+                To = from,
                 Radius = radius,
                 Scale = m_BallTemplate.lossyScale / Mathf.Max(0.01f, m_TemplateDiameter),
             };
@@ -239,6 +285,7 @@ namespace Archery.Building
             Resize(ball);
             m_Balls.Add(ball);
             Sfx.Play(m_FireClip, from, 1f, level >= 3 ? 0.6f : Random.Range(0.9f, 1.05f));
+            return ball;
         }
 
         void Resize(Ball ball)
@@ -255,9 +302,17 @@ namespace Archery.Building
             {
                 ball.Time += Time.deltaTime;
                 var t = Mathf.Clamp01(ball.Time / m_FlightTime);
-                ball.Transform.position = Vector3.Lerp(ball.From, ball.To, t) + Vector3.up * (4f * m_FlightHeight * t * (1f - t));
+                if (ball.AtBoss && ball.Target != null && ball.Target.IsAlive)
+                    ball.To = ball.Target.Center;
+                ball.Transform.position = Arc(ball.From, ball.To, t, m_FlightHeight);
                 if (t < 1f)
                     return true;
+                if (ball.AtBoss)
+                {
+                    BurstOn(ball);
+                    return false;
+                }
+
                 ball.Flying = false;
                 Burst(ball.To - Vector3.up * ball.Radius, Color.white, 30, 5f, 0.6f, 0.8f, 0.8f, false);
                 return true;
@@ -288,7 +343,8 @@ namespace Archery.Building
             return false;
         }
 
-        // Ceux qu'elle touche y restent pris ; les boss et les gros (niveau 1) sont renversés et blessés.
+        // Ceux qu'elle touche y restent pris ; les boss, les gros (niveau 1) et ceux qui ont déjà roulé une fois sont renversés et
+        // blessés.
         void Swallow(Ball ball)
         {
             var center = ball.Transform.position;
@@ -297,7 +353,8 @@ namespace Archery.Building
             {
                 if (m_Taken.Contains(enemy))
                     continue;
-                if (ball.Inside.Count >= capacity || !enemy.CanBeLaunched || (ball.Level < 2 && Height(enemy) > m_BigHeight))
+                if (ball.Inside.Count >= capacity || !enemy.CanBeLaunched || (ball.Level < 2 && Height(enemy) > m_BigHeight) ||
+                    (m_SwallowOnce && s_Swallowed.Contains(enemy)))
                 {
                     if (enemy.IsBoss)
                         enemy.Push(ForestwardAt(center) * 4f);
@@ -309,6 +366,7 @@ namespace Archery.Building
                 if (!enemy.Hold(this))
                     continue;
                 m_Taken.Add(enemy);
+                s_Swallowed.Add(enemy);
                 var direction = Random.onUnitSphere;
                 if (direction.y < -0.2f)
                     direction.y = -direction.y;
@@ -401,10 +459,44 @@ namespace Archery.Building
             ball.Transform = null;
         }
 
+        // Dans l'arène (3 novembre) : la boule éclate sur MK ; la neige le blesse et le ralentit. L'avalanche (niveau 3) lui coûte
+        // en plus une part de ses PV max (2 % au plus, ShareFor). Il n'est ni avalé ni projeté.
+        void BurstOn(Ball ball)
+        {
+            if (ball.Transform == null)
+                return;
+
+            var center = ball.Transform.position;
+            var target = ball.Target;
+            if (target != null && target.IsAlive)
+            {
+                var damage = ValueFor(m_BurstDamagePerLevel, ball.Level, 60f) +
+                             (ball.Level >= 3 ? target.Health.Max * ShareFor(target, m_GiantShare) / Mathf.Max(0.01f, Strength) : 0f);
+                Hurt(target, damage, center, target.Center - transform.position);
+                if (target.IsAlive)
+                    target.Slow(m_ArenaSlow, m_ArenaSlowTime);
+                FloatingText.Spawn(center + Vector3.up * (ball.Radius + 1f), ball.Level >= 3 ? "Avalanche !" : "Boule de neige !",
+                                   new Color(0.75f, 0.92f, 1f, 1f), 1.6f, 1.4f);
+            }
+
+            var count = ball.Level >= 3 ? 160 : 70;
+            Burst(center, Color.white, count, 6f + ball.Radius * 3f, 0.4f + ball.Radius * 0.25f, 1.2f, 1f);
+            Burst(center, new Color(0.7f, 0.9f, 1f, 1f), count / 2, 4f + ball.Radius * 2f, 0.25f + ball.Radius * 0.1f, 1f, 0.6f);
+            Sfx.Play(m_BurstClip, center, 1f, ball.Level >= 3 ? 0.55f : Random.Range(0.9f, 1.1f));
+            Destroy(ball.Transform.gameObject);
+            ball.Transform = null;
+        }
+
+        /// <summary>Il rejoint l'arène de MK (3 novembre) : ses boules de neige y rattrapent MK et éclatent sur lui.</summary>
+        public override bool FightsInArena => true;
+
         static float Height(Enemy enemy)
         {
             var renderer = enemy.GetComponentInChildren<Renderer>();
             return renderer != null ? renderer.bounds.max.y - enemy.transform.position.y : 1.8f;
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

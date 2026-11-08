@@ -172,8 +172,9 @@ namespace Archery.Chests
         /// <summary>
         /// <paramref name="count"/> lots de plans de bâtiments différents, tirés au hasard dans le chantier de la partie
         /// (<see cref="BuildManager.RunStructures"/>, 2 novembre ; tous les bâtiments proposés s'il est vide). Un lot donne
-        /// <see cref="BuildManager.PlansPerChest"/> × <see cref="StructureDefinition.LotSize"/> plans : 2 depuis le 2 novembre au soir
-        /// (1 avant ; avant, 2 pour la barricade et les piques, 1 pour les autres). (Du 28 octobre au 2 novembre, chaque orbe
+        /// <see cref="BuildManager.RollPlansPerChest"/> × <see cref="StructureDefinition.LotSize"/> plans : de 1 à 4 au hasard depuis
+        /// le 4 novembre, plus souvent beaucoup au fil de la partie (l'orbe le dit avant qu'on la prenne) ; toujours 2 depuis le
+        /// 2 novembre au soir (1 avant ; avant, 2 pour la barricade et les piques, 1 pour les autres). (Du 28 octobre au 2 novembre, chaque orbe
         /// tirait d'abord une rareté parmi tous les bâtiments ; la rareté sert maintenant à tirer les bâtiments du chantier.)
         /// </summary>
         public static List<ChestReward> RollPlans(int count)
@@ -205,7 +206,7 @@ namespace Archery.Chests
                 var definition = s_Structures[index];
                 s_Structures.RemoveAt(index);
 
-                var lot = builds.PlansPerChest * definition.LotSize;
+                var lot = builds.RollPlansPerChest() * definition.LotSize;
                 var owned = builds.PlansOf(definition);
                 var subtitle = lot > 1 ? lot + " plans" : "1 plan";
                 if (owned > 0)

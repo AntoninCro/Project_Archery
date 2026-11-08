@@ -37076,24 +37076,24 @@ MonoBehaviour:
   m_WakeDepth: 17
   m_RiseTime: 2.6
   m_WakeRadius: 22
-  m_WakeDamage: 100
+  m_WakeDamage: 65
   m_Range: 30
   m_RoundInterval: 1.2
-  m_CatchDamage: 60
-  m_RideDamage: 70
+  m_CatchDamage: 39
+  m_RideDamage: 46
   m_Seats: 8
   m_RoundsPerEjection: 5
   m_EjectWindup: 0.9
-  m_EjectDamage: 100
+  m_EjectDamage: 65
   m_EjectRadius: 5
   m_EjectPush: 8
   m_EjectLift: 11
-  m_EjectSelfDamage: 200
+  m_EjectSelfDamage: 130
   m_BossShare: 0.01
   m_GallopInterval: 0.2
   m_QueueSize: 8
   m_SeekRadius: 5
-  m_HorseDamage: 160
+  m_HorseDamage: 104
   m_HorseRadius: 6
   m_HorsePush: 8
   m_HorseLift: 12
@@ -37116,7 +37116,7 @@ MonoBehaviour:
   m_ChargeLength: 70
   m_ChargeSpeed: 12
   m_ChargeWidth: 7
-  m_ChargeDamage: 90
+  m_ChargeDamage: 59
   m_ChargePush: 12
   m_SkyCharge: 0.85
   m_ArenaScale: 0.65

@@ -299,6 +299,15 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_ResumeClip;
 
+        [Tooltip("Le bruit de l'arrêt du temps, au début de Minuit (3 novembre ; le modèle du joueur : le « Za Warudo » de JoJo) : " +
+                 "saturé, à plat (on l'entend partout), il se coupe net quand le temps s'est arrêté ; le premier coup de cloche tombe " +
+                 "sur la coupure (Time Stop Cut, en s).")]
+        [SerializeField]
+        AudioClip m_TimeStopClip;
+
+        [SerializeField]
+        float m_TimeStopCut = 1.4f;
+
         [Tooltip("Le dégel qui brise : la glace qui éclate, en série.")]
         [SerializeField]
         AudioClip m_ShatterClip;
@@ -328,6 +337,7 @@ namespace Archery.Building
             public Vector3 Scale;
             public bool Echo;
             public int Numeral = -1;
+            public float Power = 1f;
             public bool Flying;
             public float LandedAt = -1f;
             public bool InUse => Flying || LandedAt >= 0f;
@@ -348,6 +358,7 @@ namespace Archery.Building
             public DragonBoss Dragon;
             public Vector3 Point;
             public float At;
+            public float Power;
         }
 
         class Stopped
@@ -693,7 +704,7 @@ namespace Archery.Building
             m_HourAngle = 0f;
             m_MinuteAngle = 0f;
             HeadMessages.Show("La Grande Horloge s'éveille !", k_Title, 4f);
-            Sfx.Play(m_StopClip, m_Ground, 0.8f, 0.8f);
+            Sfx.PlayThroughHush(m_StopClip, m_Ground, 0.8f, 0.8f);
             Shockwave(m_Ground, 12f, 0.9f, k_Shock);
             Frost(m_Ground, 7f, m_RiseTime + 5f);
             Rumble(m_Ground, 0.5f);
@@ -745,7 +756,7 @@ namespace Archery.Building
             {
                 var k = m_WakeStep - 2;
                 ShowNumeral(k);
-                Sfx.Play(m_TickClip, CenterPoint, 0.8f, 0.9f + 0.05f * k);
+                Sfx.PlayThroughHush(m_TickClip, CenterPoint, 0.8f, 0.9f + 0.05f * k);
                 m_WakeStep++;
             }
 
@@ -786,8 +797,8 @@ namespace Archery.Building
             Frost(point, 9f, 5f);
             FlashAt(point + Vector3.up * 6f, k_Ice, 10f, 50f, 0.8f);
             SkyFlash(1f, true);
-            Sfx.Play(m_BoomClip, point, 1f, 0.7f);
-            Sfx.Play(m_ShatterClip, point, 1f, 0.8f);
+            Sfx.PlayThroughHush(m_BoomClip, point, 1f, 0.7f);
+            Sfx.PlayThroughHush(m_ShatterClip, point, 1f, 0.8f);
             Rumble(point, 1f);
             HeadMessages.Show("LA GRANDE HORLOGE !", k_Title, 2.5f);
 
@@ -854,7 +865,7 @@ namespace Archery.Building
 
             m_NextTick = Time.time + m_TickInterval / Mathf.Max(0.1f, OverchargeRate);
             m_SecondAngle += 30f;
-            Sfx.Play(m_TickClip, CenterPoint, 0.7f, Random.Range(0.97f, 1.03f));
+            Sfx.PlayThroughHush(m_TickClip, CenterPoint, 0.7f, Random.Range(0.97f, 1.03f));
             if (m_Thrown >= k_Hours)
                 return;
 
@@ -868,7 +879,7 @@ namespace Archery.Building
             if (m_Thrown < k_Hours)
                 return;
             m_MidnightAt = Time.time + m_MidnightWindup;
-            Sfx.Play(m_StopClip, CenterPoint, 1f, 1f);
+            Sfx.PlayThroughHush(m_StopClip, CenterPoint, 1f, 1f);
         }
 
         // Sa cible : un ennemi au hasard à sa portée (au sol ou en vol) ; dans l'arène, MK.
@@ -905,7 +916,7 @@ namespace Archery.Building
                 shot.Numeral = k;
             source.gameObject.SetActive(false);
             FrostBurst(source.position, 20);
-            Sfx.Play(m_WhooshClip, source.position, 0.6f, Random.Range(1.2f, 1.4f));
+            Sfx.PlayThroughHush(m_WhooshClip, source.position, 0.6f, Random.Range(1.2f, 1.4f));
         }
 
         void ShowNumeral(int k)
@@ -922,13 +933,19 @@ namespace Archery.Building
         void BeginMidnight()
         {
             var time = InArena ? m_ArenaMidnightTime : m_MidnightTime;
+            // Le bruit de l'arrêt du temps (3 novembre) : le premier coup tombe sur sa coupure, les onze autres se serrent derrière ;
+            // le douzième tombe toujours au même moment (avant, le premier partait tout de suite, puis un tous les douzièmes).
+            var cut = m_TimeStopClip != null ? Mathf.Clamp(m_TimeStopCut, 0f, time * 0.4f) : 0f;
             m_Strokes = k_Hours;
-            m_StrokeTime = time / k_Hours;
-            m_NextStroke = Time.time;
+            m_StrokeTime = Mathf.Max(0.3f, (time * (k_Hours - 1) / k_Hours - cut) / (k_Hours - 1));
+            m_NextStroke = Time.time + cut;
             m_MidnightStart = Time.time;
             m_MidnightEnd = Time.time + time + 0.2f;
             m_Spin = 0f;
             m_GlowFlare = 2f;
+            Sfx.Hush();
+            // Moins fort (le joueur, 3 novembre, après l'avoir entendu) : 0,6 ; il enfle jusqu'à sa coupure.
+            Sfx.PlayThroughHush(m_TimeStopClip, CenterPoint, 0.6f, 1f, 0f);
             // Les mots du joueur (2 novembre).
             HeadMessages.Show("Za Warudo ! Temps, arrête-toi !", k_Night, 3f);
             Shockwave(Hub, 40f * Size, 0.8f, k_Shock);
@@ -945,12 +962,17 @@ namespace Archery.Building
         void UpdateMidnight()
         {
             FreezeTime();
+            // Le silence (3 novembre, le joueur) : plus que l'horloge et le joueur ; toutes ses sources passent par PlayThroughHush.
+            Sfx.Hush();
             if (Time.time < m_NextStroke)
                 return;
 
             var stroke = k_Hours + 1 - m_Strokes;
             m_Strokes--;
             m_NextStroke = Time.time + m_StrokeTime;
+            // Le premier coup, sur la coupure du bruit de l'arrêt du temps : les manettes vibrent, le temps s'est arrêté.
+            if (stroke == 1)
+                ArenaPlayer.Rumble(0.6f, 0.3f);
             Toll(1.2f);
             ShowNumeral(stroke - 1);
             FloatingText.Spawn(BellPoint + Vector3.up * 1.5f, "Dong ! " + stroke, k_Night, 1.4f, 1f);
@@ -996,8 +1018,11 @@ namespace Archery.Building
                 return;
             m_NextArrowScan = Time.time + 0.05f;
             var radius = reach * reach;
-            foreach (var arrow in FindObjectsByType<Arrow>())
+            // La liste des flèches actives, à l'envers (3 novembre : plus de recherche dans toute la scène).
+            var arrows = Arrow.Active;
+            for (var i = arrows.Count - 1; i >= 0; i--)
             {
+                var arrow = i < arrows.Count ? arrows[i] : null;
                 if (arrow == null || arrow.IsHovering || Stops(arrow))
                     continue;
                 var flat = arrow.transform.position - Hub;
@@ -1029,6 +1054,7 @@ namespace Archery.Building
         // de tous les figés éclate d'un coup.
         void EndMidnight(bool shatter)
         {
+            Sfx.Unhush();
             foreach (var stopped in m_Stopped)
             {
                 if (stopped.Arrow == null || !stopped.Arrow.IsHovering)
@@ -1069,8 +1095,8 @@ namespace Archery.Building
 
             if (shatter)
             {
-                Sfx.Play(m_ResumeClip, CenterPoint, 1f, 1f);
-                Sfx.Play(m_ShatterClip, CenterPoint, 1f, 1f);
+                Sfx.PlayThroughHush(m_ResumeClip, CenterPoint, 1f, 1f);
+                Sfx.PlayThroughHush(m_ShatterClip, CenterPoint, 1f, 1f);
                 FrostBurst(CenterPoint, 120);
                 SkyFlash(0.8f, true);
                 Rumble(Hub, 0.6f);
@@ -1091,7 +1117,7 @@ namespace Archery.Building
             Aurora(point, big ? 1.4f : 1f);
             FloatingText.Spawn(point + Vector3.up, "Brisé !", k_Ice, 1.2f, 1f);
             ThrowDebris(point, big ? 10 : 4, 0.6f);
-            Sfx.Play(m_ImpactClip, point, 0.9f, Random.Range(0.9f, 1.1f));
+            Sfx.PlayThroughHush(m_ImpactClip, point, 0.9f, Random.Range(0.9f, 1.1f));
         }
 
         // La bulle qui grandit (sa paroi se voit pendant qu'elle passe, puis elle s'efface), et le noir et blanc pour qui est dedans :
@@ -1182,7 +1208,7 @@ namespace Archery.Building
         void Toll(float volume)
         {
             m_Swing = 1f;
-            Sfx.Play(m_BellClip, BellPoint, volume, Random.Range(0.97f, 1.02f));
+            Sfx.PlayThroughHush(m_BellClip, BellPoint, volume, Random.Range(0.97f, 1.02f));
             FrostBurst(BellPoint, 24);
         }
 
@@ -1199,7 +1225,7 @@ namespace Archery.Building
             {
                 var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
                 if (dragon != null)
-                    Enqueue(null, dragon, hit.Point);
+                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
             }
 
@@ -1215,14 +1241,28 @@ namespace Archery.Building
             if (enemy == null)
                 enemy = NearestGround(hit.Point, m_SeekRadius);
             if (enemy != null)
-                Enqueue(enemy, null, hit.Point);
+                Enqueue(enemy, null, hit.Point, ShotPower(hit));
         }
 
-        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point)
+        // La file pleine (la pluie de flèches), la plus faible laisse sa place, la plus ancienne à force égale (3 novembre : un écho
+        // frappe selon la force de sa flèche, TowerUltimate.ShotPower).
+        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point, float power)
         {
             while (m_Orders.Count >= Mathf.Max(1, m_QueueSize))
-                m_Orders.RemoveAt(0);
-            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time + m_EchoDelay });
+            {
+                var weakest = 0;
+                for (var i = 1; i < m_Orders.Count; i++)
+                {
+                    if (m_Orders[i].Power < m_Orders[weakest].Power)
+                        weakest = i;
+                }
+
+                if (m_Orders[weakest].Power > power)
+                    return;
+                m_Orders.RemoveAt(weakest);
+            }
+
+            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time + m_EchoDelay, Power = power });
         }
 
         static Enemy NearestGround(Vector3 point, float radius)
@@ -1264,8 +1304,10 @@ namespace Archery.Building
             m_Orders.RemoveAt(0);
             m_LastEcho = Time.time;
             var air = order.Dragon != null || (order.Enemy != null && order.Enemy.IsFlyer);
-            Throw(m_ArrowTemplate, CenterPoint, order.Enemy, order.Dragon, OrderPoint(order), air, true);
-            Sfx.Play(m_ChimeClip, CenterPoint, 0.6f, Random.Range(1.1f, 1.3f));
+            var shot = Throw(m_ArrowTemplate, CenterPoint, order.Enemy, order.Dragon, OrderPoint(order), air, true);
+            if (shot != null)
+                shot.Power = order.Power;
+            Sfx.PlayThroughHush(m_ChimeClip, CenterPoint, 0.6f, Random.Range(1.1f, 1.3f));
             FrostBurst(CenterPoint, 16);
             m_GlowFlare = Mathf.Max(m_GlowFlare, 0.6f);
         }
@@ -1287,6 +1329,7 @@ namespace Archery.Building
             shot.Air = air;
             shot.Echo = echo;
             shot.Numeral = -1;
+            shot.Power = 1f;
             shot.From = from;
             shot.Point = point;
             shot.Born = Time.time;
@@ -1393,7 +1436,7 @@ namespace Archery.Building
                     shot.Go.SetActive(false);
 
                 if (shot.Echo)
-                    EchoImpact(shot.Point, shot.Air, shot.Dragon);
+                    EchoImpact(shot.Point, shot.Air, shot.Dragon, shot.Power);
                 else
                     NumeralImpact(shot.Point, shot.Air, shot.Dragon, shot.Numeral);
             }
@@ -1556,23 +1599,24 @@ namespace Archery.Building
                 MistRing(point, m_NumeralRadius * 0.5f, 2);
             if (numeral >= 0 && numeral < k_Roman.Length)
                 FloatingText.Spawn(point + Vector3.up * 1.5f, k_Roman[numeral], k_Ice, 1.6f, 1f);
-            Sfx.Play(m_ImpactClip, point, 0.8f, Random.Range(0.9f, 1.1f));
+            Sfx.PlayThroughHush(m_ImpactClip, point, 0.8f, Random.Range(0.9f, 1.1f));
             Heavy(point, air, false);
         }
 
         // Un écho frappe (comme les marteaux du Colosse et les chevaux du Manège) : l'aurore, l'onde de givre, les survivants projetés
-        // et figés ; la flèche reste plantée un instant.
-        void EchoImpact(Vector3 point, bool air, DragonBoss dragon)
+        // et figés ; la flèche reste plantée un instant. Ses dégâts (et sa part des PV d'un boss) suivent la force de la flèche qu'il
+        // rejoue (power, 3 novembre).
+        void EchoImpact(Vector3 point, bool air, DragonBoss dragon, float power)
         {
             if (dragon != null)
-                HurtShare(dragon.GetComponentInParent<Enemy>(), m_EchoBossShare, point);
+                HurtShare(dragon.GetComponentInParent<Enemy>(), m_EchoBossShare * power, point);
             else
-                Smash(point, air, m_EchoDamage, m_EchoRadius, m_EchoPush, m_EchoLift, m_EchoFreeze, m_EchoBossShare);
+                Smash(point, air, m_EchoDamage * power, m_EchoRadius, m_EchoPush, m_EchoLift, m_EchoFreeze, m_EchoBossShare * power);
 
             Aurora(point, 1.1f);
             FrostBurst(point + Vector3.up * (0.6f * Size), 70);
-            Sfx.Play(m_ImpactClip, point, 1f, Random.Range(0.6f, 0.75f));
-            Sfx.Play(m_ChimeClip, point, 0.5f, Random.Range(0.9f, 1.05f));
+            Sfx.PlayThroughHush(m_ImpactClip, point, 1f, Random.Range(0.6f, 0.75f));
+            Sfx.PlayThroughHush(m_ChimeClip, point, 0.5f, Random.Range(0.9f, 1.05f));
             if (!air && dragon == null)
             {
                 Shockwave(point, m_EchoRadius * 2f, 0.4f, k_Shock);
@@ -2318,5 +2362,8 @@ namespace Archery.Building
             t = Mathf.Clamp01(t);
             return 1f - (1f - t) * (1f - t) * (1f - t);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

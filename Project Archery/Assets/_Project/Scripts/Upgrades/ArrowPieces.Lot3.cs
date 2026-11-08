@@ -1543,7 +1543,8 @@ namespace Archery.Upgrades
             FreezeFor(enemy, k_FenceFreeze);
         }
 
-        // Le duo « Réseau » : la flèche plantée se relie aussi à la baliste (ou la tour de givre) construite la plus proche.
+        // Le duo « Réseau » : la flèche plantée se relie aussi au bâtiment construit le plus proche (n'importe lequel depuis le 3
+        // novembre ; une baliste ou une tour de givre avant).
         void LinkToBuilding(Node node)
         {
             if (!ArrowDuos.IsActive(ArrowDuos.Network))
@@ -1573,7 +1574,10 @@ namespace Archery.Upgrades
 
         static Vector3 BuildingPoint(Structure structure) => structure.transform.position + Vector3.up * 2f;
 
-        // Les balistes et les tours de givre de la scène (le réseau, l'ingénieur), recherchées toutes les 2 s au plus.
+        // Les bâtiments de la scène (le réseau, l'ingénieur), repris toutes les 2 s au plus. Depuis le 3 novembre (le joueur : « fais
+        // en sorte que le talisman puisse surcharger toutes les tourelles »), tous : les 10 tours, les duos, les trios, l'ultime ;
+        // chacun tire plus vite et porte deux fois plus loin, surchargé (Structure.OverchargeRate et OverchargeRange). Avant,
+        // seulement les balistes (les lance-filets compris) et les tours de givre, les tourelles d'avant la refonte du tower defense.
         void RefreshBuildings()
         {
             if (Time.time < m_NextBuildingSearch)
@@ -1581,16 +1585,13 @@ namespace Archery.Upgrades
 
             m_NextBuildingSearch = Time.time + 2f;
             m_Buildings.Clear();
-            foreach (var structure in FindObjectsByType<Structure>())
-            {
-                if (structure is Ballista || structure is FrostTower)
-                    m_Buildings.Add(structure);
-            }
+            m_Buildings.AddRange(Structure.All);
         }
 
         // Le talisman de l'ingénieur (27 octobre ; le joueur : « les flèches ne peuvent pas se planter dans les tourelles » : la
         // baliste et la tour de givre n'ont pas de collider, les flèches les traversaient sans les toucher) : une flèche dont le
-        // trajet traverse le volume d'une baliste ou d'une tour de givre construite la surcharge, une fois par flèche.
+        // trajet traverse le volume d'un bâtiment construit le surcharge, une fois par flèche (tous les bâtiments depuis le 3
+        // novembre).
         void TryOverchargeBuilding(Flight flight, int level)
         {
             if (flight.Charged || flight.IsChild)

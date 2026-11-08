@@ -178,6 +178,12 @@ namespace Archery.Building
             public float Duration;
             public float Damage;
             public float Radius;
+
+            // Dans l'arène (3 novembre) : la cible dont la cloche suit le corps, à cet écart, et la hauteur de la cloche.
+            public Enemy Target;
+            public Vector3 Offset;
+            public Vector3 Aim;
+            public float Height;
         }
 
         readonly List<Shell> m_Shells = new List<Shell>();
@@ -327,6 +333,14 @@ namespace Archery.Building
         {
             var duration = FlightTime(start, target.transform.position);
 
+            // Dans l'arène, l'obus rattrape MK, en vol comme au sol (3 novembre : il éclatait au sol, sous lui).
+            if (InArena)
+            {
+                LaunchAtBody(ShellKind.Normal, start, target, spread * 0.3f, duration, 0f, damage, radius, m_ShellSize);
+                Sfx.Play(m_FireClip, start, 0.9f, Random.Range(0.85f, 1f));
+                return;
+            }
+
             // Là où l'ennemi sera à l'arrivée de l'obus, au sol (sur le NavMesh qu'il suit).
             var velocity = target.Velocity;
             velocity.y = 0f;
@@ -362,6 +376,28 @@ namespace Archery.Building
             });
         }
 
+        // Dans l'arène : un obus dont la cloche finit sur le corps de sa cible (à cet écart), où qu'elle soit à l'arrivée.
+        void LaunchAtBody(ShellKind kind, Vector3 start, Enemy target, Vector3 offset, float duration, float delay, float damage, float radius,
+                          float size)
+        {
+            var aim = target.Center + offset;
+            m_Shells.Add(new Shell
+            {
+                Kind = kind,
+                Body = SpawnShellBody(start, size),
+                Start = start,
+                Previous = start,
+                Time = -delay,
+                Duration = duration,
+                Damage = damage,
+                Radius = radius,
+                Target = target,
+                Offset = offset,
+                Aim = aim,
+                Height = Mathf.Clamp(Vector3.Distance(start, aim) * 0.3f, 4f, 10f),
+            });
+        }
+
         // Le bombardement : 12 obus, l'un après l'autre, tout le long de la voie à l'endroit du groupe visé (dans le sens de sa
         // marche) ; chacun projette les ennemis et laisse le sol en feu.
         void Barrage()
@@ -389,6 +425,15 @@ namespace Archery.Building
             for (var i = 0; i < count; i++)
             {
                 var offset = count > 1 ? Mathf.Lerp(-0.5f, 0.5f, i / (float)(count - 1)) * m_BarrageLength : 0f;
+                if (InArena)
+                {
+                    // Dans l'arène : les obus pleuvent sur MK, d'un bout à l'autre de son corps.
+                    var across = along * (offset * 0.25f) + Random.insideUnitSphere * 1.5f;
+                    LaunchAtBody(ShellKind.Barrage, start, target, across, FlightTime(start, target.transform.position) + 0.4f, i * 0.09f,
+                                 damage, radius, m_ShellSize * 1.4f);
+                    continue;
+                }
+
                 var landing = target.transform.position + along * offset + Vector3.Cross(Vector3.up, along) * Random.Range(-1.5f, 1.5f);
                 if (NavMesh.SamplePosition(landing, out var hit, 4f, NavMesh.AllAreas))
                     landing = hit.position;
@@ -457,7 +502,18 @@ namespace Archery.Building
                 var shell = m_Shells[i];
                 shell.Time += deltaTime;
                 var t = Mathf.Clamp(shell.Time, 0f, shell.Duration);
-                var position = shell.Start + shell.Velocity * t + 0.5f * t * t * Physics.gravity;
+                Vector3 position;
+                if (shell.Target != null)
+                {
+                    if (shell.Target.IsAlive)
+                        shell.Aim = shell.Target.Center + shell.Offset;
+                    position = Arc(shell.Start, shell.Aim, t / Mathf.Max(0.01f, shell.Duration), shell.Height);
+                }
+                else
+                {
+                    position = shell.Start + shell.Velocity * t + 0.5f * t * t * Physics.gravity;
+                }
+
                 var impact = shell.Time >= shell.Duration;
                 if (!impact && shell.Time > 0.2f && HitsScenery(shell.Previous, position, out var point))
                 {
@@ -511,11 +567,11 @@ namespace Archery.Building
                 if (enemy == null || !enemy.IsAlive)
                     continue;
 
-                var offset = enemy.transform.position - point;
-                var distance = offset.magnitude;
+                var distance = BlastDistance(enemy, point);
                 if (distance > radius)
                     continue;
 
+                var offset = enemy.transform.position - point;
                 offset.y = 0f;
                 enemy.Health.TakeDamage(new DamageInfo
                 {
@@ -539,9 +595,10 @@ namespace Archery.Building
             // Pas d'éclats pour les obus du bombardement : 60 explosions de plus, c'est trop pour le Quest.
             if (shell.Kind == ShellKind.Normal && level >= 2)
                 Fragment(point, damage);
-            if (shell.Kind == ShellKind.Normal && level >= 4 && m_TarMaterial != null)
+            // Ni flaque ni sol en feu dans l'arène : les obus y éclatent sur MK, souvent en l'air (3 novembre).
+            if (shell.Kind == ShellKind.Normal && level >= 4 && m_TarMaterial != null && !InArena)
                 GroundPatch.Spawn(point, radius * 0.9f, m_TarLife, m_TarSpeed, m_TarMaterial, this).IgniteClip = m_IgniteClip;
-            if (barrage && m_TarMaterial != null)
+            if (barrage && m_TarMaterial != null && !InArena)
                 GroundPatch.Spawn(point, radius * 0.8f, m_BarrageFireLife, 1f, m_TarMaterial, this).Ignite(m_BarrageBurn * Strength, m_BarrageFireLife, m_IgniteClip);
 
             var arrows = SpecialArrows.Instance;
@@ -570,5 +627,11 @@ namespace Archery.Building
             Gizmos.DrawWireSphere(transform.position, m_MinRange);
             Gizmos.DrawWireSphere(transform.position, ValueFor(m_RangePerLevel, Mathf.Max(1, Level), 24f));
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => ValueFor(m_RangePerLevel, Mathf.Max(1, level), 24f);
+
+        /// <summary>Il rejoint l'arène de MK (3 novembre) : ses obus y rattrapent MK, en vol comme au sol.</summary>
+        public override bool FightsInArena => true;
     }
 }

@@ -17,6 +17,7 @@ MonoBehaviour:
   description: "L'exp\xE9rience pr\xE9vue\nAide \xE0 la vis\xE9e\nScore \xD71"
   enemyHealth: 1
   enemySpeed: 1
+  groundSpeed: 1.3
   headSize: 1
   damageTaken: 1
   enemyCount: 1

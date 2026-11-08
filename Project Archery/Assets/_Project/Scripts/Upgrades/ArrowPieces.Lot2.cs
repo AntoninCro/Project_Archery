@@ -1323,7 +1323,7 @@ namespace Archery.Upgrades
 
         // ---------------------------------------------------------------- ingénieur, duos
 
-        // Une baliste ou une tour de givre surchargée par l'ingénieur (une flèche qui la touche ou traverse son volume).
+        // Un bâtiment surchargé par l'ingénieur (une flèche qui le touche ou traverse son volume ; tous depuis le 3 novembre).
         void OverchargeBuilding(Structure structure, int level, Vector3 point)
         {
             structure.Overcharge(k_OverchargeTime + k_OverchargeTimePerLevel * (level - 1), SpecialArrows.ByLevel(k_OverchargeRate, level));

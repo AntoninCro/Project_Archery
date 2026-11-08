@@ -443,5 +443,11 @@ namespace Archery.Building
                 previous = point;
             }
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => ValueFor(m_RadiusPerLevel, Mathf.Max(1, level), 9f);
+
+        /// <summary>Elle rejoint l'arène de MK, où elle tire des boules de glace (<see cref="FiresIceBalls"/>).</summary>
+        public override bool FightsInArena => true;
     }
 }

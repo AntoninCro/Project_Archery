@@ -45,6 +45,12 @@ namespace Archery.Difficulty
         [Min(0.1f)]
         public float enemySpeed = 1f;
 
+        [Tooltip("Multiplie en plus la vitesse des ennemis qui marchent (les boss des vagues et les gardiens compris ; pas les volants, " +
+                 "ni MK). Le joueur, 4 novembre : « les ennemis au sol ne sont pas une vraie menace, ils se font détruire par tout ; plus " +
+                 "de PV en ferait des sacs à PV : plus de vitesse à la place, +30 % dans toutes les difficultés sauf Facile ».")]
+        [Min(0.1f)]
+        public float groundSpeed = 1f;
+
         [Tooltip("Multiplie la taille de la zone de touche de la tête.")]
         [Min(0.1f)]
         public float headSize = 1f;
@@ -153,6 +159,7 @@ namespace Archery.Difficulty
             description = "Ennemis lents et fragiles\nGrosse tête, aide à la visée\nScore ×0,75";
             enemyHealth = 0.7f;
             enemySpeed = 0.8f;
+            groundSpeed = 1f;
             headSize = 1.3f;
             damageTaken = 0.6f;
             enemyCount = 0.75f;
@@ -184,6 +191,7 @@ namespace Archery.Difficulty
             description = "L'expérience prévue\nAide à la visée\nScore ×1";
             enemyHealth = 1f;
             enemySpeed = 1f;
+            groundSpeed = 1.3f;
             headSize = 1f;
             damageTaken = 1f;
             enemyCount = 1f;
@@ -215,6 +223,7 @@ namespace Archery.Difficulty
             description = "La nuit, ennemis plus résistants\nSans aide à la visée\nScore ×1,5";
             enemyHealth = 1.4f;
             enemySpeed = 1.15f;
+            groundSpeed = 1.3f;
             headSize = 0.85f;
             damageTaken = 1.3f;
             enemyCount = 1.25f;
@@ -246,6 +255,7 @@ namespace Archery.Difficulty
             description = "Lune de sang, ennemis en masse\nVert étroit, sans aide\nScore ×2";
             enemyHealth = 2f;
             enemySpeed = 1.3f;
+            groundSpeed = 1.3f;
             headSize = 0.75f;
             damageTaken = 1.8f;
             enemyCount = 1.6f;

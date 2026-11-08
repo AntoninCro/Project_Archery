@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy_Gargouille
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Gargouille
-  maxHealth: 35
+  maxHealth: 18
   moveSpeed: 4.5
   attackDamage: 14
   attackRange: 1.2

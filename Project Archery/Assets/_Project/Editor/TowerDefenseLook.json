@@ -3782,17 +3782,11 @@
    {"op": "field", "field": "m_WhooshClip", "asset": "Assets/507466__danjocross__clean-fast-swoosh.aiff"},
    {"op": "field", "field": "m_BoomClip", "asset": "Assets/_Project/Audio/513110__wakerone__cinematic-trailer-hit-explosion-cc0.mp3"}
   ] },
-  { "name": "Grande Horloge", "prefab": "Duos/Ultime_Horloge", "definition": "Ultime_Horloge", "trios": ["Trio_Bowling", "Trio_Beffroi"], "component": "UltimeHorloge", "slot": "Roadside", "anywhere": true, "footprint": [4, 4], "palette": "Ultime_Horloge", "color": "#8FD8FF", "mark": "Horloge du 2 novembre", "plans": [10], "description": "Ses douze chiffres de glace tombent un à un sur les ennemis ; après le XII, Minuit arrête le temps sur toute la carte, puis le givre brise tous les figés ; chaque flèche qui touche est rejouée par une flèche de glace géante.", "levels": ["L'ultime de la glace et du temps : une horloge astronomique de glace et d'or qui flotte au-dessus de son socle. À chaque tic (1,2 s), l'un de ses douze chiffres romains de glace part sur un ennemi à 30 m et givre ses voisins. Après le XII, Minuit : le temps s'arrête 9 s sur toute la carte, sauf pour toi (tes flèches attendent en l'air) ; au douzième coup, tes flèches repartent toutes ensemble et le givre de tous les figés éclate. Chaque flèche qui touche est rejouée 1 s plus tard par une flèche de glace géante (5 par seconde au plus). Dans l'arène, Minuit arrête MK."], "ops": [
+  { "name": "Grande Horloge", "prefab": "Duos/Ultime_Horloge", "definition": "Ultime_Horloge", "trios": ["Trio_Bowling", "Trio_Beffroi"], "component": "UltimeHorloge", "slot": "Roadside", "anywhere": true, "footprint": [4, 4], "palette": "Ultime_Horloge", "color": "#8FD8FF", "mark": "Horloge du 3 novembre", "rebuild": true, "plans": [10], "description": "Ses douze chiffres de glace tombent un à un sur les ennemis ; après le XII, Minuit arrête le temps sur toute la carte, puis le givre brise tous les figés ; chaque flèche qui touche est rejouée par une flèche de glace géante.", "levels": ["L'ultime de la glace et du temps : une horloge astronomique de glace et d'or qui flotte au-dessus de son socle. À chaque tic (1,2 s), l'un de ses douze chiffres romains de glace part sur un ennemi à 30 m et givre ses voisins. Après le XII, Minuit : le temps s'arrête 9 s sur toute la carte, sauf pour toi (tes flèches attendent en l'air) ; au douzième coup, tes flèches repartent toutes ensemble et le givre de tous les figés éclate. Chaque flèche qui touche est rejouée 1 s plus tard par une flèche de glace géante (5 par seconde au plus). Dans l'arène, Minuit arrête MK."], "ops": [
    {"op": "cylinder", "parent": "", "name": "Marche", "at": [0.0, 0.06, 0.0], "size": [7.0, 0.12, 7.0], "rot": [0.0, 0.0, 0.0], "role": "pierre", "shade": 0.6},
    {"op": "cylinder", "parent": "", "name": "Socle", "at": [0.0, 0.514, 0.0], "size": [5.0, 0.8, 5.0], "rot": [0.0, 0.0, 0.0], "role": "glace_sombre"},
    {"op": "cylinder", "parent": "", "name": "Cercle", "at": [0.0, 0.85, 0.0], "size": [5.08, 0.12, 5.08], "rot": [0.0, 0.0, 0.0], "role": "accent"},
    {"op": "cylinder", "parent": "", "name": "Rosace", "at": [0.0, 0.938, 0.0], "size": [1.4, 0.06, 1.4], "rot": [0.0, 0.0, 0.0], "role": "accent"},
-   {"op": "sphere", "parent": "", "name": "Cristal", "at": [1.0, 2.614, 1.732], "size": [0.75, 4.0, 0.75], "rot": [13.856, 0.0, -8.0], "role": "glace"},
-   {"op": "sphere", "parent": "", "name": "Cœur du cristal", "at": [1.0, 2.614, 1.732], "size": [0.3, 3.0, 0.3], "rot": [13.856, 0.0, -8.0], "mat": "Givre_lumineux"},
-   {"op": "sphere", "parent": "", "name": "Cristal", "at": [1.0, 2.614, -1.732], "size": [0.75, 3.5, 0.75], "rot": [-13.856, 0.0, -8.0], "role": "glace"},
-   {"op": "sphere", "parent": "", "name": "Cœur du cristal", "at": [1.0, 2.614, -1.732], "size": [0.3, 2.6, 0.3], "rot": [-13.856, 0.0, -8.0], "mat": "Givre_lumineux"},
-   {"op": "sphere", "parent": "", "name": "Cristal", "at": [-2.0, 2.614, -0.0], "size": [0.75, 3.0, 0.75], "rot": [-0.0, 0.0, 16.0], "role": "glace"},
-   {"op": "sphere", "parent": "", "name": "Cœur du cristal", "at": [-2.0, 2.614, -0.0], "size": [0.3, 2.2, 0.3], "rot": [-0.0, 0.0, 16.0], "mat": "Givre_lumineux"},
    {"op": "empty", "parent": "", "name": "Horloge", "at": [0.0, 11.0, 0.0], "rot": [0.0, 0.0, 0.0]},
    {"op": "cylinder", "parent": "Horloge", "name": "Rayon", "at": [0.0, -7.05, -0.3], "size": [0.24, 6.4, 0.24], "rot": [0.0, 0.0, 0.0], "mat": "Givre_lumineux"},
    {"op": "empty", "parent": "Horloge", "name": "Face", "at": [0.0, 0.0, 0.0], "rot": [0.0, 0.0, 0.0]},
@@ -4087,6 +4081,7 @@
    {"op": "field", "field": "m_ShatterClip", "asset": "Assets/_Project/Audio/Horloge_Bris.wav"},
    {"op": "field", "field": "m_ImpactClip", "asset": "Assets/_Project/Audio/Horloge_Eclat.wav"},
    {"op": "field", "field": "m_ChimeClip", "asset": "Assets/_Project/Audio/Horloge_Carillon.wav"},
+   {"op": "field", "field": "m_TimeStopClip", "asset": "Assets/_Project/Audio/Horloge_Temps_Arrete.wav"},
    {"op": "field", "field": "m_WhooshClip", "asset": "Assets/507466__danjocross__clean-fast-swoosh.aiff"},
    {"op": "field", "field": "m_BoomClip", "asset": "Assets/_Project/Audio/513110__wakerone__cinematic-trailer-hit-explosion-cc0.mp3"}
   ] }

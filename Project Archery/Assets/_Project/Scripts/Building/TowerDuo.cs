@@ -55,6 +55,22 @@ namespace Archery.Building
             m_Second = second;
         }
 
+        // Dans l'arène de MK, un duo (ou un trio) tient sur son emplacement du plateau, sous la voûte : trois cases de large, 12 m
+        // de haut au plus (3 novembre ; les ultimes : 0,65).
+        const float k_ArenaWidth = 7.5f;
+        const float k_ArenaHeight = 12f;
+
+        /// <summary>Réduit dans l'arène de MK, assez pour tenir sur son emplacement (sa taille d'avant l'arène, à son niveau).</summary>
+        protected override float ArenaScale
+        {
+            get
+            {
+                var size = ArrowBounds.size;
+                var scale = Mathf.Min(1f, k_ArenaWidth / Mathf.Max(0.1f, Mathf.Max(size.x, size.z)), k_ArenaHeight / Mathf.Max(0.1f, size.y));
+                return Mathf.Max(0.4f, scale);
+            }
+        }
+
         // ---------------------------------------------------------------- Ce dont les duos se servent tous (1er novembre)
 
         static readonly List<Enemy> s_Near = new List<Enemy>();
@@ -87,6 +103,28 @@ namespace Archery.Building
             }
 
             return s_Near;
+        }
+
+        /// <summary>
+        /// L'ennemi le plus proche (à plat) à moins de <paramref name="radius"/> m, volants compris ; null s'il n'y en a pas. Dans l'arène
+        /// de MK, c'est lui (3 novembre : les duos qui visent une voie ou un groupe au sol l'y visent à la place).
+        /// </summary>
+        protected Enemy NearestEnemy(float radius)
+        {
+            Enemy best = null;
+            var bestDistance = float.MaxValue;
+            foreach (var enemy in EnemiesNear(transform.position, radius, false))
+            {
+                var flat = enemy.transform.position - transform.position;
+                flat.y = 0f;
+                if (flat.sqrMagnitude < bestDistance)
+                {
+                    bestDistance = flat.sqrMagnitude;
+                    best = enemy;
+                }
+            }
+
+            return best;
         }
 
         /// <summary>Les ennemis au sol (ni en vol, ni volants) : une seconde liste réutilisée, qu'on peut parcourir avec EnemiesNear.</summary>
@@ -185,29 +223,71 @@ namespace Archery.Building
             if (material == null)
                 return;
 
-            var go = new GameObject("Gerbe de duo");
-            go.transform.position = point;
-            var particles = go.AddComponent<ParticleSystem>();
+            var particles = TakeBurst(material);
             particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particles.transform.SetPositionAndRotation(point, sphere ? Quaternion.identity : Quaternion.Euler(-90f, 0f, 0f));
             var main = particles.main;
-            main.loop = false;
-            main.duration = 0.1f;
             main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.6f, life);
             main.startSpeed = new ParticleSystem.MinMaxCurve(speed * 0.4f, speed);
             main.startSize = new ParticleSystem.MinMaxCurve(size * 0.5f, size);
             main.startColor = new ParticleSystem.MinMaxGradient(color, Color.Lerp(color, Color.white, 0.5f));
             main.gravityModifier = gravity;
             main.maxParticles = count;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.stopAction = ParticleSystemStopAction.Destroy;
             var emission = particles.emission;
-            emission.rateOverTime = 0f;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, 1000)) });
+            emission.SetBurst(0, new ParticleSystem.Burst(0f, (short)Mathf.Clamp(count, 1, 1000)));
             var shape = particles.shape;
             shape.shapeType = sphere ? ParticleSystemShapeType.Sphere : ParticleSystemShapeType.Hemisphere;
+            particles.Play();
+        }
+
+        // Les gerbes en réserve (3 novembre, la fluidité au Quest) : une gerbe finie sert à la suivante, au lieu de créer puis
+        // détruire un objet à chaque coup (les ultimes en lancent des dizaines par seconde). Au plus k_BurstPool ; au-delà, la
+        // plus ancienne est reprise (elle s'efface plus tôt).
+        const int k_BurstPool = 48;
+        static readonly List<ParticleSystem> s_Bursts = new List<ParticleSystem>();
+        static int s_NextBurst;
+        static Transform s_BurstRoot;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetBursts()
+        {
+            s_Bursts.Clear();
+            s_NextBurst = 0;
+            s_BurstRoot = null;
+        }
+
+        static ParticleSystem TakeBurst(Material material)
+        {
+            s_Bursts.RemoveAll(burst => burst == null);
+            foreach (var burst in s_Bursts)
+            {
+                if (!burst.IsAlive(true))
+                    return burst;
+            }
+
+            if (s_Bursts.Count >= k_BurstPool)
+            {
+                s_NextBurst = (s_NextBurst + 1) % s_Bursts.Count;
+                return s_Bursts[s_NextBurst];
+            }
+
+            if (s_BurstRoot == null)
+                s_BurstRoot = new GameObject("Gerbes des tours (réserve)").transform;
+            var go = new GameObject("Gerbe de duo");
+            go.transform.SetParent(s_BurstRoot, false);
+            var particles = go.AddComponent<ParticleSystem>();
+            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var main = particles.main;
+            main.loop = false;
+            main.duration = 0.1f;
+            main.playOnAwake = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.stopAction = ParticleSystemStopAction.None;
+            var emission = particles.emission;
+            emission.rateOverTime = 0f;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 1) });
+            var shape = particles.shape;
             shape.radius = 0.2f;
-            if (!sphere)
-                go.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
             var colors = particles.colorOverLifetime;
             colors.enabled = true;
             var fade = new Gradient();
@@ -217,7 +297,8 @@ namespace Archery.Building
             var renderer = go.GetComponent<ParticleSystemRenderer>();
             renderer.sharedMaterial = material;
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            particles.Play();
+            s_Bursts.Add(particles);
+            return particles;
         }
 
         /// <summary>Une explosion de feu et de fumée (celle des flèches explosives), de ce rayon.</summary>

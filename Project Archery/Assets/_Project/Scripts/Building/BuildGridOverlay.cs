@@ -8,12 +8,14 @@ namespace Archery.Building
     /// La grille de construction dessinée au sol pendant la pose d'un plan (28 octobre, demandée par le joueur après ses tests :
     /// « on voit tout le grillage du sol », vert là où on peut construire, rouge ailleurs). Toutes les cases de sol autour du joueur
     /// se teintent, bordées d'une ligne nette, et épousent le terrain ; les cases du bâtiment visé brillent plus fort (vertes s'il
-    /// se pose, rouges sinon). Les emplacements de la tour s'y dessinent aussi, en plus grand.
+    /// se pose, rouges sinon). Les emplacements de la tour s'y dessinent aussi, en plus grand. Depuis le 3 novembre (le placement
+    /// lisible), la portée du bâtiment visé : un cercle de cases dorées autour de lui, et les cases de la voie à sa portée, dorées
+    /// elles aussi : on voit d'un coup d'œil la voie qu'il couvre.
     /// </summary>
     /// <remarks>
-    /// Créé tout seul par <see cref="BuildPlacement"/>. Deux maillages : la grille (refaite quand le joueur change de case, de
-    /// bâtiment, ou qu'un bâtiment est posé) et les cases du bâtiment visé (petit, refait quand elles changent). Matériau :
-    /// <c>Resources/BuildGrid</c> (shader <c>Archery/BuildGrid</c>).
+    /// Créé tout seul par <see cref="BuildPlacement"/>. Trois maillages : la grille (refaite quand le joueur change de case, de
+    /// bâtiment, ou qu'un bâtiment est posé), les cases du bâtiment visé (petit, refait quand elles changent) et sa portée (refaite
+    /// quand il change de case). Matériau : <c>Resources/BuildGrid</c> (shader <c>Archery/BuildGrid</c>).
     /// </remarks>
     [DisallowMultipleComponent]
     public class BuildGridOverlay : MonoBehaviour
@@ -59,6 +61,14 @@ namespace Archery.Building
         [SerializeField]
         float m_LineWidth = 0.03f;
 
+        [Tooltip("Le cercle de la portée du bâtiment visé (3 novembre).")]
+        [SerializeField]
+        Color m_ReachColor = new Color(1f, 0.8f, 0.25f, 1f);
+
+        [Tooltip("Les cases de la voie à sa portée.")]
+        [SerializeField]
+        Color m_ReachLaneColor = new Color(1f, 0.9f, 0.45f, 1f);
+
         readonly List<Vector3> m_Vertices = new List<Vector3>();
         readonly List<Color> m_Colors = new List<Color>();
         readonly List<Vector2> m_Uv = new List<Vector2>();
@@ -67,8 +77,13 @@ namespace Archery.Building
 
         Mesh m_GridMesh;
         Mesh m_FootprintMesh;
+        Mesh m_ReachMesh;
         MeshRenderer m_GridRenderer;
         MeshRenderer m_FootprintRenderer;
+        MeshRenderer m_ReachRenderer;
+        Vector3 m_ReachCenter = Vector3.positiveInfinity;
+        float m_ReachRadius;
+        int m_ReachVersion = -1;
         Material m_Material;
         bool m_Ready;
         bool m_Warned;
@@ -137,11 +152,43 @@ namespace Archery.Building
                 m_FootprintRenderer.enabled = false;
         }
 
+        /// <summary>
+        /// La portée du bâtiment visé (3 novembre) : les cases à <paramref name="radius"/> m de <paramref name="center"/> (à plat)
+        /// en cercle doré, et les cases de la voie à l'intérieur ; rien si <paramref name="radius"/> est nul.
+        /// </summary>
+        public void ShowReach(Vector3 center, float radius)
+        {
+            var grid = BuildGrid.Instance;
+            if (radius <= 0f || grid == null || !grid.IsReady || !EnsureReady())
+            {
+                HideReach();
+                return;
+            }
+
+            if (!m_ReachRenderer.enabled || (center - m_ReachCenter).sqrMagnitude > 0.01f || !Mathf.Approximately(radius, m_ReachRadius) ||
+                grid.Version != m_ReachVersion)
+            {
+                m_ReachCenter = center;
+                m_ReachRadius = radius;
+                m_ReachVersion = grid.Version;
+                BuildReachMesh(grid, center, radius);
+            }
+
+            m_ReachRenderer.enabled = true;
+        }
+
+        public void HideReach()
+        {
+            if (m_ReachRenderer != null)
+                m_ReachRenderer.enabled = false;
+        }
+
         public void Hide()
         {
             if (m_GridRenderer != null)
                 m_GridRenderer.enabled = false;
             HideFootprint();
+            HideReach();
         }
 
         void OnDestroy()
@@ -150,6 +197,8 @@ namespace Archery.Building
                 Destroy(m_GridMesh);
             if (m_FootprintMesh != null)
                 Destroy(m_FootprintMesh);
+            if (m_ReachMesh != null)
+                Destroy(m_ReachMesh);
         }
 
         bool EnsureReady()
@@ -175,6 +224,7 @@ namespace Archery.Building
 
             m_GridRenderer = CreateLayer("Grille", 0, out m_GridMesh);
             m_FootprintRenderer = CreateLayer("Cases du bâtiment", 1, out m_FootprintMesh);
+            m_ReachRenderer = CreateLayer("Portée du bâtiment", 2, out m_ReachMesh);
             m_Ready = true;
             return true;
         }
@@ -252,6 +302,33 @@ namespace Archery.Building
                 AddSquare(towerSocket.transform, grid.TowerSlotSize, m_Lift + 0.015f, color, m_FootprintFillAlpha);
 
             Apply(m_FootprintMesh);
+        }
+
+        // Le cercle : les cases dont le centre est au bord de la portée (à une demi-case près) ; dedans, les cases de la voie.
+        void BuildReachMesh(BuildGrid grid, Vector3 center, float radius)
+        {
+            Clear();
+            var cell = grid.CellSize;
+            var size = new Vector2(cell, cell);
+            grid.CellRange(center, radius + cell, out var fromX, out var fromZ, out var toX, out var toZ);
+            for (var z = fromZ; z <= toZ; z++)
+            {
+                for (var x = fromX; x <= toX; x++)
+                {
+                    var index = grid.CellIndex(x, z);
+                    if (!grid.HasGround(index) || !grid.TryCellCorners(index, out var a, out var b, out var c, out var d))
+                        continue;
+
+                    var middle = (a + d) * 0.5f;
+                    var distance = new Vector2(middle.x - center.x, middle.z - center.z).magnitude;
+                    if (Mathf.Abs(distance - radius) <= cell * 0.5f)
+                        AddQuad(a, b, c, d, m_Lift + 0.03f, m_ReachColor, size, m_LineWidth * 2f, 0.75f);
+                    else if (distance < radius && grid.IsLaneCell(index))
+                        AddQuad(a, b, c, d, m_Lift + 0.025f, m_ReachLaneColor, size, m_LineWidth, 0.4f);
+                }
+            }
+
+            Apply(m_ReachMesh);
         }
 
         void AddSquare(Transform socket, float size, float lift, Color color, float fill)

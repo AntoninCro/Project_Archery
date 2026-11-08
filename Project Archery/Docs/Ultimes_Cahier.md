@@ -43,7 +43,9 @@ redire.
    - **un grand coup régulier**, qu'on voit venir (au 5e coup, le lingot chauffé à blanc, la foudre) ;
    - **une action à chaque flèche du joueur qui touche** (un marteau par flèche, l'idée du joueur), qui va avec la pluie de flèches
      et le multishot, **plafonnée à 5 par seconde** pour le casque (le chiffre du joueur ; les flèches en trop attendent, 8 au plus,
-     2 s au plus).
+     2 s au plus). **Elle frappe selon la force de sa flèche** (3 novembre, le joueur : « scale en fonction de si le joueur fait un
+     parfait, moyen, etc. », et la pluie réduit) : `TowerUltimate.ShotPower(hit)`, ses dégâts et sa part des PV d'un boss ; file
+     pleine, la plus faible laisse sa place.
 6. **Des coups imposants** (12.49 : « bien plus imposants, comme la précédente version ») : ce qu'elle lance est **à l'échelle du
    modèle** (le joueur a refusé les marteaux réduits à 55 %), et chaque coup a tout : le signe du coup (la foudre), l'onde de choc,
    l'explosion, la poussière en anneau, les ennemis projetés en vrille ; le marteau reste planté un instant, puis s'enfonce.
@@ -89,7 +91,11 @@ redire.
   n'ont pas été changés à la main.
 - **L'arène** : `ArenaScale` (le Colosse à 0,65 : la voûte est basse), `EnterArena` / `LeaveArena` (y détruire ce qui est réutilisé :
   sa taille change), le message d'arrivée (« Touche MK : … »).
-- Vérifier : `py Tools/compile_check.py` et `py Tools/compile_check_editor.py` ; rien n'est fini avant l'essai au casque.
+- **Pas deux champs du même nom dans la lignée** (`Structure` → `TowerDuo` → `TowerTrio` → `TowerUltimate` → l'ultime), même privés :
+  Unity les sérialise au rechargement des scripts et refuse (« The same field name is serialized multiple times », vu le 3 novembre :
+  `m_ArenaScale`, `m_BoostUntil`) ; le C# l'accepte. Renommer celui qui ne porte pas de réglage ; `py Tools/champs_en_double.py`.
+- Vérifier : `py Tools/compile_check.py`, `py Tools/compile_check_editor.py` et `py Tools/champs_en_double.py` ; rien n'est fini
+  avant l'essai au casque.
 
 ## 4. Les fichiers du Colosse, à reprendre comme modèle
 
@@ -167,3 +173,10 @@ Ce que Claude a appris en la faisant :
 - **Le temps arrêté pour MK** : un état de plus n'est pas nécessaire ; `DragonBoss.StopTime` saute son `Tick` et fige son animation
   (et ses boules de feu, `DragonFireball.TimeStopped`), puis il reprend où il en était.
 - **Un effet sur toute la carte** (le dégel) pèse plus que ce que le tableau compte (le groupe de 5) : le dire, et le surveiller.
+- **Le temps arrêté s'entend aussi** (le joueur, 3 novembre, après son essai : « enlève les autres sons et musique, laisse juste les
+  bruits de l'horloge et du joueur ») : `Sfx.Hush` à chaque image du grand moment, `Sfx.Unhush` à la fin ; les sons de l'ultime par
+  `Sfx.PlayThroughHush`. À prévoir dès le premier jet pour un grand moment qui fige le monde.
+- **Un son donné en modèle** (le « Za Warudo » de JoJo, 3 novembre) : un extrait sous droits ne va pas dans le jeu. Le lire
+  (`Tools/sons/mp3_en_wav.ps1` pour un MP3, puis les outils du dossier), en tirer le dessin (les temps, les hauteurs, le grain, la
+  coupure), et le synthétiser (`Tools/sons/arret_du_temps.py`, à reprendre : calculer à 4 fois le taux sous une saturation) ; vérifier
+  que le profil du son fait suit celui du modèle.

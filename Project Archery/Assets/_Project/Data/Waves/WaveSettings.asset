@@ -15,7 +15,7 @@ MonoBehaviour:
   wavesToWin: 6
   finalBossOnLastWave: 1
   firstWaveDuration: 90
-  durationIncrease: 12
+  durationIncrease: 0
   calmFraction: 0.35
   riseDurationScale: 0.5
   firstWaveBudget: 20

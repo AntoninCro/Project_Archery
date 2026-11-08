@@ -143,6 +143,14 @@ namespace Archery.Building
             public int Bounces;
             public bool Giant;
             public Vector3 Spin;
+
+            // Dans l'arène (3 novembre) : elle suit le corps de sa cible (à cet écart) ; après l'avoir frappée en l'air, elle retombe au
+            // sol (sans blesser), puis s'y couche ce temps-là.
+            public bool Follow;
+            public Vector3 Offset;
+            public bool Falling;
+            public float LieStay;
+            public float LieSink;
         }
 
         class Lying
@@ -221,7 +229,7 @@ namespace Archery.Building
             if (Time.time < m_NextShot || m_RainLeft > 0)
                 return;
 
-            var target = FindTarget(null, transform.position, m_Range);
+            var target = FindTarget(null, transform.position, Range);
             if (target == null)
                 return;
 
@@ -276,11 +284,15 @@ namespace Archery.Building
         void Fire(Enemy target, int level)
         {
             var from = m_Muzzle != null ? m_Muzzle.position : transform.position + Vector3.up * 6f;
-            var to = Lead(target, m_FlightTime);
-            to.y = GroundY(to, 1.5f);
+            // Dans l'arène, l'enclume rattrape MK, en vol comme au sol (3 novembre : elle tombait au sol sous lui).
+            var to = InArena ? target.Center : Lead(target, m_FlightTime);
+            if (!InArena)
+                to.y = GroundY(to, 1.5f);
             var flat = to - from;
             flat.y = 0f;
-            Launch(from, to, m_FlightTime, 5f + flat.magnitude * 0.3f, target, level >= 2 ? 1 : 0, false, 1f);
+            var anvil = Launch(from, to, m_FlightTime, 5f + flat.magnitude * 0.3f, target, level >= 2 ? 1 : 0, false, 1f);
+            if (anvil != null)
+                anvil.Follow = InArena;
             m_Recoil = 1f;
             Burst(from, new Color(0.5f, 0.48f, 0.45f, 1f), 18, 4f, 0.6f, 0.8f, -0.1f);
             Sfx.Play(m_FireClip, from, 0.9f, Random.Range(0.85f, 1f));
@@ -325,13 +337,15 @@ namespace Archery.Building
 
                 anvil.Time += Time.deltaTime;
                 var t = Mathf.Clamp01(anvil.Time / anvil.Duration);
-                var position = Vector3.Lerp(anvil.From, anvil.To, t) + Vector3.up * (anvil.Height * 4f * t * (1f - t));
-                if (anvil.Giant)
+                if (anvil.Follow && anvil.Target != null && anvil.Target.IsAlive)
+                    anvil.To = anvil.Target.Center + anvil.Offset;
+                var position = Arc(anvil.From, anvil.To, t, anvil.Height);
+                if (anvil.Giant || anvil.Falling)
                     position = Vector3.Lerp(anvil.From, anvil.To, t * t);
                 anvil.Body.position = position;
 
                 // Elle tourne en l'air, et se pose à plat (la table en haut) en touchant le sol.
-                if (anvil.Giant || t > 0.8f)
+                if (anvil.Giant || anvil.Falling || t > 0.8f)
                     anvil.Body.rotation = Quaternion.Slerp(anvil.Body.rotation, Quaternion.Euler(0f, anvil.Body.eulerAngles.y, 0f), Time.deltaTime * 12f);
                 else
                     anvil.Body.Rotate(anvil.Spin * Time.deltaTime, Space.Self);
@@ -349,6 +363,12 @@ namespace Archery.Building
         {
             var point = anvil.To;
             anvil.Body.position = point;
+            if (anvil.Falling)
+            {
+                LieDown(anvil.Body, anvil.LieStay, anvil.LieSink);
+                return;
+            }
+
             if (anvil.Giant)
             {
                 GiantLand(anvil);
@@ -384,7 +404,7 @@ namespace Archery.Building
                 Wave(point);
             if (anvil.Bounces > 0)
             {
-                var next = FindTarget(null, point, m_BounceRange);
+                var next = FindTarget(anvil.Target, point, m_BounceRange);
                 if (next != null)
                 {
                     var to = Lead(next, 0.55f);
@@ -396,12 +416,40 @@ namespace Archery.Building
                     anvil.Time = 0f;
                     anvil.Target = next;
                     anvil.Bounces--;
+                    anvil.Follow = false;
                     m_Flying.Add(anvil);
                     return;
                 }
             }
 
-            LieDown(anvil.Body, 1.2f, 0.4f);
+            if (!FallIfInAir(anvil, 1.2f, 0.4f))
+                LieDown(anvil.Body, 1.2f, 0.4f);
+        }
+
+        // Dans l'arène, une enclume qui a frappé MK en l'air retombe au sol, puis s'y couche (3 novembre) ; vrai si elle tombe.
+        bool FallIfInAir(Anvil anvil, float stay, float sink)
+        {
+            if (!InArena || anvil.Body == null)
+                return false;
+
+            var point = anvil.Body.position;
+            var ground = new Vector3(point.x, GroundY(point, 1f), point.z);
+            var drop = point.y - ground.y;
+            if (drop < 0.5f)
+                return false;
+
+            anvil.From = point;
+            anvil.To = ground;
+            anvil.Time = 0f;
+            anvil.Duration = Mathf.Clamp(Mathf.Sqrt(2f * drop / 9.81f), 0.25f, 1.5f);
+            anvil.Height = 0f;
+            anvil.Target = null;
+            anvil.Follow = false;
+            anvil.Falling = true;
+            anvil.LieStay = stay;
+            anvil.LieSink = sink;
+            m_Flying.Add(anvil);
+            return true;
         }
 
         void Wave(Vector3 point)
@@ -476,7 +524,8 @@ namespace Archery.Building
                 return;
             }
 
-            if (Time.time < m_NextRain || EnemiesNear(transform.position, m_Range).Count < 3)
+            // Il faut trois ennemis à portée ; dans l'arène, MK seul suffit (3 novembre).
+            if (Time.time < m_NextRain || EnemiesNear(transform.position, Range).Count < (InArena ? 1 : 3))
                 return;
 
             m_NextRain = Time.time + m_RainInterval / OverchargeRate;
@@ -489,9 +538,27 @@ namespace Archery.Building
         // Une enclume du ciel : sur un ennemi à portée (un peu à côté), sinon sur la voie près de la forge.
         void RainDrop()
         {
-            var near = EnemiesNear(transform.position, m_Range);
+            var near = EnemiesNear(transform.position, Range);
             Vector3 to;
             Enemy target = null;
+
+            // Dans l'arène : sur MK, de moins haut (la voûte), et elle le suit (3 novembre).
+            if (InArena && near.Count > 0)
+            {
+                target = near[Random.Range(0, near.Count)];
+                var offset = new Vector3(Random.Range(-1.5f, 1.5f), Random.Range(-0.5f, 1f), Random.Range(-1.5f, 1.5f));
+                to = target.Center + offset;
+                var rain = Launch(to + new Vector3(Random.Range(-3f, 3f), 10f + Random.Range(0f, 3f), Random.Range(-3f, 3f)), to,
+                                  0.7f + Random.Range(0f, 0.2f), 0f, target, -1, false, 1f);
+                if (rain != null)
+                {
+                    rain.Follow = true;
+                    rain.Offset = offset;
+                }
+
+                return;
+            }
+
             if (near.Count > 0)
             {
                 target = near[Random.Range(0, near.Count)];
@@ -510,16 +577,21 @@ namespace Archery.Building
         // La grande enclume : au-dessus du groupe le plus serré, elle tombe tout droit.
         void DropGiant()
         {
-            var center = DensestPoint();
-            center.y = GroundY(center, 1.5f);
-            var anvil = Launch(center + Vector3.up * 45f, center, 1.1f, 0f, null, 0, true, m_GiantScale);
-            if (anvil != null)
-                anvil.Body.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + 90f, 0f);
+            // Dans l'arène : sur MK, de moins haut (la voûte), et elle le suit (3 novembre).
+            var boss = InArena ? NearestEnemy(Range) : null;
+            var center = boss != null ? boss.Center : DensestPoint();
+            if (boss == null)
+                center.y = GroundY(center, 1.5f);
+            var anvil = Launch(center + Vector3.up * (boss != null ? 16f : 45f), center, 1.1f, 0f, boss, 0, true, m_GiantScale);
+            if (anvil == null)
+                return;
+            anvil.Body.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + 90f, 0f);
+            anvil.Follow = boss != null;
         }
 
         Vector3 DensestPoint()
         {
-            var near = EnemiesNear(transform.position, m_Range);
+            var near = EnemiesNear(transform.position, Range);
             m_Scratch.Clear();
             m_Scratch.AddRange(near);
             var best = transform.position;
@@ -554,9 +626,10 @@ namespace Archery.Building
             {
                 if (enemy.IsBoss)
                 {
+                    // MK, dans l'arène : 2 % au plus (ShareFor, 3 novembre).
                     enemy.Health.TakeDamage(new DamageInfo
                     {
-                        Amount = enemy.Health.Max * m_GiantBossShare,
+                        Amount = enemy.Health.Max * ShareFor(enemy, m_GiantBossShare),
                         Zone = HitZone.Body,
                         Point = enemy.Center,
                         Direction = Vector3.down,
@@ -579,7 +652,8 @@ namespace Archery.Building
             Burst(point + Vector3.up * 1f, k_Sparks, 90, 16f, 0.3f, 1f, 0.8f);
             Sfx.Play(m_ClangClip, point, 1f, 0.35f);
             HeadMessages.Show("BONG !", new Color(1f, 0.78f, 0.35f), 1.5f);
-            LieDown(anvil.Body, m_GiantStay, 1.2f);
+            if (!FallIfInAir(anvil, m_GiantStay * 0.5f, 1.2f))
+                LieDown(anvil.Body, m_GiantStay, 1.2f);
         }
 
         // ---------------------------------------------------------------- aplatis
@@ -660,5 +734,17 @@ namespace Archery.Building
             enemy.transform.localScale = flat.Scale;
             enemy.Unprepare(Preparation.Flattened);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        // Sa portée : plus grande dans l'arène de MK, où elle tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
+        /// <summary>
+        /// Elle rejoint l'arène de MK (3 novembre) : ses enclumes y rattrapent MK, en vol comme au sol, puis retombent ; la pluie part
+        /// sur lui seul, et la grande enclume ne lui coûte que 2 % de ses PV max. Il n'est jamais aplati.
+        /// </summary>
+        public override bool FightsInArena => true;
     }
 }

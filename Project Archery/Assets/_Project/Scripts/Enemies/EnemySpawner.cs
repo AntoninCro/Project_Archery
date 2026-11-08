@@ -66,12 +66,18 @@ namespace Archery.Enemies
         public Enemy Spawn() => Spawn(m_EnemyPrefab);
 
         /// <summary>Fait apparaître cet ennemi sur un point d'apparition au hasard.</summary>
-        public Enemy Spawn(Enemy prefab)
+        public Enemy Spawn(Enemy prefab) => Spawn(prefab, null);
+
+        /// <summary>
+        /// Fait apparaître cet ennemi à ce point d'apparition (celui de la voie de sa famille, les menaces par voie du 3 novembre) ;
+        /// null : un point au hasard.
+        /// </summary>
+        public Enemy Spawn(Enemy prefab, Transform at)
         {
             if (prefab == null)
                 return null;
 
-            var point = m_SpawnPoints.Length > 0 ? m_SpawnPoints[Random.Range(0, m_SpawnPoints.Length)] : transform;
+            var point = at != null ? at : m_SpawnPoints.Length > 0 ? m_SpawnPoints[Random.Range(0, m_SpawnPoints.Length)] : transform;
             if (point == null)
                 point = transform;
 

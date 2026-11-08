@@ -132,4 +132,8 @@ Le code (`_Project/Scripts`, `_Project/Editor`), les 20 shaders (`_Project/Shade
 
 Le visage des mannequins d'entraînement (`_Project/Art/Training/Visage_Mannequin.png`) : dessiné par le joueur (Antonin Croquette) sur Paint, le 2 novembre 2026 (recadré, fond rendu transparent).
 
+Le cor de la tour (`_Project/Audio/Tour_Cor.wav`, 3 novembre 2026) : synthétisé par script (`Tools/sons/cor_de_la_tour.py`), sans aucun son extérieur ni modèle.
+
+Le bruit de l'arrêt du temps de la Grande Horloge (`_Project/Audio/Horloge_Temps_Arrete.wav`, 3 novembre 2026) : synthétisé par script (`Tools/sons/arret_du_temps.py`), sans aucun son extérieur. Son dessin (un bourdon saturé qui descend, un grave qui remonte avec un sifflement, la coupure nette) vient de l'analyse du « Za Warudo » de *JoJo's Bizarre Adventure*, que le joueur a donné pour modèle ; rien de l'extrait n'est repris. L'extrait lui-même (*ZA WARUDO - Dios The World Sound Effect.mp3*) vient d'une série animée sous droits : le jeu ne l'utilise pas, et il est rangé hors du dépôt (`Desktop/dev/Sons_modeles/`, à côté de `Thunk VR`).
+
 À confirmer : `_Project/Art/Textures/TargetFace.png` (la cible d'entraînement, plus utilisée dans la carte depuis le 2 novembre au soir), présente depuis le premier prototype.

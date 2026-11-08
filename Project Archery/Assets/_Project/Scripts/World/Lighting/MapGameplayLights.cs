@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Archery.Building;
 using Archery.Combat;
+using Archery.Core;
 using Archery.Defense;
 using Archery.Enemies;
 using Archery.FinalBoss;
@@ -12,7 +13,8 @@ namespace Archery.World
 {
     /// <summary>
     /// Les lumières qui servent au jeu (groupe « Jeu » de l'objet « Effet ») : l'anneau et le rayon de la tour (vert,
-    /// orange puis rouge selon ses PV, ils clignotent quand elle est touchée), les runes des emplacements de construction
+    /// orange puis rouge selon ses PV, ils clignotent quand elle est touchée ; depuis le 3 novembre, l'alarme : pendant une attaque, le
+    /// rayon monte haut et bat en rouge, le cor sonne si le joueur est loin, et sous la moitié de ses PV la tour fume), les runes des emplacements de construction
     /// libres, les âmes qui s'envolent des ennemis vaincus, une petite lumière douce autour du joueur la nuit ; en jeu,
     /// la lueur des projectiles ennemis la nuit et les remous lumineux de la rivière là où passent les ennemis (et le
     /// joueur).
@@ -69,6 +71,18 @@ namespace Archery.World
         float m_TowerLightIntensity;
         float m_TowerTop;
         float m_TowerHit;
+
+        // L'alarme de la tour (3 novembre) : le dernier coup reçu, l'alarme du rayon (0 à 1), le rayon au repos, le cor (le niveau
+        // déjà sonné pendant cette attaque, les coups qui restent à sonner), la fumée.
+        float m_LastTowerHit = -999f;
+        float m_Alarm;
+        Vector3 m_BeamScale;
+        float m_BeamBottom;
+        AudioSource m_Horn;
+        int m_HornLevel;
+        int m_BlastsLeft;
+        float m_NextBlast;
+        ParticleSystem m_TowerSmoke;
 
         Mesh m_RuneMesh;
         Material m_RuneMaterial;
@@ -280,6 +294,13 @@ namespace Archery.World
                 Find(tower, k_TowerLight)?.TryGetComponent(out m_TowerLight);
                 if (m_TowerLight != null)
                     m_TowerLightIntensity = m_TowerLight.intensity;
+                if (m_TowerBeam != null)
+                {
+                    m_BeamScale = m_TowerBeam.transform.localScale;
+                    m_BeamBottom = m_TowerBeam.transform.position.y - m_BeamScale.y;
+                }
+
+                CreateHorn(tower);
             }
 
             // Chaque rune suit l'emplacement le plus proche ; les emplacements qui apparaissent en cours de partie en reçoivent une.
@@ -384,7 +405,159 @@ namespace Archery.World
 
         // ---------------------------------------------------------------- tour
 
-        void OnTowerDamaged(Health health, DamageInfo info) => m_TowerHit = 1f;
+        // Le sommet de la tour, au milieu (là où part le rayon) : le cor y sonne, la fumée en monte.
+        Vector3 TowerTopPoint
+        {
+            get
+            {
+                var center = m_TowerBeam != null ? m_TowerBeam.transform.position : m_Tower.transform.position;
+                return new Vector3(center.x, m_TowerTop + 1f, center.z);
+            }
+        }
+
+        // Le cor : une source à lui (celles de Sfx s'éteignent à 60 m), en 3D, qui porte loin et baisse doucement.
+        void CreateHorn(Transform group)
+        {
+            if (m_Settings.towerHornClip == null)
+                return;
+
+            var go = new GameObject("Cor de la tour");
+            go.transform.SetParent(group, false);
+            go.transform.position = TowerTopPoint + Vector3.up * 2f;
+            m_Horn = go.AddComponent<AudioSource>();
+            m_Horn.playOnAwake = false;
+            m_Horn.spatialBlend = 1f;
+            m_Horn.rolloffMode = AudioRolloffMode.Linear;
+            m_Horn.minDistance = 20f;
+            m_Horn.maxDistance = Mathf.Max(30f, m_Settings.towerHornReach);
+            m_Horn.dopplerLevel = 0f;
+            m_Horn.priority = 32;
+        }
+
+        // Un coup reçu : l'anneau clignote. Une attaque qui commence (ou les PV qui passent sous 50 %, puis 25 %) : le cor sonne une,
+        // deux ou trois fois, si le joueur est loin (3 novembre, à la place de l'alerte sur la montre, que le joueur n'aimait pas).
+        void OnTowerDamaged(Health health, DamageInfo info)
+        {
+            m_TowerHit = 1f;
+            if (Time.time - m_LastTowerHit > m_Settings.towerAttackGap)
+                m_HornLevel = 0;
+            m_LastTowerHit = Time.time;
+
+            var level = health.Normalized > 0.5f ? 1 : health.Normalized > 0.25f ? 2 : 3;
+            if (level <= m_HornLevel || m_Horn == null || !m_Tower.IsStanding)
+                return;
+            m_HornLevel = level;
+            if (PlayerNearTower())
+                return;
+            m_BlastsLeft = level;
+            m_NextBlast = Time.time;
+        }
+
+        // Le joueur voit l'attaque : sur la tour, ou tout près.
+        bool PlayerNearTower()
+        {
+            var rig = PlayerRig.Instance;
+            if (rig == null)
+                return false;
+            var body = rig.BodyPosition;
+            var flat = body - m_Tower.transform.position;
+            flat.y = 0f;
+            return body.y > m_TowerTop - 1.5f || flat.sqrMagnitude < m_Settings.towerHornQuiet * m_Settings.towerHornQuiet;
+        }
+
+        void UpdateHorn()
+        {
+            if (m_BlastsLeft <= 0 || Time.time < m_NextBlast || m_Horn == null)
+                return;
+
+            m_BlastsLeft--;
+            m_NextBlast = Time.time + 1.45f;
+            // Pas pendant le silence de Minuit (la Grande Horloge) : tout se tait, sauf ses cloches et le joueur.
+            if (Sfx.Hushed)
+                return;
+            m_Horn.outputAudioMixerGroup = Sfx.Output;
+            m_Horn.pitch = Random.Range(0.98f, 1.02f);
+            m_Horn.PlayOneShot(m_Settings.towerHornClip, m_Settings.towerHornVolume);
+        }
+
+        // La fumée : sous la moitié de ses PV, une colonne de fumée noire monte de la tour, d'autant plus épaisse qu'elle est abîmée ;
+        // on la voit de toute la carte (3 novembre). Faite la première fois qu'il en faut (la fumée des explosions).
+        void UpdateSmoke(bool standing, float health)
+        {
+            var thick = standing && health < 0.5f ? Mathf.Lerp(0.3f, 1f, Mathf.InverseLerp(0.5f, 0.1f, health)) : 0f;
+            if (thick > 0f && m_TowerSmoke == null)
+                m_TowerSmoke = CreateSmoke();
+            if (m_TowerSmoke == null)
+                return;
+
+            var emission = m_TowerSmoke.emission;
+            emission.rateOverTime = 7f * thick;
+        }
+
+        ParticleSystem CreateSmoke()
+        {
+            var arrows = Archery.Upgrades.SpecialArrows.Instance;
+            var material = arrows != null ? arrows.ExplosionSmokeMaterial : null;
+            var group = Find(transform, k_Tower);
+            if (material == null || group == null)
+                return null;
+
+            var go = new GameObject("Fumée de la tour");
+            go.transform.SetParent(group, false);
+            go.transform.SetPositionAndRotation(TowerTopPoint, Quaternion.Euler(-90f, 0f, 0f));
+            var smoke = go.AddComponent<ParticleSystem>();
+            smoke.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var main = smoke.main;
+            main.loop = true;
+            main.playOnAwake = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 60;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(6f, 8f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(2.5f, 4f);
+            main.startSize = new ParticleSystem.MinMaxCurve(2.2f, 3.4f);
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.1f, 0.09f, 0.09f, 0.8f), new Color(0.22f, 0.2f, 0.19f, 0.7f));
+
+            var emission = smoke.emission;
+            emission.rateOverTime = 0f;
+            var shape = smoke.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle = 8f;
+            shape.radius = 0.8f;
+
+            // Elle monte, ralentit, penche un peu avec le vent et s'étale.
+            var velocity = smoke.velocityOverLifetime;
+            velocity.enabled = true;
+            velocity.space = ParticleSystemSimulationSpace.World;
+            velocity.x = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+            velocity.y = new ParticleSystem.MinMaxCurve(0f, 0f);
+            velocity.z = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
+            var limit = smoke.limitVelocityOverLifetime;
+            limit.enabled = true;
+            limit.dampen = 0.08f;
+            limit.limit = 1.5f;
+            var size = smoke.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 1f, 1f, 2.8f));
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.85f, 0.85f, 0.85f), 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.1f), new GradientAlphaKey(0.6f, 0.6f), new GradientAlphaKey(0f, 1f) });
+            var color = smoke.colorOverLifetime;
+            color.enabled = true;
+            color.color = new ParticleSystem.MinMaxGradient(gradient);
+            var rotation = smoke.rotationOverLifetime;
+            rotation.enabled = true;
+            rotation.z = new ParticleSystem.MinMaxCurve(-0.3f, 0.3f);
+
+            var renderer = go.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            smoke.Play();
+            return smoke;
+        }
 
         void UpdateTowerBeacon(float lamps)
         {
@@ -393,6 +566,12 @@ namespace Archery.World
 
             var standing = m_Tower.IsStanding;
             var health = m_TowerHealth != null ? m_TowerHealth.Normalized : 1f;
+            UpdateHorn();
+            UpdateSmoke(standing, health);
+
+            // L'alarme (3 novembre) : pendant une attaque, le rayon monte haut dans le ciel, s'élargit et bat en rouge.
+            var attacked = standing && Time.time - m_LastTowerHit < m_Settings.towerAttackGap;
+            m_Alarm = Mathf.MoveTowards(m_Alarm, attacked ? 1f : 0f, Time.deltaTime * (attacked ? 3f : 0.5f));
             var color = health > 0.5f
                 ? Color.Lerp(m_Settings.beaconHalf, m_Settings.beaconFull, (health - 0.5f) * 2f)
                 : Color.Lerp(m_Settings.beaconLow, m_Settings.beaconHalf, health * 2f);
@@ -418,8 +597,20 @@ namespace Archery.World
                 var rig = PlayerRig.Instance;
                 var onTower = rig != null && rig.BodyPosition.y > m_TowerTop - 1.5f && rig.BodyPosition.y < k_MapTop;
                 m_TowerBeam.enabled = standing && !onTower;
-                var beamColor = color;
-                beamColor.a = Mathf.Lerp(0.18f, 0.55f, lamps) * strength;
+                if (m_BeamScale.y > 0f)
+                {
+                    var grow = 1f + m_Alarm * (Mathf.Max(1f, m_Settings.alarmBeamScale) - 1f);
+                    var scale = new Vector3(m_BeamScale.x * grow, m_BeamScale.y * grow, m_BeamScale.z * grow);
+                    var beamTransform = m_TowerBeam.transform;
+                    beamTransform.localScale = scale;
+                    var position = beamTransform.position;
+                    beamTransform.position = new Vector3(position.x, m_BeamBottom + scale.y, position.z);
+                }
+
+                // Pendant une attaque, il bat en rouge, bien visible même le jour.
+                var flash = 0.5f + 0.5f * Mathf.Sin(Time.time * 9f);
+                var beamColor = Color.Lerp(color, m_Settings.beaconLow, m_Alarm);
+                beamColor.a = Mathf.Max(Mathf.Lerp(0.18f, 0.55f, lamps) * strength, m_Alarm * Mathf.Lerp(0.35f, 0.85f, flash));
                 m_Block.Clear();
                 m_Block.SetColor(k_BaseColorId, beamColor);
                 m_TowerBeam.SetPropertyBlock(m_Block);

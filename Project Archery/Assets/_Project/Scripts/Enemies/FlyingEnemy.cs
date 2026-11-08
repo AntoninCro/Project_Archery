@@ -109,6 +109,9 @@ namespace Archery.Enemies
 
         static readonly RaycastHit[] s_Hits = new RaycastHit[16];
 
+        // La fin du piqué (m jusqu'à la tête du joueur) : il fonce, sans plus éviter les obstacles (3 novembre).
+        const float k_FinalApproach = 4f;
+
         // Ce que chaque collider touché est (ennemi, flèche, projectile : on passe à travers), cherché une fois pour toutes :
         // ces recherches dans la hiérarchie, pour chaque contact et à chaque image, pesaient avec 8 volants. Vidé de temps
         // en temps (flèches et projectiles détruits).
@@ -335,9 +338,14 @@ namespace Archery.Enemies
 
             // En piqué, seul ce qui est avant la tête du joueur compte : le sol juste derrière lui passait pour un mur, et
             // le volant remontait au dernier moment, sans toucher.
+            // Dans ses derniers mètres, il ne s'écarte plus de rien : il remontait au dernier moment devant le sol, la plate-forme ou la
+            // rambarde, et son piqué allait rarement au bout (troisième essai, 3 novembre : « ils évitent trop de foncer dans le sol »).
             if (m_Phase == Phase.Diving)
             {
-                lookAhead = Mathf.Min(lookAhead, Vector3.Distance(transform.position, m_DiveTarget) - m_HitRadius);
+                var toTarget = Vector3.Distance(transform.position, m_DiveTarget);
+                if (toTarget < k_FinalApproach)
+                    return;
+                lookAhead = Mathf.Min(lookAhead, toTarget - m_HitRadius);
                 if (lookAhead <= 0.05f)
                     return;
             }

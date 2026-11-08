@@ -5433,25 +5433,25 @@ MonoBehaviour:
   m_WakeDepth: 14
   m_RiseTime: 2.4
   m_WakeRadius: 22
-  m_WakeDamage: 100
+  m_WakeDamage: 70
   m_Range: 30
   m_ForgeInterval: 1.2
   m_ForgeIdleSlow: 2.5
-  m_ChunkDamage: 70
+  m_ChunkDamage: 49
   m_ChunkRadius: 3
   m_StrikesPerIngot: 5
-  m_Damage: 450
+  m_Damage: 315
   m_Radius: 7
   m_Push: 10
   m_Lift: 14
   m_BossShare: 0.015
   m_ScorchRadius: 2.5
   m_ScorchTime: 3
-  m_ScorchBurn: 15
+  m_ScorchBurn: 11
   m_ThrowInterval: 0.2
   m_QueueSize: 8
   m_SeekRadius: 5
-  m_HammerDamage: 160
+  m_HammerDamage: 112
   m_HammerRadius: 6
   m_HammerPush: 8
   m_HammerLift: 12
@@ -5468,10 +5468,10 @@ MonoBehaviour:
   m_FlowLength: 70
   m_FlowSpeed: 12
   m_FlowWidth: 7
-  m_FlowDamage: 90
-  m_FlowBurn: 50
+  m_FlowDamage: 63
+  m_FlowBurn: 35
   m_FlowPush: 12
-  m_RiverBurn: 30
+  m_RiverBurn: 21
   m_PourTime: 1.4
   m_FlowStay: 6
   m_SkyFlow: 0.85

@@ -154,7 +154,15 @@ namespace Archery.Enemies
         // Les renforts sortent du sol autour du boss, tournés vers la tour.
         void Summon()
         {
-            if (Enemy.Alive.Count >= m_MaxEnemiesAlive)
+            // Sans les gardiens des coffres (4 novembre), qui restent dans la forêt.
+            var attackers = 0;
+            foreach (var alive in Enemy.Alive)
+            {
+                if (alive != null && !alive.IsGuard)
+                    attackers++;
+            }
+
+            if (attackers >= m_MaxEnemiesAlive)
                 return;
 
             var tower = Tower.Instance;

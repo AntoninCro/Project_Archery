@@ -28,6 +28,10 @@ namespace Archery.Bows
         }
 
         static readonly List<Arrow> s_HeldArrows = new List<Arrow>();
+
+        // Les flèches actives (3 novembre, la fluidité au Quest) : ce que trouverait FindObjectsByType<Arrow>, sans parcourir la
+        // scène ni allouer un tableau (l'arrêt du temps les cherchait vingt fois par seconde).
+        static readonly List<Arrow> s_Active = new List<Arrow>();
         static readonly RaycastHit[] s_RaycastHits = new RaycastHit[16];
 
         // Le laser : tout ce qu'il traverse, puis ce qu'il touche (une entrée par ennemi, sa zone la plus prioritaire).
@@ -48,6 +52,9 @@ namespace Archery.Bows
 
         /// <summary>Flèches actuellement tenues en main, que l'arc peut encocher.</summary>
         public static IReadOnlyList<Arrow> HeldArrows => s_HeldArrows;
+
+        /// <summary>Les flèches actives dans la scène (en vol, tenues, plantées ; pas celles rangées dans la réserve).</summary>
+        public static IReadOnlyList<Arrow> Active => s_Active;
 
         /// <summary>Déclenché à chaque impact, quel que soit l'objet touché.</summary>
         public static event Action<ArrowHit> AnyHit;
@@ -273,8 +280,15 @@ namespace Archery.Bows
             ResetState();
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            s_Active.Add(this);
+        }
+
         protected override void OnDisable()
         {
+            s_Active.Remove(this);
             s_HeldArrows.Remove(this);
             LeaveDetailBudget();
             base.OnDisable();
@@ -988,8 +1002,13 @@ namespace Archery.Bows
         void StickInto(RaycastHit hit, Vector3 direction)
         {
             m_State = State.Stuck;
-            m_Body.linearVelocity = Vector3.zero;
-            m_Body.angularVelocity = Vector3.zero;
+            // Déjà figée (une flèche tenue en main qui frappe) : Unity refuse qu'on change sa vitesse (avertissement vu au journal, 3 novembre).
+            if (!m_Body.isKinematic)
+            {
+                m_Body.linearVelocity = Vector3.zero;
+                m_Body.angularVelocity = Vector3.zero;
+            }
+
             m_Body.isKinematic = true;
             m_Body.useGravity = false;
             m_Body.interpolation = RigidbodyInterpolation.None;
@@ -1074,6 +1093,7 @@ namespace Archery.Bows
         static void ResetStatics()
         {
             s_HeldArrows.Clear();
+            s_Active.Clear();
             s_MeleeBow = null;
             AnyHit = null;
             ShotEnded = null;

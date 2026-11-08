@@ -115,6 +115,7 @@ namespace Archery.Bows
 
         // La lueur de la corde (26 octobre : la couleur de la pièce de la corde, PieceLook), sur les mêmes points.
         LineRenderer m_StringGlow;
+        bool m_StringGlowWanted;
 
         [SerializeField]
         Transform m_UpperLimb;
@@ -446,6 +447,7 @@ namespace Archery.Bows
                 }
 
                 m_StowedRenderers.Clear();
+                RefreshStringGlow();
             }
 
             // Il reste (ou revient) directement à sa place près du joueur.
@@ -896,6 +898,7 @@ namespace Archery.Bows
 
             m_ReplacedColliders.Clear();
             m_Holstered = true;
+            RefreshStringGlow();
         }
 
         /// <summary>
@@ -910,7 +913,8 @@ namespace Archery.Bows
         /// </summary>
         public void SetStringGlow(Color color, Material material)
         {
-            if (color.a <= 0f || m_String == null)
+            m_StringGlowWanted = color.a > 0f && m_String != null;
+            if (!m_StringGlowWanted)
             {
                 if (m_StringGlow != null)
                     m_StringGlow.enabled = false;
@@ -932,7 +936,16 @@ namespace Archery.Bows
 
             m_StringGlow.sharedMaterial = material;
             m_StringGlow.startColor = m_StringGlow.endColor = color;
-            m_StringGlow.enabled = true;
+            RefreshStringGlow();
+        }
+
+        // La lueur ne s'allume que sur l'arc visible : caché (les Akimbow, le katana, rangé pour une construction), il ne la montre
+        // pas. (Avant le 4 novembre, une pièce de corde prise avec les Akimbow la rallumait seule : une corde lumineuse flottait à
+        // côté du joueur, à la place de l'arc caché.)
+        void RefreshStringGlow()
+        {
+            if (m_StringGlow != null)
+                m_StringGlow.enabled = m_StringGlowWanted && !IsReplaced && !m_Stowed;
         }
 
         // Un modèle riggé n'a sa vraie pose de repos qu'après quelques images : on remesure la corde un peu après.

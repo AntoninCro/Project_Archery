@@ -9,7 +9,9 @@ namespace Archery.Building
     /// Les flèches « DUO » (le joueur, 31 octobre) : entre deux tours qui peuvent fusionner, une grande flèche dorée en arc, haut
     /// au-dessus d'elles, les relie, avec le mot « DUO » (et le nom du duo) à son sommet ; « TRIO » entre un duo et une tour qui
     /// font un trio (1er novembre). Seulement entre les vagues : pendant une vague, elles prendraient de la vue au joueur (et on
-    /// ne fusionne pas).
+    /// ne fusionne pas). Depuis le 3 novembre, la flèche « ULTIME » : droite, elle plonge sur un trio au niveau 3 qui peut devenir
+    /// l'ultime de sa famille, avec le nom de l'ultime et les plans qu'il a déjà (« 4 / 10 plans ») ; tant qu'aucune ultime n'est
+    /// bâtie dans la partie (il n'y en a qu'une).
     /// </summary>
     /// <remarks>
     /// Créé par <see cref="BuildManager"/> (rien à poser dans la scène). Les paires sont revues deux fois par seconde par
@@ -52,6 +54,10 @@ namespace Archery.Building
         [SerializeField]
         Color m_EdgeColor = new Color(1f, 0.9f, 0.5f, 1f);
 
+        [Tooltip("Longueur (m) de la flèche « ULTIME », qui plonge sur le trio.")]
+        [SerializeField]
+        float m_UltimateLength = 6f;
+
         class Hint
         {
             public Structure A;
@@ -59,6 +65,7 @@ namespace Archery.Building
             public GameObject Root;
             public MeshFilter Filter;
             public Transform Label;
+            public TextMeshPro Detail;
             public Vector3 From;
             public Vector3 To;
             public bool Seen;
@@ -132,6 +139,29 @@ namespace Archery.Building
                 }
             }
 
+            // La flèche « ULTIME » (3 novembre) : sur chaque trio au niveau 3 dont la famille a son ultime, tant qu'aucune n'est
+            // bâtie ; même sans assez de plans : elle dit où il en est.
+            if (!builds.HasUltimate)
+            {
+                foreach (var structure in Structure.All)
+                {
+                    if (!(structure is TowerTrio trio) || !structure.IsBuilt || structure.IsUnderConstruction)
+                        continue;
+                    var entry = builds.UltimateOf(trio, out _, out var plans);
+                    if (entry == null)
+                        continue;
+
+                    var hint = Find(trio, null) ?? CreateHint(trio, null, "ULTIME", entry.displayName);
+                    if (hint == null)
+                        continue;
+                    hint.Seen = true;
+                    PlaceUltimate(hint);
+                    var detail = $"{Mathf.Min(builds.PlansOf(trio), plans)} / {plans} plans";
+                    if (hint.Detail != null && hint.Detail.text != detail)
+                        hint.Detail.text = detail;
+                }
+            }
+
             for (var i = m_Hints.Count - 1; i >= 0; i--)
             {
                 if (m_Hints[i].Seen)
@@ -154,6 +184,14 @@ namespace Archery.Building
 
         Hint Create(Structure a, Structure b, TowerDuoCatalog.Entry entry)
         {
+            var word = entry != null ? entry.Label.ToUpperInvariant() : "DUO";
+            var title = entry != null && !string.IsNullOrEmpty(entry.displayName) ? entry.displayName : null;
+            return CreateHint(a, b, word, title);
+        }
+
+        // Une flèche et son mot ; b nul : la flèche « ULTIME », sur a seul, avec une ligne de plus (ses plans).
+        Hint CreateHint(Structure a, Structure b, string word, string title)
+        {
             if (m_Material == null)
             {
                 var builds = BuildManager.Instance;
@@ -163,7 +201,8 @@ namespace Archery.Building
                 m_Theme = UiTheme.Load();
             }
 
-            var root = new GameObject("Flèche de duo (" + a.DisplayName + " + " + b.DisplayName + ")");
+            var root = new GameObject(b != null ? "Flèche de duo (" + a.DisplayName + " + " + b.DisplayName + ")"
+                                                : "Flèche d'ultime (" + a.DisplayName + ")");
             root.transform.SetParent(transform, false);
             var filter = root.AddComponent<MeshFilter>();
             var renderer = root.AddComponent<MeshRenderer>();
@@ -171,20 +210,19 @@ namespace Archery.Building
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             filter.sharedMesh = new Mesh { name = "Flèche de duo" };
 
-            var word = entry != null ? entry.Label.ToUpperInvariant() : "DUO";
             var label = new GameObject(word).transform;
             label.SetParent(root.transform, false);
             AddText(label, word, 26f, Vector3.zero, true);
-            var title = entry != null && !string.IsNullOrEmpty(entry.displayName) ? entry.displayName : null;
             if (title != null)
                 AddText(label, title, 10f, new Vector3(0f, -1.9f, 0f), false);
+            var detail = b == null ? AddText(label, "", 8f, new Vector3(0f, -3.3f, 0f), false) : null;
 
-            var hint = new Hint { A = a, B = b, Root = root, Filter = filter, Label = label, From = Vector3.positiveInfinity };
+            var hint = new Hint { A = a, B = b, Root = root, Filter = filter, Label = label, Detail = detail, From = Vector3.positiveInfinity };
             m_Hints.Add(hint);
             return hint;
         }
 
-        void AddText(Transform parent, string content, float size, Vector3 at, bool title)
+        TextMeshPro AddText(Transform parent, string content, float size, Vector3 at, bool title)
         {
             var go = new GameObject(content);
             go.transform.SetParent(parent, false);
@@ -209,6 +247,7 @@ namespace Archery.Building
             text.outlineWidth = 0.2f;
             text.outlineColor = new Color32(40, 22, 4, 230);
             text.sortingOrder = 1;
+            return text;
         }
 
         // L'arc d'une tour à l'autre, au-dessus de leurs sommets ; refait seulement si l'une a bougé.
@@ -226,8 +265,21 @@ namespace Archery.Building
             var apex = Mathf.Max(from.y, to.y) + m_Height + flat.magnitude * m_HeightPerMeter;
             var control = (from + to) * 0.5f;
             control.y = 2f * apex - 0.5f * (from.y + to.y);
-            BuildArc(hint.Filter.sharedMesh, from, control, to);
+            BuildArc(hint.Filter.sharedMesh, from, control, to, true);
             hint.Label.position = new Vector3((from.x + to.x) * 0.5f, apex + 2.4f, (from.z + to.z) * 0.5f);
+        }
+
+        // La flèche « ULTIME » : droite, de haut en bas, sa pointe sur le sommet du trio ; refaite seulement s'il a bougé.
+        void PlaceUltimate(Hint hint)
+        {
+            var to = Top(hint.A);
+            if ((to - hint.To).sqrMagnitude < 0.01f)
+                return;
+
+            hint.To = to;
+            hint.From = to + Vector3.up * m_UltimateLength;
+            BuildArc(hint.Filter.sharedMesh, hint.From, (hint.From + to) * 0.5f, to, false);
+            hint.Label.position = hint.From + Vector3.up * 2.4f;
         }
 
         // Le haut d'une tour : le sommet de ses pièces visibles, au-dessus de son centre.
@@ -273,18 +325,20 @@ namespace Archery.Building
             m_Material.SetColor(k_EdgeColorId, m_EdgeColor * (0.8f + 0.4f * pulse));
         }
 
-        // Un tube le long de la courbe (Bézier quadratique), une pointe à chaque bout, tournée vers sa tour.
-        void BuildArc(Mesh mesh, Vector3 a, Vector3 control, Vector3 b)
+        // Un tube le long de la courbe (Bézier quadratique), une pointe à chaque bout, tournée vers sa tour (au bout b seulement
+        // sans headAtStart : la flèche « ULTIME »).
+        void BuildArc(Mesh mesh, Vector3 a, Vector3 control, Vector3 b, bool headAtStart)
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangles = new List<int>();
 
             // Le corps, entre les deux pointes.
-            var start = m_HeadLength / Mathf.Max(1f, Vector3.Distance(a, b) * 1.3f);
+            var head = m_HeadLength / Mathf.Max(1f, Vector3.Distance(a, b) * 1.3f);
+            var start = headAtStart ? head : 0f;
             for (var s = 0; s <= k_Segments; s++)
             {
-                var t = Mathf.Lerp(start, 1f - start, s / (float)k_Segments);
+                var t = Mathf.Lerp(start, 1f - head, s / (float)k_Segments);
                 Frame(a, control, b, t, out var point, out var tangent, out var side, out var up);
                 for (var k = 0; k <= k_Sides; k++)
                 {
@@ -310,8 +364,9 @@ namespace Archery.Building
                 }
             }
 
-            Head(vertices, normals, triangles, a, control, b, start, false);
-            Head(vertices, normals, triangles, a, control, b, 1f - start, true);
+            if (headAtStart)
+                Head(vertices, normals, triangles, a, control, b, start, false);
+            Head(vertices, normals, triangles, a, control, b, 1f - head, true);
 
             mesh.Clear();
             mesh.SetVertices(vertices);

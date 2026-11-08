@@ -359,5 +359,8 @@ namespace Archery.Building
             foreach (var enemy in m_Ended)
                 m_Immune.Remove(enemy);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Radius;
     }
 }

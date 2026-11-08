@@ -189,6 +189,10 @@ namespace Archery.Building
             public float BounceTime;
             public Vector3 BounceFrom;
             public Vector3 BounceTo;
+
+            // Dans l'arène (3 novembre) : lancée sur MK, elle le suit en vol et éclate sur lui.
+            public bool AtBoss;
+            public Enemy Follow;
         }
 
         class Lured
@@ -245,6 +249,12 @@ namespace Archery.Building
                 return;
 
             var level = Mathf.Max(1, Level);
+            if (InArena)
+            {
+                UpdateArena(level);
+                return;
+            }
+
             if (Time.time >= m_NextScan)
             {
                 m_NextScan = Time.time + 0.25f;
@@ -276,6 +286,41 @@ namespace Archery.Building
             m_NextShot = Time.time + ValueFor(m_IntervalPerLevel, level, 7f) / OverchargeRate;
             Fire(m_TargetLane, Mathf.Min(m_TargetLane.Length, m_TargetAlong + 5f), level, false);
             m_Target = null;
+        }
+
+        // Dans l'arène de MK (3 novembre) : pas de voie où les poser, et un boss ne vient pas les frapper. Le canon les lance sur MK,
+        // où elles éclatent en confettis piquants ; au niveau 3, le char de carnaval aussi (une part de ses PV max : 2 % au plus).
+        void UpdateArena(int level)
+        {
+            if (Time.time >= m_NextScan)
+            {
+                m_NextScan = Time.time + 0.25f;
+                m_Target = NearestEnemy(m_Range * RangeScale);
+            }
+
+            if (m_Target == null || !m_Target.IsAlive)
+                return;
+
+            if (m_Turret != null)
+            {
+                var look = m_Target.transform.position - m_Turret.position;
+                look.y = 0f;
+                if (look.sqrMagnitude > 0.01f)
+                    m_Turret.rotation = Quaternion.RotateTowards(m_Turret.rotation, Quaternion.LookRotation(look), 120f * Time.deltaTime);
+            }
+
+            if (level >= 3 && Time.time >= m_NextFloat)
+            {
+                m_NextFloat = Time.time + m_FloatInterval / OverchargeRate;
+                m_NextShot = Time.time + 2f;
+                FireAt(m_Target, level, true);
+                return;
+            }
+
+            if (Time.time < m_NextShot)
+                return;
+            m_NextShot = Time.time + ValueFor(m_IntervalPerLevel, level, 7f) / OverchargeRate;
+            FireAt(m_Target, level, false);
         }
 
         bool HasGiant()
@@ -329,6 +374,25 @@ namespace Archery.Building
         {
             var landing = lane.PointAt(along, out _);
             landing.y = GroundY(landing, 1.5f);
+            var doll = SpawnDoll(level, giant, landing, Quaternion.LookRotation(ForestwardAt(landing)));
+            doll.Lane = lane;
+            doll.Along = along;
+        }
+
+        // Dans l'arène (3 novembre) : lancée sur MK ; son milieu le rejoint (là où elle éclate).
+        void FireAt(Enemy target, int level, bool giant)
+        {
+            var height = giant ? m_FloatHeight : ValueFor(m_HeightPerLevel, level, 2f);
+            var flat = target.transform.position - transform.position;
+            flat.y = 0f;
+            var doll = SpawnDoll(level, giant, target.Center - Vector3.up * (height * 0.4f),
+                                 Quaternion.LookRotation(flat.sqrMagnitude > 1e-4f ? -flat.normalized : Vector3.forward));
+            doll.AtBoss = true;
+            doll.Follow = target;
+        }
+
+        Doll SpawnDoll(int level, bool giant, Vector3 landing, Quaternion facing)
+        {
             var from = m_Muzzle != null ? m_Muzzle.position : transform.position + Vector3.up * 3f;
             var copy = Instantiate(m_DollTemplate.gameObject, from, Quaternion.identity);
             copy.name = giant ? "Char de carnaval" : "Baudruche";
@@ -339,7 +403,6 @@ namespace Archery.Building
                 Destroy(collider);
 
             var height = giant ? m_FloatHeight : ValueFor(m_HeightPerLevel, level, 2f);
-            var forest = ForestwardAt(landing);
             var doll = new Doll
             {
                 Transform = copy.transform,
@@ -350,11 +413,9 @@ namespace Archery.Building
                 To = landing,
                 Height = height,
                 Scale = m_DollTemplate.lossyScale * (height / Mathf.Max(0.01f, m_TemplateHeight)),
-                Facing = Quaternion.LookRotation(forest),
+                Facing = facing,
                 Hits = giant ? m_FloatHits : ValueFor(m_HitsPerLevel, level, 6),
                 Phase = Random.value * 6f,
-                Lane = lane,
-                Along = along,
             };
 
             // Le collider, dans les unités du modèle (la copie est mise à l'échelle) : une gélule de toute sa hauteur.
@@ -368,6 +429,7 @@ namespace Archery.Building
             copy.transform.localScale = doll.Scale * 0.3f;
             m_Dolls.Add(doll);
             Sfx.Play(m_FireClip, from, 1f, giant ? 0.6f : Random.Range(0.95f, 1.1f));
+            return doll;
         }
 
         bool Step(Doll doll)
@@ -380,11 +442,18 @@ namespace Archery.Building
             {
                 doll.Time += Time.deltaTime;
                 var t = Mathf.Clamp01(doll.Time / m_FlightTime);
-                doll.Transform.position = Vector3.Lerp(doll.From, doll.To, t) + Vector3.up * (4f * m_FlightHeight * t * (1f - t));
+                if (doll.AtBoss && doll.Follow != null && doll.Follow.IsAlive)
+                    doll.To = doll.Follow.Center - Vector3.up * (doll.Height * 0.4f);
+                doll.Transform.position = Arc(doll.From, doll.To, t, m_FlightHeight);
                 doll.Transform.localScale = doll.Scale * Mathf.Lerp(0.3f, 1f, t);
                 doll.Transform.rotation = doll.Facing * Quaternion.Euler(0f, 360f * 2f * (1f - t), 0f);
                 if (t < 1f)
                     return true;
+                if (doll.AtBoss)
+                {
+                    Pop(doll, 1f);
+                    return false;
+                }
 
                 doll.Flying = false;
                 doll.Until = Time.time + (doll.Giant ? m_FloatLifetime : m_Lifetime);
@@ -623,14 +692,14 @@ namespace Archery.Building
                 if (enemy.IsAirborne)
                     continue;
 
-                var amount = damage + (doll.Giant ? enemy.Health.Max * m_FloatShare * bonus / Mathf.Max(0.01f, Strength) : 0f);
+                var amount = damage + (doll.Giant ? enemy.Health.Max * ShareFor(enemy, m_FloatShare) * bonus / Mathf.Max(0.01f, Strength) : 0f);
                 if (m_Lured.TryGetValue(enemy, out var lured) && lured.Doll == doll)
                 {
                     enemy.Uncharm();
                     m_Lured.Remove(enemy);
                 }
 
-                if (Hurt(enemy, amount, enemy.Center, enemy.transform.position - center))
+                if (Hurt(enemy, amount, enemy.Center, enemy.transform.position - center) && !(InArena && enemy.IsBoss))
                     KnockDown(enemy, center, doll.Giant ? 6f : 3f, doll.Giant ? 7f : 4f);
             }
 
@@ -667,5 +736,11 @@ namespace Archery.Building
             foreach (var color in k_Confetti)
                 Burst(point, color, perColor, speed, size, 1.4f, 0.5f);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        /// <summary>Il rejoint l'arène de MK (3 novembre) : ses baudruches y éclatent sur MK (<see cref="UpdateArena"/>).</summary>
+        public override bool FightsInArena => true;
     }
 }

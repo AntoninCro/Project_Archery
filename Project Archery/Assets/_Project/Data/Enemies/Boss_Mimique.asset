@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Boss_Mimique
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Jean
-  maxHealth: 383
+  maxHealth: 268
   moveSpeed: 2.3
   attackDamage: 50
   attackRange: 3
   attackInterval: 2
   attackWindup: 0.36
-  playerAggroRange: 0
+  playerAggroRange: 7
   targetsPlayer: 0
   points: 250

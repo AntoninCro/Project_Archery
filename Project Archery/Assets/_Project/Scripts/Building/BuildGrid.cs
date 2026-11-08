@@ -237,6 +237,8 @@ namespace Archery.Building
         readonly List<int> m_Scratch = new List<int>();
         readonly List<int> m_Roadside = new List<int>();
         List<MapScan.Lane> m_Lanes = new List<MapScan.Lane>();
+        readonly List<MapScan.Lane> m_Sorted = new List<MapScan.Lane>();
+        List<MapScan.Lane> m_SortedFor;
         Transform m_Container;
         int m_TemplateLayer;
         InteractionLayerMask m_TemplateInteractionLayers = 1;
@@ -1586,6 +1588,9 @@ namespace Archery.Building
         /// <summary>La case existe et a du sol (elle se dessine).</summary>
         internal bool HasGround(int index) => index >= 0 && index < m_Kind.Length && m_Kind[index] != CellKind.Void;
 
+        /// <summary>La case est de la voie (la terre où passent les ennemis).</summary>
+        internal bool IsLaneCell(int index) => index >= 0 && index < m_Kind.Length && m_Kind[index] == CellKind.Lane;
+
         /// <summary>Ce bâtiment peut aller sur cette case (sa sorte lui convient, elle est libre).</summary>
         internal bool Accepts(int index, StructureDefinition definition, Structure moving)
         {
@@ -1703,6 +1708,80 @@ namespace Archery.Building
 
             point = nearest.PointAt(Mathf.Max(0f, along - back), out _);
             return true;
+        }
+
+        /// <summary>
+        /// Les voies de gauche à droite, pour qui regarde la forêt depuis la tour (3 novembre : le placement lisible et les menaces
+        /// par voie les nomment ainsi). Rangées une fois, selon la direction de leur départ vue de la tour.
+        /// </summary>
+        public IReadOnlyList<MapScan.Lane> SortedLanes
+        {
+            get
+            {
+                if (m_SortedFor == m_Lanes && m_Sorted.Count == m_Lanes.Count)
+                    return m_Sorted;
+
+                m_SortedFor = m_Lanes;
+                m_Sorted.Clear();
+                var tower = TowerPosition();
+                var mean = Vector3.zero;
+                foreach (var lane in m_Lanes)
+                {
+                    if (lane == null || lane.Points.Count == 0)
+                        continue;
+                    m_Sorted.Add(lane);
+                    mean += FlatFrom(tower, lane).normalized;
+                }
+
+                if (mean.sqrMagnitude < 1e-4f)
+                    mean = Vector3.forward;
+                m_Sorted.Sort((a, b) => Vector3.SignedAngle(mean, FlatFrom(tower, a), Vector3.up)
+                                         .CompareTo(Vector3.SignedAngle(mean, FlatFrom(tower, b), Vector3.up)));
+                return m_Sorted;
+            }
+        }
+
+        static Vector3 FlatFrom(Vector3 tower, MapScan.Lane lane)
+        {
+            var flat = (lane.Spawn != null ? lane.Spawn.position : lane.Points[0]) - tower;
+            flat.y = 0f;
+            return flat;
+        }
+
+        /// <summary>
+        /// Le nom d'une voie vue de la tour : « voie de gauche », « voie du milieu », « voie de droite » (trois voies) ;
+        /// <paramref name="brief"/> : « gauche », « milieu », « droite ».
+        /// </summary>
+        public string LaneName(MapScan.Lane lane, bool brief = false)
+        {
+            var lanes = SortedLanes;
+            var index = -1;
+            for (var i = 0; i < lanes.Count; i++)
+            {
+                if (lanes[i] == lane)
+                    index = i;
+            }
+
+            string side = null;
+            if (lanes.Count == 3 && index >= 0)
+                side = index == 0 ? "gauche" : index == 1 ? "milieu" : "droite";
+            else if (lanes.Count == 2 && index >= 0)
+                side = index == 0 ? "gauche" : "droite";
+            if (side == null)
+                return brief ? $"voie {index + 1}" : lanes.Count == 1 ? "la voie" : $"voie {index + 1}";
+            return brief ? side : side == "milieu" ? "voie du milieu" : $"voie de {side}";
+        }
+
+        /// <summary>La voie qui part de ce point d'apparition des ennemis (null s'il n'en a pas).</summary>
+        public MapScan.Lane LaneFrom(Transform spawn)
+        {
+            foreach (var lane in m_Lanes)
+            {
+                if (lane != null && lane.Spawn == spawn)
+                    return lane;
+            }
+
+            return null;
         }
 
         Vector3 TowerPosition()

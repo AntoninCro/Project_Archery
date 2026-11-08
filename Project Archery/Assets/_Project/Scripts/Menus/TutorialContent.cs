@@ -49,14 +49,15 @@ namespace Archery.Menus
 
         /// <summary>
         /// La fenêtre des coffres, catégorie Construction (le coffre unique, 2 novembre ; deux plans par coffre, 2 novembre). Elle
-        /// remplace celle des caisses de l'ingénieur dans l'asset (<c>Editor/SecondTestBaker</c>).
+        /// remplace celle des caisses de l'ingénieur dans l'asset (<c>Editor/SecondTestBaker</c>) ; le chantier du début, un trio
+        /// et la Barricade (3 novembre), y est mis par <c>Editor/StartingTrioBaker</c>.
         /// </summary>
         public const string ChestTitle = "Ouvrir les coffres";
 
         public const string ChestText =
             "Au début de chaque vague, des coffres apparaissent d'un côté de la jungle, sous un rayon doré (l'autre côté à la vague " +
             "suivante). Vise-en un et appuie sur la gâchette (ou la gâchette de prise) : choisis un parchemin, deux plans d'un bâtiment " +
-            "de ton chantier, ou un objet. Ton chantier : 3 bâtiments au début, un de plus après chaque boss.";
+            "de ton chantier, ou un objet. Ton chantier : 4 bâtiments au début (de quoi bâtir un trio), un de plus après chaque boss.";
 
         public List<Section> sections = new List<Section>();
 

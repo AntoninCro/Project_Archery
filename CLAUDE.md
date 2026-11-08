@@ -41,11 +41,17 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   `FinalBoss/DragonBoss.Daze.cs`, le modèle dans `Tools/allure_tours/ultimes.py`, `Editor/ManegeFinitionBaker`, `ManegeSonsBaker`) ;
   pas encore vu dans Unity ; ses sons (freesound, CC0, téléchargés par le joueur) sont découpés en `Audio/Manege_*.wav` et crédités
   (les outils pour les sons, réutilisables : `Tools/sons/` ; lire un WAV ou un AIFF, l'enveloppe, le spectre, chercher une boucle qui
-  se raccorde au rythme, découper) ; le joueur l'a lancé : « parfait ». **La Grande Horloge, la troisième, est codée** (2 novembre,
+  se raccorde au rythme, découper ; un MP3 se convertit par le transcodeur de Windows, `mp3_en_wav.ps1` ; synthétiser un son sur un
+  modèle, `arret_du_temps.py`) ; le joueur l'a lancé : « parfait ». **La Grande Horloge, la troisième, est codée** (2 novembre,
   tard ; 12.52 : les chiffres, Minuit après le XII et le dégel qui brise, l'écho du temps, l'aurore, l'horloge astronomique, Minuit
   dans l'arène ; `Building/UltimeHorloge.cs`, `FinalBoss/DragonBoss.TimeStop.cs`, `Editor/HorlogeFinitionBaker`, `HorlogeSonsBaker`) ;
   pas encore vue dans Unity ; ses sons (freesound, CC0, téléchargés par le joueur) sont découpés (`Tools/sons/decoupe_horloge.py`) et
-  crédités. **Les trois ultimes sont faites ; ensuite, leurs essais.** **Pour en refaire ou en changer une : lire d'abord
+  crédités. **Les trois ultimes sont faites ; ensuite, leurs essais.** Le 3 novembre : l'Horloge retouchée (sans ses cristaux,
+  modèle refait), et **le chantier du début** : les 3 tours d'un trio tiré au hasard, plus la Barricade (ou un autre si le trio
+  l'a déjà), 4 bâtiments (12.53). Puis l'action par flèche des ultimes suit la force du tir (12.54 : `TowerUltimate.ShotPower`,
+  parfait ×2, moyen ×0,8, la pluie moins), et Minuit a son silence et son bruit d'arrêt du temps (12.52, 12.54). Puis la flèche « ULTIME »,
+  la pose lisible (la portée au sol et la voie couverte, `Structure.ReachAt`), la lumière sous les tourelles de l'arène, la
+  fluidité (12.55). Les menaces par voie (le lot 5, 12.56 : `Waves/WaveManager.Lanes.cs`) sont en sommeil depuis le même jour. Le talisman de l'ingénieur surcharge tous les bâtiments (12.57). Tous les bâtiments qui tirent rejoignent l'arène de MK, adaptés à lui (12.58 : `Structure.FightsInArena`, `EnterArena`). La tour attaquée : le cor, le rayon, la fumée, à la place de l'alerte de la montre (12.59 ; `World/Lighting/MapGameplayLights`). Puis le troisième essai (12.60, `Editor/ThirdTestBaker` : volants, boss, PV du joueur ÷3, le combo, le Manège), et le rythme : les coffres gardés, la vague de durée fixe (12.61 ; `Enemies/Enemy.Guard.cs`). La tour à 1 500 PV et les ultimes −30 % (12.62, `Editor/UltimesTowerBaker`). Les plans par coffre de 1 à 4 au hasard (12.63, `BuildManager.RollPlansPerChest`). Le quatrième essai : le Carquois géant limité à 2 flèches par seconde, le journal corrigé (12.64 ; les parties du 3 et du 4 novembre étaient au casque, le journal disait à tort « sans casque »). L'Avalanche n'avale qu'une fois (12.65). Les ennemis au sol 30 % plus rapides, sauf en Facile (12.66, `Editor/GroundSpeedBaker`). La corde des Akimbow, le voile rouge, le joueur à 100 PV et la Vigueur à +12 (12.67, `Editor/PlayerHealth100Baker`). **Pour en refaire ou en changer une : lire d'abord
   `Project Archery/Docs/Ultimes_Cahier.md`**, tout ce que le joueur a demandé pour le Colosse, à faire dès le premier jet (le
   modèle fini, l'apparition, le ciel passager, un signe à chaque coup, le rythme en trois couches dont une action par flèche
   plafonnée à 5 par seconde, des coups à l'échelle du modèle, la force vérifiée au tableau, les boss, les sons, le casque), et ses parties
@@ -61,6 +67,11 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   tours) à une mécanique nouvelle.
 - **La bonne complexité arrive au fil de la partie**, une fois que le joueur maîtrise ses outils, et reste dosée. Les modèles : les
   pièces de flèche (chacune simple, la profondeur par les combinaisons) ; les 10 tours de base, puis les duos et les trios.
+- **Les bâtiments : contrôler plutôt que tuer** (le joueur, 4 novembre) : les tourelles qui contrôlent les ennemis (projeter,
+  immobiliser, regrouper, ralentir) sont plus amusantes que celles qui font des dégâts ; elles préparent les tirs du joueur. Le
+  joueur ne trouve pas que les tourelles font trop de dégâts (sauf les ultimes, −30 % le même jour).
+- **Ne pas affaiblir les pièces de zone** (le joueur, 4 novembre) : si la monocible est en retard, la renforcer, et renforcer les
+  ennemis (`Refonte_TowerDefense.md`, 12.65).
 - GDD, section 1 (« Le fil rouge »).
 
 ## Façon de travailler
@@ -140,7 +151,12 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 
 - Sans Unity (depuis `Project Archery/`) : `py Tools/compile_check.py`
   compile le code du jeu comme un build, puis `py Tools/compile_check_editor.py` compile les outils d'`Assets/_Project/Editor`
-  (les bakers) contre lui.
+  (les bakers) contre lui. Et `py Tools/champs_en_double.py` : un champ qui porte le nom d'un champ d'une classe parente, même privé,
+  qu'Unity refuse (« The same field name is serialized multiple times ») et que le compilateur laisse passer (3 novembre).
 - Dans Unity : cliquer dans la fenêtre (recompilation), lire la console ; les bakers y écrivent ce qu'ils ont fait. Le journal
   est dans `Project Archery/Logs/Editor.log`.
+- **Après une partie de test** (3 novembre) : lire le **journal de partie**, `Project Archery/Logs/Parties/Partie_<date>.md` (le plus
+  récent ; hors de Git), écrit tout seul par `Scripts/Journal/GameJournal*.cs` dans l'éditeur et les builds de développement : le
+  déroulé daté (vagues, boss, objets, plans, bâtiments, attaques sur la tour, raccourcis de test, erreurs) et un bilan par vague et
+  par partie (ennemis, dégâts et éliminations par source, tirs, dégâts reçus, or, fluidité, bâtiments, flèche).
 - Rien n'est « fini » tant que le joueur ne l'a pas testé au casque : le dire clairement.

@@ -507,5 +507,8 @@ namespace Archery.Building
             Gizmos.color = new Color(0.7f, 0.9f, 1f, 0.6f);
             Gizmos.DrawWireSphere(transform.position, ValueFor(m_RangePerLevel, Mathf.Max(1, Level), 10f));
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => ValueFor(m_RangePerLevel, Mathf.Max(1, level), 10f);
     }
 }

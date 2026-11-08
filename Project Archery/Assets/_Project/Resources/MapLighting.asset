@@ -48,6 +48,12 @@ MonoBehaviour:
   beaconFull: {r: 0.35, g: 1, b: 0.5, a: 1}
   beaconHalf: {r: 1, g: 0.7, b: 0.2, a: 1}
   beaconLow: {r: 1, g: 0.15, b: 0.1, a: 1}
+  towerAttackGap: 8
+  alarmBeamScale: 2.5
+  towerHornClip: {fileID: 8300000, guid: fb83c74d66c8d7d4ead2ca4590108bf3, type: 3}
+  towerHornVolume: 0.9
+  towerHornReach: 260
+  towerHornQuiet: 15
   runeColor: {r: 0.45, g: 0.85, b: 1, a: 1}
   soulColor: {r: 0.7, g: 0.9, b: 1, a: 1}
   projectileLightRange: 5

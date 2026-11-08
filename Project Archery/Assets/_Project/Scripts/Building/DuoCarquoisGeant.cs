@@ -39,6 +39,13 @@ namespace Archery.Building
         [SerializeField]
         float[] m_CatchRadiusPerLevel = { 20f, 26f, 1000f };
 
+        [Tooltip("Flèches rattrapées par seconde, au plus (deux d'un coup, puis à ce rythme) ; 0 : sans limite. Le joueur, 4 novembre, " +
+                 "après une partie où un multishot explosif remplissait la nuée en quelques tirs et tuait MK en une volée : « le carquois " +
+                 "devrait être limité dans ce qu'il peut prendre à la seconde ». Un tir à la fois n'est pas gêné ; un multishot, si.")]
+        [Min(0f)]
+        [SerializeField]
+        float m_CatchesPerSecond = 2f;
+
         [Tooltip("Combien de flèches rattrapées font une volée, par niveau.")]
         [SerializeField]
         int[] m_VolleyAtPerLevel = { 10, 10, 30 };
@@ -94,6 +101,8 @@ namespace Archery.Building
         int m_Burning;
         bool m_Firing;
         float m_NextAutoShot;
+        float m_CatchBudget = -1f;
+        float m_CatchTime;
 
         protected override void Start()
         {
@@ -122,8 +131,8 @@ namespace Archery.Building
         void AutoShot(int level)
         {
             Enemy target = null;
-            var best = m_Range * m_Range;
-            foreach (var enemy in EnemiesNear(transform.position, m_Range, false))
+            var best = Range * Range;
+            foreach (var enemy in EnemiesNear(transform.position, Range, false))
             {
                 var distance = (enemy.transform.position - transform.position).sqrMagnitude;
                 if (distance < best)
@@ -157,10 +166,11 @@ namespace Archery.Building
                 return;
 
             var level = Mathf.Max(1, Level);
-            var radius = ValueFor(m_CatchRadiusPerLevel, level, 20f);
+            // Dans l'arène, toutes tes flèches ratées (3 novembre).
+            var radius = InArena ? 1000f : ValueFor(m_CatchRadiusPerLevel, level, 20f);
             var flat = arrow.transform.position - transform.position;
             flat.y = 0f;
-            if (flat.sqrMagnitude > radius * radius)
+            if (flat.sqrMagnitude > radius * radius || !TakeCatch())
                 return;
 
             m_Caught++;
@@ -173,6 +183,25 @@ namespace Archery.Building
             if (level >= 3 && m_Caught % 10 == 0)
                 FloatingText.Spawn(transform.position + Vector3.up * 9f, m_Caught + " / " + ValueFor(m_VolleyAtPerLevel, 3, 30),
                                    new Color(1f, 0.85f, 0.35f, 1f), 1.6f, 1.5f);
+        }
+
+        // Une flèche de plus dans le filet, si la limite par seconde le permet (4 novembre) : une réserve de deux flèches (Catches Per
+        // Second), qui se remplit à ce rythme. Le temps du jeu : au ralenti, les flèches arrivent moins vite, la réserve aussi.
+        bool TakeCatch()
+        {
+            if (m_CatchesPerSecond <= 0f)
+                return true;
+
+            var capacity = Mathf.Max(1f, m_CatchesPerSecond);
+            m_CatchBudget = m_CatchBudget < 0f
+                ? capacity
+                : Mathf.Min(capacity, m_CatchBudget + (Time.time - m_CatchTime) * m_CatchesPerSecond);
+            m_CatchTime = Time.time;
+            if (m_CatchBudget < 1f)
+                return false;
+
+            m_CatchBudget -= 1f;
+            return true;
         }
 
         // Les flèches du filet : une par flèche rattrapée (dix au plus).
@@ -190,7 +219,7 @@ namespace Archery.Building
         {
             m_Points.Clear();
             m_Scratch.Clear();
-            m_Scratch.AddRange(EnemiesNear(transform.position, m_Range, false));
+            m_Scratch.AddRange(EnemiesNear(transform.position, Range, false));
             if (m_Scratch.Count == 0)
                 return false;
 
@@ -242,15 +271,31 @@ namespace Archery.Building
             yield return new WaitForSeconds(0.5f);
             var damage = ValueFor(m_BoltDamagePerLevel, level, 30f);
             var points = new List<Vector3>(m_Points);
+            var boss = InArena ? NearestEnemy(Range) : null;
             for (var i = 0; i < bolts; i++)
             {
                 if (m_BoltPrefab == null)
                     break;
-                var center = points[i % points.Count];
-                var offset = Random.insideUnitCircle * m_Spread;
-                var target = center + new Vector3(offset.x, 0f, offset.y);
-                var from = target + Vector3.up * m_DropHeight + (transform.position - target).normalized * 6f;
-                var direction = (target - from).normalized;
+                Vector3 from;
+                Vector3 direction;
+                if (boss != null && boss.IsAlive)
+                {
+                    // Dans l'arène (3 novembre) : la volée part de l'arbalète droit sur MK, là où il sera (tombée du ciel, la voûte
+                    // l'arrêtait, et elle tombait sous lui quand il vole).
+                    from = top;
+                    var time = Vector3.Distance(from, boss.Center) / m_BoltSpeed;
+                    var aim = boss.Center + boss.Velocity * time + Random.insideUnitSphere * Mathf.Min(m_Spread, k_ArenaBossBody);
+                    direction = (aim - from).normalized;
+                }
+                else
+                {
+                    var center = points[i % points.Count];
+                    var offset = Random.insideUnitCircle * m_Spread;
+                    var target = center + new Vector3(offset.x, 0f, offset.y);
+                    from = target + Vector3.up * m_DropHeight + (transform.position - target).normalized * 6f;
+                    direction = (target - from).normalized;
+                }
+
                 var bolt = Instantiate(m_BoltPrefab, from, Quaternion.LookRotation(direction));
                 if (level >= 2)
                     bolt.Launch(direction * m_BoltSpeed, damage * Strength, 0, this, (enemy, dir) => Blast(enemy, burning));
@@ -273,5 +318,16 @@ namespace Archery.Building
             foreach (var enemy in EnemiesNear(point, m_BlastRadius, false))
                 Hurt(enemy, m_BlastDamage * (burning ? 1.5f : 1f), enemy.Center, enemy.transform.position - point);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        // Sa portée : plus grande dans l'arène de MK, où il tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
+        /// <summary>
+        /// Il rejoint l'arène de MK (3 novembre) : il y rattrape toutes tes flèches ratées, et ses volées partent droit sur MK.
+        /// </summary>
+        public override bool FightsInArena => true;
     }
 }

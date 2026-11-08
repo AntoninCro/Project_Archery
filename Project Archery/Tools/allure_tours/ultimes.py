@@ -555,7 +555,8 @@ def manege():
 # trois aiguilles, ses engrenages derrière, sa cloche sous une arche dorée, des stalactites dessous, et la flèche de glace du modèle
 # (cachée en jeu : les échos en sont des copies). Trois grands anneaux tournent autour (« Anneau 0 » à « 2 », penchés ; leur enfant
 # « Rotation », m_Rings, tourne autour de son axe y), plus grands que le cadran et sa cloche.
-HORLOGE = 'Horloge du 2 novembre'
+# Le 3 novembre (le joueur) : sans les trois cristaux du socle ; une nouvelle marque, et le modèle refait (rebuild).
+HORLOGE = 'Horloge du 3 novembre'
 GLOW = 'Givre_lumineux'
 HO_CENTER = 11.0     # le centre du cadran
 HO_DIAL_R = 4.0      # le rayon du cadran
@@ -633,17 +634,11 @@ def ho_ring(parent, k, radius, tilt, thick, role):
 
 def horloge():
     ops = []
-    # Le socle de glace sur sa marche de pierre, cerclé d'or, sa rosace ; trois grands cristaux qui luisent de l'intérieur.
+    # Le socle de glace sur sa marche de pierre, cerclé d'or, sa rosace. (Ses trois cristaux, retirés le 3 novembre : le joueur.)
     ops.append(cyl('', 'Marche', [0, 0.06, 0], [7.0, 0.12, 7.0], role='pierre', shade=0.6))
     ops.append(cyl('', 'Socle', [0, 0.514, 0], [5.0, 0.8, 5.0], role='glace_sombre'))
     ops.append(cyl('', 'Cercle', [0, 0.85, 0], [5.08, 0.12, 5.08], role='accent'))
     ops.append(cyl('', 'Rosace', [0, 0.914 + 0.03 - 0.006, 0], [1.4, 0.06, 1.4], role='accent'))
-    for k in range(3):
-        a = math.radians(k * 120 + 30)
-        at = [math.sin(a) * 2.0, 0.914 + 1.8 - 0.1, math.cos(a) * 2.0]
-        rot = [math.cos(a) * 16, 0, -math.sin(a) * 16]
-        ops.append(sph('', 'Cristal', at, [0.75, 4.0 - 0.5 * k, 0.75], role='glace', rot=rot))
-        ops.append(sph('', 'Cœur du cristal', at, [0.3, 3.0 - 0.4 * k, 0.3], mat=GLOW, rot=rot))
     # L'horloge qui flotte, et le rayon de glace qui la relie au socle.
     ops.append(empty('', 'Horloge', [0, HO_CENTER, 0]))
     h = 'Horloge'
@@ -731,6 +726,7 @@ def horloge():
     ops.append(field('m_ShatterClip', asset='Assets/_Project/Audio/Horloge_Bris.wav'))
     ops.append(field('m_ImpactClip', asset='Assets/_Project/Audio/Horloge_Eclat.wav'))
     ops.append(field('m_ChimeClip', asset='Assets/_Project/Audio/Horloge_Carillon.wav'))
+    ops.append(field('m_TimeStopClip', asset='Assets/_Project/Audio/Horloge_Temps_Arrete.wav'))
     ops.append(field('m_WhooshClip', asset='Assets/507466__danjocross__clean-fast-swoosh.aiff'))
     ops.append(field('m_BoomClip', asset='Assets/_Project/Audio/513110__wakerone__cinematic-trailer-hit-explosion-cc0.mp3'))
     return ops
@@ -771,7 +767,8 @@ def ultimes():
         # La Grande Horloge (2 novembre, tard ; 12.52) : la famille de la glace et du temps ; elle reprend Minuit du Beffroi.
         {'name': 'Grande Horloge', 'prefab': 'Duos/Ultime_Horloge', 'definition': 'Ultime_Horloge',
          'trios': ['Trio_Bowling', 'Trio_Beffroi'], 'component': 'UltimeHorloge', 'slot': 'Roadside', 'anywhere': True,
-         'footprint': [4, 4], 'palette': 'Ultime_Horloge', 'color': '#8FD8FF', 'mark': HORLOGE, 'plans': [10],
+         'footprint': [4, 4], 'palette': 'Ultime_Horloge', 'color': '#8FD8FF', 'mark': HORLOGE, 'rebuild': True,
+         'plans': [10],
          'description': 'Ses douze chiffres de glace tombent un à un sur les ennemis ; après le XII, Minuit arrête le temps sur toute la '
                         'carte, puis le givre brise tous les figés ; chaque flèche qui touche est rejouée par une flèche de glace géante.',
          'levels': ['L\'ultime de la glace et du temps : une horloge astronomique de glace et d\'or qui flotte au-dessus de son socle. À '

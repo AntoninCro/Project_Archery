@@ -103,6 +103,14 @@ namespace Archery.Building
         bool m_DuoShowsValid = true;
         BuildGrid.Spot m_Spot;
         string m_Status = "";
+
+        // Le placement lisible (3 novembre) : la portée du bâtiment tenu, et le texte de la voie qu'il couvre, gardé tant qu'il
+        // reste sur la même case.
+        const float k_CoverageStep = 0.5f;
+        float m_Reach;
+        Vector3 m_CoverageCenter = Vector3.positiveInfinity;
+        float m_CoverageReach;
+        string m_CoverageText = "";
         Vector2 m_PreviousStick;
         bool m_TriggerArmed;
         bool m_GripArmed;
@@ -312,7 +320,10 @@ namespace Archery.Building
             m_Hologram = null;
             m_Material = null;
             if (m_Overlay != null)
+            {
                 m_Overlay.HideFootprint();
+                m_Overlay.HideReach();
+            }
         }
 
         void Begin(XRBaseInputInteractor hand, StructureDefinition definition, Structure moving)
@@ -449,6 +460,7 @@ namespace Archery.Building
             m_Spot = default;
             if (hasPoint && grid != null)
                 m_Spot = grid.Evaluate(definition, point, m_Steps, m_Moving, m_Cells);
+            m_Reach = ReachOf(definition);
             Evaluate(aimed, hasPoint, definition);
             Target = m_Upgrade || m_Fuse ? aimed : m_Spot.TowerSocket;
 
@@ -457,6 +469,12 @@ namespace Archery.Building
                 m_Overlay.ShowFootprint(m_Cells, m_Spot.TowerSocket, m_Valid);
             else
                 m_Overlay.HideFootprint();
+
+            // Le placement lisible (3 novembre) : la portée du bâtiment au sol et la voie qu'elle couvre (le texte : Evaluate).
+            if (m_Spot.OnGrid && !m_Upgrade && !m_Fuse && m_Spot.TowerSocket == null && m_Reach > 0f)
+                m_Overlay.ShowReach(m_Spot.Position, m_Reach);
+            else
+                m_Overlay.HideReach();
 
             // Le duo visé : son hologramme doré, à la place qu'il prendra, au lieu de celui de la tour déplacée.
             var showDuo = m_Fuse && UpdateDuoHologram();
@@ -618,9 +636,53 @@ namespace Archery.Building
 
             m_Valid = true;
             var where = BuildSocket.NameOf(m_Spot.Slot);
-            m_Status = m_Desktop ? $"{header}\n{where}"
-                : m_Moving != null ? $"{header}\n<size=70%>{where} · gâchette : poser · joystick : tourner · poignée : annuler</size>"
-                : $"{header}\n<size=70%>{where} · gâchette : poser</size>";
+            var cover = m_Reach > 0f && m_Spot.TowerSocket == null ? $"\n<size=70%>{Coverage(m_Spot.Position, m_Reach)}</size>" : "";
+            m_Status = m_Desktop ? $"{header}\n{where}{cover}"
+                : m_Moving != null ? $"{header}\n<size=70%>{where} · gâchette : poser · joystick : tourner · poignée : annuler</size>{cover}"
+                : $"{header}\n<size=70%>{where} · gâchette : poser</size>{cover}";
+        }
+
+        // La portée du bâtiment tenu (au niveau du bâtiment déplacé, sinon au niveau 1) ; 0 pour un piège de la voie.
+        float ReachOf(StructureDefinition definition)
+        {
+            if (m_Moving != null)
+                return m_Moving.ReachAt(Mathf.Max(1, m_Moving.Level));
+            return definition != null && definition.prefab != null ? definition.prefab.ReachAt(1) : 0f;
+        }
+
+        // « Portée 16 m · couvre 22 m de la voie de gauche » : la longueur du chemin de chaque voie à portée (par pas d'un
+        // demi-mètre), refaite seulement quand le bâtiment change de case.
+        string Coverage(Vector3 center, float reach)
+        {
+            if ((center - m_CoverageCenter).sqrMagnitude < 0.01f && Mathf.Approximately(reach, m_CoverageReach))
+                return m_CoverageText;
+
+            m_CoverageCenter = center;
+            m_CoverageReach = reach;
+            var grid = BuildGrid.Instance;
+            var parts = new List<string>();
+            if (grid != null)
+            {
+                foreach (var lane in grid.SortedLanes)
+                {
+                    var covered = 0f;
+                    for (var along = 0f; along <= lane.Length; along += k_CoverageStep)
+                    {
+                        var point = lane.PointAt(along, out _);
+                        if (new Vector2(point.x - center.x, point.z - center.z).sqrMagnitude <= reach * reach)
+                            covered += k_CoverageStep;
+                    }
+
+                    if (covered < 1f)
+                        continue;
+                    var name = grid.LaneName(lane);
+                    parts.Add($"{Mathf.RoundToInt(covered)} m de {(name.StartsWith("la ") ? name : "la " + name)}");
+                }
+            }
+
+            m_CoverageText = parts.Count > 0 ? $"Portée {reach:0} m · couvre {string.Join(", ", parts)}"
+                : $"Portée {reach:0} m · aucune voie à portée";
+            return m_CoverageText;
         }
 
         void Place()

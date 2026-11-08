@@ -126,6 +126,26 @@ namespace Archery.World
 
         public Color beaconLow = new Color(1f, 0.15f, 0.1f);
 
+        [Tooltip("L'alarme de la tour (3 novembre, à la place de l'alerte sur la montre) : une attaque, ce sont des coups reçus à moins " +
+                 "de tant de secondes d'écart. Pendant une attaque, le rayon monte haut dans le ciel et bat en rouge.")]
+        public float towerAttackGap = 8f;
+
+        [Tooltip("Pendant une attaque, le rayon est tant de fois plus long (et plus large).")]
+        public float alarmBeamScale = 2.5f;
+
+        [Tooltip("Le cor de la tour : il sonne depuis la tour, en son 3D, au début d'une attaque si le joueur est loin (une fois ; deux " +
+                 "sous 50 % des PV, trois sous 25 %, et de nouveau quand ils passent ces seuils). Vide : pas de cor.")]
+        public AudioClip towerHornClip;
+
+        [Range(0f, 1f)]
+        public float towerHornVolume = 0.9f;
+
+        [Tooltip("Jusqu'où (m) on entend le cor : il baisse doucement jusque-là.")]
+        public float towerHornReach = 260f;
+
+        [Tooltip("Plus près de la tour (m, à plat), ou dessus, le joueur voit l'attaque : le cor ne sonne pas.")]
+        public float towerHornQuiet = 15f;
+
         [Header("Emplacements de construction")]
         public Color runeColor = new Color(0.45f, 0.85f, 1f);
 

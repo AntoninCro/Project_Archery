@@ -213,8 +213,11 @@ namespace Archery.Enemies
             // Difficulté, puis renforcement selon la vague (courbe exponentielle).
             var difficulty = DifficultyManager.Current;
             m_Health.ResetHealth(Def.maxHealth * difficulty.enemyHealth * EnemyScaling.Health);
-            m_MoveSpeed = Def.moveSpeed * difficulty.enemySpeed * EnemyScaling.Speed;
-            m_RunAnimationSpeed = EnemyScaling.Speed;
+            // Ceux qui marchent (ni volant, ni MK, ni mannequin : sans comportement à part) vont en plus à la vitesse au sol de la
+            // difficulté (4 novembre, +30 % sauf en Facile : ils n'étaient pas une vraie menace), leurs jambes avec.
+            var ground = m_Behaviour == null ? Mathf.Max(0.1f, difficulty.groundSpeed) : 1f;
+            m_MoveSpeed = Def.moveSpeed * difficulty.enemySpeed * EnemyScaling.Speed * ground;
+            m_RunAnimationSpeed = EnemyScaling.Speed * ground;
             DamageMultiplier = difficulty.damageTaken * EnemyScaling.Damage;
             ScaleHeadHitboxes(difficulty.headSize);
 
@@ -319,6 +322,13 @@ namespace Archery.Enemies
                 return;
             }
 
+            // Gardien d'un coffre (4 novembre ; Enemy.Guard.cs) : il rôde autour de son coffre tant qu'il ne poursuit pas le joueur.
+            if (UpdateGuard(deltaTime))
+            {
+                UpdateAnimation();
+                return;
+            }
+
             ChooseTarget();
             UpdatePendingHit(deltaTime);
 
@@ -378,6 +388,10 @@ namespace Archery.Enemies
             var tower = Tower.Instance;
             var playerAvailable = player != null && player.IsAlive;
             m_Target = null;
+
+            // Un gardien qui poursuit ne vise que le joueur (Enemy.Guard.cs).
+            if (ChooseGuardTarget())
+                return;
 
             var barricade = Barricade.FindBlocking(transform.position);
             if (barricade != null)
@@ -706,6 +720,7 @@ namespace Archery.Enemies
         void OnDamaged(Health health, DamageInfo info)
         {
             Damaged?.Invoke(this, info);
+            NoteGuardHurt();
             if (m_HasHit && health.IsAlive && !BehaviourControlsAnimator)
                 m_Animator.SetTrigger(k_HitId);
         }

@@ -73,7 +73,8 @@ MonoBehaviour:
         de la jungle, sous un rayon dor\xE9 (l'autre c\xF4t\xE9 \xE0 la vague suivante).
         Vise-en un et appuie sur la g\xE2chette (ou la g\xE2chette de prise) : choisis
         un parchemin, deux plans d'un b\xE2timent de ton chantier, ou un objet. Ton
-        chantier : 3 b\xE2timents au d\xE9but, un de plus apr\xE8s chaque boss."
+        chantier : 4 b\xE2timents au d\xE9but (de quoi b\xE2tir un trio), un de plus
+        apr\xE8s chaque boss."
     - title: "Choisir un b\xE2timent"
       text: "Touche le bouton \xAB Plans \xBB de ta montre avec l'autre main : le
         menu des plans s'ouvre, et l'hologramme du b\xE2timent du milieu suit le

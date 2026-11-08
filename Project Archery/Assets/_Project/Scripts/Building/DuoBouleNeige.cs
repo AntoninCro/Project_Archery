@@ -693,5 +693,8 @@ namespace Archery.Building
             particles.Play();
             return particles;
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

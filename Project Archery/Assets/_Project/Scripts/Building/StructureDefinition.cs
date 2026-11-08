@@ -154,7 +154,8 @@ namespace Archery.Building
         /// <summary>
         /// Lot de l'orbe de tourelle d'un coffre : ×1, sauf réglage. Le 2 novembre, après son premier essai, le joueur : la barricade
         /// et les piques, qui venaient par 2, valaient bien plus que les autres ; le même lot pour tous. Le 2 novembre, chaque orbe
-        /// donne 2 plans de son bâtiment (<see cref="BuildManager.PlansPerChest"/>), pour tous les bâtiments.
+        /// donne 2 plans de son bâtiment, pour tous les bâtiments ; depuis le 4 novembre, de 1 à 4 au hasard
+        /// (<see cref="BuildManager.RollPlansPerChest"/>).
         /// </summary>
         public int LotSize => Mathf.Max(1, lotSize);
 

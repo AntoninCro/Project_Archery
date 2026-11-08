@@ -186,6 +186,10 @@ namespace Archery.Building
             public bool Finale;
             public bool Loud;
             public Vector3 Spin;
+
+            // Dans l'arène (3 novembre) : elle suit le corps de MK, à cet écart.
+            public Enemy Follow;
+            public Vector3 Offset;
         }
 
         readonly List<Bomb> m_Flying = new List<Bomb>();
@@ -427,7 +431,7 @@ namespace Archery.Building
             }
 
             // Personne à portée : la poudre reste (la salve ne partirait sur rien).
-            if (EnemiesNear(transform.position, m_Range).Count == 0)
+            if (EnemiesNear(transform.position, Range).Count == 0)
             {
                 FloatingText.Spawn(point + Vector3.up, "Personne à portée", new Color(0.8f, 0.8f, 0.8f, 1f), 1.2f, 1.5f);
                 return;
@@ -467,7 +471,7 @@ namespace Archery.Building
         {
             var share = finale ? 1f : m_Charge;
             var count = finale ? m_FinaleBombs : Mathf.Max(1, Mathf.RoundToInt(share * ValueFor(m_MaxBombsPerLevel, level, 12)));
-            PickTargets(count, finale ? m_FinaleRange : m_Range, finale);
+            PickTargets(count, (finale ? m_FinaleRange : m_Range) * RangeScale, finale);
             if (m_Targets.Count == 0)
                 return;
 
@@ -502,6 +506,17 @@ namespace Archery.Building
         void PickTargets(int count, float range, bool finale)
         {
             m_Targets.Clear();
+
+            // Dans l'arène (3 novembre) : toutes les bombes sur MK, chacune à un écart de son corps (m_Targets : les écarts), et elles le
+            // suivent en vol ; avant, elles tombaient au sol sous lui quand il vole.
+            m_Follow = InArena ? NearestEnemy(range) : null;
+            if (m_Follow != null)
+            {
+                for (var i = 0; i < count; i++)
+                    m_Targets.Add(i == 0 ? Vector3.zero : Random.insideUnitSphere * k_ArenaBossBody);
+                return;
+            }
+
             m_Pool.Clear();
             m_Pool.AddRange(EnemiesNear(transform.position, range));
             var groups = finale ? Mathf.Max(1, count / 2) : count;
@@ -569,20 +584,27 @@ namespace Archery.Building
         IEnumerator Salvo(int level, bool finale)
         {
             var targets = new List<Vector3>(m_Targets);
+            var follow = m_Follow;
             var gap = finale ? m_FinaleTime / Mathf.Max(1, targets.Count) : m_SalvoGap;
             for (var i = 0; i < targets.Count; i++)
             {
-                Launch(targets[i], level, finale, i);
+                if (follow != null && !follow.IsAlive)
+                    yield break;
+                if (follow != null)
+                    Launch(follow.Center + targets[i], level, finale, i, follow, targets[i]);
+                else
+                    Launch(targets[i], level, finale, i);
                 yield return new WaitForSeconds(gap);
             }
         }
 
         // Une bombe : la copie d'une bombe du modèle, qui part de la gueule en cloche vers le sol du point visé, en tournoyant.
-        void Launch(Vector3 target, int level, bool finale, int index)
+        void Launch(Vector3 target, int level, bool finale, int index, Enemy follow = null, Vector3 offset = default)
         {
             var from = MuzzlePoint;
             var to = target;
-            to.y = GroundY(target, 1.5f);
+            if (follow == null)
+                to.y = GroundY(target, 1.5f);
 
             var pick = m_Bombs.Length > 0 ? Random.Range(0, m_Bombs.Length) : -1;
             var model = pick >= 0 ? m_Bombs[pick] : null;
@@ -622,6 +644,8 @@ namespace Archery.Building
                 Finale = finale,
                 Loud = !finale || index % 3 == 0,
                 Spin = Random.onUnitSphere * Random.Range(200f, 500f),
+                Follow = follow,
+                Offset = offset,
             });
             if (index % 3 == 0)
                 Sfx.Play(m_LaunchClip, from, 0.7f, Random.Range(0.8f, 1.1f));
@@ -640,6 +664,8 @@ namespace Archery.Building
 
                 bomb.Time += Time.deltaTime;
                 var t = Mathf.Clamp01(bomb.Time / bomb.Duration);
+                if (bomb.Follow != null && bomb.Follow.IsAlive)
+                    bomb.To = bomb.Follow.Center + bomb.Offset;
                 var u = 1f - t;
                 bomb.Body.position = u * u * bomb.From + 2f * u * t * bomb.Control + t * t * bomb.To;
                 bomb.Body.Rotate(bomb.Spin * Time.deltaTime, Space.Self);
@@ -691,5 +717,20 @@ namespace Archery.Building
                 m_Springs.localScale = new Vector3(m_SpringsBase.x, m_SpringsBase.y * Mathf.Max(0.2f, (k_SpringLength + dy) / k_SpringLength),
                                                    m_SpringsBase.z);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        // Sa portée : plus grande dans l'arène de MK, où elle tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
+        // Dans l'arène : MK, sur qui part la salve (3 novembre).
+        Enemy m_Follow;
+
+        /// <summary>
+        /// Elle rejoint l'arène de MK (3 novembre) : ta flèche dans sa gueule la remplit, ta flèche dans la mèche l'allume, comme sur la
+        /// carte ; ses bombes y suivent MK et éclatent sur lui.
+        /// </summary>
+        public override bool FightsInArena => true;
     }
 }

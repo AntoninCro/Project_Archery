@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Enemies;
+using Archery.UI;
 using Archery.Upgrades;
 using UnityEngine;
 
@@ -24,6 +25,8 @@ namespace Archery.Building
     /// <remarks>
     /// Il hérite de la <see cref="Ballista"/> pour la visée (la tourelle suit sa cible) et la cadence ; le filet (une forme
     /// aplatie au matériau <c>Net Material</c>) vole jusqu'à elle, puis l'enveloppe tant qu'elle est prise (<c>Enemy.Net</c>).
+    /// Dans l'arène de MK (3 novembre), MK se prend au filet à tous les niveaux : il ne tombe pas, il est ralenti ; la toile géante
+    /// le ralentit tant qu'il est dessous.
     /// </remarks>
     public class StructureNetLauncher : Ballista
     {
@@ -81,6 +84,16 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_WebClip;
 
+        [Header("Dans l'arène de MK (3 novembre)")]
+        [Tooltip("MK ne tombe pas : pris au filet (à tous les niveaux), il est ralenti pendant le temps d'un volant au sol. 0,6 : 40 % " +
+                 "plus lent ; il n'en perd jamais plus de 25 % (son plafond, Max Slow).")]
+        [SerializeField]
+        float m_BossSlow = 0.6f;
+
+        [Tooltip("Taille du filet sur MK (fois un filet déployé) : il l'enveloppe.")]
+        [SerializeField]
+        float m_BossNetScale = 3.5f;
+
         class Net
         {
             public Transform Body;
@@ -134,7 +147,8 @@ namespace Archery.Building
         {
             if (enemy == null || !enemy.IsAlive || enemy.IsNetted)
                 return false;
-            if (!enemy.IsFlyer && (!Electric || enemy.IsAirborne || enemy.IsStunned || enemy.IsBoss))
+            // Dans l'arène, MK se prend au filet à tous les niveaux (3 novembre : avant, le lance-filet n'y faisait rien).
+            if (!enemy.IsFlyer && !IsArenaBoss(enemy) && (!Electric || enemy.IsAirborne || enemy.IsStunned || enemy.IsBoss))
                 return false;
 
             foreach (var net in m_Nets)
@@ -145,6 +159,8 @@ namespace Archery.Building
 
             return true;
         }
+
+        bool IsArenaBoss(Enemy enemy) => InArena && enemy.IsBoss;
 
         // À la place d'un carreau : un filet sur la cible, et au niveau 3 un deuxième sur la cible libre la plus proche d'elle.
         protected override void Shoot(Vector3 direction)
@@ -303,7 +319,8 @@ namespace Archery.Building
                 net.Caught = Catch(net);
                 if (net.Caught)
                 {
-                    net.Body.localScale = new Vector3(m_NetSize, m_NetSize * 1.2f, m_NetSize);
+                    var size = m_NetSize * (IsArenaBoss(net.Target) ? m_BossNetScale : 1f);
+                    net.Body.localScale = new Vector3(size, size * 1.2f, size);
                     Sfx.Play(m_CatchClip, center, 0.9f, Random.Range(0.9f, 1.1f));
                 }
                 else
@@ -323,6 +340,14 @@ namespace Archery.Building
             if (target.IsFlyer)
             {
                 caught = target.Net(hold, this);
+            }
+            else if (IsArenaBoss(target))
+            {
+                // MK ne tombe pas (le Colosse seul le plaque au sol) : le filet l'enveloppe et le ralentit.
+                target.Slow(m_BossSlow, hold);
+                net.Until = Time.time + hold;
+                caught = true;
+                FloatingText.Spawn(target.Center + Vector3.up * 3f, "Pris au filet !", new Color(0.85f, 0.95f, 1f, 1f), 1.6f, 1.4f);
             }
             else
             {
@@ -363,12 +388,21 @@ namespace Archery.Building
                 var hold = ValueFor(m_HoldPerLevel, Mathf.Max(1, Level), 3f);
                 foreach (var enemy in AliveEnemies())
                 {
-                    if (enemy == null || !enemy.IsAlive || !enemy.IsFlyer || enemy.IsNetted || m_Web == null)
+                    if (enemy == null || !enemy.IsAlive || m_Web == null)
+                        continue;
+                    var boss = IsArenaBoss(enemy);
+                    if (!boss && (!enemy.IsFlyer || enemy.IsNetted))
                         continue;
 
                     var offset = enemy.transform.position - m_Web.position;
                     offset.y = 0f;
-                    if (offset.sqrMagnitude <= m_WebRadius * m_WebRadius * open * open && enemy.Net(hold, this))
+                    if (offset.sqrMagnitude > m_WebRadius * m_WebRadius * open * open)
+                        continue;
+
+                    // MK sous la toile (dans l'arène, 3 novembre) : ralenti tant qu'il y reste.
+                    if (boss)
+                        enemy.Slow(m_BossSlow, 0.5f);
+                    else if (enemy.Net(hold, this))
                         LightningBolt.Spawn(m_Web.position + offset, enemy.Center, m_ShockColor, null, 0.05f, 0.2f);
                 }
 
@@ -385,7 +419,7 @@ namespace Archery.Building
                 return;
 
             var target = Target;
-            if (target == null || !target.IsFlyer)
+            if (target == null || (!target.IsFlyer && !IsArenaBoss(target)))
             {
                 m_WebTimer = 0.5f;
                 return;
@@ -396,7 +430,7 @@ namespace Archery.Building
                 m_Web = NetBody("Toile géante (effet)", Electric && m_ShockNetMaterial != null ? m_ShockNetMaterial : m_NetMaterial);
 
             m_Web.gameObject.SetActive(true);
-            m_Web.position = target.Center + Vector3.up * 2.5f;
+            m_Web.position = target.Center + Vector3.up * (IsArenaBoss(target) ? 6f : 2.5f);
             m_Web.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             m_WebLeft = m_WebDuration;
             m_WebTimer = m_WebInterval;

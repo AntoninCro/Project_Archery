@@ -105,6 +105,10 @@ namespace Archery.Building
             public int Level;
             public bool Stage;
             public Color Color;
+
+            // Dans l'arène (3 novembre) : elle suit MK et éclate sur lui, à cet écart.
+            public Enemy Follow;
+            public Vector3 Offset;
         }
 
         class Bouquet
@@ -158,18 +162,32 @@ namespace Archery.Building
                 return;
             }
 
+            // Dans l'arène (3 novembre) : la fusée suit MK et éclate sur lui.
+            if (InArena)
+            {
+                var boss = Time.time >= m_NextRocket ? NearestEnemy(Range) : null;
+                if (boss == null)
+                    return;
+                m_NextRocket = Time.time + ValueFor(m_IntervalPerLevel, level, 3f) / OverchargeRate;
+                Launch(boss.Center, level, level >= 2, 0f, boss, Vector3.zero);
+                return;
+            }
+
             if (Time.time < m_NextRocket || !TryGroup(out var point))
                 return;
             m_NextRocket = Time.time + ValueFor(m_IntervalPerLevel, level, 3f) / OverchargeRate;
             Launch(point, level, level >= 2, 0f);
         }
 
+        // Sa portée : plus grande dans l'arène de MK, où il tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
         // Le groupe le plus serré à portée : l'ennemi qui a le plus de voisins à 4 m (les volants comptent, ils sont éblouis aussi).
         bool TryGroup(out Vector3 point)
         {
             point = Vector3.zero;
             var best = 0;
-            var near = EnemiesNear(transform.position, m_Range, false);
+            var near = EnemiesNear(transform.position, Range, false);
             foreach (var enemy in near)
             {
                 var count = 0;
@@ -192,8 +210,25 @@ namespace Archery.Building
         // Le bouquet final : une fusée sur chaque ennemi à portée (les plus proches d'abord), vingt au plus, en rafale.
         bool Finale(int level)
         {
+            // Dans l'arène (3 novembre) : les vingt fusées suivent MK et éclatent tout autour de lui.
+            if (InArena)
+            {
+                var boss = NearestEnemy(Range + 6f);
+                if (boss == null)
+                    return false;
+                for (var i = 0; i < m_FinaleRockets; i++)
+                {
+                    var offset = Random.insideUnitSphere * 3f;
+                    Launch(boss.Center + offset, level, false, i * 0.06f, boss, offset);
+                }
+
+                m_LanternSpin = 900f;
+                FloatingText.Spawn(boss.Center + Vector3.up * 5f, "Bouquet final !", new Color(1f, 0.85f, 0.35f, 1f), 2.2f, 2.5f);
+                return true;
+            }
+
             m_Targets.Clear();
-            foreach (var enemy in EnemiesNear(transform.position, m_Range + 6f, false))
+            foreach (var enemy in EnemiesNear(transform.position, Range + 6f, false))
             {
                 var tooClose = false;
                 foreach (var target in m_Targets)
@@ -230,7 +265,7 @@ namespace Archery.Building
         }
 
         // Une fusée part d'une fusée de la rampe (prête et visible), vers le haut, puis vers le point d'éclatement.
-        void Launch(Vector3 target, int level, bool stage, float delay)
+        void Launch(Vector3 target, int level, bool stage, float delay, Enemy follow = null, Vector3 offset = default)
         {
             var source = NextRocket();
             var from = source != null ? source.position : transform.position + Vector3.up * 6f;
@@ -256,7 +291,7 @@ namespace Archery.Building
 
             body.name = "Fusée";
             body.SetActive(true);
-            var to = target + Vector3.up * (m_BurstHeight + Random.Range(-1f, 1.5f));
+            var to = follow != null ? target + Vector3.up * 1.5f : target + Vector3.up * (m_BurstHeight + Random.Range(-1f, 1.5f));
             var color = m_Colors.Length > 0 ? m_Colors[Random.Range(0, m_Colors.Length)] : Color.white;
             AddTrail(body.transform, color);
             m_Flying.Add(new Rocket
@@ -271,6 +306,8 @@ namespace Archery.Building
                 Level = level,
                 Stage = stage,
                 Color = color,
+                Follow = follow,
+                Offset = offset,
             });
             if (delay <= 0f)
                 Sfx.Play(m_LaunchClip, from, 0.6f, Random.Range(0.9f, 1.2f));
@@ -325,6 +362,8 @@ namespace Archery.Building
 
                 rocket.Time += Time.deltaTime;
                 var t = Mathf.Clamp01(rocket.Time / rocket.Duration);
+                if (rocket.Follow != null && rocket.Follow.IsAlive)
+                    rocket.To = rocket.Follow.Center + rocket.Offset + Vector3.up * 1.5f;
                 var u = 1f - t;
                 var position = u * u * rocket.From + 2f * u * t * rocket.Control + t * t * rocket.To;
                 var tangent = 2f * u * (rocket.Control - rocket.From) + 2f * t * (rocket.To - rocket.Control);
@@ -476,5 +515,11 @@ namespace Archery.Building
             renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             particles.Play();
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        /// <summary>Il rejoint l'arène de MK (3 novembre) : ses fusées y suivent MK et éclatent sur lui (ébloui : ralenti, et brûlé).</summary>
+        public override bool FightsInArena => true;
     }
 }

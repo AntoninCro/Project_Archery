@@ -616,8 +616,11 @@ namespace Archery.Building
                 return;
             m_NextArrowScan = Time.time + 0.05f;
             var radius = reach * reach;
-            foreach (var arrow in FindObjectsByType<Arrow>())
+            // La liste des flèches actives, à l'envers (3 novembre : plus de recherche dans toute la scène).
+            var arrows = Arrow.Active;
+            for (var i = arrows.Count - 1; i >= 0; i--)
             {
+                var arrow = i < arrows.Count ? arrows[i] : null;
                 if (arrow == null || arrow.IsHovering || Stops(arrow))
                     continue;
                 var flat = arrow.transform.position - transform.position;
@@ -784,5 +787,8 @@ namespace Archery.Building
                 m_Hands[i].Rotate(Vector3.forward, -speed * Time.deltaTime * (i >= 2 ? -1f : 1f), Space.Self);
             }
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

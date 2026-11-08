@@ -366,15 +366,17 @@ namespace Archery.Building
             public float Duration;
             public float Arc;
             public float Rock;
+            public float Power = 1f;
         }
 
-        // Une flèche qui attend son cheval : sa cible (un ennemi suivi, ou MK) et où elle a touché.
+        // Une flèche qui attend son cheval : sa cible (un ennemi suivi, ou MK), où elle a touché, sa force.
         struct Order
         {
             public Enemy Enemy;
             public DragonBoss Dragon;
             public Vector3 Point;
             public float At;
+            public float Power;
         }
 
         // Le ruban en train d'attraper (ou de fouetter) sa cible, puis de se retirer (RetractAt).
@@ -505,7 +507,7 @@ namespace Archery.Building
         float m_RotorAngle;
         float m_SpinSpeed = k_Spin;
         float m_BobPhase;
-        float m_BoostUntil = -1f;
+        float m_SpinBoostUntil = -1f;
         float m_Rear;
         float m_RearUntil = -1f;
 
@@ -1241,7 +1243,7 @@ namespace Archery.Building
         void BeginEjection()
         {
             m_EjectAt = Time.time + m_EjectWindup;
-            m_BoostUntil = m_EjectAt + 0.6f;
+            m_SpinBoostUntil = m_EjectAt + 0.6f;
             m_GlowFlare = Mathf.Max(m_GlowFlare, 1f);
             if (Time.time >= m_FanfareUntil)
                 Sfx.Play(Flourish, CrownPoint, 0.8f, Random.Range(0.98f, 1.02f));
@@ -1390,7 +1392,7 @@ namespace Archery.Building
             {
                 var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
                 if (dragon != null)
-                    Enqueue(null, dragon, hit.Point);
+                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
             }
 
@@ -1406,14 +1408,28 @@ namespace Archery.Building
             if (enemy == null)
                 enemy = NearestGround(hit.Point, m_SeekRadius);
             if (enemy != null)
-                Enqueue(enemy, null, hit.Point);
+                Enqueue(enemy, null, hit.Point, ShotPower(hit));
         }
 
-        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point)
+        // La file pleine (la pluie de flèches), la plus faible laisse sa place, la plus ancienne à force égale (3 novembre : un
+        // cheval piétine selon la force de sa flèche, TowerUltimate.ShotPower).
+        void Enqueue(Enemy enemy, DragonBoss dragon, Vector3 point, float power)
         {
             while (m_Orders.Count >= Mathf.Max(1, m_QueueSize))
-                m_Orders.RemoveAt(0);
-            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time });
+            {
+                var weakest = 0;
+                for (var i = 1; i < m_Orders.Count; i++)
+                {
+                    if (m_Orders[i].Power < m_Orders[weakest].Power)
+                        weakest = i;
+                }
+
+                if (m_Orders[weakest].Power > power)
+                    return;
+                m_Orders.RemoveAt(weakest);
+            }
+
+            m_Orders.Add(new Order { Enemy = enemy, Dragon = dragon, Point = point, At = Time.time, Power = power });
         }
 
         static Enemy NearestGround(Vector3 point, float radius)
@@ -1458,7 +1474,9 @@ namespace Archery.Building
             if (source == null)
                 return;
             var air = order.Dragon != null || (order.Enemy != null && order.Enemy.IsFlyer);
-            Throw(source, source.position, order.Enemy, order.Dragon, point, air);
+            var shot = Throw(source, source.position, order.Enemy, order.Dragon, point, air);
+            if (shot != null)
+                shot.Power = order.Power;
             Sfx.Play(m_WhooshClip, source.position, 0.7f, Random.Range(0.75f, 0.9f));
             Glitter(source.position, 20);
         }
@@ -1498,6 +1516,7 @@ namespace Archery.Building
             shot.Dragon = dragon;
             shot.Air = air;
             shot.Charge = false;
+            shot.Power = 1f;
             shot.From = from;
             shot.Point = point;
             shot.Born = Time.time;
@@ -1602,7 +1621,7 @@ namespace Archery.Building
                     shot.Go.SetActive(false);
                 }
 
-                HorseImpact(shot.Point, shot.Air, shot.Dragon, shot.Charge);
+                HorseImpact(shot.Point, shot.Air, shot.Dragon, shot.Charge, shot.Power);
             }
         }
 
@@ -1740,18 +1759,19 @@ namespace Archery.Building
 
         // Un cheval piétine (comme les marteaux du Colosse, que le joueur a validés) : le bouquet de feu d'artifice éclate au-dessus,
         // c'est le signe de chaque coup ; l'onde dorée, les confettis, les étincelles ; tout ce qui survit vole en vrille. Le coup
-        // complet (la lumière, le grand coup, les manettes) au plus toutes les Heavy Interval s.
-        void HorseImpact(Vector3 point, bool air, DragonBoss dragon, bool charge)
+        // complet (la lumière, le grand coup, les manettes) au plus toutes les Heavy Interval s. Ses dégâts (et sa part des PV d'un
+        // boss) suivent la force de la flèche qui l'a lancé (power, 3 novembre ; 1 pour la charge).
+        void HorseImpact(Vector3 point, bool air, DragonBoss dragon, bool charge, float power)
         {
             if (dragon != null)
             {
-                HurtShare(dragon.GetComponentInParent<Enemy>(), charge ? 0f : m_HorseBossShare, point);
+                HurtShare(dragon.GetComponentInParent<Enemy>(), charge ? 0f : m_HorseBossShare * power, point);
                 if (charge)
                     DazeDragon(dragon);
             }
             else
             {
-                Smash(point, air, m_HorseDamage, m_HorseRadius, m_HorsePush, m_HorseLift, m_HorseBossShare);
+                Smash(point, air, m_HorseDamage * power, m_HorseRadius, m_HorsePush, m_HorseLift, m_HorseBossShare * power);
             }
 
             var heavy = Time.time >= m_NextHeavy;
@@ -1835,7 +1855,7 @@ namespace Archery.Building
             m_ChargeHit.Clear();
             m_ChargeLeap = Time.time;
             m_NextCharge = Time.time + m_ChargeInterval / Mathf.Max(0.1f, OverchargeRate);
-            m_BoostUntil = Time.time + 1.2f;
+            m_SpinBoostUntil = Time.time + 1.2f;
             m_GlowFlare = 1.5f;
             HeadMessages.Show("La charge !", k_Title, 2.5f);
             PlayFanfare();
@@ -2134,7 +2154,7 @@ namespace Archery.Building
         void Animate()
         {
             var target = k_Spin + Mathf.Min(k_MaxArrowSpin, m_Orders.Count * k_ArrowSpin);
-            if (Time.time < m_BoostUntil || m_EjectAt >= 0f)
+            if (Time.time < m_SpinBoostUntil || m_EjectAt >= 0f)
                 target = k_BoostSpin;
             if (m_WakeAt < 0f)
                 m_SpinSpeed = Mathf.MoveTowards(m_SpinSpeed, target, (target > m_SpinSpeed ? 160f : 60f) * Time.deltaTime);
@@ -2915,7 +2935,7 @@ namespace Archery.Building
             m_ChargeAt = -1f;
             m_ChargeLeap = -1f;
             m_ChargeLane = null;
-            m_BoostUntil = -1f;
+            m_SpinBoostUntil = -1f;
             m_DazedUntil = -1f;
             m_DazedDragon = null;
             ShowDizzy(false);
@@ -3035,5 +3055,8 @@ namespace Archery.Building
             t = Mathf.Clamp01(t);
             return 1f - (1f - t) * (1f - t) * (1f - t);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
     }
 }

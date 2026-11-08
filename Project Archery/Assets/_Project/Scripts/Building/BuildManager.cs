@@ -93,22 +93,34 @@ namespace Archery.Building
         AudioClip m_UltimateClip;
 
         [Header("Chantier de la partie (2 novembre)")]
-        [Tooltip("Bâtiments tirés au hasard au début de la partie : les coffres ne proposent que leurs plans (le joueur, après son " +
-                 "premier essai : les plans s'éparpillaient sur les 10 tours, et les duos n'arrivaient pas).")]
-        [Min(1)]
+        [Tooltip("Au début de la partie, les coffres ne proposent que les plans du chantier (le joueur, après son premier essai : " +
+                 "les plans s'éparpillaient sur les 10 tours, et les duos n'arrivaient pas). Depuis le 3 novembre (le joueur), il " +
+                 "commence par les 3 tours d'un trio tiré au hasard, puis ces bâtiments de plus : la Barricade d'abord (si le trio " +
+                 "ne l'a pas), puis au hasard. 4 bâtiments au début ; avant, 3 au hasard (Starting Structures, retiré).")]
+        [Min(0)]
         [SerializeField]
-        int m_StartingStructures = 3;
+        int m_ExtraStartingStructures = 1;
 
         [Tooltip("Bâtiments qui rejoignent le chantier après chaque boss vaincu (à la fin de chaque vague).")]
         [Min(0)]
         [SerializeField]
         int m_StructuresPerBoss = 1;
 
-        [Tooltip("Plans donnés par l'orbe de tourelle d'un coffre, multipliés par le lot du bâtiment (Lot Size, 1 partout). " +
-                 "2 novembre au soir, deuxième essai (sa sœur, en ouvrant tous les coffres : pas un duo) : 2 ; 1 avant.")]
-        [Min(1)]
+        [Tooltip("Plans donnés par l'orbe de tourelle d'un coffre : de 1 à 4, tirés au sort (puis multipliés par le lot du bâtiment, " +
+                 "Lot Size, 1 partout). Une ligne par vague (la dernière vaut pour les suivantes) : les chances de 1, 2, 3 et 4 plans, " +
+                 "en poids (leur total n'a pas besoin de faire 100). Le joueur, 4 novembre : « entre 1 et 4 plans par coffre, au hasard ; " +
+                 "les chances d'en avoir plus augmentent pendant la partie ; sur la partie, en moyenne, un peu plus qu'avant (10 % de " +
+                 "plus) » : 1,8 plan en moyenne à la vague 1, puis 2, 2,2, 2,4 et 2,6 ; 2,2 sur les 5 vagues à coffres. " +
+                 "Avant : toujours 2 (2 novembre au soir, deuxième essai) ; 1 avant.")]
         [SerializeField]
-        int m_PlansPerChest = 2;
+        PlanChances[] m_PlanChances =
+        {
+            new PlanChances(40f, 45f, 10f, 5f),
+            new PlanChances(30f, 45f, 20f, 5f),
+            new PlanChances(25f, 40f, 25f, 10f),
+            new PlanChances(20f, 35f, 30f, 15f),
+            new PlanChances(15f, 30f, 35f, 20f),
+        };
 
         [Header("Bilan")]
         [Tooltip("À la fin de chaque vague, un message donne la part des dégâts faite par les bâtiments et leurs éliminations " +
@@ -126,6 +138,7 @@ namespace Archery.Building
         readonly List<StructureDefinition> m_RunStructures = new List<StructureDefinition>();
         static readonly List<StructureDefinition> s_Pool = new List<StructureDefinition>();
         static readonly float[] k_RarityWeights = { 0.6f, 0.3f, 0.1f };
+        TowerDuoCatalog.Entry m_StartingTrio;
         Structure m_Current;
         bool m_UltimateBuilt;
         readonly List<BuildHammer> m_Hammers = new List<BuildHammer>();
@@ -139,14 +152,72 @@ namespace Archery.Building
         public IReadOnlyList<StructureDefinition> Structures => m_Structures;
 
         /// <summary>
-        /// Le chantier de la partie (2 novembre) : les bâtiments dont les coffres proposent les plans. 3 au début, tirés au hasard,
-        /// un de plus après chaque boss. On n'apprend que quelques tours au début, les plans se concentrent (les duos et les trios
-        /// arrivent), et chaque partie a sa couleur.
+        /// Le chantier de la partie (2 novembre) : les bâtiments dont les coffres proposent les plans. 4 au début (3 novembre : les
+        /// 3 tours d'un trio tiré au hasard, et la Barricade ou un autre), un de plus après chaque boss. On n'apprend que quelques
+        /// tours au début, les plans se concentrent (les duos et les trios arrivent), et chaque partie a sa couleur.
         /// </summary>
         public IReadOnlyList<StructureDefinition> RunStructures => m_RunStructures;
 
-        /// <summary>Plans d'un bâtiment donnés par l'orbe de tourelle d'un coffre (2 depuis le 2 novembre), avant son lot.</summary>
-        public int PlansPerChest => Mathf.Max(1, m_PlansPerChest);
+        /// <summary>
+        /// Plans d'un bâtiment donnés par l'orbe de tourelle d'un coffre, avant son lot : de 1 à 4, tirés au sort selon la vague
+        /// (4 novembre ; toujours 2 du 2 au 4 novembre, 1 avant).
+        /// </summary>
+        public int RollPlansPerChest()
+        {
+            if (m_PlanChances == null || m_PlanChances.Length == 0)
+                return 2;
+
+            var waves = m_Waves != null ? m_Waves : WaveManager.Instance;
+            var wave = waves != null ? Mathf.Max(1, waves.WaveNumber) : 1;
+            return m_PlanChances[Mathf.Min(wave, m_PlanChances.Length) - 1].Roll();
+        }
+
+        /// <summary>Les chances d'une orbe de tourelle de donner 1, 2, 3 ou 4 plans, à une vague (des poids, 4 novembre).</summary>
+        [System.Serializable]
+        public struct PlanChances
+        {
+            [Tooltip("Chance d'un plan.")]
+            [Min(0f)]
+            public float one;
+
+            [Tooltip("Chance de deux plans.")]
+            [Min(0f)]
+            public float two;
+
+            [Tooltip("Chance de trois plans.")]
+            [Min(0f)]
+            public float three;
+
+            [Tooltip("Chance de quatre plans.")]
+            [Min(0f)]
+            public float four;
+
+            public PlanChances(float one, float two, float three, float four)
+            {
+                this.one = one;
+                this.two = two;
+                this.three = three;
+                this.four = four;
+            }
+
+            /// <summary>De 1 à 4 plans, selon les poids (2 s'ils sont tous nuls).</summary>
+            public int Roll()
+            {
+                var total = Mathf.Max(0f, one) + Mathf.Max(0f, two) + Mathf.Max(0f, three) + Mathf.Max(0f, four);
+                if (total <= 0f)
+                    return 2;
+
+                var pick = Random.value * total;
+                if ((pick -= Mathf.Max(0f, one)) < 0f)
+                    return 1;
+                if ((pick -= Mathf.Max(0f, two)) < 0f)
+                    return 2;
+                if ((pick -= Mathf.Max(0f, three)) < 0f)
+                    return 3;
+                // Random.value peut valoir 1 : le dernier nombre qui a une chance.
+                return four > 0f ? 4 : three > 0f ? 3 : two > 0f ? 2 : 1;
+            }
+        }
 
         /// <summary>Une construction est en cours (les marteaux sont sortis).</summary>
         public bool IsBuilding => m_Current != null;
@@ -244,6 +315,73 @@ namespace Archery.Building
             return picked;
         }
 
+        // Le chantier du début (3 novembre, le joueur) : les 3 tours d'un trio tiré au hasard, pour qu'un trio (et son ultime) soit
+        // à portée dans chaque partie ; puis la Barricade, ou un autre bâtiment au hasard si le trio l'a déjà. Sans trio possible
+        // (pas de catalogue), au hasard comme avant.
+        void PickStartingStructures()
+        {
+            var catalog = TowerDuoCatalog.Instance;
+            var trios = new List<(TowerDuoCatalog.Entry Trio, List<StructureDefinition> Towers)>();
+            if (catalog != null)
+            {
+                foreach (var trio in catalog.Trios)
+                {
+                    var towers = TowersOf(catalog, trio);
+                    if (towers != null)
+                        trios.Add((trio, towers));
+                }
+            }
+
+            if (trios.Count > 0)
+            {
+                var picked = trios[Random.Range(0, trios.Count)];
+                m_StartingTrio = picked.Trio;
+                m_RunStructures.AddRange(picked.Towers);
+            }
+
+            var count = 3 + m_ExtraStartingStructures;
+            if (m_RunStructures.Count < count && !m_RunStructures.Exists(d => d.kind == StructureKind.Barricade))
+            {
+                var barricade = m_Structures.Find(d => IsOffered(d) && d.kind == StructureKind.Barricade);
+                if (barricade != null)
+                    m_RunStructures.Add(barricade);
+            }
+
+            while (m_RunStructures.Count < count)
+            {
+                if (AddRunStructure() == null)
+                    break;
+            }
+        }
+
+        // Les 3 tours d'un trio (les deux de son duo, et la sienne), toutes proposées par les coffres ; null sinon.
+        List<StructureDefinition> TowersOf(TowerDuoCatalog catalog, TowerDuoCatalog.Entry trio)
+        {
+            if (trio == null || !trio.IsTrio || trio.definition == null || !(trio.definition.prefab is TowerTrio))
+                return null;
+
+            var duo = default(TowerDuoCatalog.Entry);
+            foreach (var entry in catalog.Duos)
+            {
+                if (entry != null && entry.definition == trio.duo)
+                    duo = entry;
+            }
+
+            if (duo == null)
+                return null;
+
+            var towers = new List<StructureDefinition>();
+            foreach (var kind in new[] { duo.first, duo.second, trio.first })
+            {
+                var tower = m_Structures.Find(d => IsOffered(d) && d.kind == kind);
+                if (tower == null || towers.Contains(tower))
+                    return null;
+                towers.Add(tower);
+            }
+
+            return towers;
+        }
+
         static string NamesOf(List<StructureDefinition> definitions)
         {
             var names = definitions.ConvertAll(d => d.displayName);
@@ -283,8 +421,7 @@ namespace Archery.Building
 
         void Start()
         {
-            for (var i = 0; i < m_StartingStructures; i++)
-                AddRunStructure();
+            PickStartingStructures();
 
             m_Waves = WaveManager.Instance;
             if (m_Waves == null)
@@ -872,10 +1009,11 @@ namespace Archery.Building
             m_StructureKills = 0;
             m_ReportByName.Clear();
 
-            // Au premier gong, le chantier de la partie (2 novembre).
+            // Au premier gong, le chantier de la partie (2 novembre), et le trio qu'il permet (3 novembre).
             if (wave == 1 && m_RunStructures.Count > 0)
-                HeadMessages.Show($"Ton chantier : {NamesOf(m_RunStructures)}\n<size=70%>Les coffres donnent leurs plans ; un bâtiment " +
-                                  "de plus après chaque boss</size>", m_MessageColor, 6f);
+                HeadMessages.Show($"Ton chantier : {NamesOf(m_RunStructures)}\n<size=70%>" +
+                                  (m_StartingTrio != null ? $"De quoi bâtir un trio : {m_StartingTrio.displayName}. " : "") +
+                                  "Les coffres donnent leurs plans ; un bâtiment de plus après chaque boss</size>", m_MessageColor, 6f);
         }
 
         // Après chaque boss (la fin de la vague), des bâtiments rejoignent le chantier (2 novembre).

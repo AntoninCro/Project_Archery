@@ -389,5 +389,11 @@ namespace Archery.Building
             Gizmos.color = new Color(1f, 0.8f, 0.4f, 0.6f);
             Gizmos.DrawWireSphere(Muzzle, m_Range * RangeScale);
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        /// <summary>Elle rejoint l'arène de MK (ses carreaux le touchent en vol comme au sol ; le lance-filet aussi, 3 novembre).</summary>
+        public override bool FightsInArena => true;
     }
 }

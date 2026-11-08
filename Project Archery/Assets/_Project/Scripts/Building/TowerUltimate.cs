@@ -1,3 +1,4 @@
+using Archery.Bows;
 using UnityEngine;
 
 namespace Archery.Building
@@ -10,18 +11,43 @@ namespace Archery.Building
     /// <remarks>
     /// Le joueur, le 2 novembre : pas de règle nouvelle, une ultime intuitive, pas à chaque partie, et méritée (on ne doit pas pouvoir
     /// l'avoir facilement avant la vague 5). Elle grandit (environ deux fois un trio), a une action avec la flèche du joueur, et le
-    /// suit dans l'arène de MK, comme les balistes et les tours de givre (<c>FinalBoss/ArenaTurrets</c>) ; les boss ne sont jamais
+    /// suit dans l'arène de MK, comme les bâtiments qui tirent (<c>FinalBoss/ArenaTurrets</c>) ; les boss ne sont jamais
     /// tués d'un coup. Elle garde les trois tours de son trio (ses plans ne la font plus monter : elle n'a qu'un niveau).
     /// </remarks>
     public abstract class TowerUltimate : TowerTrio
     {
-        Vector3 m_ArenaScale = Vector3.one;
+        const float k_MinShotPower = 0.25f;
+        const float k_MaxShotPower = 3f;
+
+        static Bow s_Bow;
+
+        /// <summary>
+        /// La force d'une flèche du joueur pour l'action « une par flèche » de l'ultime (le marteau, le cheval, l'écho), qui frappe
+        /// d'autant (3 novembre, le joueur : « chaque action qui se passe à chaque flèche [...] scale en fonction de si le joueur fait
+        /// un parfait, moyen, etc. ; de même avec la force de la flèche, la pluie réduit les dégâts ») : ses dégâts rapportés à ceux
+        /// d'un tir « Bon » du même arc, avec les mêmes bonus (<see cref="Bow.MeleeDamage"/>). Parfait ×2, très bon ×1,28, bon ×1,
+        /// moyen ×0,8, raté ×0,6 (les dégâts des qualités de tir, <c>Data/ShotTuning</c>) ; l'arc moins bandé, une flèche de la pluie
+        /// ou du multishot, moins ; la corde de siège, le laser, plus ; de 0,25 à 3. Les parchemins n'y comptent pas : ils
+        /// renforcent déjà les tours (<c>Structure Scroll Share</c>).
+        /// </summary>
+        protected static float ShotPower(ArrowHit hit)
+        {
+            if (s_Bow == null)
+                s_Bow = FindAnyObjectByType<Bow>();
+            var reference = s_Bow != null ? s_Bow.MeleeDamage(ShotGrade.Good) : 0f;
+            if (reference <= 0f)
+                return 1f;
+            return Mathf.Clamp(hit.Damage / reference, k_MinShotPower, k_MaxShotPower);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetShotPower()
+        {
+            s_Bow = null;
+        }
 
         /// <summary>Le trio dont elle est née (sa définition).</summary>
         public StructureDefinition FromTrio { get; private set; }
-
-        /// <summary>Dans l'arène de MK (entre son arrivée et la fin du combat).</summary>
-        public bool InArena { get; private set; }
 
         internal void SetupUltimate(TowerDuoCatalog.Entry entry, StructureDefinition first, StructureDefinition second,
                                     StructureDefinition third, StructureDefinition fromTrio)
@@ -30,25 +56,11 @@ namespace Archery.Building
             FromTrio = fromTrio;
         }
 
+        /// <summary>Elle suit le joueur dans l'arène de MK, la première (2 novembre).</summary>
+        public override bool FightsInArena => true;
+
         /// <summary>Sa taille dans l'arène de MK (fois la sienne) : la voûte de la grotte est basse près des parois.</summary>
-        protected virtual float ArenaScale => 0.65f;
-
-        /// <summary>Elle descend dans l'arène de MK (<c>ArenaTurrets</c>), réduite à <see cref="ArenaScale"/>.</summary>
-        public virtual void EnterArena()
-        {
-            if (!InArena)
-                m_ArenaScale = transform.localScale;
-            InArena = true;
-            transform.localScale = m_ArenaScale * Mathf.Max(0.1f, ArenaScale);
-        }
-
-        /// <summary>L'arène se ferme : elle retrouve sa taille (et sa place, rendue par <c>ArenaTurrets</c>).</summary>
-        public virtual void LeaveArena()
-        {
-            if (!InArena)
-                return;
-            InArena = false;
-            transform.localScale = m_ArenaScale;
-        }
+        /// <remarks>L'entrée et la sortie de l'arène sont celles de tous les bâtiments depuis le 3 novembre (<see cref="Structure.EnterArena"/>).</remarks>
+        protected override float ArenaScale => 0.65f;
     }
 }

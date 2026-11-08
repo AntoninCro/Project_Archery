@@ -40729,9 +40729,30 @@ MonoBehaviour:
   m_MessageColor: {r: 0.55, g: 0.8, b: 1, a: 1}
   m_DuoFromLevel: 3
   m_DuoClip: {fileID: 0}
-  m_StartingStructures: 3
+  m_UltimateClip: {fileID: 0}
+  m_ExtraStartingStructures: 1
   m_StructuresPerBoss: 1
-  m_PlansPerChest: 2
+  m_PlanChances:
+  - one: 40
+    two: 45
+    three: 10
+    four: 5
+  - one: 30
+    two: 45
+    three: 20
+    four: 5
+  - one: 25
+    two: 40
+    three: 25
+    four: 10
+  - one: 20
+    two: 35
+    three: 30
+    four: 15
+  - one: 15
+    two: 30
+    three: 35
+    four: 20
   m_ShowWaveReport: 1
 --- !u!1001 &146234247
 PrefabInstance:
@@ -76848,6 +76869,11 @@ MonoBehaviour:
   m_Count: 4
   m_MinTowerDistance: 15
   m_SpawnDelay: 3
+  m_Guards: 1
+  m_GuardsPerWave: 0200000002000000030000000300000004000000
+  m_GuardRadius: 5
+  m_GuardAggro: 15
+  m_GuardLeash: 30
   m_AppearClip: {fileID: 8300000, guid: 9ed0124783dc0d043a963c595bced157, type: 3}
   m_MessageColor: {r: 0.72, g: 0.55, b: 1, a: 1}
 --- !u!4 &268761014 stripped
@@ -147262,8 +147288,8 @@ MonoBehaviour:
   m_OverlayFadeSpeed: 2.5
   m_HurtClip: {fileID: 0}
   m_HurtVignette: 1
-  m_RegenDelay: 5
-  m_RegenPercentPerSecond: 4
+  m_RegenDelay: 3
+  m_RegenPercentPerSecond: 10
   m_ReloadSceneOnDeath: 1
   m_ReloadDelay: 5
 --- !u!114 &508503652
@@ -147278,7 +147304,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24d5eb0a551f71d4bb93c5fa165ce3c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Health
-  m_MaxHealth: 200
+  m_MaxHealth: 100
   m_Invulnerable: 0
   m_RegenPerSecond: 0
   m_RegenDelay: 2
@@ -433626,7 +433652,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24d5eb0a551f71d4bb93c5fa165ce3c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Combat.Health
-  m_MaxHealth: 3000
+  m_MaxHealth: 1500
   m_Invulnerable: 0
   m_RegenPerSecond: 0
   m_RegenDelay: 2

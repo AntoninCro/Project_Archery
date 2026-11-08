@@ -55,11 +55,12 @@ namespace Archery.Waves
     /// et se termine par un boss : la vague s'arrête à sa mort. Tirer de nouveau dans le gong pendant le chrono fait venir
     /// le boss plus tôt, contre une récompense plus grosse. En fin de vague : survivants en fuite, PV du joueur restaurés,
     /// points, et or de fin de vague avec ses bonus de performance. Victoire après le boss de la dernière vague ; le joueur
-    /// peut alors finir la partie ou continuer en mode infini.
+    /// peut alors finir la partie ou continuer en mode infini. Les menaces par voie (3 novembre, <c>WaveManager.Lanes.cs</c>) sont en
+    /// sommeil : chaque ennemi sort d'un point d'apparition au hasard.
     /// </summary>
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(10)]
-    public class WaveManager : MonoBehaviour
+    public partial class WaveManager : MonoBehaviour
     {
         [SerializeField]
         WaveSettings m_Settings;
@@ -180,6 +181,23 @@ namespace Archery.Waves
         int MaxAlive => Mathf.Clamp(Mathf.RoundToInt(m_Settings.maxAlive * DifficultyManager.Current.enemyCount * Mathf.Sqrt(m_CountScale)),
                                     1, Mathf.Max(1, m_Settings.maxAliveCap));
 
+        /// <summary>Les réglages des vagues (les ennemis de chaque vague : les gardiens des coffres y sont choisis, 4 novembre).</summary>
+        public WaveSettings Settings => m_Settings;
+
+        // Les ennemis en vie qui comptent pour le maximum : sans les gardiens des coffres (4 novembre), qui ne vont pas à la tour ;
+        // sinon, une expédition aux coffres aurait arrêté la vague.
+        static int Attackers()
+        {
+            var count = 0;
+            foreach (var enemy in Enemy.Alive)
+            {
+                if (enemy != null && !enemy.IsGuard)
+                    count++;
+            }
+
+            return count;
+        }
+
         public event Action<int> WaveStarted;
         public event Action<int> WaveEnded;
         public event Action GameOver;
@@ -292,6 +310,9 @@ namespace Archery.Waves
             }
             else
             {
+                // Les menaces par voie (3 novembre), tirées pendant la pause ; ici si la vague n'en a pas eu.
+                if (m_ThreatWave != WaveNumber)
+                    PlanThreats(WaveNumber);
                 BuildSpawnQueues();
                 m_SpawnTimer = 1f;
 
@@ -299,6 +320,8 @@ namespace Archery.Waves
                 if (WaveNumber == 1)
                     title += "\n" + DifficultyManager.Current.displayName;
                 title += "\n<size=60%>Accalmie : récolte, construis, ouvre les coffres</size>";
+                if (ThreatWave == WaveNumber)
+                    title += $"\n<size=50%>{ThreatLine()}</size>";
                 Announce(title, k_Gold, m_WaveStartClip);
             }
 
@@ -462,19 +485,20 @@ namespace Archery.Waves
                            Mathf.Max(0.1f, difficulty.enemyCount * difficulty.lateEnemyCount * Mathf.Sqrt(m_CountScale));
             m_SpawnTimer = interval * UnityEngine.Random.Range(0.8f, 1.2f);
             var pick = PickAffordable(float.MaxValue);
-            if (pick != null && Enemy.Alive.Count < MaxAlive && m_Spawner != null)
-                m_Spawner.Spawn(pick.prefab);
+            if (pick != null && Attackers() < MaxAlive && m_Spawner != null)
+                m_Spawner.Spawn(pick.prefab, PointFor(pick.prefab));
         }
 
+        // Il sort par la voie de sa famille (les menaces par voie, 3 novembre ; un point au hasard sans menaces).
         bool TrySpawnFrom(List<Enemy> queue)
         {
-            if (queue.Count == 0 || m_Spawner == null || Enemy.Alive.Count >= MaxAlive)
+            if (queue.Count == 0 || m_Spawner == null || Attackers() >= MaxAlive)
                 return false;
 
             var last = queue.Count - 1;
             var prefab = queue[last];
             queue.RemoveAt(last);
-            m_Spawner.Spawn(prefab);
+            m_Spawner.Spawn(prefab, PointFor(prefab));
             return true;
         }
 
@@ -671,6 +695,10 @@ namespace Archery.Waves
                          k_Gold, m_VictoryClip);
             else
                 Announce($"Vague {WaveNumber} terminée\n{lines}", new Color(0.55f, 1f, 0.55f), m_WaveClearClip);
+
+            // Les menaces de la vague qui vient, tirées dès maintenant : annoncées pendant toute la pause (3 novembre).
+            PlanThreats(WaveNumber + 1);
+            AnnounceThreats();
 
             WaveEnded?.Invoke(WaveNumber);
             m_OnWaveEnded.Invoke();

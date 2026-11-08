@@ -123,7 +123,8 @@ FLOW_ONE = 0.5       # « 1 cible » : un ennemi à la fois, un nouveau toutes l
 FLOW_GROUP = 2.0     # « groupe » : 2 ennemis par seconde au plus (un groupe de 5 qui passe en 2,5 s)
 MISSED_EVERY = 3.0   # Carquois géant : une flèche ratée toutes les 3 s
 KILLS_PER_SECOND = 0.4  # Grande bombarde : ennemis tués à 18 m par seconde (la poudre)
-HITS_PER_SECOND = 1.0   # Colosse de forge : tes flèches qui touchent à 30 m de lui, par seconde (chacune, un marteau ; 12.48)
+HITS_PER_SECOND = 1.0   # Colosse de forge : tes flèches qui touchent à 30 m de lui, par seconde (chacune, un marteau ; 12.48),
+                        # des tirs « Bon » (l'action d'une flèche suit sa force depuis le 3 novembre : TowerUltimate.ShotPower)
 SCROLLS_PER_WAVE = 0.5  # parchemins de force (et autant d'adresse) que le joueur gagne par vague, coffres et boutique
 
 
@@ -1241,7 +1242,7 @@ def colosse(p=None):
             f"un éclat de fonte ({r1(chunk)} dans {r1(p['m_ChunkRadius'])} m) ; au {strikes}e, le lingot ({int(ingot)} dans "
             f"{r1(p['m_Radius'])} m, la foudre). Les marteaux : un par flèche qui touche à {int(p['m_Range'])} m ({int(hammer)} dans "
             f"{r1(p['m_HammerRadius'])} m, la foudre, projetés), {r1(most)} par seconde au plus.")
-    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée (2 par seconde : {r1(d1_2)} sur une cible, "
+    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée, un tir « Bon » (son action suit la force de la flèche depuis le 3 novembre : parfait ×2, moyen ×0,8, la pluie moins ; 2 par seconde : {r1(d1_2)} sur une cible, "
             f"{r1(dz_2)} sur le groupe ; au plafond de {r1(most)} : {r1(d1_max)} et {r1(dz_max)}). Seule, la forge : {r1(forge1)} et "
             f"{r1(forgez)}. Les éclats sur le groupe une fois sur deux, le lingot sur le groupe ; le grand geste dure 0,63 s de plus.")
     rows = [Row(4, ULTIMATE_PLANS, desc, f"{int(p['m_Range'])} m", chord(p["m_Range"]), d1=d1, dz=dz, cc=cc, calc=calc)]
@@ -1306,7 +1307,7 @@ def manege(p=None):
             f"{rounds}e coup, la grande éjection : chacun retombe sur le groupe le plus serré ({int(self_hit)} pour lui, {int(eject)} dans "
             f"{r1(p['m_EjectRadius'])} m autour, projetés). Les chevaux : un par flèche qui touche ({int(horse)} dans {r1(p['m_HorseRadius'])} m, "
             f"le feu d'artifice, projetés), {r1(most)} par seconde au plus.")
-    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée (2 par seconde : {r1(d1_2)} sur une cible, "
+    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée, un tir « Bon » (son action suit la force de la flèche depuis le 3 novembre : parfait ×2, moyen ×0,8, la pluie moins ; 2 par seconde : {r1(d1_2)} sur une cible, "
             f"{r1(dz_2)} sur le groupe ; au plafond de {r1(most)} : {r1(d1_max)} et {r1(dz_max)}). Seule, la ronde : {r1(round1)} et "
             f"{r1(roundz)}. Un tour de ronde en {r1(cycle)} s : {caught} attrapés, le tournis {r1(ride_one)} s pour un ennemi seul, "
             f"{r1(ride_avg)} s en moyenne dans le groupe ; chaque éjecté retombe sur les {GROUP - 1} autres. Sa chute : {pct(drop)} de ses PV. "
@@ -1366,7 +1367,7 @@ def horloge(p=None):
             f"{r1(p['m_NumeralFreeze'])} s). Après le XII, Minuit : le temps arrêté {r1(p['m_MidnightTime'])} s sur toute la carte, puis le "
             f"dégel qui brise ({int(shatter)} à chaque figé). L'écho : chaque flèche qui touche rejouée par une flèche de glace ({int(echo)} "
             f"dans {r1(p['m_EchoRadius'])} m), {r1(most)} par seconde au plus.")
-    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée (2 par seconde : {r1(d1_2)} sur une cible, "
+    calc = (f"DÉPEND DE TOI : {r1(HITS_PER_SECOND)} flèche qui touche par seconde à sa portée, un tir « Bon » (son action suit la force de la flèche depuis le 3 novembre : parfait ×2, moyen ×0,8, la pluie moins ; 2 par seconde : {r1(d1_2)} sur une cible, "
             f"{r1(dz_2)} sur le groupe ; au plafond de {r1(most)} : {r1(d1_max)} et {r1(dz_max)}). Seule, l'horloge : {r1(alone1)} et "
             f"{r1(alonez)}. Un tour en {r1(cycle)} s (douze chiffres, Minuit) ; un chiffre sur deux sur le groupe ; le dégel sur tous les "
             f"figés de la carte (le groupe en compte cinq). Contrôle : les figés des chiffres, Minuit sur le groupe.")

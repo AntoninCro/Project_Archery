@@ -225,10 +225,12 @@ namespace Archery.Upgrades
         const float k_TripleSpread = 9f;
 
         // Le duo « Étoile filante » (revu le 27 octobre, demandé par le joueur après un test au casque : avant, autant de flèches
-        // que la corde triple sur un cône de 9°, au niveau 1 une au ciel et une dans le sol, on ne voyait pas de couronne) : trois
-        // fois plus de flèches que la corde triple seule (6/12/18), sur un cercle de k_CrownRadius m autour du point visé (trouvé
-        // par un rayon, borné ; rien devant : k_CrownDefaultDistance).
-        const int k_CrownMultiplier = 3;
+        // que la corde triple sur un cône de 9°, au niveau 1 une au ciel et une dans le sol, on ne voyait pas de couronne) : deux
+        // fois plus de flèches que la corde triple seule (4/8/12, soit 5/9/13 avec celle de l'arc), sur un cercle de k_CrownRadius m
+        // autour du point visé (trouvé par un rayon, borné ; rien devant : k_CrownDefaultDistance). Trois fois (6/12/18) jusqu'au
+        // 3 novembre : avec le ralenti du talisman et un tir parfait à chaque fois, le joueur tirait des dizaines de flèches par
+        // seconde (« on passe à 5 »).
+        const int k_CrownMultiplier = 2;
         const float k_CrownRadius = 2.5f;
         const float k_CrownDefaultDistance = 25f;
         static readonly Vector2 k_CrownDistance = new Vector2(10f, 40f);

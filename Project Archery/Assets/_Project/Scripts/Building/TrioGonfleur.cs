@@ -26,7 +26,9 @@ namespace Archery.Building
     /// <remarks>
     /// Gonfler, c'est agrandir l'ennemi entier (sa racine, ses zones de touche avec : une cible plus facile), puis le faire flotter
     /// comme dans une bulle (<see cref="Enemy.Float"/>) : il retombe dès qu'il est blessé (la règle de la chute). Les boss et les
-    /// volants ne sont jamais gonflés ; un ennemi déjà déformé par une autre fusion (aplati) non plus.
+    /// volants ne sont jamais gonflés ; un ennemi déjà déformé par une autre fusion (aplati) non plus. Dans l'arène de MK (3 novembre),
+    /// le harpon plante quand même le tuyau dans MK : la pompe le ralentit tant qu'elle souffle, puis le tuyau éclate (« Pan ! ») et
+    /// le blesse ; il ne gonfle pas.
     /// </remarks>
     public class TrioGonfleur : TowerTrio
     {
@@ -96,6 +98,15 @@ namespace Archery.Building
 
         [SerializeField]
         int m_BlowCount = 2;
+
+        [Header("Dans l'arène de MK (3 novembre)")]
+        [Tooltip("MK, le tuyau planté, est ralenti pendant que la pompe souffle (0,6 : 40 % plus lent ; jamais plus de 25 %, son " +
+                 "plafond) ; puis le tuyau éclate : les dégâts d'un ballon crevé, fois ce nombre.")]
+        [SerializeField]
+        float m_ArenaSlow = 0.6f;
+
+        [SerializeField]
+        float m_ArenaBurstScale = 2f;
 
         [Header("Le défilé (niveau 3)")]
         [Tooltip("Temps (s) entre deux défilés ; il faut au moins quatre ennemis à portée.")]
@@ -210,7 +221,10 @@ namespace Archery.Building
         // ---------------------------------------------------------------- viser, gonfler
 
         bool CanInflate(Enemy enemy) =>
-            enemy != null && enemy.IsAlive && enemy.CanBeLaunched && !enemy.IsAirborne && !s_Reshaped.Contains(enemy);
+            enemy != null && enemy.IsAlive && (enemy.CanBeLaunched || IsArenaBoss(enemy)) && !enemy.IsAirborne && !s_Reshaped.Contains(enemy);
+
+        // MK, dans l'arène : le tuyau s'y plante, mais il ne gonfle pas (3 novembre).
+        bool IsArenaBoss(Enemy enemy) => InArena && enemy.IsBoss;
 
         // L'ennemi au sol le plus avancé vers la tour du joueur, parmi ceux à portée.
         Enemy FindTarget()
@@ -218,7 +232,7 @@ namespace Archery.Building
             Enemy best = null;
             var bestScore = float.MaxValue;
             var tower = Archery.Defense.Tower.Instance;
-            foreach (var enemy in EnemiesNear(transform.position, m_Range))
+            foreach (var enemy in EnemiesNear(transform.position, Range))
             {
                 if (!CanInflate(enemy))
                     continue;
@@ -284,6 +298,8 @@ namespace Archery.Building
                 Hurt(enemy, ValueFor(m_HarpoonDamagePerLevel, level, 15f), enemy.Center, enemy.Center - Nozzle);
             if (enemy != null && enemy.IsAlive)
                 enemy.Stun(balloon.Inflate + 0.1f);
+            if (enemy != null && enemy.IsAlive && IsArenaBoss(enemy))
+                enemy.Slow(m_ArenaSlow, balloon.Inflate + 0.5f);
             Sfx.Play(m_InflateClip, enemy != null ? enemy.Center : Nozzle, 0.7f, Random.Range(0.9f, 1.1f));
         }
 
@@ -339,6 +355,14 @@ namespace Archery.Building
                         return true;
 
                     DropHose(balloon);
+                    if (IsArenaBoss(enemy))
+                    {
+                        BurstOn(balloon);
+                        balloon.Phase = Phase.Deflate;
+                        balloon.Time = 0f;
+                        return true;
+                    }
+
                     if (!enemy.IsAlive || !enemy.Float(balloon.Height, balloon.FloatTime, m_RiseSpeed * (balloon.Parade ? 1.5f : 1f), this))
                     {
                         balloon.Phase = Phase.Deflate;
@@ -414,6 +438,21 @@ namespace Archery.Building
                 Blow(point, level);
         }
 
+        // Dans l'arène : le tuyau planté dans MK éclate sous la pression, en confettis ; il le blesse (3 novembre).
+        void BurstOn(Balloon balloon)
+        {
+            var enemy = balloon.Enemy;
+            if (enemy == null || !enemy.IsAlive)
+                return;
+
+            var point = enemy.Center;
+            foreach (var color in k_Confetti)
+                Burst(point, color, 14, 9f, 0.25f, 1.4f, 0.5f);
+            Sfx.Play(m_PopClip, point, 1f, Random.Range(0.8f, 0.95f));
+            FloatingText.Spawn(point + Vector3.up * 3f, "Pan !", new Color(1f, 0.85f, 0.3f, 1f), 1.6f, 1.2f);
+            Hurt(enemy, ValueFor(m_PopDamagePerLevel, Mathf.Max(1, Level), 30f) * m_ArenaBurstScale, point, point - Nozzle);
+        }
+
         // Le souffle (niveau 2) : ses voisins au sol gonflent vite à leur tour, sans tuyau ; eux ne soufflent plus.
         void Blow(Vector3 point, int level)
         {
@@ -439,9 +478,9 @@ namespace Archery.Building
         bool Parade()
         {
             m_Scratch.Clear();
-            foreach (var enemy in EnemiesNear(transform.position, m_Range))
+            foreach (var enemy in EnemiesNear(transform.position, Range))
             {
-                if (CanInflate(enemy))
+                if (CanInflate(enemy) && !enemy.IsBoss)
                     m_Scratch.Add(enemy);
             }
 
@@ -502,9 +541,10 @@ namespace Archery.Building
             balloon.Hose = null;
         }
 
+        // Un boss ne change jamais de taille (MK, dans l'arène, reçoit le tuyau sans gonfler).
         static void SetScale(Balloon balloon, float factor)
         {
-            if (balloon.Enemy != null)
+            if (balloon.Enemy != null && !balloon.Enemy.IsBoss)
                 balloon.Enemy.transform.localScale = balloon.Scale * factor;
         }
 
@@ -517,7 +557,7 @@ namespace Archery.Building
                 return;
             if (balloon.OnDamaged != null && balloon.Enemy.Health != null)
                 balloon.Enemy.Health.Damaged -= balloon.OnDamaged;
-            if (restore || balloon.Phase == Phase.Deflate)
+            if ((restore || balloon.Phase == Phase.Deflate) && !balloon.Enemy.IsBoss)
                 balloon.Enemy.transform.localScale = balloon.Scale;
         }
 
@@ -553,5 +593,14 @@ namespace Archery.Building
                 m_PistonPhase = Mathf.MoveTowards(m_PistonPhase, Mathf.Round(m_PistonPhase / (2f * Mathf.PI)) * 2f * Mathf.PI, Time.deltaTime * 4f);
             m_Piston.localPosition = m_PistonRest + Vector3.down * (0.35f * (1f - Mathf.Cos(m_PistonPhase)));
         }
+
+        /// <summary>La portée dessinée pendant la pose (3 novembre, le placement lisible).</summary>
+        public override float ReachAt(int level) => m_Range;
+
+        // Sa portée : plus grande dans l'arène de MK, où il tire du haut du plateau (RangeScale, 3 novembre).
+        float Range => m_Range * RangeScale;
+
+        /// <summary>Il rejoint l'arène de MK (3 novembre) : son tuyau s'y plante dans MK, qui ralentit, puis éclate et le blesse.</summary>
+        public override bool FightsInArena => true;
     }
 }

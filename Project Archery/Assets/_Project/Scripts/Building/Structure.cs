@@ -113,7 +113,8 @@ namespace Archery.Building
 
         /// <summary>
         /// Les parchemins de vigueur : les PV de la tour et des barricades, la même part que ceux du joueur (+25 PV sur 200 :
-        /// +12,5 % par parchemin).
+        /// +12,5 % par parchemin ; +8 sur 67 depuis le 3 novembre, les PV du joueur divisés par 3 : la même part ; +12 sur 100 depuis
+        /// le 4 novembre).
         /// </summary>
         public static float ScrollHealthMultiplier =>
             1f + (Upgrades != null ? Mathf.Max(0f, Upgrades.ScrollHealthShare) : 0f) * EnemyScaling.StructureScrollShare;
@@ -163,7 +164,7 @@ namespace Archery.Building
         float m_Elevation;
 
         /// <summary>
-        /// Multiplie la portée (baliste, tour de givre) : 1 sur la carte ; plus dans l'arène du boss final, où les tourelles
+        /// Multiplie la portée (des bâtiments qui tirent) : 1 sur la carte ; plus dans l'arène du boss final, où les tourelles
         /// téléportées tirent du haut du plateau.
         /// </summary>
         public float RangeScale
@@ -194,6 +195,71 @@ namespace Archery.Building
         protected virtual void OnRangeChanged()
         {
         }
+
+        // ---------------------------------------------------------------- l'arène de MK
+
+        Vector3 m_ScaleOutsideArena = Vector3.one;
+
+        /// <summary>
+        /// Il rejoint l'arène de MK avec le joueur (<c>FinalBoss/ArenaTurrets</c>) : les bâtiments qui tirent. Les balistes, les tours de
+        /// givre, puis l'ultime ; depuis le 3 novembre (le joueur : « rajoute toutes les tourelles qui tirent [...] et adapte-les pour
+        /// qu'elles fonctionnent correctement »), aussi le mortier, l'Avalanche, le Feu d'artifice, le Carquois géant, la Loupe, le
+        /// Lanceur de baudruches, l'Enclume, le Gonfleur et la Grande bombarde, chacun adapté à MK, qui vole (<see cref="InArena"/>).
+        /// </summary>
+        public virtual bool FightsInArena => false;
+
+        /// <summary>Dans l'arène de MK (entre son arrivée et la fin du combat).</summary>
+        public bool InArena { get; private set; }
+
+        /// <summary>Sa taille dans l'arène de MK (fois la sienne) : la voûte de la grotte est basse près des parois.</summary>
+        protected virtual float ArenaScale => 1f;
+
+        /// <summary>Il descend dans l'arène de MK (<c>ArenaTurrets</c>), réduit à <see cref="ArenaScale"/>.</summary>
+        public virtual void EnterArena()
+        {
+            if (!InArena)
+                m_ScaleOutsideArena = transform.localScale;
+            InArena = true;
+            transform.localScale = m_ScaleOutsideArena * Mathf.Max(0.1f, ArenaScale);
+        }
+
+        /// <summary>L'arène se ferme : il retrouve sa taille (et sa place, rendue par <c>ArenaTurrets</c>).</summary>
+        public virtual void LeaveArena()
+        {
+            if (!InArena)
+                return;
+            InArena = false;
+            transform.localScale = m_ScaleOutsideArena;
+        }
+
+        /// <summary>La plus grosse part de ses PV max qu'un coup d'un bâtiment peut coûter à MK dans l'arène (3 novembre).</summary>
+        protected const float k_ArenaBossShare = 0.02f;
+
+        /// <summary>
+        /// Une part des PV max de cet ennemi (les coups « en pourcentage » des duos et des trios), plafonnée pour MK dans l'arène à
+        /// <see cref="k_ArenaBossShare"/> (3 novembre : le char de carnaval, 35 %, le tuerait en trois fois ; le Colosse lui en prend 3 %
+        /// quand il le plaque au sol).
+        /// </summary>
+        protected float ShareFor(Enemy enemy, float share) => InArena && enemy != null && enemy.IsBoss ? Mathf.Min(share, k_ArenaBossShare) : share;
+
+        /// <summary>La carrure de MK (m) autour de son centre : une explosion sur son flanc le touche (3 novembre).</summary>
+        protected const float k_ArenaBossBody = 2.5f;
+
+        /// <summary>
+        /// La distance (m) de ce point à l'ennemi, pour une explosion : à ses pieds sur la carte ; dans l'arène, à son corps (moins la
+        /// carrure de MK), car il vole et les obus éclatent sur lui (3 novembre).
+        /// </summary>
+        protected float BlastDistance(Enemy enemy, Vector3 point) =>
+            InArena ? Mathf.Max(0f, Vector3.Distance(enemy.Center, point) - (enemy.IsBoss ? k_ArenaBossBody : 0f))
+                    : Vector3.Distance(enemy.transform.position, point);
+
+        /// <summary>
+        /// Un point de la cloche de <paramref name="from"/> à <paramref name="to"/> (t de 0 à 1, <paramref name="height"/> m de plus au
+        /// milieu). Dans l'arène, <paramref name="to"/> suit le corps de MK à chaque image : ce qu'on lui lance le rattrape en vol au lieu
+        /// de tomber au sol sous lui (3 novembre).
+        /// </summary>
+        protected static Vector3 Arc(Vector3 from, Vector3 to, float t, float height) =>
+            Vector3.Lerp(from, to, t) + Vector3.up * (4f * height * t * (1f - t));
 
         static readonly List<Structure> s_All = new List<Structure>();
 
@@ -380,6 +446,13 @@ namespace Archery.Building
 
         protected static int ValueFor(int[] values, int level, int fallback) =>
             values == null || values.Length == 0 ? fallback : values[Mathf.Clamp(level - 1, 0, values.Length - 1)];
+
+        /// <summary>
+        /// La portée (m, à plat, autour de lui) où il agit à ce niveau, dessinée au sol pendant la pose, avec la longueur de voie
+        /// qu'elle couvre (le placement lisible, 3 novembre ; <c>Docs/Refonte_TowerDefense.md</c>, 12.55). 0 : il agit sur ses
+        /// cases (un piège de la voie, la barricade) : rien n'est dessiné.
+        /// </summary>
+        public virtual float ReachAt(int level) => 0f;
 
         /// <summary>
         /// Ennemis vivants, copiés dans une liste réutilisée : on peut les blesser (et les tuer) en la parcourant. Sans les

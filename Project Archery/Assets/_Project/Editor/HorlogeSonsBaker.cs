@@ -50,6 +50,8 @@ namespace Archery.EditorTools
             ("m_ShatterClip", k_Audio + "Horloge_Bris.wav", "Assets/kenney_impact-sounds/Audio/impactGlass_heavy_001.ogg"),
             ("m_ImpactClip", k_Audio + "Horloge_Eclat.wav", "Assets/kenney_impact-sounds/Audio/impactGlass_medium_001.ogg"),
             ("m_ChimeClip", k_Audio + "Horloge_Carillon.wav", k_Audio + "Placeholder/perfect_chime.wav"),
+            // Le bruit de l'arrêt du temps (3 novembre) : synthétisé par Claude (Tools/sons/arret_du_temps.py), un réglage nouveau.
+            ("m_TimeStopClip", k_Audio + "Horloge_Temps_Arrete.wav", null),
         };
 
         static HorlogeSonsBaker()

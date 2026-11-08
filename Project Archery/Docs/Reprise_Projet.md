@@ -143,8 +143,31 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   `World/SkySettings.Minuit`, `Editor/HorlogeFinitionBaker`, `HorlogeSonsBaker`, `Tools/texture_glace.py`). Compilé, **pas encore vu
   dans Unity ni testé au casque** (tests : `Checklist_Demo.md`, « La Grande Horloge ») ; ses sons (le tic, la cloche, le temps qui
   s'arrête et qui reprend, la glace qui éclate, le carillon ; freesound, CC0, téléchargés par le joueur) sont découpés et crédités.
-  **Les trois ultimes sont faites** ; ensuite, leurs essais. Plus tard (idée du
-  joueur) : une lumière sous chaque tourelle pendant le boss final.
+  **Les trois ultimes sont faites** ; ensuite, leurs essais. Le 3 novembre, les retouches du joueur : l'Horloge (particules et
+  aurores plus petites, les boss des vagues figés 9 s, les trois cristaux du socle retirés : le modèle est refait à l'ouverture de
+  Unity) ; **le chantier du début** devient les 3 tours d'un trio tiré au hasard, plus la Barricade (ou un autre si le trio l'a
+  déjà) : 4 bâtiments (12.53 ; `Building/BuildManager`, `Editor/StartingTrioBaker` pour le tutoriel). Puis (3 novembre)
+  la flèche « ULTIME », la pose lisible (la portée au sol, la voie couverte), la lumière sous les tourelles de l'arène, la
+  fluidité (12.55) ; compilés, pas encore vus dans Unity. Le talisman de l'ingénieur (et son duo Réseau) surcharge maintenant
+  tous les bâtiments, plus seulement les balistes et les tours de givre (12.57 ; la carte dit « dans une de tes tourelles »,
+  `Editor/EngineerTextBaker`, et le duo « à tes tourelles »). Puis tous les bâtiments qui tirent rejoignent l'arène de MK, chacun
+  adapté à lui (12.58 : le mortier, 5 duos, 3 trios en plus ; ce qu'ils lancent le suit en vol ; le lance-filet le ralentit) ;
+  compilés, pas encore vus dans Unity. Puis la tour attaquée s'annonce par le cor (un son 3D synthétisé) et le
+  rayon qui monte et bat en rouge, et elle fume sous la moitié de ses PV, à la place de l'alerte de la montre (12.59). Pour les parties
+  de test, le **journal de partie** (`Scripts/Journal/`) : chaque partie s'écrit dans `Logs/Parties/` (le déroulé et un bilan par
+  vague), que Claude lit après. Le troisième essai (12.60, `Editor/ThirdTestBaker`) : volants −50 % de PV et piqué jusqu'au bout,
+  boss −30 % de PV qui frappent le joueur de près, le joueur à 67 PV avec une grande régénération, la couronne du combo à 5 flèches,
+  le Manège −35 %. Le rythme (12.61, 4 novembre) : les coffres ont leurs gardiens (le joueur : pas de verrou, on peut foncer au prix
+  de ses PV ; `Enemies/Enemy.Guard.cs`, `Building/CrystalSpawner`), et toutes les vagues ont le chrono de la première. Puis (12.62) la tour à 1 500 PV au lieu de 3 000, et les ultimes −30 % (`Editor/UltimesTowerBaker`) ; la direction du joueur pour
+  les bâtiments : contrôler plutôt que tuer. Puis (12.63) les plans par coffre : de 1 à 4 au hasard, plus souvent beaucoup au fil de la partie, 10 % de plus
+  sur la partie (`BuildManager`, *Plan Chances*). Le quatrième essai (12.64, au casque) : le Carquois géant limité à 2 flèches par seconde, le journal
+  corrigé (au casque ou au clavier à chaque vague, les PV au plus bas). L'Avalanche n'avale qu'une fois (12.65) ; la zone contre la monocible : le joueur ne veut pas
+  affaiblir la zone (plutôt renforcer la monocible et les ennemis) et fera une partie monocible. Les ennemis au sol 30 % plus rapides sauf en Facile
+  (12.66, *Ground Speed* des difficultés, `Editor/GroundSpeedBaker`). Puis (12.67) la corde des Akimbow corrigée, le voile rouge plus
+  visible, le joueur à 100 PV et la Vigueur à +12 (`Editor/PlayerHealth100Baker`) ; à faire plus tard : le menu des constructions (GDD, section 21). Les menaces par voie, le lot 5 (12.56 : chaque voie sa famille
+  d'ennemis), codées puis mises en sommeil le même jour (les mots au-dessus des voies tombaient dans les murs ; le joueur :
+  « retirons cette mécanique pour le moment » ; les idées pour une autre annonce sont dans 12.56). Plus tard (idée du joueur) : des sorts ou des compétences
+  pour la deuxième partie du jeu (GDD, section 24, à préciser).
 Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, chaque trio, puis chaque ultime, posée à plusieurs niveaux).
 
 ### Le chantier en cours : la refonte roguelike (25 et 26 octobre)

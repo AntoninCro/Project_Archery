@@ -97,10 +97,11 @@ namespace Archery.Upgrades
         public static readonly Duo FrostFence = new Duo("Éclair givrant", "Les arcs électriques gèlent ce qui les traverse",
                                                         new[] { UpgradeEffect.Conductor }, new[] { UpgradeEffect.FrostTip });
 
-        public static readonly Duo Network = new Duo("Réseau", "Les arcs électriques relient tes flèches à tes balistes, qu'ils surchargent",
+        // « tes tourelles » depuis le 3 novembre (le joueur) : le Réseau surcharge tous les bâtiments ; « tes balistes » avant.
+        public static readonly Duo Network = new Duo("Réseau", "Les arcs électriques relient tes flèches à tes tourelles, qu'ils surchargent",
                                                      new[] { UpgradeEffect.Conductor }, new[] { UpgradeEffect.Engineer });
 
-        public static readonly Duo Starfall = new Duo("360 no scope headshot", "En l'air ou en glissade, la corde triple tire trois fois plus de flèches, en couronne autour du point visé",
+        public static readonly Duo Starfall = new Duo("360 no scope headshot", "En l'air ou en glissade, la corde triple tire deux fois plus de flèches, en couronne autour du point visé",
                                                       new[] { UpgradeEffect.Acrobat }, new[] { UpgradeEffect.Triple });
 
         public static readonly Duo Rail = new Duo("Tir de lumière", "La flèche devient un trait de lumière, trois fois plus rapide, qui traverse tout et laisse une traînée qui blesse",

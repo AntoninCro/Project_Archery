@@ -85,21 +85,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Current: 0
---- !u!114 &3671203484245969006
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5104177486062557393}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0cdd2ab7e258b74eae22557010ce156, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Archery.Runtime::Archery.UI.DamagePopups
-  m_BodyColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HeadColor: {r: 1, g: 0.85, b: 0.2, a: 1}
-  m_ShotTuning: {fileID: 11400000, guid: b7821c1902af53e40931b94ce46aa34b, type: 2}
 --- !u!114 &4025211035276280484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119,6 +104,21 @@ MonoBehaviour:
   m_CenterHeight: 0
   m_AttackClip: {fileID: 0}
   m_DeathClip: {fileID: 0}
+--- !u!114 &3671203484245969006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5104177486062557393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0cdd2ab7e258b74eae22557010ce156, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Archery.Runtime::Archery.UI.DamagePopups
+  m_BodyColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HeadColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  m_ShotTuning: {fileID: 11400000, guid: b7821c1902af53e40931b94ce46aa34b, type: 2}
 --- !u!114 &7623083898811697861
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,9 +139,11 @@ MonoBehaviour:
   m_SpawnHeight: 4
   m_DiveSpeedMultiplier: 2
   m_DiveTurnRate: 90
-  m_HitRadius: 0.8
+  m_HitRadius: 1.1
   m_MaxDiveDistance: 22
   m_RecoverTime: 1.2
+  m_AvoidRadius: 0.6
+  m_GroundClearance: 0.8
   m_Wings: {fileID: 0}
   m_ScreechClip: {fileID: 8300000, guid: 6411ef5dada8d334397e1c4eebe212b7, type: 3}
   m_SpinWhileFalling: 1
@@ -299,6 +301,18 @@ PrefabInstance:
       value: Model
       objectReference: {fileID: 0}
     - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -331,35 +345,23 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3054566516119258676, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 3309786654644649927, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 559ce8f288a549238fea66e8b53e5fd0, type: 2}
     - target: {fileID: 3309786654644649927, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
-      propertyPath: m_ApplyRootMotion
+      propertyPath: m_CullingMode
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3309786654644649927, guid: 75f057b43e0a449dae5f6549f5107474, type: 3}
-      propertyPath: m_CullingMode
+      propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
