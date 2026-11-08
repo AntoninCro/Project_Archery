@@ -57,6 +57,13 @@ namespace Archery.Chests
 
         // L'icône de la récompense (celle de la boutique), à la place de la boule.
         Image m_Icon;
+
+        // La tourelle en miniature d'un lot de plans (8 novembre au soir, le joueur : « le plan de la tourelle doit être une mini
+        // version de la tourelle » ; les icônes des coffres se ressemblaient toutes) : ses matériaux à elle, la couleur de la rareté
+        // sur le sceau et l'étiquette. Elle tourne doucement.
+        const float k_MiniSize = 0.3f;
+        const float k_MiniSpin = 40f;
+        Transform m_Mini;
         Color m_IconColor;
         float m_Hover;
         Vector3 m_From;
@@ -108,6 +115,8 @@ namespace Archery.Chests
         // l'étiquette. Sans icône (morceau d'arc légendaire), la boule reste.
         void ShowIcon(ChestReward reward)
         {
+            if (reward.Kind == ChestRewardKind.Plans && ShowMiniature(reward))
+                return;
             if (reward.Icon == null || m_Label == null)
                 return;
 
@@ -116,6 +125,38 @@ namespace Archery.Chests
             m_Icon = UiThemer.WorldImage(m_Label.transform, "Icône", reward.Icon, 0.2f, new Vector3(orb.x, orb.y, 0.04f), m_IconColor);
             if (m_Renderer != null)
                 m_Renderer.enabled = false;
+        }
+
+        // La tourelle du lot, en petit, à la place de la boule. Faux si elle n'a pas de modèle.
+        bool ShowMiniature(ChestReward reward)
+        {
+            var prefab = reward.Structure != null ? reward.Structure.prefab : null;
+            if (prefab == null)
+                return false;
+
+            var model = Archery.Building.BuildPlacement.CopyModel(prefab, 1, null);
+            var renderers = model.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                Destroy(model);
+                return false;
+            }
+
+            var bounds = renderers[0].bounds;
+            foreach (var renderer in renderers)
+                bounds.Encapsulate(renderer.bounds);
+            model.transform.position -= bounds.center;
+
+            m_Mini = new GameObject("Tourelle miniature").transform;
+            m_Mini.SetParent(transform, false);
+            model.transform.SetParent(m_Mini, false);
+            var size = Mathf.Max(0.01f, Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)));
+            var parentScale = Mathf.Max(0.0001f, transform.lossyScale.x);
+            m_Mini.localScale = Vector3.one * (k_MiniSize / size / parentScale);
+            m_Mini.localRotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
+            if (m_Renderer != null)
+                m_Renderer.enabled = false;
+            return true;
         }
 
         // L'étiquette en Cinzel sur une plaque ornée de la couleur de la récompense ; derrière l'orbe, un sceau orné.
@@ -173,6 +214,9 @@ namespace Archery.Chests
                 m_Icon.color = Color.Lerp(m_IconColor, Color.white, 0.45f * m_Hover);
                 m_Icon.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin((m_Age + m_Phase) * 3f));
             }
+
+            if (m_Mini != null)
+                m_Mini.Rotate(0f, k_MiniSpin * Mathf.Lerp(1f, 3f, m_Hover) * deltaTime, 0f, Space.World);
 
             if (m_Seal != null)
             {

@@ -45,10 +45,21 @@ namespace Archery.Upgrades
 
         static readonly int k_SlotCount = Enum.GetValues(typeof(ArrowSlot)).Length;
 
-        // Parchemins (25 octobre) : la Force fait aussi aller les flèches plus vite (le cinquième de son bonus de dégâts :
-        // la portée suit le carré de la vitesse), l'Adresse élargit aussi les autres bandes (la moitié de son bonus).
-        const float k_StrengthSpeedShare = 0.2f;
+        // Parchemins (25 octobre) : l'Adresse élargit aussi les autres bandes (la moitié de son bonus).
+        // Depuis le 8 novembre (le joueur : l'or est retiré, on prend un parchemin par pause et dans les coffres, plus forts,
+        // chacun à deux effets) : la Force, +30 % de dégâts et l'anneau 15 % plus rapide (la vitesse de charge, la moitié) ;
+        // l'Adresse, +20 % de bande verte et de dégâts des tirs parfaits ; la Vigueur, +35 PV (35 % des PV de base) et 35 % de
+        // portée. Avant, la Force faisait aussi aller les flèches plus vite (le cinquième de son bonus) et l'Adresse accélérait
+        // l'anneau. (Le même soir, d'abord : la Force +30 % d'anneau, l'Adresse sur la tête et les points faibles ; retouché par
+        // le joueur.)
+        const float k_StrengthRingShare = 0.5f;
         const float k_DexterityBandShare = 0.5f;
+
+        // La part du bonus de l'adresse qui va aux dégâts des tirs parfaits (8 novembre) : tout.
+        const float k_DexterityPerfectShare = 1f;
+
+        // La portée en plus des parchemins de vigueur, en part de leurs PV en plus (8 novembre : +35 PV, +35 % de portée).
+        const float k_VigorRangeShare = 1f;
 
         static readonly int k_EffectCount = Enum.GetValues(typeof(UpgradeEffect)).Length;
         static readonly int k_BuffCount = Enum.GetValues(typeof(TemporaryBuff)).Length;
@@ -104,33 +115,16 @@ namespace Archery.Upgrades
 
         // Les anciennes cartes de statistiques (retirées de la boutique le 25 octobre) et les parchemins s'additionnent ; le
         // pacte de verre (26 octobre) multiplie le tout (×2 au niveau 1, +0,5 par niveau).
-        // Le talisman de l'avare (26 octobre au soir) multiplie aussi, selon l'or gardé (MiserBonus).
-        public float DamageMultiplier => (1f + Total(UpgradeEffect.Damage) + Total(UpgradeEffect.Strength)) * GlassPactMultiplier * (1f + m_MiserBonus);
-
-        // Le talisman de l'avare : l'or pour 1 % de dégâts en plus, et le bonus au plus, aux niveaux 1, 2 et 3.
-        static readonly Vector3 k_MiserGoldPerPercent = new Vector3(20f, 15f, 10f);
-        static readonly Vector3 k_MiserMax = new Vector3(1f, 1.5f, 2f);
-        float m_MiserBonus;
-
-        /// <summary>Le bonus de dégâts du talisman de l'avare en ce moment (0,35 = +35 %), selon l'or gardé.</summary>
-        public float MiserBonus => m_MiserBonus;
-
-        float ComputeMiser()
-        {
-            var level = Stacks(UpgradeEffect.Miser);
-            var score = ScoreManager.Instance;
-            if (level == 0 || score == null)
-                return 0f;
-
-            var percents = Mathf.Floor(score.Money / Mathf.Max(1f, SpecialArrows.ByLevel(k_MiserGoldPerPercent, level)));
-            return Mathf.Min(SpecialArrows.ByLevel(k_MiserMax, level), percents * 0.01f);
-        }
+        // (Le talisman de l'avare, 26 octobre au soir, multipliait aussi, selon l'or gardé : retiré le 8 novembre avec l'or.)
+        public float DamageMultiplier => (1f + Total(UpgradeEffect.Damage) + Total(UpgradeEffect.Strength)) * GlassPactMultiplier;
 
         // L'empennage plume (26 octobre) : la flèche va aussi plus vite, de 25 % par niveau (26 octobre, réglage du joueur ; 10 % avant).
+        // La vigueur (8 novembre) : la portée suit le carré de la vitesse, d'où la racine.
         public float ArrowSpeedMultiplier =>
-            1f + Total(UpgradeEffect.ArrowSpeed) + k_StrengthSpeedShare * Total(UpgradeEffect.Strength) + 0.25f * Total(UpgradeEffect.Feather);
+            (1f + Total(UpgradeEffect.ArrowSpeed) + 0.25f * Total(UpgradeEffect.Feather)) *
+            Mathf.Sqrt(1f + k_VigorRangeShare * ScrollHealthShare);
 
-        public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge) + Total(UpgradeEffect.Dexterity);
+        public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge) + k_StrengthRingShare * Total(UpgradeEffect.Strength);
 
         float GlassPactMultiplier => Stacks(UpgradeEffect.GlassPact) > 0 ? 1.5f + 0.5f * Stacks(UpgradeEffect.GlassPact) : 1f;
 
@@ -164,10 +158,10 @@ namespace Archery.Upgrades
         // les tours » ; les deux roguelikes, l'arc et les tourelles, sont liés) : Structure.ScrollStrength, ScrollRate,
         // ScrollHealthMultiplier.
 
-        /// <summary>Bonus de dégâts des parchemins de force (0,12 par parchemin) : les bâtiments en profitent aussi.</summary>
+        /// <summary>Bonus de dégâts des parchemins de force (0,3 par parchemin depuis le 8 novembre) : les bâtiments en profitent aussi.</summary>
         public float ScrollDamageBonus => Total(UpgradeEffect.Strength);
 
-        /// <summary>Bonus des parchemins d'adresse (0,1 par parchemin) : la cadence des bâtiments.</summary>
+        /// <summary>Bonus des parchemins d'adresse (0,2 par parchemin depuis le 8 novembre) : la cadence des bâtiments.</summary>
         public float ScrollRateBonus => Total(UpgradeEffect.Dexterity);
 
         /// <summary>
@@ -175,13 +169,21 @@ namespace Archery.Upgrades
         /// les barricades gagnent la même part de leurs PV.
         /// </summary>
         public float ScrollHealthShare => m_BaseMaxHealth > 0f ? Total(UpgradeEffect.Vigor) / m_BaseMaxHealth : 0f;
+
+        /// <summary>Les PV de base du joueur, avant la vigueur (0 tant qu'ils ne sont pas connus).</summary>
+        public float BaseMaxHealth => Mathf.Max(0f, m_BaseMaxHealth);
         public float HeadDamageMultiplier => 1f + Total(UpgradeEffect.HeadHunter);
+
+        /// <summary>
+        /// Les dégâts des tirs parfaits, en plus (8 novembre, le joueur : l'adresse ne servait presque à rien, le geste prenant
+        /// plus de temps que l'anneau) : +20 % par parchemin d'adresse, en plus de la bande verte. (Le matin, la tête et les points
+        /// faibles ; le soir, le joueur : « n'augmente plus les dégâts dans la tête, mais les dégâts du tir parfait ».)
+        /// </summary>
+        public float PerfectDamageMultiplier => 1f + k_DexterityPerfectShare * Total(UpgradeEffect.Dexterity);
         public float LifeOnHeadshot => Total(UpgradeEffect.Vampirism);
         public int ChainCount => Mathf.RoundToInt(Total(UpgradeEffect.ChainLightning));
         public int RicochetCount => Mathf.RoundToInt(Total(UpgradeEffect.Ricochet));
 
-        /// <summary>Part des points changée en or, en plus du taux de base (Butin).</summary>
-        public float MoneyRateBonus => Total(UpgradeEffect.Loot);
 
         /// <summary>Multiplie les chances des cartes rares et légendaires en boutique (Chance).</summary>
         public float LuckMultiplier => 1f + Total(UpgradeEffect.Luck);
@@ -292,14 +294,6 @@ namespace Archery.Upgrades
             if (m_Suspended)
                 return;
 
-            // L'avare : les dégâts suivent l'or, repoussés vers l'arc quand ils changent d'au moins 1 %.
-            var miser = ComputeMiser();
-            if (Mathf.Abs(miser - m_MiserBonus) >= 0.005f)
-            {
-                m_MiserBonus = miser;
-                Apply();
-            }
-
             var expired = false;
             for (var i = 0; i < m_BuffTimers.Length; i++)
             {
@@ -385,7 +379,13 @@ namespace Archery.Upgrades
         /// Ajoute un exemplaire : la même pièce monte de niveau, équipée ou non. Une pièce nouvelle s'équipe toute seule si son
         /// emplacement est vide ; sinon elle attend dans l'atelier (<see cref="Equip"/>). Rien n'est jamais perdu.
         /// </summary>
-        public void Add(Upgrade upgrade)
+        public void Add(Upgrade upgrade) => Add(upgrade, 1f);
+
+        /// <summary>
+        /// Ajoute un exemplaire dont la valeur est multipliée par <paramref name="valueScale"/> : un parchemin selon sa rareté
+        /// (8 novembre au soir : ×1, ×1,5, ×2, ×3).
+        /// </summary>
+        public void Add(Upgrade upgrade, float valueScale)
         {
             if (!CanTake(upgrade))
                 return;
@@ -399,7 +399,7 @@ namespace Archery.Upgrades
             }
 
             m_Levels[index]++;
-            m_Values[index] += upgrade.value;
+            m_Values[index] += upgrade.value * Mathf.Max(0f, valueScale);
             if (upgrade.trigger == UpgradeTrigger.PerfectShot)
                 m_PerfectOnly[index] = true;
             Count++;
@@ -455,6 +455,7 @@ namespace Archery.Upgrades
             foreach (var bow in FindObjectsByType<Bow>())
             {
                 bow.DamageMultiplier = DamageMultiplier * damageBuff;
+                bow.PerfectDamageMultiplier = PerfectDamageMultiplier;
                 bow.SpeedMultiplier = ArrowSpeedMultiplier;
                 bow.RingSpeedMultiplier = RingSpeedMultiplier * (fastRing ? m_BuffRingSpeedMultiplier : 1f) * (1f + m_BonusRingSpeed);
                 bow.BandWidthMultiplier = BandWidthMultiplier * (fastRing ? m_BuffRingBandMultiplier : 1f);
@@ -482,10 +483,6 @@ namespace Archery.Upgrades
                     m_BaseTowerHealth = tower.Health.Max;
                 tower.Health.SetMaxHealth(m_BaseTowerHealth * (1f + ScrollHealthShare));
             }
-
-            var score = ScoreManager.Instance;
-            if (score != null)
-                score.MoneyRateBonus = MoneyRateBonus;
 
             Hitbox.HeadDamageMultiplier = HeadDamageMultiplier;
         }

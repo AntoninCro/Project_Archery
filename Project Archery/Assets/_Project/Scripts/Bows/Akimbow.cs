@@ -777,7 +777,8 @@ namespace Archery.Bows
 
             var modifiers = Tuning.Get(grade);
             var speed = Speed(grade);
-            var damage = m_Trial ? m_TrialDamage : m_Definition.damage * modifiers.damage * (m_Bow != null ? m_Bow.DamageMultiplier : 1f) * charge;
+            var damage = m_Trial ? m_TrialDamage : m_Definition.damage * modifiers.damage * (m_Bow != null ? m_Bow.DamageMultiplier : 1f) * charge *
+                         (m_Bow != null && grade == ShotGrade.Perfect ? m_Bow.PerfectDamageMultiplier : 1f);
             var origin = slot.Crossbow.TransformPoint(m_Definition.akimboTip);
             var direction = slot.Crossbow.forward;
 

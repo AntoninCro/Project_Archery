@@ -162,13 +162,22 @@ namespace Archery.Enemies
         // Le filtre des dégâts de son Health : avant que le coup ne compte, ce qui le prépare, et les dégâts de cette sorte. Les
         // coups des bâtiments ne changent pas HitPreparation : la glace qui se brise sous la flèche le blesse elle aussi, pendant
         // le coup de la flèche, et l'effacerait avant que le score ne compte l'élimination.
+        /// <summary>
+        /// Des PV sous lesquels aucun coup ne le fait descendre (0 : aucun). MK (8 novembre au soir, le joueur) : un palier par
+        /// phase, il ne descend pas sous le seuil de la phase suivante tant qu'il n'y est pas passé.
+        /// </summary>
+        public float HealthFloor { get; set; }
+
         float FilterPreparedDamage(DamageInfo info)
         {
-            if (!IsPlayerHit(info))
-                return info.Amount;
+            var amount = info.Amount;
+            if (IsPlayerHit(info))
+            {
+                HitPreparation = CurrentPreparation;
+                amount *= s_PreparedDamage[(int)HitPreparation];
+            }
 
-            HitPreparation = CurrentPreparation;
-            return info.Amount * s_PreparedDamage[(int)HitPreparation];
+            return HealthFloor > 0f ? Mathf.Min(amount, Mathf.Max(0f, m_Health.Current - HealthFloor)) : amount;
         }
 
         void ClearPreparations()

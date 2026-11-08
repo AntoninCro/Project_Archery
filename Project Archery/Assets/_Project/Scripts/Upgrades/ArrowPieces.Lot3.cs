@@ -60,6 +60,9 @@ namespace Archery.Upgrades
         // (35 % des dégâts du tir depuis le 27 octobre au soir, équilibrage du joueur ; 45 % avant.)
         const float k_RainDamage = 0.35f;
 
+        // La part de la pluie d'une flèche tirée que sème une flèche du déluge (8 novembre au soir).
+        const float k_DelugeRainShare = 0.5f;
+
         // Corde fantôme : le temps (s) après un tir pour attraper la corde, la distance (m) de la main à l'encoche, la longueur
         // (m) à tirer, le temps (s) au plus où on la garde, la part des dégâts du tir (niveaux 1, 2, 3).
         const float k_GhostWindow = 1.2f;
@@ -95,7 +98,17 @@ namespace Archery.Upgrades
         // Depuis le 27 octobre (le joueur : « le rappel ne semble pas faire de dégâts » ; la flèche devait toucher l'ennemi au rayon
         // près, et une flèche plantée dans un ennemi n'était jamais rappelée) : la flèche rappelée blesse tout ennemi à moins de
         // k_RecallRadius m de son trajet, une fois chacun, et une flèche plantée dans un ennemi le blesse en s'arrachant.
-        const float k_RecallRadius = 0.9f;
+        // (1,5 m depuis le 8 novembre au soir, le joueur, avec la recherche d'un ennemi et les flèches gardées 30 s : avec la pluie
+        // de flèches, « un des combos les plus forts du jeu », le rappel faisait moins mal qu'un tir direct ; 0,9 m avant.)
+        const float k_RecallRadius = 1.5f;
+
+        // Depuis le 8 novembre au soir : la flèche rappelée file d'abord vers l'ennemi le plus proche d'elle (à tant de m au plus ;
+        // les ennemis déjà visés par d'autres flèches comptent pour plus loin, de tant de m par flèche, pour se répartir), le
+        // traverse, puis revient ; elle le cherche tant de secondes au plus. Les flèches plantées restent tant de secondes (10 avant).
+        const float k_RecallSeekRange = 8f;
+        const float k_RecallSpread = 2f;
+        const float k_RecallSeekTime = 1.5f;
+        const float k_RecallKeepStuck = 30f;
 
         // Un détonateur dont la flèche a été rappelée reste ce temps (s) là où elle était.
         const float k_DetachedDetonatorTime = 6f;
@@ -475,9 +488,22 @@ namespace Archery.Upgrades
                 return;
             }
 
-            // Rappelée : elle revient vers le joueur, sans tomber, et disparaît en arrivant (après la boucle des vols).
+            // Rappelée : elle file vers son ennemi (8 novembre au soir), puis revient vers le joueur, sans tomber, et disparaît en
+            // arrivant (après la boucle des vols).
             if (flight.Recalled)
             {
+                var target = flight.RecallTarget;
+                if (target != null && (!target.IsAlive || flight.RecallHits.Contains(target) || Time.time > flight.RecallSeekUntil))
+                    flight.RecallTarget = target = null;
+                if (target != null)
+                {
+                    var toTarget = target.Center - arrow.TipPosition;
+                    if (toTarget.sqrMagnitude > 1e-4f)
+                        SteerTo(arrow, toTarget.normalized, k_RecallSpeed, k_RecallTurnRate * 1.5f, deltaTime);
+                    RecallSweep(flight);
+                    return;
+                }
+
                 var toPlayer = ReturnPoint() - arrow.TipPosition;
                 var distance = toPlayer.magnitude;
                 if (distance < k_RecallArrive)
@@ -633,6 +659,7 @@ namespace Archery.Upgrades
                 while (m_Recallable.Count >= k_MaxRecall)
                     m_Recallable.RemoveAt(0);
                 m_Recallable.Add(new Planted { Arrow = arrow, Point = arrow.TipPosition, Damage = flight.Damage, Grade = flight.Grade, Enemy = enemy });
+                arrow.KeepStuck(k_RecallKeepStuck);
             }
 
             var sentinel = Level(UpgradeEffect.Sentinel);
@@ -957,6 +984,7 @@ namespace Archery.Upgrades
             var count = 0;
             var explosive = ArrowDuos.IsActive(ArrowDuos.ExplosiveRecall);
             m_RecallDetonations.Clear();
+            m_RecallAimed.Clear();
             m_TrackingChild = true;
             foreach (var planted in m_Recallable)
             {
@@ -987,6 +1015,8 @@ namespace Archery.Upgrades
                     flight.Recalled = true;
                     if (yanked != null)
                         flight.RecallHits.Add(yanked);
+                    flight.RecallTarget = RecallTargetFor(from, yanked);
+                    flight.RecallSeekUntil = Time.time + k_RecallSeekTime;
                 }
 
                 count++;
@@ -1064,6 +1094,34 @@ namespace Archery.Upgrades
 
             return arrow != null && arrow.CurrentState == Arrow.State.Stuck && planted.Enemy != null &&
                    (arrow.TipPosition - planted.Enemy.Center).sqrMagnitude < 9f;
+        }
+
+        // Les ennemis déjà visés par une flèche de ce rappel, et par combien.
+        readonly Dictionary<Enemy, int> m_RecallAimed = new Dictionary<Enemy, int>();
+
+        // L'ennemi vers qui file une flèche rappelée : le plus proche d'elle, à k_RecallSeekRange m au plus, en préférant ceux que
+        // peu de flèches visent déjà ; pas celui dont elle vient de s'arracher. Null : elle revient tout droit.
+        Enemy RecallTargetFor(Vector3 from, Enemy yanked)
+        {
+            Enemy best = null;
+            var bestScore = float.MaxValue;
+            foreach (var enemy in Enemy.Alive)
+            {
+                if (enemy == null || !enemy.IsAlive || enemy == yanked || enemy.IsAlly || enemy.IsTrainingDummy)
+                    continue;
+                var distance = Vector3.Distance(from, enemy.Center);
+                if (distance > k_RecallSeekRange)
+                    continue;
+                var score = distance + k_RecallSpread * (m_RecallAimed.TryGetValue(enemy, out var aimed) ? aimed : 0);
+                if (score >= bestScore)
+                    continue;
+                best = enemy;
+                bestScore = score;
+            }
+
+            if (best != null)
+                m_RecallAimed[best] = m_RecallAimed.TryGetValue(best, out var count) ? count + 1 : 1;
+            return best;
         }
 
         // La flèche rappelée blesse les ennemis qu'elle frôle (entre sa pointe d'avant et celle de maintenant), une fois chacun.
@@ -1449,6 +1507,24 @@ namespace Archery.Upgrades
         /// avec le duo « Averse », chaque gâchette relancerait de plus en plus de pluies) ; avec le boomerang, elle ne s'arrête pas
         /// devant le joueur et ne se reprend pas.
         /// </summary>
+        /// <summary>
+        /// Une flèche du déluge (8 novembre au soir, le joueur : « le déluge devrait aussi reproduire les effets comme pluie de
+        /// flèches ») : avec la corde de pluie, elle sème aussi des flèches le long de sa traînée, comme la flèche tirée, mais la
+        /// moitié (k_DelugeRainShare : beaucoup de flèches à la fois).
+        /// </summary>
+        public void MarkDelugeArrow(Arrow arrow)
+        {
+            var level = Level(UpgradeEffect.Rain);
+            if (level <= 0 || arrow == null || !m_Flights.TryGetValue(arrow, out var flight) || flight.IsRain)
+                return;
+
+            var max = Mathf.RoundToInt(SpecialArrows.ByLevel(k_RainMaxDrops, level));
+            flight.RainTrail = true;
+            flight.RainTraveled = 0f;
+            flight.RainNextAt = k_RainStart;
+            flight.RainDrops = Mathf.RoundToInt(max * (1f - k_DelugeRainShare));
+        }
+
         public void MarkRainArrow(Arrow arrow)
         {
             if (arrow == null || !m_Flights.TryGetValue(arrow, out var flight))

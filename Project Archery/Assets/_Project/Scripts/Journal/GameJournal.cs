@@ -55,7 +55,7 @@ namespace Archery.Journal
         // Les raccourcis de test (Docs/Demo_Vendredi.md) : notés dans le déroulé, pour savoir ce qui vient d'eux.
         static readonly (Key Key, string Text)[] k_Shortcuts =
         {
-            (Key.N, "N (vague suivante, boss, ou le tuer)"), (Key.K, "K (le joueur meurt)"), (Key.M, "M (+500 or)"),
+            (Key.N, "N (vague suivante, boss, ou le tuer)"), (Key.K, "K (le joueur meurt)"),
             (Key.B, "B (2 plans de chaque)"), (Key.H, "H (construction finie)"), (Key.C, "C (un coffre)"), (Key.X, "X (un coffre de boss)"),
             (Key.Tab, "Tab (toutes les pièces un niveau de plus)"), (Key.R, "R (la pièce nouvelle suivante)"), (Key.V, "V (un coffre)"),
             (Key.F, "F (tout au niveau 3)"), (Key.F2, "F2 (le menu des plans)"), (Key.F3, "F3 (les ennemis projetés)"),
@@ -85,6 +85,10 @@ namespace Archery.Journal
         BuildManager m_Build;
         PlayerUpgrades m_Upgrades;
         ScoreManager m_Score;
+        Archery.Shop.ShopManager m_Shop;
+
+        // Les cartes de la pause, quand elle s'ouvre avant que le journal ait fini la vague (l'ordre des abonnés à la fin de vague).
+        string m_PendingPause;
         DragonBoss m_Dragon;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -171,6 +175,8 @@ namespace Archery.Journal
             m_Build = null;
             m_Upgrades = null;
             m_Score = null;
+            m_Shop = null;
+            m_PendingPause = null;
             m_Dragon = null;
             m_Pending.Clear();
             ResetCounts();
@@ -217,10 +223,14 @@ namespace Archery.Journal
                 return;
 
             if (ScoreManager.Instance != null && ScoreManager.Instance != m_Score)
-            {
                 m_Score = ScoreManager.Instance;
-                m_Score.Changed += OnScoreChanged;
-                m_LastMoney = m_Score.Money;
+
+            // Le choix de la pause (8 novembre) : ce qui est proposé, et ce que le joueur prend.
+            if (Archery.Shop.ShopManager.Instance != null && Archery.Shop.ShopManager.Instance != m_Shop)
+            {
+                m_Shop = Archery.Shop.ShopManager.Instance;
+                m_Shop.Opened += OnShopOpened;
+                m_Shop.Taken += OnShopTaken;
             }
 
             if (PlayerHealth.Instance != null && PlayerHealth.Instance != m_Player && PlayerHealth.Instance.Health != null)
@@ -307,6 +317,55 @@ namespace Archery.Journal
             if (m_Wave != null)
                 WriteWaveSummary(m_Wave, "terminée");
             m_Wave = null;
+            if (m_PendingPause != null)
+            {
+                Line(m_PendingPause);
+                m_PendingPause = null;
+            }
+        }
+
+        // La pause s'ouvre (8 novembre, le choix de la pause) : les cartes de chaque ligne.
+        void OnShopOpened(int wave)
+        {
+            if (!Active || m_Shop == null)
+                return;
+
+            var rows = new List<string>[Archery.Shop.ShopManager.Rows];
+            for (var i = 0; i < rows.Length; i++)
+                rows[i] = new List<string>();
+            foreach (var offer in m_Shop.UpgradeOffers)
+            {
+                if (offer != null && offer.Row >= 0 && offer.Row < rows.Length && offer.Kind != Archery.Shop.ShopOfferKind.Unavailable)
+                    rows[offer.Row].Add(OfferName(offer));
+            }
+
+            string Row(int i, string name) => $"{name} : {(rows[i].Count > 0 ? string.Join(", ", rows[i]) : "rien")}";
+            var text = $"Pause après la vague {wave}, proposés : {Row(0, "parchemins")} ; {Row(1, "objets")} ; {Row(2, "tourelles")}.";
+            if (m_Wave != null)
+                m_PendingPause = text;
+            else
+                Line(text);
+        }
+
+        void OnShopTaken(Archery.Shop.ShopOffer offer)
+        {
+            if (!Active || offer == null)
+                return;
+            var kind = offer.Plans.HasValue ? "tourelle" : offer.Upgrade != null && offer.Upgrade.kind == UpgradeKind.Scroll ? "parchemin" : "objet";
+            Line($"Pause : pris **{OfferName(offer)}** ({kind}).");
+        }
+
+        // « Force », « Multitir (rare) », « Phare, 3 plans ».
+        static string OfferName(Archery.Shop.ShopOffer offer)
+        {
+            if (offer.Plans.HasValue)
+                return $"{offer.Plans.Value.Title}, {offer.Plans.Value.Count} plan{(offer.Plans.Value.Count > 1 ? "s" : "")}";
+            if (offer.Upgrade != null && offer.Upgrade.kind != UpgradeKind.Scroll)
+                return $"{offer.Title} ({Archery.Shop.ShopCatalog.NameOf(offer.Upgrade.rarity).ToLowerInvariant()})";
+            // Un parchemin : sa rareté (8 novembre au soir), lue sur son échelle (×1 commune … ×3 légendaire).
+            var scale = offer.ScrollScale;
+            var rarity = scale >= 3f ? UpgradeRarity.Legendary : scale >= 2f ? UpgradeRarity.Epic : scale >= 1.5f ? UpgradeRarity.Rare : UpgradeRarity.Common;
+            return $"{offer.Title} ({Archery.Shop.ShopCatalog.NameOf(rarity).ToLowerInvariant()})";
         }
 
         void OnStageChanged(WaveStage stage)
@@ -536,7 +595,7 @@ namespace Archery.Journal
         static string BowName =>
             BowLoadout.Instance != null && BowLoadout.Instance.Selected != null ? BowLoadout.Instance.Selected.displayName : "?";
 
-        // L'état en une ligne : les PV du joueur et de la tour, l'or, le score.
+        // L'état en une ligne : les PV du joueur et de la tour, le score (plus l'or depuis le 8 novembre : il est retiré du jeu).
         string Status()
         {
             var parts = new List<string>
@@ -545,10 +604,7 @@ namespace Archery.Journal
                 "tour " + (m_Tower != null && !m_Tower.IsStanding ? "en ruines" : HealthText(m_TowerHealth)),
             };
             if (m_Score != null)
-            {
-                parts.Add($"or {m_Score.Money}");
                 parts.Add($"score {m_Score.Score}");
-            }
 
             return string.Join(", ", parts);
         }

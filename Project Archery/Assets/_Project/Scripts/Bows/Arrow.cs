@@ -122,6 +122,13 @@ namespace Archery.Bows
         [SerializeField]
         float m_StuckLifetime = 10f;
 
+        // Une durée plus longue demandée pour cette flèche plantée (8 novembre au soir : le rappel les garde 30 s), remise à zéro
+        // quand elle disparaît.
+        float m_StuckLifeOverride;
+
+        /// <summary>Cette flèche plantée reste au moins tant de secondes (le rappel, 8 novembre).</summary>
+        public void KeepStuck(float seconds) => m_StuckLifeOverride = Mathf.Max(m_StuckLifeOverride, seconds);
+
         [SerializeField]
         float m_MaxFlightTime = 8f;
 
@@ -772,6 +779,7 @@ namespace Archery.Bows
             if (m_State == State.Held || m_State == State.Nocked)
                 return;
 
+            m_StuckLifeOverride = 0f;
             EndShot();
             ResetState();
             if (Pool != null)
@@ -829,7 +837,7 @@ namespace Archery.Bows
                 return;
 
             m_StuckTime += Time.deltaTime;
-            if (m_StuckTo == null || !m_StuckTo.gameObject.activeInHierarchy || m_StuckTime > m_StuckLifetime)
+            if (m_StuckTo == null || !m_StuckTo.gameObject.activeInHierarchy || m_StuckTime > Mathf.Max(m_StuckLifetime, m_StuckLifeOverride))
             {
                 Despawn();
                 return;

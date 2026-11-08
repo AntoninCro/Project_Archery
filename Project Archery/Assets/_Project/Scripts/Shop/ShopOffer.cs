@@ -45,6 +45,15 @@ namespace Archery.Shop
 
         public bool Sold;
 
+        /// <summary>La ligne de la pause (8 novembre : 0 les parchemins, 1 les objets, 2 les tourelles ; une carte par ligne).</summary>
+        public int Row;
+
+        /// <summary>Un parchemin (8 novembre au soir) : sa rareté multiplie son effet (×1, ×1,5, ×2, ×3).</summary>
+        public float ScrollScale = 1f;
+
+        /// <summary>Une tourelle de la pause (8 novembre) : le lot de plans, tiré comme l'orbe d'un coffre.</summary>
+        public Archery.Chests.ChestReward? Plans;
+
         public bool CanBuy => !Sold && Kind != ShopOfferKind.Unavailable;
 
         public static ShopOffer Info(string title, string description, Color color, Sprite icon = null) => new ShopOffer

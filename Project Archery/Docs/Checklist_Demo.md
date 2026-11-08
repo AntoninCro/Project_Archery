@@ -8,6 +8,54 @@ Une partie en **Facile**, une en **Normal**, puis une en **Impossible**, la cons
 
 **Le journal de partie** (3 novembre) : chaque partie lancée dans Unity s'écrit toute seule dans `Project Archery/Logs/Parties/Partie_<date>.md` (le déroulé daté et un bilan par vague : objets, plans, bâtiments, dégâts par source, tirs, dégâts reçus, or, fluidité, erreurs). Après la partie, dire à Claude de le lire. À vérifier la première fois : le fichier apparaît dès la première vague, et il se termine par « Bilan de la partie » (à la mort, à la victoire ou à l'arrêt du mode Jeu).
 
+- [ ] **La vague 1 plus douce** (12.73) : 30 % d'ennemis en moins (le journal : « Ennemis : N apparus »).
+
+**Le huitième essai (`Docs/Refonte_TowerDefense.md`, 12.72)** : la console dit « Chances des raretés : … → 60 / 24 / 11 / 5 ».
+- [ ] **Le gong** : après un boss appelé tôt, une seule carte par ligne est plus rare (pas toute la pause).
+- [ ] **Moins de raretés hautes** : la plupart des cartes sont communes ; une légendaire reste un événement.
+- [ ] **Le Déluge avec la Pluie de flèches** : chaque flèche du Déluge sème aussi une pluie derrière elle ; la fluidité tient-elle ?
+
+**Le septième essai : ce qui a changé le 8 novembre au soir (`Docs/Refonte_TowerDefense.md`, 12.70)** : à l'ouverture de Unity, la console dit « Les quatre raretés (8 novembre au soir) ». Une partie en **Normal**, au casque, puis dire à Claude de lire le journal.
+- [ ] **Les boutons « +N niveaux »** : plus grands, sur deux lignes, rien ne déborde.
+- [ ] **Viser l'ultime** (et les grands bâtiments) par son modèle, pas seulement son socle.
+- [ ] **« Le style, ça compte aussi »** : rien sur les escaliers ni la tour en marchant ; en l'air pour de bon, le ralenti, mais pas de tir parfait gratuit ; l'anneau tourne à sa vitesse normale pendant le ralenti (et pendant les autres ralentis).
+- [ ] **Le Rappel avec la Pluie de flèches** : les flèches rappelées foncent sur les ennemis proches avant de revenir ; ça doit faire plus mal qu'un tir direct.
+- [ ] **MK** : il passe par ses trois phases (au sol, en vol, enragé ; le journal) ; les ultimes ne le clouent, ne l'étourdissent ou n'arrêtent le temps que toutes les 15 s environ, sans coup à chaque flèche.
+- [ ] **Plus de stun-lock** : un ennemi étourdi a 1 s de répit avant d'être de nouveau étourdi (la baliste).
+- [ ] **Plus de chiffre doré** au-dessus des ennemis tués.
+- [ ] **Le gong** : « la pause suivante sera plus rare » ; après un boss appelé tôt, la pause est plus rare d'un cran.
+- [ ] **Les quatre raretés** : les cartes et les orbes en blanc, bleu, violet, or ; les parchemins ont une rareté (leur texte suit) ; une tourelle de 3 plans est épique ; l'orbe d'un lot de plans montre la tourelle en miniature.
+- [x] **La fiche** `Docs/Fiche_Ameliorations.xlsx` : remplie par le joueur, appliquée (12.71) ; la console dit « La fiche des améliorations (8 novembre au soir) : 12 changement(s) ».
+- [ ] **Les pièces épiques** (violet) : Tir détonant, Chaîne d'éclairs, Boomerang, Rappel, Déluge, Sentinelle, Arc conducteur, Multitir, Tir triple, Tir écho, Talisman de l'ingénieur.
+- [ ] **La Pointe du chasseur** : la marque reste sur le premier ennemi touché jusqu'à sa mort (tirer sur un autre ne la déplace pas), ne saute plus à sa mort, et le tir qui marque fait déjà les dégâts en plus.
+
+**Le sixième essai : ce qui a changé le 8 novembre (`Docs/Refonte_TowerDefense.md`, 12.68)** : à l'ouverture de Unity, la console dit « Le phare du jugement (8 novembre) : bonus sur les points faibles… ; texte du niveau 5 ». Puis une partie en **Normal**, au casque, et dire à Claude de lire le journal.
+- [ ] **Le Phare du jugement** : au niveau 5, toutes les 10 s, le rayon tombe sur l'ennemi le plus fort, « Jugement ! » : il reste étourdi 3 s (un boss 1,5 s), sans perdre de PV ; tes flèches lui font plus de dégâts. Le journal : le Phare ne fait plus une grosse part des dégâts, et **aucun sur MK**.
+- [ ] **MK** : environ 20 300 PV en Normal (journal : « MK apparaît (PV …) ») ; il s'envole vers 66 % de ses PV et devient enragé vers 33 % (journal : les phases « Air » et « Enraged » et leurs PV), même au milieu d'une attaque ou sur un perchoir ; le combat dure entre 1 min 30 et 2 min.
+- [ ] **L'Adresse** : avec quelques parchemins d'adresse, les tirs parfaits font nettement plus mal (+20 % par parchemin, voir plus bas).
+- [ ] **Plusieurs niveaux d'un coup** : sur un bâtiment, sous les deux cartes, les boutons « +2 niveaux · 2 plans », « +3 niveaux · 3 plans »… (seulement avec assez de plans) ; un clic, trois coups de marteau, et le bâtiment saute au niveau visé. Un duo paie avec les plans de ses tours.
+- [ ] **Viser le bâtiment entier** : le rayon de la main ouvre le panneau en visant la tour elle-même (son modèle), plus seulement son socle ; les flèches, les ennemis et les boulets la traversent comme avant ; la pose d'un plan à côté marche toujours.
+- [ ] **Le panneau tout près d'une tour** : il s'ouvre devant la tour ou sur le côté, jamais dedans ; tout se clique.
+- [ ] **Le rappel au gong** : avec des plans en poche, l'annonce de la vague dit « N plans en réserve : pose-les ! ».
+- [ ] **Le choix de la pause** (12.69 ; la console, à l'ouverture de Unity : « Les parchemins du choix de la pause ») : après chaque vague, trois lignes (Parchemins, Objets, Tourelles), « Prendre » sur chaque carte, une seule par ligne (la prise dit « Pris », les deux autres s'éteignent) ; la ligne des tourelles est bien sous les autres, avec son nom ; le panneau reste lisible (plus haut d'une ligne) ; la place de l'or dit « Une carte par ligne ».
+- [ ] **Plus d'or** : ni « +N or » en fin de vague, ni or sur la montre (« Plans N ») ; plus de coffre de boss ; jamais le talisman de l'avare ni le butin.
+- [ ] **Plus de combo** : plus rien sur la montre.
+- [ ] **Le journal** (Claude le lit après la partie) : les cartes de chaque pause, proposées et prises ; « Flèches pour tuer » par sorte d'ennemi (les orcs, la liche) ; plus d'or ; la console, à l'ouverture de Unity, dit aussi « Talisman de l'avare : retiré ».
+- [ ] **Les parchemins à deux effets** : Force (dégâts et anneau 15 % plus rapide), Adresse (bande verte plus large, tirs parfaits plus forts), Vigueur (+35 PV, les flèches vont plus loin) ; les cartes le disent ; un ou deux par pause et par coffre suffisent-ils, ou c'est trop fort ?
+
+**Le cinquième essai : ce qui a changé le 4 novembre (8 novembre ; `Docs/Refonte_TowerDefense.md`, 12.60 à 12.67)** : une partie
+entière en **Normal**, au casque, puis dire à Claude de lire le journal.
+- [x] **Les gardiens** (12.61) : chaque coffre apparaît avec ses gardiens (2 aux vagues 1 et 2, 3 aux vagues 3 et 4, 4 ensuite ; le journal : « Un coffre apparaît, gardé par N ennemis ») ; ils vadrouillent au pas autour du coffre avec des pauses, attaquent à 15 m, lâchent la poursuite au-delà de 30 m du coffre, ne vont jamais à la tour ; on peut ouvrir le coffre sans les tuer.
+- [x] **La vague de durée fixe** (12.61) : toutes les vagues durent autant que la première (environ 1 min avant le boss, en Normal).
+- [x] **La tour à 1 500 PV** (12.62) : une expédition aux coffres laisse une trace sur la tour ; le cor et le rayon rouge quand elle est attaquée.
+- [ ] **Les plans par coffre** (12.63) : l'orbe de tourelle dit combien de plans elle donne (« 3 plans »), de 1 à 4, plus souvent beaucoup en fin de partie ; le journal : « Plans : +N … ».
+- [ ] **Le Carquois géant** (12.64) : il ne rattrape plus que 2 flèches par seconde (avec un multishot, la nuée met au moins 15 s à se remplir) ; sur MK, une nuée ne le tue plus d'un coup.
+- [ ] **L'Avalanche** (12.65) : un ennemi déjà avalé une fois est seulement renversé par la boule ; les voies avancent.
+- [ ] **Les ennemis au sol 30 % plus rapides** (12.66) : ceux des voies, les gardiens et les boss des vagues ; pas les volants ni MK ; leurs jambes suivent.
+- [ ] **Le joueur à 100 PV, la Vigueur à +12** (12.67) : la carte de la Vigueur dit +12 ; sous 30 % des PV, le voile rouge est bien visible et bat ; avec les Akimbow et une pièce de corde, plus de corde qui flotte à côté de soi.
+- [ ] **Les ultimes −30 %** (12.62) : le Colosse, le Manège et l'Horloge restent impressionnants, mais ne font plus tout le travail.
+- [x] **La partie monocible** (12.65, ta proposition) : une autre partie avec des pièces monocibles (Pointe du chasseur, Transe, Surcharge, Bourreau…), pour comparer au journal avec les builds de zone.
+
 **La boutique à gauche, l'atelier à droite, le 27 octobre au soir (GDD, sections 6 et 7)**
 - [ ] À l'ouverture de Unity : « Confort du 27 octobre (scène Prototype_Tir) : la boutique s'ouvre plus à gauche, l'atelier à droite du joueur. Enregistre la scène » (**Ctrl+S**).
 - [ ] À la fin d'une vague : la boutique devant à gauche, l'atelier devant à droite, rien juste devant ; on vise et on clique les deux sans gêne.

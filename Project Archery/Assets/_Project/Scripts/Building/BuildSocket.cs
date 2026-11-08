@@ -53,6 +53,21 @@ namespace Archery.Building
         Collider[] m_PlateColliders = System.Array.Empty<Collider>();
         float m_Phase;
 
+        // La boîte de sélection du bâtiment (8 novembre, le joueur : il fallait viser le socle, au sol ; les modèles des tours
+        // n'ont pas de collider). Sur le calque « Ignore Raycast », que les rayons du jeu (pose, sol, visée) ne voient pas, et
+        // sans aucun contact (excludeLayers) : ni le joueur, ni les ennemis, ni les flèches, ni les boulets ne la touchent. Seul
+        // le rayon de la main, qui voit tous les calques, la vise.
+        const int k_HullLayer = 2;
+        const float k_HullMaxHeight = 25f;
+
+        // Jusqu'où la boîte suit le modèle autour de l'emplacement (8 novembre au soir, le joueur : on ne pouvait pas viser l'ultime,
+        // le Colosse de forge, bien plus grand que son emplacement ; la boîte s'arrêtait à l'emplacement).
+        const float k_HullMaxReach = 8f;
+        BoxCollider m_Hull;
+
+        /// <summary>La boîte de sélection du bâtiment construit (le panneau s'ouvre en dehors), ou null.</summary>
+        public Bounds? SelectionBounds => m_Hull != null && m_Hull.enabled && Structure != null ? m_Hull.bounds : (Bounds?)null;
+
         /// <summary>Tous les socles de la scène.</summary>
         public static IReadOnlyList<BuildSocket> All => s_All;
 
@@ -114,12 +129,80 @@ namespace Archery.Building
             base.OnEnable();
             if (!s_All.Contains(this))
                 s_All.Add(this);
+            Structure.Built -= OnStructureBuilt;
+            Structure.Built += OnStructureBuilt;
         }
 
         protected override void OnDisable()
         {
             s_All.Remove(this);
+            Structure.Built -= OnStructureBuilt;
             base.OnDisable();
+        }
+
+        // Le bâtiment a changé de niveau (son modèle aussi) : la boîte de sélection le suit.
+        void OnStructureBuilt(Structure structure)
+        {
+            if (structure != null && structure == Structure)
+                FitHull();
+        }
+
+        // La boîte de sélection épouse le modèle, sans déborder de l'emplacement (les effets loin du bâtiment ne comptent pas).
+        void FitHull()
+        {
+            if (Structure == null)
+            {
+                if (m_Hull != null)
+                    m_Hull.enabled = false;
+                return;
+            }
+
+            if (m_Hull == null)
+            {
+                var go = new GameObject("Sélection du bâtiment") { layer = k_HullLayer };
+                go.transform.SetParent(transform, false);
+                m_Hull = go.AddComponent<BoxCollider>();
+                m_Hull.excludeLayers = Physics.AllLayers;
+                ArrowIgnore.Register(new Collider[] { m_Hull });
+            }
+
+            var bounds = Structure.ModelBounds(k_HullMaxReach);
+            var half = Mathf.Max(0.6f, Mathf.Max(m_Size.x, m_Size.y) * 0.55f, k_HullMaxReach);
+            var center = transform.position;
+            var min = bounds.min;
+            var max = bounds.max;
+            min.x = Mathf.Max(min.x, center.x - half);
+            min.z = Mathf.Max(min.z, center.z - half);
+            max.x = Mathf.Min(max.x, center.x + half);
+            max.z = Mathf.Min(max.z, center.z + half);
+            min.y = Mathf.Max(min.y, center.y - 1f);
+            max.y = Mathf.Clamp(max.y, min.y + 0.5f, center.y + k_HullMaxHeight);
+            if (max.x - min.x < 0.3f || max.z - min.z < 0.3f)
+            {
+                min.x = center.x - 0.5f;
+                max.x = center.x + 0.5f;
+                min.z = center.z - 0.5f;
+                max.z = center.z + 0.5f;
+            }
+
+            // Une boîte alignée sur le monde : la boîte du modèle l'est aussi.
+            var hull = m_Hull.transform;
+            hull.SetPositionAndRotation((min + max) * 0.5f, Quaternion.identity);
+            var scale = hull.lossyScale;
+            var size = max - min;
+            m_Hull.center = Vector3.zero;
+            m_Hull.size = new Vector3(size.x / Mathf.Max(0.0001f, Mathf.Abs(scale.x)), size.y / Mathf.Max(0.0001f, Mathf.Abs(scale.y)),
+                                      size.z / Mathf.Max(0.0001f, Mathf.Abs(scale.z)));
+
+            if (!m_Hull.enabled || !colliders.Contains(m_Hull))
+            {
+                // XRI ne relit la liste qu'à l'enregistrement, d'où la désactivation le temps de l'ajout.
+                enabled = false;
+                m_Hull.enabled = true;
+                if (!colliders.Contains(m_Hull))
+                    colliders.Add(m_Hull);
+                enabled = true;
+            }
         }
 
         void Start()
@@ -137,6 +220,8 @@ namespace Archery.Building
         protected override void OnDestroy()
         {
             ArrowIgnore.Unregister(m_PlateColliders);
+            if (m_Hull != null)
+                ArrowIgnore.Unregister(new Collider[] { m_Hull });
             base.OnDestroy();
         }
 
@@ -241,6 +326,7 @@ namespace Archery.Building
             }
 
             enabled = true;
+            FitHull();
         }
 
         /// <summary>Le bâtiment quitte ce socle (déplacement) : ses colliders aussi, et le socle redevient libre.</summary>
@@ -253,6 +339,11 @@ namespace Archery.Building
             enabled = false;
             foreach (var collider in structure.GetComponentsInChildren<Collider>(true))
                 colliders.Remove(collider);
+            if (m_Hull != null)
+            {
+                colliders.Remove(m_Hull);
+                m_Hull.enabled = false;
+            }
             enabled = true;
 
             Structure = null;

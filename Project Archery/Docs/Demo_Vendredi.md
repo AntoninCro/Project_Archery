@@ -36,7 +36,7 @@ L'idéal, c'est **deux personnes** : toi dans le casque, et un **copilote au cla
 | 3:00 | Le gong : vague 1. Pendant l'accalmie, aller récolter un gisement, puis construire une baliste (deux marteaux, 3 coups) | « Pendant le calme, on sort chercher des cristaux ; la construction se fait vraiment au marteau. » | B (matériaux), V (gisement) |
 | 4:30 | La montée de la vague : tirer, une flèche enflammée au brasero, courir aux bras, glisser | « On se déplace avec les bras, sans joystick : moins de mal des transports. » | |
 | 5:30 | Le boss de la vague (Thomas) : viser sa gemme, son point faible | « Chaque boss a un point faible qui bat comme un cœur. » | N (faire venir le boss, puis le finir si ça traîne) |
-| 6:15 | La boutique : acheter une amélioration. Un coffre : ouverture au ralenti, 3 orbes | « Chaque partie est différente selon ses achats. » | M (or), C (coffre) |
+| 6:15 | La pause : prendre une carte par ligne (parchemin, objet, tourelle ; depuis le 8 novembre, plus d'or). Un coffre : ouverture au ralenti, 3 orbes | « Chaque partie est différente selon ses achats. » | C (coffre) |
 | 7:00 | **L'easter egg** : les runes, le portail, la dimension (panneaux d'erreur, monstre corrompu), 20 s, puis sortir | « Un secret caché sur la carte. Le monde bugue exprès : c'est le début d'une histoire qu'on veut développer. » | P (runes), P (entrer) |
 | 8:00 | **MK** : entrer dans l'arène, l'intro (les cristaux, la lave), un peu de combat | « Le boss final : l'arène est construite par le code, et le dragon a trois phases. » | N, N… (voir la partie 4) |
 | 9:15 | Mourir : saisir son nom, le classement | « Score, classement, et une étoile pour ceux qui réussissent l'épreuve du portail. » | K |
@@ -56,7 +56,7 @@ Ils marchent dans l'éditeur et dans un build *Development Build* (*File > Build
 |---|---|
 | **N** | Hors vague : lance la vague suivante. Pendant le chrono : fait venir le boss. Pendant le boss : le tue. À la vague 6 : entre dans l'arène, passe l'intro, puis tue MK. |
 | **K** | Le joueur meurt (fin de partie) |
-| **M** | +500 or |
+| ~~**M**~~ | ~~+500 or~~ : retiré le 8 novembre, avec l'or |
 | **B** | 2 plans de chaque bâtiment (depuis le 27 octobre ; +50 matériaux avant) ; depuis le 29 octobre, seulement les 10 tours en jeu (pas les retirées) ; depuis le 2 novembre au soir, les met aussi toutes au chantier de la partie (les coffres les proposent toutes) |
 | **H** | Termine la construction en cours |
 | **C** | Un coffre devant le joueur |

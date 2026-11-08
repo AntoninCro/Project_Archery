@@ -175,6 +175,10 @@ namespace Archery.FinalBoss
         [SerializeField]
         float m_FrostTint = 0.6f;
 
+        [Tooltip("Ses PV, en plus de la courbe des ennemis et des PV des boss de la difficulté (8 novembre : 1,3).")]
+        [SerializeField]
+        float m_HealthScale = 1.3f;
+
         [Header("Phases (part des PV)")]
         [Range(0f, 1f)]
         [SerializeField]
@@ -698,6 +702,7 @@ namespace Archery.FinalBoss
             if (UpdateTimeStop(deltaTime))
                 return;
 
+            UpdatePhaseGate();
             m_Tempo = Tempo;
             var dt = deltaTime * m_Tempo;
             m_StateTime += dt;
@@ -710,6 +715,8 @@ namespace Archery.FinalBoss
 
             if (!InIntro && m_State != State.Dead && !ArenaPlayer.IsAlive)
                 CalmDown();
+            else
+                InterruptForPhase();
 
             switch (m_State)
             {
@@ -853,6 +860,44 @@ namespace Archery.FinalBoss
             }
 
             return false;
+        }
+
+        // Le palier de la phase (8 novembre au soir, le joueur : « met un palier pour chaque phase » ; il venait d'être tué cloué au
+        // sol, sans jamais s'envoler) : au sol, il ne descend pas sous le seuil de l'envol tant qu'il ne s'est pas envolé ; en vol,
+        // pas sous celui de la rage. Les coups au-delà sont perdus. Un peu sous le seuil, pour que la phase se déclenche bien.
+        void UpdatePhaseGate()
+        {
+            var max = Enemy.Health.Max;
+            Enemy.HealthFloor = m_Phase == DragonPhase.Ground || m_Phase == DragonPhase.Asleep ? max * Mathf.Max(0f, m_AirPhaseAt - 0.002f)
+                : m_Phase == DragonPhase.Air ? max * Mathf.Max(0f, m_EnragedPhaseAt - 0.002f)
+                : 0f;
+        }
+
+        // Le seuil d'une phase est passé pendant une attaque, un piqué ou sur un perchoir : il change de phase tout de suite
+        // (8 novembre, le joueur : MK mourait trop vite ; la phase n'était vue qu'en vol en cercle ou en marche, si bien qu'il
+        // s'était envolé à 57 % de ses PV au lieu de 66, et enragé à 7 % au lieu de 33 : il était mort une seconde plus tard).
+        void InterruptForPhase()
+        {
+            var health = Enemy.Health.Normalized;
+            var due = (m_Phase == DragonPhase.Ground && health <= m_AirPhaseAt) ||
+                      (m_Phase == DragonPhase.Air && health <= m_EnragedPhaseAt);
+            if (!due || health <= 0f)
+                return;
+
+            switch (m_State)
+            {
+                case State.Sweep:
+                case State.Bite:
+                case State.Slam:
+                case State.Spit:
+                case State.BreathCharge:
+                case State.Breath:
+                case State.Dash:
+                case State.Perched:
+                    StopAttacks();
+                    CheckPhaseChange();
+                    break;
+            }
         }
 
         // Rugissement : le dragon s'arrête et rugit, puis enchaîne.

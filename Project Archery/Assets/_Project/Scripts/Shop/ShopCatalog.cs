@@ -16,11 +16,20 @@ namespace Archery.Shop
         public float rare;
         public float legendary;
 
-        public RarityOdds(int fromWave, float common, float rare, float legendary)
+        [Tooltip("Épique (8 novembre au soir), entre rare et légendaire.")]
+        public float epic;
+
+        // Sans épique (les anciens bakers de la boutique).
+        public RarityOdds(int fromWave, float common, float rare, float legendary) : this(fromWave, common, rare, 0f, legendary)
+        {
+        }
+
+        public RarityOdds(int fromWave, float common, float rare, float epic, float legendary)
         {
             this.fromWave = fromWave;
             this.common = common;
             this.rare = rare;
+            this.epic = epic;
             this.legendary = legendary;
         }
     }
@@ -45,9 +54,11 @@ namespace Archery.Shop
                  "On peut ajouter des lignes pour les faire changer à partir d'une vague.")]
         // 50 / 35 / 15 depuis le 27 octobre au soir (choix du joueur) : une légendaire précise sortait aussi souvent qu'une commune
         // précise (20 / 60 / 20 avant).
+        // 45 / 30 / 17 / 8 le 8 novembre au soir, avec l'épique ; puis 60 / 24 / 11 / 5 le même soir, après la partie de 15:40
+        // (moins de rares, d'épiques et de légendaires ; Editor/RaretesBaker).
         public List<RarityOdds> rarityOdds = new List<RarityOdds>
         {
-            new RarityOdds(1, 50f, 35f, 15f),
+            new RarityOdds(1, 60f, 24f, 11f, 5f),
         };
 
         [Tooltip("Part minimale des cartes communes, même avec beaucoup d'améliorations Chance (0,4 = 40 %).")]
@@ -63,7 +74,9 @@ namespace Archery.Shop
         [Min(1)]
         public int objectsPerShop = 3;
 
-        [Header("Prix des objets")]
+        // Les prix, les quantités et leurs hausses ne servent plus depuis le 8 novembre (le joueur : l'or est retiré, la pause
+        // devient un choix, ShopManager). Gardés pour les anciens bakers de la boutique (Editor/RoguelikeStep1Baker), qui les lisent.
+        [Header("Prix des objets (plus utilisés depuis le 8 novembre)")]
         [Tooltip("Chers exprès (25 octobre au soir) : améliorer ses parchemins doit rapporter plus que d'acheter tous les objets au hasard.")]
         public int commonPrice = 120;
         public int rarePrice = 160;
@@ -79,7 +92,7 @@ namespace Archery.Shop
         [Min(0f)]
         public float priceGrowthPerWave = 0.24f;
 
-        [Header("Prix des parchemins")]
+        [Header("Prix des parchemins (plus utilisés depuis le 8 novembre)")]
         [Tooltip("Prix d'un parchemin dans la boutique qui suit la vague 1, avant la hausse par achat.")]
         public int scrollPrice = 25;
 
@@ -103,12 +116,16 @@ namespace Archery.Shop
         public Color rareColor = new Color(0.35f, 0.6f, 1f);
         public Color legendaryColor = new Color(1f, 0.78f, 0.2f);
 
+        [Tooltip("Épique (8 novembre au soir) : violet.")]
+        public Color epicColor = new Color(0.72f, 0.42f, 1f);
+
         [Tooltip("Couleur des parchemins (cartes et orbes des coffres).")]
         public Color scrollColor = new Color(0.95f, 0.82f, 0.58f);
 
         public Color ColorOf(UpgradeRarity rarity) => rarity switch
         {
             UpgradeRarity.Rare => rareColor,
+            UpgradeRarity.Epic => epicColor,
             UpgradeRarity.Legendary => legendaryColor,
             _ => commonColor,
         };
@@ -116,9 +133,72 @@ namespace Archery.Shop
         public static string NameOf(UpgradeRarity rarity) => rarity switch
         {
             UpgradeRarity.Rare => "Rare",
+            UpgradeRarity.Epic => "Épique",
             UpgradeRarity.Legendary => "Légendaire",
             _ => "Commune",
         };
+
+        // ---- Les quatre raretés, partout (8 novembre au soir, le joueur) : les objets, les tourelles (1 plan commun, 2 rare, 3
+        // épique, 4 légendaire) et les parchemins (leur effet ×1, ×1,5, ×2, ×3 ; les valeurs de base divisées par deux).
+
+        /// <summary>Le rang d'une rareté : 0 commune, 1 rare, 2 épique, 3 légendaire.</summary>
+        public static int Rank(UpgradeRarity rarity) => rarity switch
+        {
+            UpgradeRarity.Rare => 1,
+            UpgradeRarity.Epic => 2,
+            UpgradeRarity.Legendary => 3,
+            _ => 0,
+        };
+
+        public static UpgradeRarity FromRank(int rank) => Mathf.Clamp(rank, 0, 3) switch
+        {
+            1 => UpgradeRarity.Rare,
+            2 => UpgradeRarity.Epic,
+            3 => UpgradeRarity.Legendary,
+            _ => UpgradeRarity.Common,
+        };
+
+        /// <summary>Plus rare de tant de crans (le gong appelé tôt : la pause suivante, d'un cran), légendaire au plus.</summary>
+        public static UpgradeRarity Boosted(UpgradeRarity rarity, int steps) => FromRank(Rank(rarity) + Mathf.Max(0, steps));
+
+        /// <summary>La rareté d'un lot de plans : 1 plan commun, 2 rare, 3 épique, 4 légendaire.</summary>
+        public static UpgradeRarity RarityOfPlans(int plans) => FromRank(plans - 1);
+
+        /// <summary>L'effet d'un parchemin selon sa rareté : ×1, ×1,5, ×2, ×3.</summary>
+        public static float ScrollScale(UpgradeRarity rarity) => rarity switch
+        {
+            UpgradeRarity.Rare => 1.5f,
+            UpgradeRarity.Epic => 2f,
+            UpgradeRarity.Legendary => 3f,
+            _ => 1f,
+        };
+
+        /// <summary>
+        /// Le texte d'un parchemin à cette échelle (sa rareté), prêt pour un texte TMP (« ➶ » devient le sprite des dégâts : la police
+        /// Cinzel n'a pas ce caractère, il s'affichait en carré ; 8 novembre au soir), d'après sa valeur : la Force, les dégâts et l'anneau (la moitié) ;
+        /// l'Adresse, la bande verte et les tirs parfaits ; la Vigueur, les PV et la portée (la même part des PV de base).
+        /// </summary>
+        public static string ScrollText(Upgrade upgrade, float scale)
+        {
+            if (upgrade == null)
+                return "";
+            var value = upgrade.value * Mathf.Max(0f, scale);
+            string Percent(float share) => (share * 100f).ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("fr-FR")) + " %";
+            switch (upgrade.effect)
+            {
+                case UpgradeEffect.Strength:
+                    return CardText.Symbols($"+{Percent(value)} \u27B6, anneau {Percent(value * 0.5f)} plus rapide");
+                case UpgradeEffect.Dexterity:
+                    return CardText.Symbols($"Bande verte {Percent(value)} plus large, tirs parfaits +{Percent(value)} \u27B6");
+                case UpgradeEffect.Vigor:
+                    var player = PlayerUpgrades.Instance;
+                    var baseHealth = player != null && player.BaseMaxHealth > 0f ? player.BaseMaxHealth : 100f;
+                    var points = value.ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("fr-FR"));
+                    return $"+{points} PV max, flèches {Percent(value / baseHealth)} plus loin";
+                default:
+                    return upgrade.DescriptionAt(1);
+            }
+        }
 
         /// <summary>La couleur des parchemins, ou celle de la rareté d'un objet.</summary>
         public Color ColorOf(Upgrade upgrade) =>
@@ -200,36 +280,6 @@ namespace Archery.Shop
             return text;
         }
 
-        /// <summary>
-        /// Prix d'un objet dans la boutique qui suit cette vague, arrondi à 5.
-        /// <paramref name="purchases"/> : nombre d'objets déjà achetés en boutique pendant la partie.
-        /// </summary>
-        public int ObjectPriceOf(UpgradeRarity rarity, int wave, int wavesToWin, int purchases)
-        {
-            var basePrice = rarity switch
-            {
-                UpgradeRarity.Rare => rarePrice,
-                UpgradeRarity.Legendary => legendaryPrice,
-                _ => commonPrice,
-            };
-
-            var purchaseFactor = Mathf.Pow(1f + objectPriceIncreasePerPurchase, Mathf.Max(0, purchases));
-            return RoundPrice(basePrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
-        }
-
-        /// <summary>
-        /// Prix d'un parchemin dans la boutique qui suit cette vague, arrondi à 5 (la hausse par vague, retirée puis remise le
-        /// 26 octobre au soir, à la demande du joueur).
-        /// <paramref name="purchases"/> : nombre de parchemins déjà achetés en boutique pendant la partie, tous confondus ;
-        /// <paramref name="ownPurchases"/> : combien de celui-ci (26 octobre).
-        /// </summary>
-        public int ScrollPriceOf(int wave, int wavesToWin, int purchases, int ownPurchases)
-        {
-            var purchaseFactor = Mathf.Pow(1f + priceIncreasePerPurchase, Mathf.Max(0, purchases)) *
-                                 Mathf.Pow(1f + ownScrollPriceIncrease, Mathf.Max(0, ownPurchases));
-            return RoundPrice(scrollPrice * WaveFactor(wave) * purchaseFactor * EndlessFactor(wave, wavesToWin));
-        }
-
         static readonly List<Upgrade> s_Candidates = new List<Upgrade>();
         static readonly List<ArrowSlot> s_Slots = new List<ArrowSlot>();
 
@@ -241,7 +291,8 @@ namespace Archery.Shop
         /// cet emplacement (une autre rareté s'il n'en a pas). <paramref name="excluded"/> : les objets déjà proposés. Null s'il ne
         /// reste rien.
         /// </summary>
-        public Upgrade PickObject(int wave, PlayerUpgrades owned, Func<Upgrade, bool> excluded, ICollection<ArrowSlot> shownSlots)
+        public Upgrade PickObject(int wave, PlayerUpgrades owned, Func<Upgrade, bool> excluded, ICollection<ArrowSlot> shownSlots,
+                                  int rarityBoost = 0)
         {
             s_Slots.Clear();
             var freshSlot = false;
@@ -259,7 +310,7 @@ namespace Archery.Shop
                 return null;
 
             var chosen = s_Slots[UnityEngine.Random.Range(0, s_Slots.Count)];
-            var rarity = RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f);
+            var rarity = RollRarity(wave, owned != null ? owned.LuckMultiplier : 1f, rarityBoost);
             s_Candidates.Clear();
             foreach (var upgrade in upgrades)
             {
@@ -299,57 +350,49 @@ namespace Archery.Shop
             return weapon == null || (!weapon.akimbo && !weapon.katana);
         }
 
-        /// <summary>Hausse des prix due aux vagues : +10 % par vague, en se cumulant.</summary>
-        public float WaveFactor(int wave) => Mathf.Pow(1f + priceGrowthPerWave, Mathf.Max(0, wave - 1));
-
-        /// <summary>Hausse des prix du mode infini : ×1,2 par vague au-delà de la dernière, en se cumulant.</summary>
-        public float EndlessFactor(int wave, int wavesToWin) =>
-            wavesToWin > 0 && wave > wavesToWin ? Mathf.Pow(endlessPriceGrowth, wave - wavesToWin) : 1f;
-
-        /// <summary>Arrondit un prix à 5 près (5 au minimum).</summary>
-        public static int RoundPrice(float price) => Mathf.Max(5, Mathf.RoundToInt(price / 5f) * 5);
-
         /// <summary>
         /// Tire une rareté au hasard selon les chances de cette vague.
         /// <paramref name="luck"/> multiplie le poids des rares et des légendaires face aux communes,
         /// mais les communes gardent au moins <see cref="minCommonShare"/>.
         /// </summary>
-        public UpgradeRarity RollRarity(int wave, float luck = 1f)
+        public UpgradeRarity RollRarity(int wave, float luck = 1f, int boost = 0)
         {
             var odds = OddsFor(wave);
             var common = Mathf.Max(0f, odds.common);
             var rare = Mathf.Max(0f, odds.rare) * Mathf.Max(0f, luck);
+            var epic = Mathf.Max(0f, odds.epic) * Mathf.Max(0f, luck);
             var legendary = Mathf.Max(0f, odds.legendary) * Mathf.Max(0f, luck);
 
-            // Plafond de la part des rares et des légendaires (jamais sous leur part de départ).
-            var baseTotal = common + Mathf.Max(0f, odds.rare) + Mathf.Max(0f, odds.legendary);
+            // Plafond de la part des rares, des épiques et des légendaires (jamais sous leur part de départ).
+            var baseTotal = common + Mathf.Max(0f, odds.rare) + Mathf.Max(0f, odds.epic) + Mathf.Max(0f, odds.legendary);
             var baseShare = baseTotal > 0f ? (baseTotal - common) / baseTotal : 0f;
             var maxShare = Mathf.Max(baseShare, 1f - minCommonShare);
-            var lucky = rare + legendary;
+            var lucky = rare + epic + legendary;
             if (common > 0f && lucky > 0f && maxShare < 0.999f && lucky / (common + lucky) > maxShare)
             {
                 var scale = common * maxShare / (1f - maxShare) / lucky;
                 rare *= scale;
+                epic *= scale;
                 legendary *= scale;
             }
 
-            var total = common + rare + legendary;
+            var total = common + rare + epic + legendary;
             if (total <= 0f)
-                return UpgradeRarity.Common;
+                return Boosted(UpgradeRarity.Common, boost);
 
             var roll = UnityEngine.Random.value * total;
-            if (roll < legendary)
-                return UpgradeRarity.Legendary;
-            if (roll < legendary + rare)
-                return UpgradeRarity.Rare;
-            return UpgradeRarity.Common;
+            var rarity = roll < legendary ? UpgradeRarity.Legendary
+                : roll < legendary + epic ? UpgradeRarity.Epic
+                : roll < legendary + epic + rare ? UpgradeRarity.Rare
+                : UpgradeRarity.Common;
+            return Boosted(rarity, boost);
         }
 
         // La ligne dont la vague de départ est la plus grande sans dépasser la vague jouée.
         RarityOdds OddsFor(int wave)
         {
             var found = false;
-            var best = new RarityOdds(0, 100f, 0f, 0f);
+            var best = new RarityOdds(0, 100f, 0f, 0f, 0f);
             foreach (var odds in rarityOdds)
             {
                 if (odds.fromWave <= wave && (!found || odds.fromWave >= best.fromWave))

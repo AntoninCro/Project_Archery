@@ -3762,3 +3762,229 @@ Le joueur, après une partie en Impossible : « le mode Impossible est bien diff
   n'a pas encore obtenus restent grisés, sans dire comment les obtenir (GDD, section 21, « À faire ensuite »).
 
 Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.68 Le cinquième essai : le Phare, MK, l'Adresse, plusieurs niveaux d'un coup (8 novembre)
+
+La partie du 8 novembre au matin (Normal, au casque, `Logs/Parties/Partie_2026-11-08_10h08m31.md`) : victoire à la vague 6 en 16:52,
+sans mourir (au plus bas 43/112 PV à la vague 4) ; la tour, 1 124 PV perdus sur la partie, jamais en danger. Le joueur : il se
+sentait moins fort (un équipement moins bon), les tourelles l'ont moins aidé (il a oublié de les poser à certaines manches), MK est
+mort trop vite malgré un build « pas ouf », 3 ou 4 flèches pour tuer certains ennemis en monocible (les orcs, la liche : à
+regarder de plus près) ; la Force est le choix évident, l'Adresse ne sert presque à rien (le temps se perd dans le geste : prendre
+la flèche, l'encocher, viser ; « Le style, ça compte aussi » rend déjà chaque tir parfait en l'air), les PV n'intéressent pas.
+
+- **Le Phare** (le joueur : « il faudrait effectivement nerf le phare » ; il avait fait 32 % des dégâts de la partie, 49 % de ceux
+  de MK) : **son jugement (niveau 5) ne fait plus de dégâts**, il **étourdit** l'ennemi le plus fort de son rayon 3 s (un boss
+  1,5 s) : préparé, il prend plus de dégâts de tes flèches (« Jugement ! ») ; les bâtiments du rayon s'emballent toujours. Avant :
+  la moitié des PV d'un ennemi, ou 10 % de ceux d'un boss, toutes les 10 s. Le bonus des flèches sur les points faibles qui
+  brillent : 20 / 25 / 30 / 30 / 30 % (20 / 35 / 50 / 50 / 60 % avant ; `Editor/PhareJugementBaker`, une fois, avec le texte du
+  niveau 5). **Un bug** : le phare ne regardait pas la hauteur, et l'arène de MK est 300 m au-dessus de la carte, au même endroit
+  vu du dessus : un phare posé au milieu de la carte marquait et jugeait MK à travers le ciel. Il ne voit plus rien à plus de
+  40 m de hauteur de lui (*Max Height Gap*).
+- **MK** (« il faudrait buff MK ») : il suit la courbe des PV des ennemis, baissée le 3 novembre pour les vagues 3 à 5, et était
+  tombé de 35 900 à 15 600 PV en Normal sans qu'on l'ait voulu. Il a maintenant ses PV à lui, **×1,3** (*Health Scale*, le
+  `DragonBoss` de l'arène ; environ 20 300 en Normal). ×1,6 était proposé, mais la moitié de ses dégâts venait du phare, qui ne
+  l'atteint plus : sans lui, le joueur du 8 novembre (un build moyen) l'aurait tué en 1:30 avec ×1,0 et en 2:00 environ avec ×1,3,
+  ce qu'on visait (1:30 à 2:00). Et **ses phases arrivent à temps** : il ne vérifiait ses PV qu'en vol en cercle ou en marche,
+  si bien qu'il s'était envolé à 57 % de ses PV au lieu de 66, et enragé à 7 % au lieu de 33 (mort une seconde après) ; il change
+  maintenant de phase au milieu d'une attaque, d'un piqué ou sur un perchoir.
+- **L'Adresse** (le choix du joueur, la piste A1, « en plus de ce que ça faisait avant » ; **remplacé le soir même, 12.69** : les tirs parfaits, plus la tête) : chaque parchemin d'adresse ajoute aussi
+  10 % aux flèches sur la tête et sur les points faibles (la tête ×2 → ×2,2 → ×2,4… ; `Hitbox.PrecisionMultiplier`,
+  `PlayerUpgrades.PrecisionMultiplier`). La Force reste le dégât de tout le monde, l'Adresse devient celui du bon tireur.
+  **Le texte de sa carte n'est pas changé** (règle du projet : le joueur réécrit les cartes) ; proposition : « Anneau 10 % plus
+  rapide, bande verte 10 % plus large ; tête et points faibles +10 % ». La Vigueur ne change pas pour l'instant.
+- **Plusieurs niveaux d'un coup** (le joueur : un plan, le panneau et trois coups de marteau par niveau devenaient redondants,
+  avec 19 plans en poche ; « un coup = un niveau » écarté, la détection du marteau n'étant pas toujours sûre) : le panneau du
+  bâtiment garde « niveau suivant » et « Déplacer », et ajoute en dessous une rangée « +2 niveaux · 2 plans », « +3 niveaux ·
+  3 plans »… (jusqu'au niveau maximal, 3 boutons au plus), seulement quand on a les plans. Un seul chantier, trois coups de
+  marteau, puis le bâtiment passe au niveau visé (`BuildManager.TryBuild`, `levels` ; `PlansToReach`). Un duo ou un trio paie
+  avec les plans de ses tours, comme avant ; l'ultime ne change pas.
+- **Viser le bâtiment entier** (le joueur : il fallait viser son socle, au sol) : chaque bâtiment construit a une boîte de
+  sélection invisible qui épouse son modèle, sans déborder de son emplacement (`BuildSocket`, « Sélection du bâtiment »). Elle
+  est sur le calque *Ignore Raycast* (les rayons du jeu ne la voient pas : pose, sol, visée) et sans aucun contact
+  (`excludeLayers`) : ni le joueur, ni les ennemis, ni les flèches, ni les boulets ne la touchent ; seul le rayon de la main la
+  vise. Elle suit les niveaux du bâtiment.
+- **Le panneau s'ouvrait dans le bâtiment** quand on en était tout près, et on ne pouvait plus rien cliquer : il s'arrête
+  maintenant avant la boîte de sélection (35 cm d'écart), et passe sur le côté s'il n'y a pas la place devant.
+- **Les plans oubliés** (« on garde l'idée du gong ») : l'annonce du début de vague dit « 19 plans en réserve : pose-les ! »
+  quand il en reste.
+- **Constaté, pas encore expliqué** : le journal a écrit deux fois « Boss vaincu » pour Francine et Nolan (la deuxième « en
+  0:00 »), aux vagues 4 et 5, après que le phare est passé au niveau 5 ; jamais dans les parties d'avant.
+- **À brainstormer ensuite** (le joueur) : le combo (il ne sert à rien, on ne le voit que sur la montre), les parchemins
+  (un bouche-trou acheté avec l'or qui reste ; les retirer, les refaire, ou les passer en niveaux d'expérience), supprimer l'or
+  et remplacer la boutique par un lieu de choix (3 tourelles, 3 améliorations, 3 parchemins ; plus de coffre de boss).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**. Le tableau d'équilibrage (`Tools/equilibrage_tours.py`, le jugement
+compté en contrôle) est à relancer après Unity.
+
+### 12.69 Le brainstorm d'après : plus d'or, le choix de la pause, les parchemins à deux effets, plus de combo (8 novembre)
+
+Le joueur, après 12.68 : « combo ne sert vraiment à rien actuellement, on ne voit pas son utilité en tant que joueur, on ne le
+voit pas visuellement non plus » ; les parchemins s'achetaient avec l'or qui restait, quand rien de mieux ne se présentait dans
+les coffres : un bouche-trou. Il propose de supprimer totalement l'or (« cela simplifierait grandement les règles ») et de
+remplacer la boutique par un lieu de choix. Ses choix :
+
+- **Le combo est retiré** (la piste C1) : il ne multiplie plus les points (×1 toujours, `ScoreManager.ComboMultiplier`) ; la
+  montre ne l'affiche plus. Le compte des touches reste en coulisse.
+- **Plus d'or** : la boutique ne vend plus rien, la fin de vague ne dit plus « +N or » ni ses bonus (tour intacte, boss express),
+  la montre dit seulement « Plans N ». L'or se compte encore en coulisse (le journal), sans usage. Le **talisman de l'avare** et
+  le **butin**, qui ne valaient que par l'or, ne sont plus proposés (`ShopCatalog.NeedsGold` ; gardés dans le catalogue). La
+  touche **M** (500 or) ne sert plus à rien.
+- **Le choix de la pause** (`ShopManager`, `ShopPanel`) : trois lignes de trois cartes, **une carte à prendre par ligne**, sans
+  rien payer : les **parchemins** (Force, Adresse, Vigueur), trois **objets** (tirés comme avant), trois **tourelles** (des lots
+  de 1 à 4 plans de bâtiments différents du chantier, tirés comme l'orbe d'un coffre). La carte prise dit « Pris », les deux
+  autres de sa ligne s'éteignent ; la place de l'or dit « Une carte par ligne ». La scène n'a que deux lignes : la troisième (les
+  tourelles) est faite au lancement, trois copies de la dernière carte, le panneau 320 px plus haut, avec son nom « Tourelles ».
+- **Le coffre du boss est retiré** (`ChestSpawner`, *Boss Chest* décoché) : la pause le remplace.
+- **Les parchemins restent aussi dans les coffres** (la piste P-a, et l'orbe de parchemin des coffres). Puisqu'on en a moins, ils
+  deviennent bien plus forts, **chacun à deux effets** (les valeurs du joueur ; `PlayerUpgrades`, `Editor/ScrollsPauseBaker` pour
+  la valeur et le texte des cartes, une fois) :
+  - **Force** : +30 % de dégâts (+12 % avant) et **l'anneau 15 % plus rapide** (la vitesse de charge ; 30 % d'abord, retouché
+    par le joueur le soir même) ; elle ne fait plus aller les flèches plus vite ;
+  - **Adresse** : **la bande verte 20 % plus large** et **les tirs parfaits +20 % de dégâts** (10 % avant ; le joueur, le soir même :
+    « n'augmente plus les dégâts dans la tête mais les dégâts du tir parfait » : le bonus de 12.68 sur la tête est retiré,
+    `Bow.PerfectDamageMultiplier`) ; elle n'accélère plus l'anneau (la Force le fait) ; les autres bandes, toujours la moitié (10 %) ;
+  - **Vigueur** : **+35 PV** (+12 avant ; 35 % des PV de base) et **les flèches 35 % plus loin** (leur vitesse ×1,16 : la portée
+    suit le carré de la vitesse).
+  - Pour les bâtiments, comme depuis le 2 novembre : la Force +30 % de dégâts, l'Adresse +20 % de cadence, la Vigueur +35 % de
+    PV à la tour et aux barricades.
+  - Les textes des trois cartes sont réécrits d'après les valeurs du joueur (il peut les retoucher) : « +30 % ➶, anneau 15 % plus
+    rapide » ; « Bande verte 20 % plus large, tirs parfaits +20 % ➶ » ; « +35 PV max, flèches 35 % plus loin ».
+
+**Le nettoyage, le même soir** (le joueur : « fais 1 et 3 ») :
+- **L'or est retiré du code**, plus seulement de l'écran : la part des points en or, `AddMoney`, `TrySpend`, la récompense de fin de
+  vague et ses bonus (`WaveManager.GiveWaveReward`, les réglages de `WaveSettings`), le talisman de l'avare et le butin dans
+  `PlayerUpgrades`, les prix de `ShopCatalog` (ses champs restent, marqués inutilisés : `Editor/RoguelikeStep1Baker` les lit), la
+  touche **M**. Le **combo** aussi (`ScoreManager`). Le talisman de l'avare passe en *Retired* dans le catalogue (`ScrollsPauseBaker`).
+- **Le journal de partie** : plus d'or (« **Score** : +N » à la place) ; les cartes de chaque pause, proposées puis prises (« Pause
+  après la vague 2, proposés : parchemins Force, Adresse, Vigueur ; objets … ; tourelles Phare, 3 plans … », « Pause : pris **Force**
+  (parchemin) ») ; et **les flèches pour tuer** chaque sorte d'ennemi (« Orc 3,4 (5 tués) » : les flèches du joueur qui avaient touché
+  chaque ennemi tué, en moyenne ; les bâtiments ont pu aider), pour les orcs et la liche.
+- Le tableau d'équilibrage est relancé (le Phare compté en contrôle ; les parchemins de force à +30 % y sont lus dans le catalogue).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**. À surveiller : le nombre de parchemins par partie (un par pause, plus
+les orbes des coffres) et la force qu'ils donnent ; la pause est-elle trop généreuse (trois cartes par pause, plus de prix) ?
+
+### 12.70 Le septième essai et ses suites : les quatre raretés, le Rappel, MK, le Style (8 novembre au soir)
+
+La partie de 13:16 (Normal, au casque ; `Logs/Parties/Partie_2026-11-08_13h16m40.md`) : victoire à la vague 6 en 14:54, sans mourir ;
+le Colosse de forge bâti dans la partie (Marteau-pilon, Enclume, puis l'ultime) ; les tours font l'essentiel (la Force, prise à 4
+pauses sur 5, leur donnait ×3,1) ; MK tué en 29 s, cloué au sol, sans s'envoler. Les remarques du joueur et ses choix :
+
+- **Les boutons « +N niveaux »** étaient trop petits, le texte débordait : 200 × 84 px, sur deux lignes (« +3 niveaux », « 3 plans »),
+  le panneau 80 px plus haut (`BuildPanel`).
+- **On ne pouvait pas viser l'ultime** (le Colosse, bien plus grand que son emplacement : la boîte de sélection s'arrêtait à
+  l'emplacement) : elle suit le modèle jusqu'à 8 m autour (`BuildSocket.k_HullMaxReach`), sans les pièces plus loin
+  (`Structure.ModelBounds(maxRadius)` ; l'anneau du Phare).
+- **« Le style, ça compte aussi »** se déclenchait à chaque pas sur les escaliers et la tour (le sol lâche le joueur une fraction de
+  seconde) : il faut maintenant 0,3 s en l'air (ou une vraie glissade). Et il ne rend plus les tirs parfaits (« slow + parfait me
+  semble très puissant », surtout pour une commune) : il garde le ralenti. **L'anneau tourne en temps réel** pendant tous les
+  ralentis du jeu (`TimingRing` : le temps sans échelle ; il s'arrête quand le jeu est en pause). Son texte : `Editor/RaretesBaker`.
+- **Le Rappel avec la Pluie de flèches** (« un des combos les plus forts du jeu », mais un tir direct faisait plus mal). Pourquoi :
+  une flèche de la pluie porte 35 % des dégâts du tir (×0,8 rappelée : 28 %) ; elle revenait en ligne droite vers le joueur et ne
+  blessait que les ennemis à moins de 0,9 m de ce trajet ; une flèche plantée disparaissait après 10 s. Les trois corrections
+  choisies (R1, R2, R3) : la flèche rappelée **file d'abord vers l'ennemi le plus proche d'elle** (à 8 m au plus, en se répartissant :
+  un ennemi déjà visé compte pour 2 m plus loin), le traverse, puis revient (1,5 s de recherche au plus) ; les flèches plantées
+  restent **30 s** quand le rappel est équipé (`Arrow.KeepStuck`) ; le rayon passe à **1,5 m**.
+- **MK** : « j'ai one shot MK, il était cloué au sol sans pouvoir attaquer ». **Un palier par phase** : ses PV ne descendent pas sous
+  le seuil de l'envol tant qu'il ne s'est pas envolé, ni sous celui de la rage tant qu'il n'est pas enragé (`Enemy.HealthFloor`,
+  `DragonBoss.UpdatePhaseGate` ; les coups au-delà sont perdus). **Les ultimes dans l'arène** ne font plus que leur effet unique, au
+  plus toutes les **15 s** (12 avant ; `TowerUltimate.MkUniqueInterval`) : plus d'action à chaque flèche sur MK (le marteau du
+  Colosse, le cheval du Manège, le chiffre de l'Horloge) ; le Colosse ne lance plus d'éclats, il cloue ; le Manège ne fouette plus
+  avec son ruban, il charge (une charge toutes les 15 s, même si MK n'a pas pu être étourdi) ; l'Horloge ne lance plus ses chiffres,
+  elle compte ses douze heures, puis Minuit.
+- **Le stun-lock** (des ennemis étourdis en boucle, la baliste les reclouant) : après un étourdissement, **1 s de répit** où rien ne
+  l'étourdit de nouveau ni ne le prend au filet (`Enemy.IsStunImmune` ; le harpon de la baliste ne cloue pas pendant ce répit).
+- **Le chiffre doré** au-dessus des ennemis tués (les points de score, qu'on prenait pour de l'or) est retiré.
+- **Le gong** disait « récompense +N % » : c'est maintenant « la pause suivante sera plus rare » ; le boss appelé tôt rend la pause qui
+  suit **plus rare d'un cran** (objets et parchemins ; les tourelles, un plan de plus ; `WaveManager.BossCalledEarly`,
+  `ShopManager.RarityBoost`).
+- **Les quatre raretés, partout** (le joueur : « une quatrième rareté pour l'équilibrage de manière générale : épique, en violet,
+  entre rare et légendaire ») : commune (blanc), rare (bleu), **épique (violet)**, légendaire (or). `UpgradeRarity.Epic` est ajoutée
+  à la fin (les raretés sont enregistrées par leur numéro ; l'ordre se lit par `ShopCatalog.Rank`). Les chances : 45 / 30 / 17 / 8
+  (50 / 35 / 15 avant ; `RaretesBaker`).
+  - **Les tourelles** : 1 plan commun, 2 rare, 3 épique, 4 légendaire ; la couleur de la rareté remplace celle du bâtiment (coffres et
+    pause). **L'orbe d'un lot de plans montre la tourelle en miniature** (ses matériaux, qui tourne ; la rareté sur le sceau et
+    l'étiquette ; `ChestOrb.ShowMiniature`).
+  - **Les parchemins** (la piste S1) ont une rareté, tirée pour chaque carte (pause et coffres) comme celle d'un objet, qui multiplie
+    leur effet : ×1, ×1,5, ×2, ×3. Leurs valeurs de base sont **divisées par deux** (« il faudra diviser par 2 toutes les valeurs
+    actuelles ») : la Force +15 % de dégâts et l'anneau 7,5 % plus rapide ; l'Adresse la bande verte et les tirs parfaits +10 % ; la
+    Vigueur +17,5 PV et 17,5 % de portée. Le texte de la carte suit la rareté (`ShopCatalog.ScrollText`).
+  - **Les objets de l'arc** : le joueur choisit leurs raretés dans **`Docs/Fiche_Ameliorations.xlsx`** (écrite par
+    `Tools/fiche_ameliorations.py` d'après le catalogue ; colonnes jaunes « Nouvelle rareté » et « Tes modifications », gardées si on
+    relance le script ; l'ancienne fiche, `Patch_Note_Pieces.xlsx` du 27 octobre, n'est pas touchée). Aucune pièce n'est encore épique.
+
+- **L'icône des dégâts** (le joueur : des carrés dans le texte des parchemins) : le texte des parchemins, écrit maintenant par le
+  code selon leur rareté, ne passait pas par la conversion de « ➶ » en sprite (la police Cinzel n'a pas ce caractère) ; corrigé
+  (`CardText.Symbols` dans `ShopCatalog.ScrollText`). Et la flèche des dégâts est **inclinée à 45°**, pointe vers le haut à droite
+  (horizontale avant ; `UI/Icones/Symboles_Cartes.png`, la case de gauche, un peu réduite pour tenir dans sa case).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**. La console doit dire « Les quatre raretés (8 novembre au soir) ». À
+surveiller : la miniature dans l'orbe (taille, place), les boutons, MK et ses trois phases, la force des parchemins rares.
+
+### 12.71 La fiche des améliorations appliquée (8 novembre au soir)
+
+Le joueur a rempli `Docs/Fiche_Ameliorations.xlsx` (`Editor/FicheAmeliorationsBaker`, une fois, chaque carte seulement si elle a encore
+sa valeur d'avant) :
+
+- **Onze pièces deviennent épiques** : Tir détonant (rare), Chaîne d'éclairs (légendaire), Boomerang (rare), Rappel de flèche
+  (légendaire), Déluge (rare), Flèche sentinelle (rare), Arc conducteur (légendaire), Multitir (rare), Tir triple (rare), Tir écho
+  (légendaire), Talisman de l'ingénieur (rare). Les autres gardent leur rareté. Par emplacement, avec l'épique : pointe 2 communes,
+  2 rares, 2 épiques, 1 légendaire ; empennage 3, 2, 2, 2 ; fût 2, 2, 3, 2 ; corde 3, 2, 3, 1 ; talisman 2, 3, 1, 2.
+- **La Pointe du chasseur** (« il faut que la marque reste sur un seul ennemi jusqu'à sa mort, c'est censé être une augment vraiment
+  monocible ; elle ne saute plus à la mort ; s'il n'y a pas de marque, quand la flèche marque l'ennemi, elle applique directement le
+  buff de dégâts ») : la marque se pose sur le premier ennemi que touche le joueur et y reste jusqu'à sa mort (avant, chaque ennemi
+  touché la reprenait) ; à sa mort, elle disparaît (avant, elle sautait sur le plus proche à 12 m) ; le tir qui marque fait déjà
+  les dégâts en plus (`ArrowPieces.Lot2`, `OnEnemyDamaged`). Le texte de sa carte : « Le premier ennemi touché est marqué jusqu'à sa
+  mort : il prend 200 / 250 / 300 % ➶, dès le tir qui le marque ».
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**. La console doit dire « La fiche des améliorations (8 novembre au soir) :
+12 changement(s) ». Relancer `py Tools/fiche_ameliorations.py` après Unity met à jour la colonne « Rareté actuelle » (tes colonnes
+jaunes sont gardées).
+
+### 12.72 Le huitième essai : le gong, les raretés, le Déluge (8 novembre au soir)
+
+La partie de 15:40 (Normal, au casque ; `Logs/Parties/Partie_2026-11-08_15h40m50.md`) : victoire en 12:16 (et une vague du mode infini) ;
+MK passe par ses trois phases (envol à 66 %, rage à 33 %) et blesse le joueur (87 PV) ; l'arc fait 87 % des dégâts (Pluie de flèches,
+Déluge, Tir explosif, Rappel, Sentinelle) ; le Grand Manège bâti. Le boss appelé tôt presque à chaque vague (des vagues de 50 s à 1 min,
+14 à 25 ennemis), donc chaque pause plus rare d'un cran. Le joueur : « j'avais un build très très op ».
+
+- **Le gong** (« le bonus avec le gong est beaucoup trop puissant, il faudrait le nerf ») : le boss appelé tôt ne rend plus toute la
+  pause plus rare, mais **une carte par ligne**, tirée au hasard (un parchemin, un objet, une tourelle : un plan de plus pour celle-là ;
+  `ShopManager.m_BoostedCard`, `ChestRewards.RollPlans(boostedIndex)`).
+- **Moins de raretés hautes** (« réduire le drop de toutes les raretés sauf commune ») : **60 / 24 / 11 / 5** (commune, rare, épique,
+  légendaire ; 45 / 30 / 17 / 8 prévu avant). Pour les objets et les parchemins ; les tourelles (le nombre de plans) ne changent pas.
+- **Un raté du soir** : la partie s'est en fait jouée à 50 / 35 / 17 / 15 (43 % de communes, 30 % de rares, 14,5 % d'épiques, 13 % de
+  légendaires). En ajoutant le champ « épique », Unity l'a rempli avec la valeur par défaut du code (17) sans toucher aux trois
+  autres, et `RaretesBaker` a cru la ligne déjà réglée. Corrigé : il reconnaît cette ligne et la passe à 60 / 24 / 11 / 5. Et
+  **l'Adresse faisait la navette** à chaque chargement de Unity entre 0,2 (`ScrollsPauseBaker`) et 0,1 (`RaretesBaker`) ; le premier ne
+  touche plus aux parchemins, le second ne refait rien de déjà fait. Selon le dernier passage, la partie a pu se jouer avec l'Adresse
+  à 0,2 au lieu de 0,1.
+- **Le Déluge** (« le déluge devrait aussi reproduire les effets comme pluie de flèches ») : ses flèches portaient déjà les effets
+  d'impact et les pièces, mais seule la flèche tirée semait la Pluie de flèches derrière elle ; avec la corde de pluie, **chaque flèche
+  du Déluge fait aussi pleuvoir**, la moitié de la pluie d'une flèche tirée (beaucoup de flèches à la fois ; `MarkDelugeArrow`,
+  `k_DelugeRainShare`).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**. La console doit dire « Les quatre raretés (8 novembre au soir) » avec
+« Chances des raretés : … → 60 / 24 / 11 / 5 ».
+
+### 12.73 Les parties d'un ami qui découvre le jeu ; la vague 1 plus douce (8 novembre au soir)
+
+Deux parties d'un ami du joueur, sans expérience de la VR, une expérience moyenne des roguelikes (`Logs/Parties/Partie_2026-11-08_16h36m17.md`
+au casque, `…_16h52m05.md` au clavier) :
+
+- **Au casque : défaite à la vague 2.** Cinq minutes à essayer les armes et la difficulté avant le premier gong ; à la vague 1, aucun
+  coffre ouvert, donc ni plan ni bâtiment, et la tour tombée de 1 500 à 379 PV ; à la vague 2, un seul coffre, puis la mort contre Jean
+  (107 PV) et les tireurs (77). 7 tirs parfaits sur 51. Les coffres, les plans et la construction ne se découvrent pas seuls.
+- **Au clavier : victoire.** De plus en plus de coffres ouverts (2, 3, 3, 4, 4) ; les tours portent la partie (le mortier, 36 à 45 % des
+  dégâts des vagues 3 à 5) ; la liche et les tireurs font le plus mal ; des pauses de 1 à 2 min (la pose au clavier est lente) ; le
+  raccourci B avant MK (le Gonfleur, puis le Grand Manège) ; **MK en 3:01, ses trois phases bien marquées** (33 s, 73 s, 57 s) ; le mode
+  infini jusqu'à la vague 9, où Francine détruit la tour.
+- **Les choix du joueur** : le mode démo (un tutoriel) plus tard (GDD, section 24) ; **la vague 1 a 30 % d'ennemis en moins**
+  (`WaveSettings.firstWaveCountScale`, 0,7 ; les gardiens des coffres ne changent pas) ; le Normal est d'accord trop dur pour un débutant
+  au casque (rien de plus pour l'instant).
+- **Le journal** : la rareté d'un parchemin pris se lit maintenant sur ce qu'il a ajouté (une Vigueur légendaire était notée
+  « commune », la rareté de sa carte) ; les lasers de l'arc cosmique comptent parmi les tirs qui touchent (0 % affiché avant : ils
+  touchent avant que le tir soit annoncé, sans flèche à suivre).
+- **Une piste notée** (le joueur) : un style « extraction shooter » pour la deuxième partie du jeu (GDD, section 24).
+
+Compilé ; **pas encore vu dans Unity ni testé au casque**.

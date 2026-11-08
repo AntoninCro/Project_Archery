@@ -54,6 +54,14 @@ namespace Archery.Enemies
         float m_FlightTime;
         float m_FlightPeak;
         float m_StunTimer;
+
+        // Le répit après un étourdissement (8 novembre au soir, le joueur : des ennemis restaient étourdis en boucle, la baliste
+        // les reclouant sans cesse) : il ne peut pas être étourdi de nouveau (ni pris au filet) pendant k_StunImmunity s.
+        const float k_StunImmunity = 1f;
+        float m_StunImmuneUntil;
+
+        /// <summary>Il sort d'un étourdissement : rien ne peut l'étourdir de nouveau avant un court répit.</summary>
+        public bool IsStunImmune => Time.time < m_StunImmuneUntil && m_StunTimer <= 0f;
         float m_PendingStun;
         UnityEngine.Object m_LaunchSource;
 
@@ -366,7 +374,7 @@ namespace Archery.Enemies
         /// </summary>
         public bool Net(float duration, UnityEngine.Object source)
         {
-            if (m_State == State.Dead || !IsFlyer || m_Netted || duration <= 0f)
+            if (m_State == State.Dead || !IsFlyer || m_Netted || duration <= 0f || IsStunImmune)
                 return false;
 
             m_Netted = true;
@@ -425,7 +433,7 @@ namespace Archery.Enemies
         /// <summary>Étourdit l'ennemi : il s'arrête, sans bouger ni attaquer, pendant ce temps (s).</summary>
         public void Stun(float duration)
         {
-            if (m_State == State.Dead || duration <= 0f)
+            if (m_State == State.Dead || duration <= 0f || IsStunImmune)
                 return;
 
             m_StunTimer = Mathf.Max(m_StunTimer, duration);
@@ -699,6 +707,8 @@ namespace Archery.Enemies
             }
 
             m_StunTimer -= deltaTime;
+            if (m_StunTimer <= 0f)
+                m_StunImmuneUntil = Time.time + k_StunImmunity;
             if (m_Netted)
                 FallNetted(deltaTime);
             Stop();

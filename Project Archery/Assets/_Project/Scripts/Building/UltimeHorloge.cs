@@ -869,11 +869,25 @@ namespace Archery.Building
             if (m_Thrown >= k_Hours)
                 return;
 
-            var target = NumeralTarget(out var dragon);
-            if (target == null && dragon == null)
-                return;
+            // Dans l'arène (8 novembre au soir), les chiffres ne partent plus sur MK : ils s'éteignent un à un, l'horloge compte les
+            // heures, et Minuit arrive après le XII (environ 15 s), son seul effet sur MK.
+            if (InArena)
+            {
+                if (m_Thrown < m_Numerals.Length && m_Numerals[m_Thrown] != null)
+                {
+                    FrostBurst(m_Numerals[m_Thrown].position, 14);
+                    m_Numerals[m_Thrown].gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                var target = NumeralTarget(out var dragon);
+                if (target == null && dragon == null)
+                    return;
 
-            ThrowNumeral(m_Thrown, target, dragon);
+                ThrowNumeral(m_Thrown, target, dragon);
+            }
+
             m_Thrown++;
             m_MinuteSpin = 360f;
             if (m_Thrown < k_Hours)
@@ -1221,13 +1235,11 @@ namespace Archery.Building
             if (!hit.IsShot || !IsBuilt || IsUnderConstruction || !m_Awake)
                 return;
 
+            // Dans l'arène, plus d'action à chaque flèche sur MK (8 novembre au soir, le joueur : il a tué MK d'une traite, cloué
+            // au sol ; « les ultimes devraient uniquement faire leurs effets uniques sur MK ») : seulement l'effet unique, tous les
+            // TowerUltimate.MkUniqueInterval s au moins.
             if (InArena)
-            {
-                var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
-                if (dragon != null)
-                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
-            }
 
             var flat = hit.Point - Hub;
             flat.y = 0f;

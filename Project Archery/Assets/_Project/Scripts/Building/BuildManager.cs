@@ -817,7 +817,8 @@ namespace Archery.Building
         /// Le marteau apparaît près de la main donnée (celle qui a ouvert le panneau). Un nouveau bâtiment peut être tourné de
         /// <paramref name="localRotation"/> par rapport au socle (l'hologramme tourné au joystick, 27 octobre).
         /// </summary>
-        public ShopResult TryBuild(BuildSocket socket, StructureDefinition definition, XRBaseInputInteractor hand, Quaternion? localRotation = null)
+        public ShopResult TryBuild(BuildSocket socket, StructureDefinition definition, XRBaseInputInteractor hand, Quaternion? localRotation = null,
+                                   int levels = 1)
         {
             if (socket == null)
                 return ShopResult.Failed("Aucun emplacement");
@@ -840,10 +841,19 @@ namespace Archery.Building
                 return ShopResult.Failed("Niveau maximal atteint");
             }
 
+            // Plusieurs niveaux d'un coup (8 novembre, le joueur : un plan, une ouverture du panneau et trois coups de marteau
+            // par niveau devenaient redondants, avec 19 plans en poche) : les plans de chaque niveau, un seul chantier.
+            if (structure != null && levels > 1)
+            {
+                if (level + levels - 1 > definition.MaxLevel)
+                    return ShopResult.Failed("Niveau maximal dépassé");
+                level += levels - 1;
+            }
+
             // Refonte du 27 octobre : un plan du bâtiment à la place des matériaux, pour le construire comme pour l'améliorer ;
             // un seul par niveau depuis le 2 novembre (deux aux niveaux 4 et 5 avant). Un duo (31 octobre), de l'une ou l'autre de
             // ses tours : 2 plans par niveau, un trio 3 (le joueur, 2 novembre ; 4 avant, réglage du niveau dans Data/Duos).
-            var plans = definition.PlansFor(level);
+            var plans = structure != null ? PlansToReach(structure, level) : definition.PlansFor(level);
             if (structure is TowerDuo duo)
             {
                 if (!TrySpendDuoPlans(duo, spentFrom, plans))
@@ -872,6 +882,26 @@ namespace Archery.Building
             Announce($"{title}\n<size=70%>Frappe le plan {m_StrikesToBuild} fois avec tes marteaux</size>");
             return ShopResult.Done(level == 1 ? $"{definition.displayName} : à toi de construire !" : $"Amélioration : niveau {level}", definition.color);
         }
+
+        /// <summary>
+        /// Les plans qu'il faut pour monter ce bâtiment jusqu'au niveau donné, niveau après niveau (8 novembre : l'amélioration de
+        /// plusieurs niveaux d'un coup). 0 s'il y est déjà, ou si ce niveau n'existe pas.
+        /// </summary>
+        public static int PlansToReach(Structure structure, int level)
+        {
+            var definition = structure != null ? structure.Definition : null;
+            if (definition == null || level <= structure.Level || level > definition.MaxLevel)
+                return 0;
+
+            var plans = 0;
+            for (var next = structure.Level + 1; next <= level; next++)
+                plans += definition.PlansFor(next);
+            return plans;
+        }
+
+        /// <summary>Les plans qu'on a pour améliorer ce bâtiment (ceux de ses tours, pour un duo ou un trio).</summary>
+        public int PlansFor(Structure structure) =>
+            structure is TowerDuo duo ? PlansOf(duo) : structure != null ? PlansOf(structure.Definition) : 0;
 
         // L'arc se range, et un marteau apparaît dans chaque main, sans rien attraper (sans casque : dans la main qui a
         // ouvert le panneau).

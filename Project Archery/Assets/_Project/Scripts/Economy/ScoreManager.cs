@@ -14,8 +14,11 @@ using UnityEngine.Serialization;
 namespace Archery.Economy
 {
     /// <summary>
-    /// Score, combo et argent de la partie (GDD, section 8).
-    /// Points = valeur de base × qualité du tir × distance × combo × difficulté.
+    /// Score de la partie (GDD, section 8).
+    /// Points = valeur de base × qualité du tir × distance × difficulté.
+    /// Plus de combo ni d'or depuis le 8 novembre (le joueur : le combo « ne sert vraiment à rien », on ne le voyait que sur la
+    /// montre ; l'or est retiré, la pause devient un choix, <c>ShopManager</c>) : avant, les touches d'affilée multipliaient les
+    /// points (+10 % chacune, ×2 au plus), et une part des points devenait de l'or (25 % à la vague 1, moins ensuite).
     /// </summary>
     [DisallowMultipleComponent]
     public class ScoreManager : MonoBehaviour
@@ -70,40 +73,7 @@ namespace Archery.Economy
         [SerializeField]
         float m_MaxDistanceBonus = 0.5f;
 
-        [Header("Combo")]
-        [Tooltip("Bonus ajouté à chaque touche consécutive (0,1 = +10 %).")]
-        [SerializeField]
-        float m_ComboStep = 0.1f;
-
-        [SerializeField]
-        float m_MaxComboMultiplier = 2f;
-
-        [Header("Argent")]
-        [Tooltip("Part des points gagnés qui devient de l'argent, à la vague 1.")]
-        [Range(0f, 1f)]
-        [SerializeField]
-        float m_MoneyRate = 0.25f;
-
-        [Tooltip("En fin de partie, l'argent gagné baisse à chaque vague, en se cumulant " +
-                 "(0,91 = −9 % par vague : 25 % des points jusqu'à la vague 4, 14 % à la vague 10, 5,5 % à la vague 20).")]
-        [Range(0.5f, 1f)]
-        [SerializeField]
-        float m_MoneyDecayPerWave = 0.91f;
-
-        [Tooltip("Première vague où l'argent gagné baisse.")]
-        [Min(1)]
-        [SerializeField]
-        int m_MoneyDecayFromWave = 5;
-
-        [Tooltip("Multiplie l'argent gagné tant que la tour est détruite.")]
-        [Range(0f, 1f)]
-        [SerializeField]
-        float m_TowerDestroyedMoneyFactor = 0.5f;
-
         [Header("Retours")]
-        [SerializeField]
-        Color m_KillPopupColor = new Color(1f, 0.85f, 0.25f);
-
         [SerializeField]
         AudioClip m_KillClip;
 
@@ -131,13 +101,10 @@ namespace Archery.Economy
             }
         }
 
-        readonly HashSet<Arrow> m_ArrowsThatHitEnemies = new HashSet<Arrow>();
-        float m_Money;
 
         public static ScoreManager Instance { get; private set; }
 
         public int Score { get; private set; }
-        public int Money => Mathf.FloorToInt(m_Money);
 
         /// <summary>
         /// Matériaux de construction (GDD, section 9) : seconde monnaie, gagnée seulement sur la carte. Plus gagnés ni dépensés
@@ -146,33 +113,8 @@ namespace Archery.Economy
         /// </summary>
         public int Materials { get; private set; }
 
-        /// <summary>Nombre de touches consécutives sur des ennemis.</summary>
-        public int Combo { get; private set; }
-
-        public float ComboMultiplier => Mathf.Min(m_MaxComboMultiplier, 1f + m_ComboStep * Mathf.Max(0, Combo - 1));
-
         /// <summary>Multiplicateur de score de la difficulté (GDD, section 11).</summary>
         public float DifficultyMultiplier => DifficultyManager.Current.scoreMultiplier;
-
-        /// <summary>Part des points changée en or, ajoutée au taux de base (amélioration Butin : 0,05 = +5 points).</summary>
-        public float MoneyRateBonus { get; set; }
-
-        /// <summary>Multiplie l'or gagné (bonus temporaires, coffres…).</summary>
-        public float MoneyMultiplier { get; set; } = 1f;
-
-        /// <summary>Part des points changée en or en ce moment : baisse des vagues et tour détruite comprises.</summary>
-        public float MoneyRate
-        {
-            get
-            {
-                var tower = Tower.Instance;
-                var towerFactor = tower != null && !tower.IsStanding ? m_TowerDestroyedMoneyFactor : 1f;
-                var waves = WaveManager.Instance;
-                var wave = waves != null ? waves.WaveNumber : 1;
-                var waveFactor = Mathf.Pow(m_MoneyDecayPerWave, Mathf.Max(0, wave - m_MoneyDecayFromWave + 1));
-                return (m_MoneyRate + MoneyRateBonus) * waveFactor * MoneyMultiplier * towerFactor;
-            }
-        }
 
         // Statistiques pour le résumé de fin de partie.
         public int Kills { get; private set; }
@@ -180,7 +122,7 @@ namespace Archery.Economy
         public int ShotsFired { get; private set; }
         public int PerfectShots { get; private set; }
 
-        /// <summary>Le score, l'argent ou le combo ont changé.</summary>
+        /// <summary>Le score ou les matériaux ont changé.</summary>
         public event Action Changed;
 
         ShotTuning Tuning => m_ShotTuning != null ? m_ShotTuning : ShotTuning.Fallback;
@@ -203,7 +145,6 @@ namespace Archery.Economy
         {
             Enemy.Damaged += OnEnemyDamaged;
             Enemy.Killed += OnEnemyKilled;
-            Arrow.ShotEnded += OnShotEnded;
             Bow.ShotFired += OnShotFired;
         }
 
@@ -211,7 +152,6 @@ namespace Archery.Economy
         {
             Enemy.Damaged -= OnEnemyDamaged;
             Enemy.Killed -= OnEnemyKilled;
-            Arrow.ShotEnded -= OnShotEnded;
             Bow.ShotFired -= OnShotFired;
         }
 
@@ -221,7 +161,7 @@ namespace Archery.Economy
                 Instance = null;
         }
 
-        /// <summary>Ajoute des points (et la part d'argent correspondante). Renvoie les points arrondis.</summary>
+        /// <summary>Ajoute des points. Renvoie les points arrondis.</summary>
         public int AddPoints(float points)
         {
             var gained = Mathf.Max(0, Mathf.RoundToInt(points));
@@ -229,30 +169,8 @@ namespace Archery.Economy
                 return 0;
 
             Score += gained;
-            m_Money += gained * MoneyRate;
             Changed?.Invoke();
             return gained;
-        }
-
-        /// <summary>Ajoute de l'argent sans points (tests, coffres).</summary>
-        public void AddMoney(int amount)
-        {
-            if (amount <= 0)
-                return;
-
-            m_Money += amount;
-            Changed?.Invoke();
-        }
-
-        /// <summary>Dépense de l'argent (boutique). Renvoie faux s'il n'y en a pas assez.</summary>
-        public bool TrySpend(int amount)
-        {
-            if (amount < 0 || Money < amount)
-                return false;
-
-            m_Money -= amount;
-            Changed?.Invoke();
-            return true;
         }
 
         /// <summary>Ajoute des matériaux de construction (cristaux récoltés sur la carte, GDD section 9).</summary>
@@ -289,20 +207,15 @@ namespace Archery.Economy
             if (enemy != null && enemy.IsTrainingDummy)
                 return;
 
-            // Un coup de katana compte comme une flèche qui touche (points de touche, combo) ; une faille du katana aussi.
+            // Un coup de katana compte comme une flèche qui touche (points de touche) ; une faille du katana aussi.
             var melee = info.Source is IMeleeSource;
             var shot = info.Source as IPlayerShot;
 
-            // Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche et ne font pas
-            // monter le combo : sinon l'or grimperait avec le nombre de flèches. Leurs éliminations comptent.
-            // Pareil pour les failles en plus.
+            // Les flèches en plus (multitir, écho, déluge) ne rapportent pas de points de touche : sinon le score grimperait avec
+            // le nombre de flèches. Leurs éliminations comptent. Pareil pour les failles en plus.
             var arrow = info.Source as Arrow;
             if (!melee && (arrow == null || arrow.IsExtra) && (shot == null || shot.IsExtra))
                 return;
-
-            if (arrow != null)
-                m_ArrowsThatHitEnemies.Add(arrow);
-            Combo++;
 
             var basePoints = info.Zone switch
             {
@@ -358,24 +271,14 @@ namespace Archery.Economy
             if (gained <= 0)
                 return;
 
+            // Le « +N » doré au-dessus de l'ennemi tué est retiré (8 novembre au soir, le joueur : on le prenait pour de l'or, qui
+            // n'existe plus) ; le score reste sur la montre, le son de l'élimination aussi.
             var position = enemy.transform.position + Vector3.up * 2.3f;
-            FloatingText.Spawn(position, "+" + gained, m_KillPopupColor, 1.3f, 1.4f);
             Sfx.Play(m_KillClip, position, 0.8f);
         }
 
-        // Une flèche qui finit son vol sans avoir touché d'ennemi casse le combo,
-        // sauf les flèches en plus du multitir et du déluge.
-        void OnShotEnded(Arrow arrow)
-        {
-            if (m_ArrowsThatHitEnemies.Remove(arrow) || arrow.IsExtra || Combo == 0)
-                return;
-
-            Combo = 0;
-            Changed?.Invoke();
-        }
-
         float ShotMultiplier(in DamageInfo info) =>
-            Tuning.Get(info.Grade).points * DistanceMultiplier(info.Distance) * ComboMultiplier * DifficultyMultiplier;
+            Tuning.Get(info.Grade).points * DistanceMultiplier(info.Distance) * DifficultyMultiplier;
 
         float DistanceMultiplier(float distance) =>
             1f + Mathf.Clamp((distance - m_DistanceBonusFrom) * m_DistanceBonusPerMeter, 0f, m_MaxDistanceBonus);

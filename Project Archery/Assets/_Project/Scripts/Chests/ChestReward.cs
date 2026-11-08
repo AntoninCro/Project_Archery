@@ -33,6 +33,12 @@ namespace Archery.Chests
         public StructureDefinition Structure;
         public int Count;
 
+        /// <summary>La rareté (8 novembre au soir) : celle de l'objet, du lot de plans (son nombre), ou du parchemin.</summary>
+        public UpgradeRarity Rarity;
+
+        /// <summary>Un parchemin : sa rareté multiplie son effet (0 : ×1).</summary>
+        public float Scale;
+
         public string Title;
         public string Subtitle;
         public Color Color;
@@ -69,8 +75,9 @@ namespace Archery.Chests
 
                     // Une pièce prise s'équipe si son emplacement est libre, sinon va dans l'atelier ; ou elle monte de niveau.
                     var occupant = upgrades.Occupant(Upgrade);
-                    upgrades.Add(Upgrade);
-                    return ShopManager.PurchaseMessage(Upgrade, occupant, upgrades.Level(Upgrade.effect));
+                    upgrades.Add(Upgrade, Scale > 0f ? Scale : 1f);
+                    var message = ShopManager.PurchaseMessage(Upgrade, occupant, upgrades.Level(Upgrade.effect));
+                    return Upgrade.kind == UpgradeKind.Scroll ? $"{message}\n<size=60%>{ShopCatalog.NameOf(Rarity)}</size>" : message;
 
                 case ChestRewardKind.Buff:
                     if (PlayerUpgrades.Instance != null)
@@ -177,7 +184,8 @@ namespace Archery.Chests
         /// 2 novembre au soir (1 avant ; avant, 2 pour la barricade et les piques, 1 pour les autres). (Du 28 octobre au 2 novembre, chaque orbe
         /// tirait d'abord une rareté parmi tous les bâtiments ; la rareté sert maintenant à tirer les bâtiments du chantier.)
         /// </summary>
-        public static List<ChestReward> RollPlans(int count)
+        /// <param name="boostedIndex">Le lot que <paramref name="rarityBoost"/> concerne (son rang) ; -1 : tous.</param>
+        public static List<ChestReward> RollPlans(int count, int rarityBoost = 0, int boostedIndex = -1)
         {
             var rewards = new List<ChestReward>();
             var builds = BuildManager.Instance;
@@ -206,19 +214,26 @@ namespace Archery.Chests
                 var definition = s_Structures[index];
                 s_Structures.RemoveAt(index);
 
-                var lot = builds.RollPlansPerChest() * definition.LotSize;
+                // La rareté vient du nombre de plans (8 novembre au soir, le joueur : 1 commun, 2 rare, 3 épique, 4 légendaire ; sa
+                // couleur remplace celle du bâtiment) ; le gong appelé tôt en ajoute un (4 au plus).
+                var boost = boostedIndex < 0 || rewards.Count == boostedIndex ? Mathf.Max(0, rarityBoost) : 0;
+                var plans = Mathf.Clamp(builds.RollPlansPerChest() + boost, 1, 4);
+                var rarity = ShopCatalog.RarityOfPlans(plans);
+                var lot = plans * definition.LotSize;
                 var owned = builds.PlansOf(definition);
-                var subtitle = lot > 1 ? lot + " plans" : "1 plan";
+                var subtitle = (lot > 1 ? lot + " plans" : "1 plan") + " · " + ShopCatalog.NameOf(rarity);
                 if (owned > 0)
                     subtitle = ShopCatalog.Lines(subtitle, $"tu en as {owned}");
+                var catalog = ShopManager.Instance != null ? ShopManager.Instance.Catalog : null;
                 rewards.Add(new ChestReward
                 {
                     Kind = ChestRewardKind.Plans,
                     Structure = definition,
                     Count = lot,
+                    Rarity = rarity,
                     Title = definition.displayName,
                     Subtitle = subtitle,
-                    Color = definition.color,
+                    Color = catalog != null ? catalog.ColorOf(rarity) : definition.color,
                     Icon = definition.icon,
                 });
             }
@@ -260,6 +275,26 @@ namespace Archery.Chests
             // Le niveau qu'elle atteindrait (au niveau 2 et plus, ce qui change : « 50 % → 100 % ➶ », 27 octobre au soir), et
             // dessous, le duo qu'elle pourrait former et si elle irait dans l'atelier.
             var level = (owned != null ? owned.Level(upgrade.effect) : 0) + 1;
+            if (upgrade.kind == UpgradeKind.Scroll)
+            {
+                // Un parchemin a sa rareté (8 novembre au soir), tirée comme celle d'un objet : elle multiplie son effet.
+                var waves = WaveManager.Instance;
+                var rarity = catalog.RollRarity(waves != null ? Mathf.Max(1, waves.WaveNumber) : 1, owned != null ? owned.LuckMultiplier : 1f);
+                var scale = ShopCatalog.ScrollScale(rarity);
+                reward = new ChestReward
+                {
+                    Kind = ChestRewardKind.Upgrade,
+                    Upgrade = upgrade,
+                    Rarity = rarity,
+                    Scale = scale,
+                    Title = upgrade.displayName,
+                    Subtitle = ShopCatalog.Lines($"Parchemin · {ShopCatalog.NameOf(rarity)}", ShopCatalog.ScrollText(upgrade, scale)),
+                    Color = catalog.ColorOf(rarity),
+                    Icon = upgrade.icon,
+                };
+                return true;
+            }
+
             var duo = ShopCatalog.DuoLine(upgrade, owned);
             var storage = ShopCatalog.StorageLine(owned != null ? owned.Occupant(upgrade) : null);
             var subtitle = ShopCatalog.SubtitleOf(upgrade, level);
@@ -269,6 +304,7 @@ namespace Archery.Chests
             {
                 Kind = ChestRewardKind.Upgrade,
                 Upgrade = upgrade,
+                Rarity = upgrade.rarity,
                 Title = upgrade.displayName,
                 Subtitle = ShopCatalog.Lines(subtitle, duo, storage),
                 Color = catalog.ColorOf(upgrade),

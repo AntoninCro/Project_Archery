@@ -40,6 +40,10 @@ namespace Archery.Chests
         Color m_MessageColor = new Color(1f, 0.85f, 0.3f);
 
         [Header("Coffre de boss")]
+        [Tooltip("Le boss vaincu laisse un coffre (décoché depuis le 8 novembre : la pause est un choix parmi trois, ShopManager).")]
+        [SerializeField]
+        bool m_BossChest;
+
         [Tooltip("Délai (s) entre la fin de la vague et la chute du coffre du boss : le message de fin de vague passe d'abord.")]
         [SerializeField]
         float m_BossChestDelay = 1.5f;
@@ -121,8 +125,9 @@ namespace Archery.Chests
         {
             ClearAll();
 
-            // Le boss vaincu laisse un coffre d'objets, sauf le boss final de la victoire.
-            if (!(m_Waves.HasWon && wave == m_Waves.WavesToWin))
+            // Le boss vaincu laisse un coffre d'objets, sauf le boss final de la victoire. Plus depuis le 8 novembre (le joueur :
+            // la pause devient un choix, une tourelle, un objet et un parchemin parmi trois ; ShopManager) : Boss Chest le rallume.
+            if (m_BossChest && !(m_Waves.HasWon && wave == m_Waves.WavesToWin))
                 m_BossChestTimer = Mathf.Max(0.01f, m_BossChestDelay);
         }
 

@@ -126,11 +126,6 @@ namespace Archery.Waves
         Health m_PlayerHealth;
         float m_CountScale = 1f;
         float m_BossArrivalTime;
-        float m_BossKillTime;
-        float m_EarlyCallShare;
-        float m_TowerHealthAtStart;
-        bool m_TowerHitThisWave;
-        int m_BestCombo;
         float m_GongConfirmUntil = -1f;
         float m_GongFirstHitTime;
         float m_GongReadyTime;
@@ -283,14 +278,9 @@ namespace Archery.Waves
 
             m_Bosses.Clear();
             m_BossArrivalTime = -1f;
-            m_BossKillTime = -1f;
-            m_EarlyCallShare = 0f;
+            BossCalledEarly = false;
             m_GongConfirmUntil = -1f;
             m_GongReadyTime = Time.time + 1.5f;   // les flèches de la volée qui a lancé la vague ne comptent pas
-            m_BestCombo = 0;
-            var tower = Tower.Instance;
-            m_TowerHealthAtStart = tower != null ? tower.Health.Current : 0f;
-            m_TowerHitThisWave = false;
 
             // Boss final : ni chrono ni ennemis sur la carte, la porte de l'antre s'ouvre (Final Boss Director).
             if (m_Settings.IsFinalBossWave(WaveNumber))
@@ -320,6 +310,11 @@ namespace Archery.Waves
                 if (WaveNumber == 1)
                     title += "\n" + DifficultyManager.Current.displayName;
                 title += "\n<size=60%>Accalmie : récolte, construis, ouvre les coffres</size>";
+                // Les plans oubliés (8 novembre, le joueur : il avait oublié de les poser à certaines manches, 19 en poche).
+                var builds = Archery.Building.BuildManager.Instance;
+                var plans = builds != null ? builds.TotalPlans : 0;
+                if (plans > 0)
+                    title += $"\n<size=55%><color=#8FD8FF>{(plans > 1 ? plans + " plans" : "1 plan")} en réserve : pose-les !</color></size>";
                 if (ThreatWave == WaveNumber)
                     title += $"\n<size=50%>{ThreatLine()}</size>";
                 Announce(title, k_Gold, m_WaveStartClip);
@@ -337,7 +332,6 @@ namespace Archery.Waves
                 return;
 
             var deltaTime = Time.deltaTime;
-            TrackPerformance();
 
             // Boss final : c'est l'arène qui décide de la fin de la vague (CompleteFinalBoss).
             if (Stage == WaveStage.FinalBoss)
@@ -386,7 +380,9 @@ namespace Archery.Waves
             }
 
             // On « achète » des ennemis au hasard tant que le budget le permet.
-            var budget = m_Settings.BudgetFor(WaveNumber) * DifficultyManager.Current.enemyCount * m_CountScale;
+            // La première vague, plus douce (8 novembre au soir : 30 % d'ennemis en moins).
+            var firstWave = WaveNumber == 1 ? Mathf.Clamp(m_Settings.firstWaveCountScale, 0.1f, 1f) : 1f;
+            var budget = m_Settings.BudgetFor(WaveNumber) * DifficultyManager.Current.enemyCount * m_CountScale * firstWave;
             for (var guard = 0; guard < 500; guard++)
             {
                 var pick = PickAffordable(budget);
@@ -518,12 +514,18 @@ namespace Archery.Waves
         /// Fait venir le boss tout de suite (deuxième coup de gong pendant le chrono). La récompense de la vague augmente
         /// de la part du chrono qui restait. Renvoie faux si ce n'est pas possible maintenant.
         /// </summary>
+        /// <summary>
+        /// Le boss de cette vague a été appelé tôt, au gong (8 novembre au soir, le joueur : la pause qui suit est plus rare d'un
+        /// cran, ShopManager.RarityBoost).
+        /// </summary>
+        public bool BossCalledEarly { get; private set; }
+
         public bool CallBossEarly()
         {
             if (!CanCallBoss)
                 return false;
 
-            m_EarlyCallShare = WaveDuration > 0f ? TimeRemaining / WaveDuration : 0f;
+            BossCalledEarly = true;
             BeginBoss();
             return true;
         }
@@ -547,8 +549,8 @@ namespace Archery.Waves
 
             m_GongFirstHitTime = Time.time;
             m_GongConfirmUntil = Time.time + 4f;
-            var bonus = Mathf.RoundToInt(100f * (WaveDuration > 0f ? TimeRemaining / WaveDuration : 0f));
-            Announce($"Frappe encore le gong\npour appeler le boss\n<size=70%>récompense +{bonus} %</size>", k_Gold, null, false);
+            // Plus de récompense en or (8 novembre) : le boss appelé tôt rend la pause suivante plus rare d'un cran (le soir).
+            Announce("Frappe encore le gong\npour appeler le boss\n<size=70%>la pause suivante sera plus rare</size>", k_Gold, null, false);
         }
 
         void BeginBoss()
@@ -618,21 +620,6 @@ namespace Archery.Waves
             m_NextCountdownSecond--;
         }
 
-        // Bonus de performance : la tour touchée pendant la vague, et le meilleur combo.
-        void TrackPerformance()
-        {
-            var tower = Tower.Instance;
-            if (tower != null && tower.Health.Current < m_TowerHealthAtStart - 0.01f)
-                m_TowerHitThisWave = true;
-
-            var score = ScoreManager.Instance;
-            if (score != null && score.Combo > m_BestCombo)
-                m_BestCombo = score.Combo;
-
-            if (Stage == WaveStage.Boss && m_BossKillTime < 0f && m_BossArrivalTime >= 0f && AllBossesDefeated())
-                m_BossKillTime = Time.time - m_BossArrivalTime;
-        }
-
         // ---------------------------------------------------------------- fin de vague, fin de partie
 
         /// <summary>
@@ -654,7 +641,6 @@ namespace Archery.Waves
         void EndWave(bool finishGame)
         {
             HeadMessages.Unpin(FinalBossMessageId);
-            TrackPerformance();
             Phase = finishGame ? WavePhase.GameOver : WavePhase.Intermission;
             m_CalmQueue.Clear();
             m_RiseQueue.Clear();
@@ -666,18 +652,17 @@ namespace Archery.Waves
 
             var score = ScoreManager.Instance;
             var points = score != null ? score.AddPoints(m_Settings.clearBonusPerWave * WaveNumber * score.DifficultyMultiplier) : 0;
-            var gold = GiveWaveReward(score, out var bonusLine);
 
-            // Après la récompense (divisée par deux si la tour est détruite) : la tour (un peu) et les barricades se réparent.
+            // La tour (un peu) et les barricades se réparent.
             var repairLine = RestoreDefenses();
 
             var won = WaveNumber == WavesToWin && !HasWon;
             if (won)
                 HasWon = true;
 
-            var lines = $"+{points} points · +{gold} or";
-            if (!string.IsNullOrEmpty(bonusLine))
-                lines += $"\n<size=60%>{bonusLine}</size>";
+            // Plus d'or ni de ses bonus depuis le 8 novembre (le joueur : la pause devient un choix, ShopManager) : avant, l'or de
+            // fin de vague, plus le gong appelé tôt, la tour intacte, le boss express et le combo.
+            var lines = $"+{points} points";
             if (!string.IsNullOrEmpty(repairLine))
                 lines += $"\n<size=60%>{repairLine}</size>";
 
@@ -732,46 +717,6 @@ namespace Archery.Waves
             }
 
             return string.Join(" · ", parts);
-        }
-
-        // Or de fin de vague : base × difficulté × (1 + gong + bonus de performance), divisé par deux si la tour est détruite.
-        int GiveWaveReward(ScoreManager score, out string bonusLine)
-        {
-            bonusLine = "";
-            if (score == null)
-                return 0;
-
-            var bonus = m_EarlyCallShare;
-            var parts = new List<string>();
-            if (m_EarlyCallShare > 0.01f)
-                parts.Add($"gong +{Mathf.RoundToInt(100f * m_EarlyCallShare)} %");
-
-            var tower = Tower.Instance;
-            if (tower != null && tower.IsStanding && !m_TowerHitThisWave)
-            {
-                bonus += m_Settings.performanceBonus;
-                parts.Add("tour intacte");
-            }
-
-            if (m_BossKillTime >= 0f && m_BossKillTime <= m_Settings.fastBossTime)
-            {
-                bonus += m_Settings.performanceBonus;
-                parts.Add("boss express");
-            }
-
-            if (m_BestCombo >= m_Settings.comboTarget)
-            {
-                bonus += m_Settings.performanceBonus;
-                parts.Add($"combo ×{m_BestCombo}");
-            }
-
-            if (parts.Count > 0)
-                bonusLine = "Bonus : " + string.Join(" · ", parts);
-
-            var towerFactor = tower != null && !tower.IsStanding ? 0.5f : 1f;
-            var gold = Mathf.RoundToInt(m_Settings.WaveRewardFor(WaveNumber) * DifficultyManager.Current.scoreMultiplier * (1f + bonus) * towerFactor);
-            score.AddMoney(gold);
-            return gold;
         }
 
         /// <summary>Après la victoire, entre deux vagues : le joueur choisit de terminer la partie (écran de fin, classement).</summary>

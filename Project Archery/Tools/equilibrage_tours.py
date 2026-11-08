@@ -569,14 +569,15 @@ def phare():
     for level in range(1, 6):
         r = per_level(radius, level)
         support = per_level(sdmg, level) * per_level(srate, level)
-        d1 = 0.0
+        cc = 0.0
         calc = f"Soutien : dégâts ×{r1(per_level(sdmg, level))}, cadence ×{r1(per_level(srate, level))}"
         if level >= 5:
+            # Le jugement ne fait plus de dégâts depuis le 8 novembre : il étourdit sa cible (préparée pour tes flèches).
+            stun = p.get("m_JudgmentStun", 3.0)
             support *= 1 + (boost_rate - 1) * boost_time / p["m_JudgmentInterval"]
-            d1 = p["m_JudgmentDamage"] / p["m_JudgmentInterval"]
-            calc += (f", et le jugement double la cadence {r1(boost_time)} s sur {r1(p['m_JudgmentInterval'])} ; jugement : "
-                     f"{r1(p['m_JudgmentDamage'])} toutes les {r1(p['m_JudgmentInterval'])} s (ou {pct(p['m_JudgmentShare'])} des PV max s'il fait "
-                     f"plus : compté sans, c'est moins jusqu'à la vague 10 environ)")
+            cc = stun / p["m_JudgmentInterval"]
+            calc += (f", et le jugement accélère la cadence (×{r1(boost_rate)}) {r1(boost_time)} s sur {r1(p['m_JudgmentInterval'])} ; "
+                     f"jugement : l'ennemi le plus fort étourdi {r1(stun)} s toutes les {r1(p['m_JudgmentInterval'])} s, sans dégâts")
         desc = {
             1: f"Le soutien : les bâtiments à {int(r)} m font {pct(sdmg[0] - 1)} de dégâts en plus ; ta flèche marque les points faibles.",
             2: f"Soutien : +{pct(per_level(sdmg, level) - 1)} de dégâts et +{pct(per_level(srate, level) - 1)} de cadence ({int(r)} m).",
@@ -585,9 +586,9 @@ def phare():
                f"de {r1(2 * p['m_RingRadius'])} m au milieu de la voie : ta flèche qui le traverse s'enflamme (sa cible brûle : 40 % des "
                f"dégâts en 3 s).",
             5: f"Jugement : toutes les {r1(p['m_JudgmentInterval'])} s, une colonne de lumière sur l'ennemi qui a le plus de PV "
-               f"({r1(p['m_JudgmentDamage'])} ou la moitié de ses PV max) ; les bâtiments du rayon tirent deux fois plus vite {r1(boost_time)} s.",
+               f"(étourdi {r1(p.get('m_JudgmentStun', 3.0))} s, préparé pour tes flèches) ; les bâtiments du rayon tirent plus vite {r1(boost_time)} s.",
         }[level]
-        rows.append(Row(level, TOWER_PLANS[level - 1], desc, f"{int(r)} m", chord(r), d1=d1, dz=d1, support=support,
+        rows.append(Row(level, TOWER_PLANS[level - 1], desc, f"{int(r)} m", chord(r), cc=cc, support=support,
                         calc=calc + f". Soutien total : ×{r1(support)} sur le DPS des tours du rayon (non compté dans leurs lignes)."))
     return Building("Phare", "Tours", "", rows, "")
 

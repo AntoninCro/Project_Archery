@@ -544,6 +544,7 @@ namespace Archery.Building
 
         // Dans l'arène : la prochaine charge sur MK, ses étoiles.
         float m_NextDaze;
+        float m_NextArenaCharge;
         float m_DazedUntil = -1f;
         DragonBoss m_DazedDragon;
         bool m_ArenaHint;
@@ -946,18 +947,18 @@ namespace Archery.Building
             m_NextRound = Time.time + NextInterval();
             if (InArena)
             {
-                // Dans l'arène : le ruban fouette MK ; au 5e coup, la charge l'étourdit (s'il peut l'être).
+                // Dans l'arène : la charge étourdit MK (s'il peut l'être). Depuis le 8 novembre au soir, le ruban ne le fouette plus
+                // entre deux charges : seulement la charge, à son heure (avant : au 5e coup du ruban).
                 var dragon = ArenaDragon();
                 if (dragon == null)
                     return;
-                if (m_Rounds >= m_RoundsPerEjection - 1 && Time.time >= m_NextDaze)
+                // Une charge toutes les MkUniqueInterval s, même si MK n'a pas pu être étourdi (sinon elle repartait à chaque tour).
+                if (Time.time >= m_NextDaze && Time.time >= m_NextArenaCharge)
                 {
+                    m_NextArenaCharge = Time.time + MkUniqueInterval;
                     BeginEjection();
-                    return;
                 }
 
-                m_Rounds = Mathf.Min(m_Rounds + 1, Mathf.Max(1, m_RoundsPerEjection) - 1);
-                StartCatch(null, dragon);
                 return;
             }
 
@@ -1388,13 +1389,11 @@ namespace Archery.Building
             if (!hit.IsShot || !IsBuilt || IsUnderConstruction || !m_Awake)
                 return;
 
+            // Dans l'arène, plus d'action à chaque flèche sur MK (8 novembre au soir, le joueur : il a tué MK d'une traite, cloué
+            // au sol ; « les ultimes devraient uniquement faire leurs effets uniques sur MK ») : seulement l'effet unique, tous les
+            // TowerUltimate.MkUniqueInterval s au moins.
             if (InArena)
-            {
-                var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
-                if (dragon != null)
-                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
-            }
 
             var flat = hit.Point - Hub;
             flat.y = 0f;
@@ -2081,7 +2080,7 @@ namespace Archery.Building
             if (Time.time < m_NextDaze || !dragon.Daze(m_DazeTime))
                 return;
 
-            m_NextDaze = Time.time + m_DazeInterval;
+            m_NextDaze = Time.time + Mathf.Max(m_DazeInterval, MkUniqueInterval);
             m_DazedDragon = dragon;
             m_DazedUntil = Time.time + m_DazeTime;
             HurtShare(dragon.GetComponentInParent<Enemy>(), m_DazeBossShare, dragon.BodyPoint);

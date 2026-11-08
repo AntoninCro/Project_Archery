@@ -333,7 +333,8 @@ namespace Archery.Building
         // préparé pour ta flèche (« Cloué ! », 30 octobre).
         void Harpoon(Enemy enemy, Vector3 direction)
         {
-            if (enemy == null || !enemy.IsAlive)
+            // Pas pendant son répit après un étourdissement (8 novembre au soir : ni cloué, ni préparé).
+            if (enemy == null || !enemy.IsAlive || enemy.IsStunImmune)
                 return;
             if (enemy.IsFlyer)
             {

@@ -617,7 +617,14 @@ namespace Archery.Upgrades
             if (onFire && Brazier.Instance != null)
                 Brazier.Instance.IgniteArrow(arrow);
             Prepare(arrow, damage, grade, pierce, trail, canSplit);
+
+            // Une flèche du déluge fait aussi pleuvoir, avec la corde de pluie (8 novembre au soir).
+            if (m_DelugeLaunch && ArrowPieces.Instance != null)
+                ArrowPieces.Instance.MarkDelugeArrow(arrow);
         }
+
+        // Les flèches lancées en ce moment viennent du déluge.
+        bool m_DelugeLaunch;
 
         // Tire au sort ce que fera cette flèche : foudre, explosion, glace, perçage, division en vol.
         // basePierce : le perçage de l'arc, sans les améliorations (il a déjà été donné à la flèche au lancement).
@@ -792,6 +799,7 @@ namespace Archery.Upgrades
                 var direction = velocity / speed;
                 var aim = Quaternion.LookRotation(direction);
                 var position = arrow.transform.position;
+                m_DelugeLaunch = true;
                 if (splits % 2 == 1)
                     LaunchExtra(position + TwinOffset(aim), direction, speed, state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire,
                                 arrow.GravityScale);
@@ -807,6 +815,7 @@ namespace Archery.Upgrades
                                 state.Damage, state.Grade, state.BasePierce, state.Trail, false, state.OnFire, arrow.GravityScale);
                 }
 
+                m_DelugeLaunch = false;
                 Sfx.Play(m_DelugeClip, position, 0.6f, Random.Range(0.95f, 1.1f));
             }
         }

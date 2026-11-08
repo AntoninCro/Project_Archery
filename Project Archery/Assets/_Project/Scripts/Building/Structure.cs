@@ -715,14 +715,29 @@ namespace Archery.Building
 
         // Le volume visible du bâtiment, assez grand pour qu'on le frappe sans viser : au moins 1 m de haut
         // (pièges à piques au ras du sol) et 0,8 m de large.
-        Bounds ComputeBounds()
+        /// <summary>
+        /// La boîte de son modèle tel qu'il est maintenant (8 novembre : la sélection par tout le bâtiment, le panneau hors du
+        /// bâtiment). <paramref name="maxRadius"/> : les pièces dont le centre est plus loin (à plat) du bâtiment ne comptent pas
+        /// (les effets posés loin de lui, l'anneau du phare) ; 0 : toutes.
+        /// </summary>
+        public Bounds ModelBounds(float maxRadius = 0f) => ComputeBounds(maxRadius);
+
+        Bounds ComputeBounds(float maxRadius = 0f)
         {
             var bounds = new Bounds(transform.position + Vector3.up * 0.5f, Vector3.zero);
             var first = true;
+            var origin = transform.position;
             foreach (var renderer in GetComponentsInChildren<Renderer>())
             {
                 if (!renderer.enabled || !(renderer is MeshRenderer || renderer is SkinnedMeshRenderer) || !IsBlueprintPart(renderer))
                     continue;
+                if (maxRadius > 0f)
+                {
+                    var offset = renderer.bounds.center - origin;
+                    offset.y = 0f;
+                    if (offset.sqrMagnitude > maxRadius * maxRadius)
+                        continue;
+                }
 
                 if (first)
                     bounds = renderer.bounds;

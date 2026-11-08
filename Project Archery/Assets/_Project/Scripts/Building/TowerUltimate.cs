@@ -16,6 +16,12 @@ namespace Archery.Building
     /// </remarks>
     public abstract class TowerUltimate : TowerTrio
     {
+        /// <summary>
+        /// Le temps (s) au moins entre deux effets uniques d'une ultime sur MK, dans l'arène (8 novembre au soir, le joueur : 15 s au
+        /// lieu de 12 ; le Colosse le cloue, le Manège l'étourdit ; l'Horloge arrête le temps après ses douze heures).
+        /// </summary>
+        public const float MkUniqueInterval = 15f;
+
         const float k_MinShotPower = 0.25f;
         const float k_MaxShotPower = 3f;
 

@@ -117,6 +117,11 @@ namespace Archery.Shop
         [SerializeField]
         float m_WorkshopAngle = 25f;
 
+        [Header("Le choix de la pause (8 novembre)")]
+        [Tooltip("Hauteur (px) dont grandit le panneau pour la ligne des tourelles (une carte et l'écart entre deux lignes).")]
+        [SerializeField]
+        float m_ExtraRowHeight = 320f;
+
         [Header("Sons")]
         [SerializeField]
         AudioClip m_BuyClip;
@@ -174,6 +179,7 @@ namespace Archery.Shop
                 m_FinishButton.onClick.AddListener(OnFinishClicked);
             if (m_ShowWorkshop)
                 CreateWorkshop();
+            AddTowerRow();
             if (m_Content != null)
                 m_Content.SetActive(false);
 
@@ -243,16 +249,17 @@ namespace Archery.Shop
             if (!open)
                 return;
 
-            var money = m_Score != null ? m_Score.Money : 0;
+            // Rien ne se paie depuis le 8 novembre (le choix de la pause) : la carte ne compare plus de prix.
             var offers = m_Shop.UpgradeOffers;
             for (var i = 0; i < m_UpgradeCards.Length; i++)
             {
                 if (m_UpgradeCards[i] != null)
-                    m_UpgradeCards[i].Show(i < offers.Count ? offers[i] : null, money);
+                    m_UpgradeCards[i].Show(i < offers.Count ? offers[i] : null, 0);
             }
 
+            // Plus d'or depuis le 8 novembre : la place du montant dit la règle de la pause.
             if (m_MoneyText != null)
-                m_MoneyText.text = "Or " + money.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', ' ');
+                m_MoneyText.text = "Une carte par ligne";
             if (m_OwnedText != null)
                 m_OwnedText.text = OwnedSummary();
             if (m_Workshop != null)
@@ -279,6 +286,55 @@ namespace Archery.Shop
             var text = m_OwnedText != null ? m_OwnedText : m_MessageText;
             m_Workshop = ArrowWorkshop.Create(content, template, title, text, m_Content.GetComponent<Image>(), content.Find(UI.UiThemer.BorderName),
                                               m_WorkshopGap, m_WorkshopAngle, OnWorkshopResult);
+        }
+
+        // La ligne des tourelles (8 novembre, le joueur : la pause devient un choix, une carte par ligne parmi trois parchemins,
+        // trois objets et trois tourelles ; la scène n'a que deux lignes) : trois copies de la dernière carte sous les autres, le
+        // panneau et la grille plus hauts d'autant, les noms des lignes remontés, et une copie du nom « Objets » pour la nouvelle.
+        // Après l'atelier, qui copie une carte et le titre de la boutique telle qu'elle est dans la scène.
+        void AddTowerRow()
+        {
+            var wanted = ShopManager.Rows * ShopManager.CardsPerRow;
+            if (m_UpgradeCards.Length == 0 || m_UpgradeCards.Length >= wanted)
+                return;
+
+            var template = m_UpgradeCards[m_UpgradeCards.Length - 1];
+            if (template == null || !(template.transform.parent is RectTransform grid))
+                return;
+
+            var cards = new System.Collections.Generic.List<ShopCard>(m_UpgradeCards);
+            while (cards.Count < wanted)
+            {
+                var card = Instantiate(template, grid, false);
+                card.name = $"Card (tourelle {cards.Count - wanted + ShopManager.CardsPerRow + 1})";
+                card.Clicked += OnCardClicked;
+                cards.Add(card);
+            }
+
+            m_UpgradeCards = cards.ToArray();
+
+            var extra = m_ExtraRowHeight;
+            grid.sizeDelta += new Vector2(0f, extra);
+            if (transform is RectTransform root)
+                root.sizeDelta += new Vector2(0f, extra);
+
+            if (m_Content == null)
+                return;
+            var content = m_Content.transform;
+            var scrolls = content.Find("Ligne parchemins") as RectTransform;
+            var objects = content.Find("Ligne objets") as RectTransform;
+            if (scrolls != null)
+                scrolls.anchoredPosition += new Vector2(0f, extra * 0.5f);
+            if (objects == null)
+                return;
+
+            objects.anchoredPosition += new Vector2(0f, extra * 0.5f);
+            var towers = Instantiate(objects, objects.parent, false);
+            towers.name = "Ligne tourelles";
+            towers.anchoredPosition = objects.anchoredPosition - new Vector2(0f, extra);
+            var label = towers.GetComponent<TMP_Text>();
+            if (label != null)
+                label.text = "Tourelles";
         }
 
         // Équiper ne coûte rien et ne sonne pas comme un achat : le motif de l'emplacement vient de PieceLook.

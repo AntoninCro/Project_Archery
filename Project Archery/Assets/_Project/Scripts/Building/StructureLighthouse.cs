@@ -22,7 +22,8 @@ namespace Archery.Building
     /// <item>4 : un anneau de feu flotte sur la voie la plus proche, près de ta tour (29 octobre au soir, le joueur ; avant, le
     /// faisceau lui-même, trop dur à viser) : ta flèche qui le traverse s'enflamme (l'ancien anneau de feu), sa cible brûle ;</item>
     /// <item>5, le <b>phare du jugement</b> : toutes les 10 s, un rayon géant tombe du ciel sur l'ennemi le plus fort, et tous
-    /// les bâtiments du rayon tirent deux fois plus vite pendant 5 s.</item>
+    /// les bâtiments du rayon tirent plus vite pendant 5 s. Depuis le 8 novembre, le rayon ne fait plus de dégâts : il étourdit
+    /// sa cible 3 s (un boss 1,5 s), préparée pour tes flèches.</item>
     /// </list>
     /// </summary>
     /// <remarks>
@@ -95,19 +96,20 @@ namespace Archery.Building
         [SerializeField]
         float m_JudgmentInterval = 10f;
 
-        [Tooltip("Dégâts du jugement, à la vague 1 en Normal (la moitié de ses PV max au moins, sauf un boss).")]
+        // Le jugement ne fait plus de dégâts (8 novembre, le joueur, après sa partie : le phare avait fait 32 % des dégâts de la
+        // partie, 49 % de ceux de MK ; il enlevait la moitié des PV d'un ennemi, ou 10 % de ceux d'un boss, toutes les 10 s) :
+        // il étourdit et prépare sa cible pour tes flèches. Un soutien qui désigne, c'est toi qui tues.
+        [Tooltip("Durée (s) de l'étourdissement de l'ennemi frappé par le jugement (préparé : tes flèches lui font plus de dégâts).")]
         [SerializeField]
-        float m_JudgmentDamage = 150f;
+        float m_JudgmentStun = 3f;
 
-        [Tooltip("Part de ses PV max que perd au moins un ennemi frappé par le jugement.")]
-        [Range(0f, 1f)]
+        [Tooltip("Durée (s) de l'étourdissement d'un boss frappé par le jugement.")]
         [SerializeField]
-        float m_JudgmentShare = 0.5f;
+        float m_JudgmentBossStun = 1.5f;
 
-        [Tooltip("Part de ses PV max que perd un boss frappé par le jugement.")]
-        [Range(0f, 1f)]
+        [Tooltip("Écart de hauteur (m) au-delà duquel le phare ne voit plus un ennemi ni un bâtiment (l'arène de MK est 300 m plus haut).")]
         [SerializeField]
-        float m_JudgmentBossShare = 0.1f;
+        float m_MaxHeightGap = 40f;
 
         [Tooltip("Cadence des bâtiments du rayon après un jugement, et pendant combien de temps (s).")]
         [SerializeField]
@@ -360,17 +362,9 @@ namespace Archery.Building
             if (target == null)
                 return false;
 
-            var amount = target.IsBoss ? target.Health.Max * m_JudgmentBossShare
-                : Mathf.Max(m_JudgmentDamage * Strength, target.Health.Max * m_JudgmentShare);
             var point = target.transform.position;
-            target.Health.TakeDamage(new DamageInfo
-            {
-                Amount = amount,
-                Zone = HitZone.Body,
-                Point = target.Center,
-                Direction = Vector3.down,
-                Source = this,
-            });
+            target.Stun(target.IsBoss ? m_JudgmentBossStun : m_JudgmentStun);
+            Archery.UI.FloatingText.Spawn(target.Center + Vector3.up * 1.5f, "Jugement !", new Color(1f, 0.95f, 0.6f), 1.1f, 1.2f);
 
             foreach (var structure in All)
             {
@@ -463,10 +457,13 @@ namespace Archery.Building
 
         float Radius => ValueFor(m_RadiusPerLevel, Mathf.Max(1, Level), 12f) * RangeScale * OverchargeRange;
 
-        // À plat : un phare en hauteur éclaire la voie en contrebas.
+        // À plat : un phare en hauteur éclaire la voie en contrebas. Mais pas l'arène de MK, 300 m plus haut, au-dessus de la
+        // carte (8 novembre : sans cet écart de hauteur, le phare de la carte marquait et jugeait MK à travers le ciel).
         bool IsInside(Vector3 position, float radius)
         {
             var offset = position - transform.position;
+            if (Mathf.Abs(offset.y) > m_MaxHeightGap)
+                return false;
             offset.y = 0f;
             return offset.sqrMagnitude <= radius * radius;
         }

@@ -137,6 +137,7 @@ namespace Archery.Upgrades
         const float k_AcrobatScale = 0.5f;
         const float k_AcrobatScalePerLevel = 0.1f;
         const float k_AcrobatGrace = 0.25f;
+        const float k_AcrobatAirDelay = 0.3f;
         const float k_AcrobatSlideEnd = 0.5f;
 
         static readonly Color k_FuseColor = new Color(1f, 0.55f, 0.15f);
@@ -207,6 +208,10 @@ namespace Archery.Upgrades
             public Enemy DiveTarget;
             public bool Recalled;
             public readonly List<Enemy> RecallHits = new List<Enemy>();
+
+            // La flèche rappelée file d'abord vers un ennemi proche (8 novembre au soir), jusqu'à tant (Time.time).
+            public Enemy RecallTarget;
+            public float RecallSeekUntil;
             public bool SpikeSeed;
             public bool Rail;
             public Vector3 RailPoint;
@@ -303,6 +308,7 @@ namespace Archery.Upgrades
         float m_NextLocomotionSearch;
         bool m_AcrobatActive;
         float m_AcrobatUntil;
+        float m_AirborneSince = -1f;
 
         public static ArrowPieces Instance { get; private set; }
 
@@ -440,6 +446,8 @@ namespace Archery.Upgrades
             flight.DiveTarget = null;
             flight.Recalled = false;
             flight.RecallHits.Clear();
+            flight.RecallTarget = null;
+            flight.RecallSeekUntil = 0f;
             flight.SpikeSeed = false;
             flight.Rail = false;
             flight.CloudAt = 0f;
@@ -470,8 +478,6 @@ namespace Archery.Upgrades
         {
             if (arrow != null && m_PerfectArrows.Remove(arrow))
                 return true;
-            if (m_AcrobatActive)
-                return true;
             if (m_QueuedPerfects <= 0)
                 return false;
 
@@ -481,7 +487,9 @@ namespace Archery.Upgrades
 
         // Ce que ClaimPerfect accorderait, sans rien consommer (Bow.PerfectPending, 27 octobre) : l'anneau s'affiche alors
         // entièrement vert. À garder identique à ClaimPerfect.
-        bool PeekPerfect(Arrow arrow) => (arrow != null && m_PerfectArrows.Contains(arrow)) || m_AcrobatActive || m_QueuedPerfects > 0;
+        // (Le talisman d'acrobate rendait aussi chaque tir parfait en l'air : retiré le 8 novembre au soir, le joueur : « slow + parfait
+        // me semble très puissant », surtout pour une commune ; il garde le ralenti, et l'anneau tourne en temps réel.)
+        bool PeekPerfect(Arrow arrow) => (arrow != null && m_PerfectArrows.Contains(arrow)) || m_QueuedPerfects > 0;
 
         // Les flèches rattrapées ne restent parfaites que tant qu'elles sont en main ou encochées : rendue au pool (lâchée, rangée),
         // une flèche ne l'est plus (le pool la redonnerait au carquois).
@@ -1545,8 +1553,16 @@ namespace Archery.Upgrades
 
             if (level > 0 && !SlowMotion.IsPaused)
             {
+                // En l'air pour de bon : pas à chaque marche (8 novembre au soir, le joueur : sur les escaliers ou la tour, il se
+                // déclenchait à chaque pas, le sol lâchant le joueur une fraction de seconde) ; il faut y rester k_AcrobatAirDelay s.
                 var desktop = DesktopControls.Instance;
-                if ((m_Locomotion != null && (m_Locomotion.IsSliding || m_Locomotion.IsAirborne)) || (desktop != null && desktop.IsAirborne))
+                var airborne = (m_Locomotion != null && m_Locomotion.IsAirborne) || (desktop != null && desktop.IsAirborne);
+                if (!airborne)
+                    m_AirborneSince = -1f;
+                else if (m_AirborneSince < 0f)
+                    m_AirborneSince = Time.unscaledTime;
+                var flying = airborne && Time.unscaledTime - m_AirborneSince >= k_AcrobatAirDelay;
+                if ((m_Locomotion != null && m_Locomotion.IsSliding) || flying)
                     m_AcrobatUntil = Time.unscaledTime + k_AcrobatGrace;
                 active = Time.unscaledTime < m_AcrobatUntil;
             }

@@ -37,8 +37,9 @@ MonoBehaviour:
   - cost: 0
     plans: 0
     description: "Phare du jugement : toutes les 10 s, un rayon g\xE9ant tombe du
-      ciel sur l'ennemi le plus fort, et tous les b\xE2timents du rayon tirent deux
-      fois plus vite pendant 5 s."
+      ciel sur l'ennemi le plus fort : il est \xE9tourdi 3 s (un boss 1,5 s), et
+      tes fl\xE8ches lui font plus de d\xE9g\xE2ts ; les b\xE2timents du rayon tirent
+      plus vite pendant 5 s."
   lotSize: 1
   rarity: 1
   anywhere: 0

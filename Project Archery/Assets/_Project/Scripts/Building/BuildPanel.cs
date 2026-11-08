@@ -79,6 +79,30 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_ErrorClip;
 
+        [Header("Plusieurs niveaux d'un coup (8 novembre)")]
+        // Plus grands et sur deux lignes depuis le soir (le joueur : « trop petits, le texte déborde un peu » ; 200 × 52 avant).
+        [Tooltip("Hauteur (px, depuis le bas du panneau) de la rangée de boutons « +2 niveaux », « +3 niveaux »…")]
+        [SerializeField]
+        float m_LevelRowHeight = 108f;
+
+        [Tooltip("Taille (px) d'un bouton de cette rangée.")]
+        [SerializeField]
+        Vector2 m_LevelButtonSize = new Vector2(200f, 84f);
+
+        [Tooltip("Hauteur (px) dont grandit le panneau pour faire place à la rangée.")]
+        [SerializeField]
+        float m_LevelRowExtraHeight = 80f;
+
+        [Tooltip("Écart (m) gardé entre le panneau et le bâtiment, quand le joueur en est tout près.")]
+        [SerializeField]
+        float m_ClearanceFromStructure = 0.35f;
+
+        // Les boutons de la rangée, faits au lancement d'après le bouton de fermeture (la scène n'a que deux cartes).
+        const int k_MaxLevelButtons = 3;
+        readonly List<Button> m_LevelButtons = new List<Button>();
+        readonly List<TMP_Text> m_LevelLabels = new List<TMP_Text>();
+        readonly int[] m_LevelSteps = new int[k_MaxLevelButtons];
+
         readonly List<StructureDefinition> m_Choices = new List<StructureDefinition>();
         StructureDefinition[] m_CardChoices = Array.Empty<StructureDefinition>();
         int m_MoveCard = -1;
@@ -107,10 +131,102 @@ namespace Archery.Building
                     card.Clicked += OnCardClicked;
             }
 
+            CreateLevelButtons();
             if (m_CloseButton != null)
                 m_CloseButton.onClick.AddListener(OnCloseClicked);
             if (m_Content != null)
                 m_Content.SetActive(false);
+        }
+
+        // La rangée « +2 niveaux », « +3 niveaux », « +4 niveaux » (8 novembre, le joueur : à la place d'un plan, une ouverture du
+        // panneau et trois coups de marteau par niveau), sous les cartes, des copies du bouton de fermeture.
+        void CreateLevelButtons()
+        {
+            if (m_CloseButton == null)
+                return;
+
+            if (transform is RectTransform panel)
+                panel.sizeDelta += new Vector2(0f, m_LevelRowExtraHeight);
+
+            for (var i = 0; i < k_MaxLevelButtons; i++)
+            {
+                var button = Instantiate(m_CloseButton, m_CloseButton.transform.parent, false);
+                button.name = $"Niveaux ({i + 2})";
+                button.onClick.RemoveAllListeners();
+                var slot = i;
+                button.onClick.AddListener(() => OnLevelClicked(slot));
+
+                var rect = (RectTransform)button.transform;
+                rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.sizeDelta = m_LevelButtonSize;
+
+                var label = button.GetComponentInChildren<TMP_Text>(true);
+                if (label != null)
+                {
+                    label.enableAutoSizing = false;
+                    label.fontSize = 25f;
+                    label.lineSpacing = -10f;
+                    label.textWrappingMode = TextWrappingModes.NoWrap;
+                    label.overflowMode = TextOverflowModes.Ellipsis;
+                    label.margin = new Vector4(8f, 0f, 8f, 0f);
+                }
+
+                button.gameObject.SetActive(false);
+                m_LevelButtons.Add(button);
+                m_LevelLabels.Add(label);
+            }
+        }
+
+        // Les boutons des niveaux qu'on peut payer : de 2 jusqu'au niveau maximal, 3 au plus, centrés sur la rangée.
+        void ShowLevelButtons(Structure structure, BuildManager builds)
+        {
+            var shown = 0;
+            var definition = structure != null ? structure.Definition : null;
+            var canUpgrade = builds != null && definition != null && structure.IsBuilt && !structure.IsUnderConstruction &&
+                             !(structure is TowerUltimate);
+            var owned = canUpgrade ? builds.PlansFor(structure) : 0;
+            for (var levels = 2; canUpgrade && shown < m_LevelButtons.Count && structure.Level + levels <= definition.MaxLevel; levels++)
+            {
+                var plans = BuildManager.PlansToReach(structure, structure.Level + levels);
+                if (plans <= 0 || plans > owned)
+                    break;
+
+                m_LevelSteps[shown] = levels;
+                if (m_LevelLabels[shown] != null)
+                    m_LevelLabels[shown].text = $"+{levels} niveaux\n<size=85%>{plans} plans</size>";
+                shown++;
+            }
+
+            var width = m_LevelButtonSize.x + 10f;
+            for (var i = 0; i < m_LevelButtons.Count; i++)
+            {
+                var button = m_LevelButtons[i];
+                if (button == null)
+                    continue;
+                var visible = i < shown;
+                button.gameObject.SetActive(visible);
+                if (visible)
+                    ((RectTransform)button.transform).anchoredPosition = new Vector2((i - (shown - 1) * 0.5f) * width, m_LevelRowHeight);
+            }
+        }
+
+        void OnLevelClicked(int slot)
+        {
+            var manager = BuildManager.Instance;
+            if (!IsOpen || manager == null || slot < 0 || slot >= m_LevelSteps.Length)
+                return;
+
+            var result = manager.TryBuild(Socket, null, m_Hand, null, m_LevelSteps[slot]);
+            if (!result.Success)
+            {
+                Sfx.Play(m_ErrorClip, transform.position, 0.9f);
+                ShowMessage(result.Message, result.Color);
+                return;
+            }
+
+            Sfx.Play(m_BuyClip, transform.position, 0.9f);
+            Close();
         }
 
         void Start()
@@ -187,9 +303,44 @@ namespace Archery.Building
             var toSocket = socket.transform.position - head.position;
             toSocket.y = 0f;
             var direction = toSocket.magnitude > 1.5f ? toSocket.normalized : rig.HeadYaw * Vector3.forward;
+            var distance = m_Distance;
+
+            // Tout près d'un bâtiment, le panneau s'ouvrait dans le bâtiment, et on ne pouvait plus rien cliquer (8 novembre, le
+            // joueur) : il s'arrête avant sa boîte de sélection ; s'il n'y a pas la place devant, il passe sur le côté.
+            var bounds = socket.SelectionBounds;
+            if (bounds.HasValue)
+            {
+                var box = bounds.Value;
+                box.Expand(m_ClearanceFromStructure * 2f);
+                var eye = head.position + Vector3.up * m_HeightFromHead;
+                distance = RoomBefore(box, eye, direction, m_Distance);
+                if (distance < 0.6f)
+                {
+                    var side = Vector3.Cross(Vector3.up, direction).normalized;
+                    var right = RoomBefore(box, eye, (direction + side * 1.5f).normalized, m_Distance);
+                    var left = RoomBefore(box, eye, (direction - side * 1.5f).normalized, m_Distance);
+                    var best = Mathf.Max(right, left);
+                    if (best > distance)
+                    {
+                        direction = (direction + (right >= left ? side : -side) * 1.5f).normalized;
+                        distance = best;
+                    }
+                }
+
+                distance = Mathf.Max(0.45f, distance);
+            }
+
             m_Anchor = head.position;
-            transform.SetPositionAndRotation(head.position + direction * m_Distance + Vector3.up * m_HeightFromHead,
+            transform.SetPositionAndRotation(head.position + direction * distance + Vector3.up * m_HeightFromHead,
                                              Quaternion.LookRotation(direction) * Quaternion.Euler(m_Tilt, 0f, 0f));
+        }
+
+        // La place devant les yeux, dans cette direction, avant la boîte (au plus la distance voulue ; 0 si on y est déjà).
+        static float RoomBefore(Bounds box, Vector3 eye, Vector3 direction, float wanted)
+        {
+            if (box.Contains(eye))
+                return 0f;
+            return box.IntersectRay(new Ray(eye, direction), out var enter) ? Mathf.Min(wanted, enter) : wanted;
         }
 
         void Refresh()
@@ -225,9 +376,11 @@ namespace Archery.Building
                 ShowCard(1, movable ? MoveOffer(structure, builds.CanMove) : null, null, builds);
                 for (var i = 2; i < m_Cards.Length; i++)
                     ShowCard(i, null, null, builds);
+                ShowLevelButtons(structure, builds);
                 return;
             }
 
+            ShowLevelButtons(null, builds);
             if (builds != null)
                 builds.GetChoices(Socket.Slot, m_Choices);
             else

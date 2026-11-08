@@ -29,7 +29,9 @@ namespace Archery.FinalBoss
         void Start()
         {
             // Enemy a déjà appliqué la difficulté des ennemis ; on ajoute celle des boss.
-            var bossHealth = DifficultyManager.Current.bossHealth;
+            // Et ses PV à lui (8 novembre) : il suit la courbe des ennemis, baissée le 3 novembre pour les vagues 3 à 5, et était
+            // tombé de 35 900 à 15 600 PV en Normal sans qu'on l'ait voulu.
+            var bossHealth = DifficultyManager.Current.bossHealth * Mathf.Max(0.1f, m_HealthScale);
             if (!Mathf.Approximately(bossHealth, 1f))
                 Enemy.Health.ResetHealth(Enemy.Health.Max * bossHealth);
 

@@ -88,7 +88,6 @@ namespace Archery.UI
 
         // Dernières valeurs affichées : on ne reconstruit un texte que s'il change.
         int m_Score = -1;
-        int m_Money = -1;
         int m_Plans = -1;
         int m_Combo = -1;
         int m_PlayerHealth = -1;
@@ -219,18 +218,18 @@ namespace Archery.UI
             // dès qu'il y a des caisses de l'ingénieur sur la carte.
             var builds = BuildManager.Instance;
             var plans = builds != null ? builds.TotalPlans : 0;
-            if (m_MoneyText != null && (score.Money != m_Money || plans != m_Plans))
+            if (m_MoneyText != null && plans != m_Plans)
             {
-                m_Money = score.Money;
                 m_Plans = plans;
-                var plansText = m_Plans > 0 || CrystalSpawner.Instance != null ? " · Plans " + FormatNumber(m_Plans) : "";
-                m_MoneyText.text = "Or " + FormatNumber(m_Money) + plansText;
+                // Plus d'or depuis le 8 novembre (le joueur) : la ligne ne dit plus que les plans.
+                m_MoneyText.text = "Plans " + FormatNumber(m_Plans);
             }
 
-            if (m_ComboText != null && score.Combo != m_Combo)
+            // Le combo est retiré (8 novembre, le joueur : il ne servait à rien, on ne le voyait que sur la montre).
+            if (m_ComboText != null && m_Combo != 0)
             {
-                m_Combo = score.Combo;
-                m_ComboText.text = m_Combo >= 2 ? "Combo ×" + score.ComboMultiplier.ToString("0.0", CultureInfo.GetCultureInfo("fr-FR")) : "";
+                m_Combo = 0;
+                m_ComboText.text = "";
             }
         }
 

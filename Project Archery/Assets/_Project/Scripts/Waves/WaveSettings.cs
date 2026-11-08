@@ -52,6 +52,12 @@ namespace Archery.Waves
         [Range(0.1f, 1f)]
         public float riseDurationScale = 0.5f;
 
+        [Tooltip("Les ennemis de la première vague, en part de ce qu'ils seraient (8 novembre au soir, le joueur, après la partie d'un " +
+                 "ami qui découvrait le jeu : sans bâtiment, la vague 1 détruisait presque la tour ; 0,7 = 30 % de moins). Les gardiens " +
+                 "des coffres ne changent pas.")]
+        [Range(0.1f, 1f)]
+        public float firstWaveCountScale = 0.7f;
+
         [Header("Ennemis")]
         [Tooltip("Budget de la vague 1 : chaque ennemi coûte son « Cost ».")]
         public float firstWaveBudget = 20f;
@@ -136,22 +142,7 @@ namespace Archery.Waves
         [Min(0.5f)]
         public float bossReinforcementInterval = 6f;
 
-        [Header("Récompenses de fin de vague")]
-        [Tooltip("Or de fin de vague : cette base + « Reward Per Wave » × le numéro de la vague, × le multiplicateur de score de la difficulté.")]
-        public int waveRewardBase = 80;
-
-        public int waveRewardPerWave = 110;
-
-        [Tooltip("Chaque bonus de performance (tour intacte, boss tué vite, combo) ajoute cette part de la récompense.")]
-        [Range(0f, 1f)]
-        public float performanceBonus = 0.2f;
-
-        [Tooltip("Bonus « boss express » : le boss meurt moins de N secondes après son arrivée.")]
-        public float fastBossTime = 30f;
-
-        [Tooltip("Bonus « combo » : un combo d'au moins N touches pendant la vague.")]
-        public int comboTarget = 10;
-
+        // (Les récompenses de fin de vague, l'or et ses bonus de performance, sont retirées le 8 novembre avec l'or.)
         [Header("Score")]
         [Tooltip("Points de fin de vague : cette valeur × le numéro de la vague.")]
         public int clearBonusPerWave = 100;
@@ -211,9 +202,6 @@ namespace Archery.Waves
 
             return null;
         }
-
-        /// <summary>Or de fin de vague, avant le multiplicateur de la difficulté et les bonus.</summary>
-        public int WaveRewardFor(int wave) => waveRewardBase + waveRewardPerWave * Mathf.Max(1, wave);
 
         /// <summary>
         /// Croissance exponentielle à la vague <paramref name="wave"/> : <paramref name="growthPerWave"/> puissance (vague − 1),

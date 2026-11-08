@@ -26,8 +26,12 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   (12.36). Puis le coffre unique (12.38) et la puissance des tours baissée (12.39). Puis le premier essai du joueur et ses suites
   (12.40, 12.41 : coffres au gong d'un seul côté, le chantier de la partie, un plan par niveau, la grille, la régénération, MK ×2).
   Puis le deuxième essai (12.42, 2 novembre : 2 plans par coffre, courbe des PV relevée, tours ×1,2, vagues plus courtes, la grille ;
-  `Editor/SecondTestBaker`). **La tâche suivante** : un nouvel essai (`Checklist_Demo.md`, « Le deuxième essai du 2 novembre ») et
-  relancer le tableau après Unity ; puis les ultimes (choisies : Colosse de forge, Grand Manège, Grande Horloge, qui prend
+  `Editor/SecondTestBaker`). **La tâche suivante** : un nouvel essai (`Checklist_Demo.md`, « Le sixième essai » : le Phare,
+  MK, l'Adresse, plusieurs niveaux d'un coup, la sélection par le bâtiment ; `Refonte_TowerDefense.md`, 12.68 ; relancer le tableau
+  d'équilibrage après Unity ; puis **plus d'or ni de combo, le choix de la pause** : une carte par ligne parmi trois parchemins,
+  trois objets, trois tourelles ; les parchemins à deux effets ; plus de coffre de boss ; 12.69 ; puis **les quatre raretés**
+  (épique en violet ; tourelles et parchemins par rareté), le Rappel, MK (paliers, ultimes toutes les 15 s), le Style ; 12.70 ;
+  `Docs/Fiche_Ameliorations.xlsx` remplie par le joueur et appliquée : onze pièces épiques, la Pointe du chasseur refaite ; 12.71 ; puis le gong (une carte par ligne), les raretés à 60 / 24 / 11 / 5, le Déluge qui pleut ; 12.72 ; la vague 1 à 30 % d'ennemis en moins, après les parties d'un ami ; 12.73) ; puis les ultimes (choisies : Colosse de forge, Grand Manège, Grande Horloge, qui prend
   Minuit au Beffroi ; 12.44 ; le Beffroi au niveau 3 devient le Phare du passé, 12.45). **Le système des ultimes et le Colosse de
   forge sont codés** (12.46 : `Building/TowerUltimate.cs`, `UltimeColosse.cs`, `FinalBoss/DragonBoss.Pin.cs`, le modèle dans
   `Tools/allure_tours/ultimes.py`) ; le Colosse refait après l'essai du joueur (12.47 : « on doit ressentir sa puissance »),
@@ -107,7 +111,7 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   une seule fois, avec une condition de garde (exemples : `Editor/RoguelikeStep3Baker.cs`, `RoguelikeStep5Baker.cs`). Les
   textes des pièces nouvelles sont des propositions ; ceux des cartes existantes ne se réécrivent pas.
 - Pour tester : **R** (la pièce nouvelle suivante, équipée), **Tab** (toutes les pièces un niveau de plus : 1, puis 2, puis 3),
-  **F** (tout, au niveau 3, une fois), **X** (coffre de boss), **M** (or).
+  **F** (tout, au niveau 3, une fois), **X** (coffre de boss), **M** (or : retiré le 8 novembre, avec l'or).
 
 ## Pièges connus sur ce PC
 

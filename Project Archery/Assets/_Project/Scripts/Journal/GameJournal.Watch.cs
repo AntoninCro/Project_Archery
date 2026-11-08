@@ -193,6 +193,34 @@ namespace Archery.Journal
         {
             ReadOwned(m_Owned);
             ReadEquipped(m_Equipped);
+            m_ScrollValues.Clear();
+            if (m_Upgrades == null)
+                return;
+            foreach (var upgrade in m_Upgrades.Owned)
+            {
+                if (upgrade != null && upgrade.kind == UpgradeKind.Scroll)
+                    m_ScrollValues[upgrade.effect] = m_Upgrades.Total(upgrade.effect);
+            }
+        }
+
+        // Ce que valait chaque parchemin au dernier relevé (8 novembre au soir) : la rareté d'un parchemin pris se lit sur ce qu'il a
+        // ajouté (×1 commune, ×1,5 rare, ×2 épique, ×3 légendaire), et non sur la rareté de sa carte, toujours « commune ».
+        readonly Dictionary<UpgradeEffect, float> m_ScrollValues = new Dictionary<UpgradeEffect, float>();
+
+        string ScrollRarity(Upgrade upgrade)
+        {
+            var now = m_Upgrades.Total(upgrade.effect);
+            var before = m_ScrollValues.TryGetValue(upgrade.effect, out var value) ? value : 0f;
+            m_ScrollValues[upgrade.effect] = now;
+            if (upgrade.value <= 0f || now <= before)
+                return "";
+            // Un parchemin à la fois (un raccourci qui en donne plusieurs d'un coup lit la somme : au-delà de ×3, rien).
+            var scale = (now - before) / upgrade.value;
+            if (scale > 3.2f)
+                return "";
+            var rarity = scale >= 2.9f ? UpgradeRarity.Legendary : scale >= 1.9f ? UpgradeRarity.Epic
+                : scale >= 1.4f ? UpgradeRarity.Rare : UpgradeRarity.Common;
+            return ShopCatalog.NameOf(rarity).ToLowerInvariant();
         }
 
         void ReadOwned(Dictionary<string, (int Count, int Level)> owned)
@@ -273,10 +301,18 @@ namespace Archery.Journal
         string UpgradeText(string name, int count, int level, bool fresh)
         {
             var upgrade = m_Upgrades.Owned.FirstOrDefault(owned => owned != null && owned.displayName == name);
+            var amount = count > 1 ? $" ×{count}" : level > 1 ? $", niveau {level}" : "";
+            if (upgrade != null && upgrade.kind == UpgradeKind.Scroll)
+            {
+                // Un parchemin : sa rareté, celle qu'il a vraiment (le niveau compte aussi les premiers).
+                var rarity = ScrollRarity(upgrade);
+                var tag = rarity.Length > 0 ? $" ({rarity})" : "";
+                return fresh ? $"Objet : **{name}**{tag}{amount}" : $"Objet : {name}{tag}{amount}";
+            }
+
             var about = upgrade != null
                 ? $" ({ShopCatalog.NameOf(upgrade.rarity).ToLowerInvariant()}{(upgrade.slot != ArrowSlot.None ? ", " + ShopCatalog.NameOf(upgrade.slot).ToLowerInvariant() : "")})"
                 : "";
-            var amount = count > 1 ? $" ×{count}" : level > 1 ? $", niveau {level}" : "";
             return fresh ? $"Objet : **{name}**{about}{amount}" : $"Objet : {name}{amount}";
         }
 

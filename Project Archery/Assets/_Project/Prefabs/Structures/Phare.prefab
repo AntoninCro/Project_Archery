@@ -3915,10 +3915,10 @@ MonoBehaviour:
   - 24
   m_BonusPerLevel:
   - 0.2
-  - 0.35
-  - 0.5
-  - 0.5
-  - 0.6
+  - 0.25
+  - 0.3
+  - 0.3
+  - 0.3
   m_MarkerSize: 0.3
   m_MarkerMaterial: {fileID: 2100000, guid: d7969094d70294c44bfe3ae18c6c3459, type: 2}
   m_Beam: {fileID: 3643681505432291022}
@@ -3948,9 +3948,9 @@ MonoBehaviour:
   m_BurnShare: 0.4
   m_BurnDuration: 3
   m_JudgmentInterval: 10
-  m_JudgmentDamage: 150
-  m_JudgmentShare: 0.5
-  m_JudgmentBossShare: 0.1
+  m_JudgmentStun: 3
+  m_JudgmentBossStun: 1.5
+  m_MaxHeightGap: 40
   m_JudgmentBoost: {x: 1.5, y: 5}
   m_JudgmentMaterial: {fileID: 2100000, guid: 66b20bd456aaaf4449be2ea428773849, type: 2}
   m_JudgmentClip: {fileID: 8300000, guid: dc97e5f578a85ae40b7fbbfba752cb37, type: 3}

@@ -1,5 +1,6 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Archery.Bows;
 using Archery.Building;
@@ -11,7 +12,8 @@ using Object = UnityEngine.Object;
 namespace Archery.Journal
 {
     // Les comptes du journal (3 novembre) : par vague et sur toute la partie, les ennemis, les dégâts et les éliminations par source,
-    // les tirs, les dégâts reçus par le joueur et la tour, l'or et la fluidité ; et les bilans écrits à partir d'eux.
+    // les tirs, les dégâts reçus par le joueur et la tour, et la fluidité ; et les bilans écrits à partir d'eux. Depuis le 8 novembre :
+    // plus l'or (retiré du jeu), mais les flèches qu'il a fallu pour tuer chaque sorte d'ennemi.
     public partial class GameJournal
     {
         const string k_PlayerArrows = "Joueur : flèches";
@@ -33,16 +35,16 @@ namespace Archery.Journal
             public int Hits;
             public int Deaths;
             public int TowerAttacks;
-            public int Earned;
-            public int Spent;
+
+            // Les flèches pour tuer (8 novembre, le joueur : « 3 ou 4 flèches pour tuer certains ennemis », les orcs, la liche) : par
+            // sorte d'ennemi tué, les flèches du joueur qui l'avaient touché, et combien d'ennemis de cette sorte, touchés, sont morts.
+            public readonly Dictionary<string, int> ArrowsOnKilled = new Dictionary<string, int>();
+            public readonly Dictionary<string, int> KilledAfterArrows = new Dictionary<string, int>();
 
             // Les coffres de la vague et leurs gardiens (4 novembre) : ouverts, sortis, tués.
             public int ChestsOpened;
             public int GuardsOut;
             public int GuardsKilled;
-
-            // L'or dépensé à la pause juste avant la vague (la boutique, entre deux vagues : 3 novembre, il n'apparaissait nulle part).
-            public int SpentBefore;
 
             // Les PV du joueur au plus bas, et ses PV max à ce moment (4 novembre : à 67 PV, est-on vraiment en danger ?). -1 : jamais
             // touché.
@@ -57,8 +59,6 @@ namespace Archery.Journal
 
         Counts m_Total;
         Counts m_Wave;
-        int m_LastMoney;
-        int m_PauseSpent;
         int m_WavesStarted;
         float m_LastTowerHit = -999f;
         bool m_PlayerLowTold;
@@ -69,12 +69,15 @@ namespace Archery.Journal
         // Les flèches tirées qui n'ont pas encore touché d'ennemi.
         readonly HashSet<Arrow> m_Flying = new HashSet<Arrow>();
 
+        // Les flèches du joueur qui ont touché chaque ennemi encore en vie (une fois chacune).
+        readonly Dictionary<Enemy, List<Arrow>> m_ArrowsOn = new Dictionary<Enemy, List<Arrow>>();
+
         void ResetCounts()
         {
             m_Total = NewCounts(0);
             m_Wave = null;
-            m_PauseSpent = 0;
             m_WavesStarted = 0;
+            m_ArrowsOn.Clear();
             m_LastChests = -1;
             m_LastTowerHit = -999f;
             m_PlayerLowTold = false;
@@ -98,10 +101,9 @@ namespace Archery.Journal
             if (wave <= 0)
                 return counts;
 
-            // Une vague : elle prend ce qui a été dépensé à la pause d'avant.
+            // Une vague. Les ennemis d'avant qui n'ont pas été tués (ceux qui fuient à la fin de la vague) ne comptent plus.
             m_WavesStarted++;
-            counts.SpentBefore = m_PauseSpent;
-            m_PauseSpent = 0;
+            m_ArrowsOn.Clear();
             return counts;
         }
 
@@ -136,8 +138,28 @@ namespace Archery.Journal
                 m_Total.GuardsKilled++;
             else
                 Add(m_Total.Dead, name, 1);
+
+            var arrows = 0;
+            if (m_ArrowsOn.TryGetValue(enemy, out var hits))
+            {
+                arrows = hits.Count;
+                m_ArrowsOn.Remove(enemy);
+            }
+
+            if (arrows > 0)
+            {
+                Add(m_Total.ArrowsOnKilled, name, arrows);
+                Add(m_Total.KilledAfterArrows, name, 1);
+            }
+
             if (m_Wave == null)
                 return;
+            if (arrows > 0)
+            {
+                Add(m_Wave.ArrowsOnKilled, name, arrows);
+                Add(m_Wave.KilledAfterArrows, name, 1);
+            }
+
             Add(m_Wave.Kills, source, 1);
             if (enemy.IsGuard)
                 m_Wave.GuardsKilled++;
@@ -209,19 +231,43 @@ namespace Archery.Journal
             }
 
             if (shot.Arrow != null)
+            {
                 m_Flying.Add(shot.Arrow);
+                return;
+            }
+
+            // Un laser (l'arc cosmique) : il a déjà touché, dans la même image, avant que le tir soit annoncé, et sans flèche à suivre
+            // (8 novembre au soir : le journal comptait 0 % de flèches qui touchent avec l'arc cosmique).
+            if (m_PlayerHitFrame != Time.frameCount)
+                return;
+            m_Total.Hits++;
+            if (m_Wave != null)
+                m_Wave.Hits++;
         }
 
-        // Une flèche tirée qui touche un ennemi (la première fois) : elle compte parmi celles qui touchent.
+        // L'image du dernier coup d'un tir du joueur sur un ennemi (pour les lasers).
+        int m_PlayerHitFrame = -1;
+
+        // Une flèche tirée qui touche un ennemi (la première fois) : elle compte parmi celles qui touchent. Chaque ennemi touché
+        // garde aussi les flèches qui l'ont touché (8 novembre : les flèches pour tuer), celles en plus du multitir comprises.
         void OnArrowHit(ArrowHit hit)
         {
-            if (!Active || !hit.IsShot || hit.Arrow == null || hit.Collider == null || !m_Flying.Contains(hit.Arrow))
+            if (!Active || !hit.IsShot || hit.Arrow == null || hit.Collider == null)
                 return;
             var enemy = hit.Collider.GetComponentInParent<Enemy>();
             if (enemy == null || enemy.IsAlly)
                 return;
-            m_Flying.Remove(hit.Arrow);
-            if (enemy.IsTrainingDummy)
+            if (!enemy.IsTrainingDummy && !hit.Arrow.IsExtra)
+                m_PlayerHitFrame = Time.frameCount;
+            if (!enemy.IsTrainingDummy && enemy.IsAlive)
+            {
+                if (!m_ArrowsOn.TryGetValue(enemy, out var arrows))
+                    m_ArrowsOn[enemy] = arrows = new List<Arrow>(4);
+                if (!arrows.Contains(hit.Arrow))
+                    arrows.Add(hit.Arrow);
+            }
+
+            if (!m_Flying.Remove(hit.Arrow) || enemy.IsTrainingDummy)
                 return;
             m_Total.Hits++;
             if (m_Wave != null)
@@ -298,32 +344,6 @@ namespace Archery.Journal
         {
             if (Active)
                 Line("**La tour est détruite.**");
-        }
-
-        // L'or : ce qui entre et ce qui sort, d'un changement à l'autre.
-        void OnScoreChanged()
-        {
-            if (m_Score == null)
-                return;
-            var money = m_Score.Money;
-            var delta = money - m_LastMoney;
-            m_LastMoney = money;
-            if (!Active || delta == 0)
-                return;
-            if (delta > 0)
-            {
-                m_Total.Earned += delta;
-                if (m_Wave != null)
-                    m_Wave.Earned += delta;
-            }
-            else
-            {
-                m_Total.Spent -= delta;
-                if (m_Wave != null)
-                    m_Wave.Spent -= delta;
-                else
-                    m_PauseSpent -= delta;
-            }
         }
 
         void CountFrame(float deltaTime)
@@ -460,6 +480,9 @@ namespace Archery.Journal
             var damage = counts.Damage.Values.Sum();
             Write($"- **Dégâts aux ennemis** : {Mathf.RoundToInt(damage)}" + (damage > 0f ? " : " + Shares(counts.Damage, damage) : "") + ".");
             Write("- **Éliminations** : " + (counts.Kills.Count > 0 ? Ints(counts.Kills) : "aucune") + ".");
+            if (counts.KilledAfterArrows.Count > 0)
+                Write("- **Flèches pour tuer** (en moyenne, les flèches du joueur qui avaient touché chaque ennemi tué ; les bâtiments " +
+                      "ont pu aider) : " + ArrowsToKillText(counts) + ".");
 
             var hitShare = counts.Shots > 0 ? Mathf.RoundToInt(100f * counts.Hits / counts.Shots) : 0;
             var headshots = m_Score != null ? m_Score.Headshots - counts.HeadshotsStart : 0;
@@ -477,10 +500,19 @@ namespace Archery.Journal
                   (towerHurt > 0f ? $" ({Shares(counts.TowerHurt, towerHurt)})" : "") + ".");
 
             var score = m_Score != null ? m_Score.Score - counts.ScoreStart : 0;
-            Write($"- **Or** : +{counts.Earned} gagnés, −{counts.Spent} dépensés" +
-                  (counts.SpentBefore > 0 ? $" (et −{counts.SpentBefore} à la pause d'avant)" : "") + $" ; score +{score}.");
+            Write($"- **Score** : +{score}.");
             Write($"- **Fluidité** : {FramesText(counts)}.");
         }
+
+        // « Orc 3,4 (5 tués), Liche 3,1 (9 tués) » : la moyenne la plus haute d'abord.
+        static string ArrowsToKillText(Counts counts) =>
+            string.Join(", ", counts.KilledAfterArrows
+                                    .Select(pair => (pair.Key, pair.Value,
+                                                     Average: (counts.ArrowsOnKilled.TryGetValue(pair.Key, out var arrows) ? arrows : 0) /
+                                                              (float)Mathf.Max(1, pair.Value)))
+                                    .OrderByDescending(entry => entry.Average)
+                                    .Select(entry => $"{entry.Key} {entry.Average.ToString("0.0", CultureInfo.GetCultureInfo("fr-FR"))} " +
+                                                     $"({entry.Value} {(entry.Value > 1 ? "tués" : "tué")})"));
 
         static string EnemiesText(Counts counts) =>
             string.Join(", ", counts.Dead.OrderByDescending(pair => pair.Value)

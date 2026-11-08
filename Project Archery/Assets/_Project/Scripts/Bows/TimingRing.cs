@@ -111,7 +111,7 @@ namespace Archery.Bows
         /// Depuis combien de temps (s) le cercle attend au bout de l'anneau, dans le vert clair (0 sinon) : la charge de la corde de
         /// siège pour les arbalètes des Akimbow (27 octobre). À lire avant <see cref="Release"/>.
         /// </summary>
-        public float HeldDuration => IsRunning && m_HeldSince >= 0f ? Time.time - m_HeldSince : 0f;
+        public float HeldDuration => IsRunning && m_HeldSince >= 0f ? Time.unscaledTime - m_HeldSince : 0f;
 
         /// <summary>
         /// Le prochain tir sera parfait quoi qu'il arrive (27 octobre, demandé par le joueur : un parfait en réserve du duelliste
@@ -217,7 +217,7 @@ namespace Archery.Bows
                 return ShotGrade.None;
 
             IsRunning = false;
-            m_VisibleUntil = Time.time + m_ResultDisplayTime;
+            m_VisibleUntil = Time.unscaledTime + m_ResultDisplayTime;
             if (m_SecondPass)
             {
                 var band = GradeAt(m_Approach);
@@ -249,7 +249,9 @@ namespace Archery.Bows
 
         void LateUpdate()
         {
-            var deltaTime = Time.deltaTime;
+            // L'anneau tourne en temps réel (8 novembre au soir, le joueur : dans un ralenti, le talisman d'acrobate ou un autre,
+            // l'anneau ralentissait aussi et le parfait devenait facile) ; il s'arrête quand le jeu est en pause.
+            var deltaTime = Time.timeScale > 0f ? Time.unscaledDeltaTime : 0f;
             if (IsRunning)
             {
                 // Le cercle rétrécit à vitesse constante, puis attend au bout de l'anneau : il ne recommence plus (sauf la
@@ -265,7 +267,7 @@ namespace Archery.Bows
                 var held = grade == ShotGrade.Held;
                 if (held && !m_WasHeld)
                 {
-                    m_HeldSince = Time.time;
+                    m_HeldSince = Time.unscaledTime;
                     HoldEntered?.Invoke();
                 }
                 else if (!held)
@@ -290,7 +292,7 @@ namespace Archery.Bows
                                                       k_AllPerfectFadeSpeed * Time.unscaledDeltaTime);
             }
 
-            var visible = IsRunning || Time.time < m_VisibleUntil;
+            var visible = IsRunning || Time.unscaledTime < m_VisibleUntil;
             m_Alpha = Mathf.MoveTowards(m_Alpha, visible ? 1f : 0f, (visible ? m_FadeInSpeed : m_FadeOutSpeed) * deltaTime);
 
             if (m_Renderer == null)

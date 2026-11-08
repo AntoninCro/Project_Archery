@@ -117,7 +117,7 @@ MonoBehaviour:
     levelUpText: "{+1 fl\xE8che|+2 fl\xE8ches|+3 fl\xE8ches} \xE0 chaque tir"
     kind: 0
     slot: 4
-    rarity: 1
+    rarity: 3
     effect: 7
     trigger: 0
     value: 1
@@ -161,7 +161,7 @@ MonoBehaviour:
     levelUpText: "{1 \xE9cho|2 \xE9chos|3 \xE9chos}"
     kind: 0
     slot: 4
-    rarity: 2
+    rarity: 3
     effect: 15
     trigger: 0
     value: 1
@@ -196,7 +196,7 @@ MonoBehaviour:
     levelUpText: "{+1 fl\xE8che|+2 fl\xE8ches|+3 fl\xE8ches} en vol"
     kind: 0
     slot: 3
-    rarity: 1
+    rarity: 3
     effect: 11
     trigger: 0
     value: 1
@@ -207,7 +207,7 @@ MonoBehaviour:
     levelUpText: "{3|6|9} ennemis ; {30 %|60 %|90 %} \u27B6"
     kind: 0
     slot: 1
-    rarity: 2
+    rarity: 3
     effect: 12
     trigger: 0
     value: 3
@@ -272,19 +272,19 @@ MonoBehaviour:
     maxStacks: 1
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Force
-    description: "+12 % \u27B6, fl\xE8ches un peu plus rapides"
-    levelUpText: "+12 % \u27B6 de plus, fl\xE8ches un peu plus rapides"
+    description: "+15 % \u27B6, anneau 7,5 % plus rapide"
+    levelUpText: "+15 % \u27B6 de plus, anneau 7,5 % plus rapide"
     kind: 1
     slot: 0
     rarity: 0
     effect: 21
     trigger: 0
-    value: 0.12
+    value: 0.15
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Adresse
-    description: Anneau 10 % plus rapide, bande verte 10 % plus large
-    levelUpText: Anneau 10 % plus rapide, bande verte 10 % plus large
+    description: "Bande verte 10 % plus large, tirs parfaits +10 % \u27B6"
+    levelUpText: "Bande verte 10 % plus large, tirs parfaits +10 % \u27B6 de plus"
     kind: 1
     slot: 0
     rarity: 0
@@ -294,14 +294,14 @@ MonoBehaviour:
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Vigueur
-    description: +12 PV max
-    levelUpText: +12 PV max de plus
+    description: "+17,5 PV max, fl\xE8ches 17,5 % plus loin"
+    levelUpText: "+17,5 PV max de plus, fl\xE8ches 17,5 % plus loin"
     kind: 1
     slot: 0
     rarity: 0
     effect: 23
     trigger: 0
-    value: 12
+    value: 17.5
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Tir triple
@@ -310,7 +310,7 @@ MonoBehaviour:
     levelUpText: "{3|5|7} fl\xE8ches en \xE9ventail"
     kind: 0
     slot: 4
-    rarity: 1
+    rarity: 3
     effect: 24
     trigger: 0
     value: 2
@@ -323,7 +323,7 @@ MonoBehaviour:
       \xE0 chaque passage"
     kind: 0
     slot: 2
-    rarity: 1
+    rarity: 3
     effect: 25
     trigger: 0
     value: 1
@@ -359,7 +359,7 @@ MonoBehaviour:
     levelUpText: "{80 %|120 %|160 %} \u27B6 par seconde ; {6 s|7,5 s|9 s}"
     kind: 0
     slot: 3
-    rarity: 2
+    rarity: 3
     effect: 28
     trigger: 0
     value: 1
@@ -371,7 +371,7 @@ MonoBehaviour:
     levelUpText: "{100 %|125 %|150 %} \u27B6 ; rayon {3,5 m|4,25 m|5 m}"
     kind: 0
     slot: 1
-    rarity: 1
+    rarity: 3
     effect: 29
     trigger: 0
     value: 1
@@ -390,8 +390,7 @@ MonoBehaviour:
     maxStacks: 3
     icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
   - displayName: "Le style, \xE7a compte aussi"
-    description: "En l'air ou en glissade : le temps ralentit ({\xD70,5|\xD70,4|\xD70,3}),
-      et chaque tir est parfait"
+    description: "En l'air ou en glissade : le temps ralentit ({\xD70,5|\xD70,4|\xD70,3})"
     levelUpText: "Temps {\xD70,5|\xD70,4|\xD70,3} en l'air"
     kind: 0
     slot: 5
@@ -414,9 +413,9 @@ MonoBehaviour:
     maxStacks: 3
     icon: {fileID: 21300000, guid: 90eabcea51674794b3362e63ecc07ebd, type: 3}
   - displayName: Pointe du chasseur
-    description: "Marque la cible : elle prend {200 %|250 %|300 %} \u27B6. \xC0 sa
-      mort, la marque saute"
-    levelUpText: "{200 %|250 %|300 %} \u27B6 sur la cible marqu\xE9e"
+    description: "Le premier ennemi touch\xE9 est marqu\xE9 jusqu'\xE0 sa mort :
+      il prend {200 %|250 %|300 %} \u27B6, d\xE8s le tir qui le marque"
+    levelUpText: "{200 %|250 %|300 %} \u27B6 sur l'ennemi marqu\xE9"
     kind: 0
     slot: 1
     rarity: 0
@@ -562,7 +561,7 @@ MonoBehaviour:
       {10 %|15 %|20 %}"
     kind: 0
     slot: 5
-    rarity: 1
+    rarity: 3
     effect: 46
     trigger: 0
     value: 1
@@ -659,7 +658,7 @@ MonoBehaviour:
     levelUpText: "{80 %|100 %|120 %} \u27B6 au retour"
     kind: 0
     slot: 2
-    rarity: 2
+    rarity: 3
     effect: 53
     trigger: 0
     value: 1
@@ -671,7 +670,7 @@ MonoBehaviour:
     levelUpText: "{30 %|40 %|50 %} \u27B6 par tir ; {5 s|6,5 s|8 s}"
     kind: 0
     slot: 3
-    rarity: 1
+    rarity: 3
     effect: 54
     trigger: 0
     value: 1
@@ -682,7 +681,7 @@ MonoBehaviour:
       {+100 %|+150 %|+200 %})"
     levelUpText: "+1 % \u27B6 par {20|15|10} or ; jusqu'\xE0 {+100 %|+150 %|+200
       %}"
-    kind: 0
+    kind: 2
     slot: 5
     rarity: 0
     effect: 55
@@ -692,9 +691,10 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   rarityOdds:
   - fromWave: 1
-    common: 50
-    rare: 35
-    legendary: 15
+    common: 60
+    rare: 24
+    legendary: 5
+    epic: 11
   minCommonShare: 0.4
   objectOffers: 3
   objectsPerShop: 3
@@ -710,4 +710,5 @@ MonoBehaviour:
   commonColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   rareColor: {r: 0.35, g: 0.6, b: 1, a: 1}
   legendaryColor: {r: 1, g: 0.78, b: 0.2, a: 1}
+  epicColor: {r: 0.72, g: 0.42, b: 1, a: 1}
   scrollColor: {r: 0.95, g: 0.82, b: 0.58, a: 1}

@@ -9,6 +9,13 @@ namespace Archery.Upgrades
         Common,
         Rare,
         Legendary,
+
+        /// <summary>
+        /// Épique, entre rare et légendaire (8 novembre au soir, le joueur : une quatrième rareté, en violet, pour tout le jeu).
+        /// À la fin : les raretés sont enregistrées par leur numéro dans les assets. L'ordre se lit par
+        /// <c>ShopCatalog.Rank</c>.
+        /// </summary>
+        Epic,
     }
 
     /// <summary>

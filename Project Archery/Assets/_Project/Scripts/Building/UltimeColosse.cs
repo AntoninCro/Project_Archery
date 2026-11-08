@@ -958,13 +958,9 @@ namespace Archery.Building
         // Un éclat de fonte saute du lingot sur un ennemi au sol à sa portée, au hasard (dans l'arène : sur MK).
         void LaunchChunk(Vector3 from)
         {
+            // (Dans l'arène, plus d'éclats sur MK depuis le 8 novembre au soir : seulement le lingot qui le cloue.)
             if (InArena)
-            {
-                var dragon = ArenaDragon();
-                if (dragon != null)
-                    Throw(ShotKind.Chunk, from, null, dragon, dragon.BodyPoint, true);
                 return;
-            }
 
             var near = EnemiesNear(transform.position, m_Range * RangeScale);
             if (near.Count == 0)
@@ -994,13 +990,11 @@ namespace Archery.Building
             if (!hit.IsShot || !IsBuilt || IsUnderConstruction || !m_Awake)
                 return;
 
+            // Dans l'arène, plus d'action à chaque flèche sur MK (8 novembre au soir, le joueur : il a tué MK d'une traite, cloué
+            // au sol ; « les ultimes devraient uniquement faire leurs effets uniques sur MK ») : seulement l'effet unique, tous les
+            // TowerUltimate.MkUniqueInterval s au moins.
             if (InArena)
-            {
-                var dragon = hit.Collider != null ? hit.Collider.GetComponentInParent<DragonBoss>() : null;
-                if (dragon != null)
-                    Enqueue(null, dragon, hit.Point, ShotPower(hit));
                 return;
-            }
 
             var flat = hit.Point - transform.position;
             flat.y = 0f;
@@ -1555,7 +1549,7 @@ namespace Archery.Building
             HurtShare(dragon.GetComponentInParent<Enemy>(), m_PinBossShare, point);
             if (dragon.Pin(m_PinTime))
             {
-                m_NextPin = Time.time + m_PinInterval;
+                m_NextPin = Time.time + Mathf.Max(m_PinInterval, MkUniqueInterval);
                 HeadMessages.Show("Plaqué au sol !", k_Title, 2f);
             }
 

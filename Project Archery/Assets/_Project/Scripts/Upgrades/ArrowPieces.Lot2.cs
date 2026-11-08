@@ -48,10 +48,11 @@ namespace Archery.Upgrades
         const float k_SplinterSpeed = 0.8f;
 
         // Pointe de chasseur : les dégâts en plus sur la cible marquée (1 : le double) et par niveau (+100/150/200 % depuis le
-        // 26 octobre, réglage du joueur) ; la distance (m) où saute la marque.
+        // 26 octobre, réglage du joueur). Depuis le 8 novembre au soir (le joueur : « c'est censé être une augment vraiment
+        // monocible »), la marque reste sur un seul ennemi jusqu'à sa mort (avant, chaque ennemi touché la reprenait) et ne saute
+        // plus (avant, sur le plus proche à 12 m) ; le tir qui marque fait déjà les dégâts en plus.
         const float k_MarkBonus = 1f;
         const float k_MarkBonusPerLevel = 0.5f;
-        const float k_MarkJump = 12f;
 
         // Bourreau : la part de ses PV sous laquelle une tête touchée meurt, aux niveaux 1, 2 et 3, pour un ennemi et pour un boss
         // (26 octobre, réglages du joueur : les boss aussi) ; l'explosion de sa tête (part de la flèche, rayon). Les dégâts de la
@@ -1013,7 +1014,7 @@ namespace Archery.Upgrades
             var splinter = Level(UpgradeEffect.Splinter);
             if (splinter > 0 && !flight.IsChild)
                 SpawnSplinters(hit, splinter);
-            if (Level(UpgradeEffect.HunterMark) > 0 && enemy.IsAlive)
+            if (Level(UpgradeEffect.HunterMark) > 0 && enemy.IsAlive && !HasLiveMark)
                 SetMark(enemy);
             if (Level(UpgradeEffect.Executioner) > 0)
                 TryExecute(enemy, hit, hit.Collider.TryGetComponent(out Hitbox hitbox) && hitbox.Zone == HitZone.Head);
@@ -1145,14 +1146,23 @@ namespace Archery.Upgrades
             DrawCircle(m_MarkRing, m_Marked.Center + Vector3.up * 1.1f, radius, k_MarkColor, 0.95f);
         }
 
-        // Tout ce qui touche la cible marquée fait plus de dégâts (une seconde fois, sans repasser ici).
+        // Une marque est posée sur un ennemi encore en vie : elle y reste jusqu'à sa mort.
+        bool HasLiveMark => m_Marked != null && m_Marked.IsAlive;
+
+        // Tout ce qui touche la cible marquée fait plus de dégâts (une seconde fois, sans repasser ici). Sans marque, le premier coup
+        // du joueur sur un ennemi le marque, et compte déjà (8 novembre au soir).
         void OnEnemyDamaged(Enemy enemy, DamageInfo info)
         {
-            if (m_InMarkBonus || enemy == null || enemy != m_Marked || info.Amount <= 0f)
+            if (m_InMarkBonus || enemy == null || info.Amount <= 0f)
                 return;
 
             var level = Level(UpgradeEffect.HunterMark);
             if (level == 0)
+                return;
+
+            if (!HasLiveMark && enemy.IsAlive && Enemy.IsPlayerHit(info) && !enemy.IsAlly && !enemy.IsTrainingDummy)
+                SetMark(enemy);
+            if (enemy != m_Marked)
                 return;
 
             m_InMarkBonus = true;
@@ -1169,20 +1179,14 @@ namespace Archery.Upgrades
             }
         }
 
-        // À sa mort, la marque saute sur l'ennemi le plus proche.
+        // À sa mort, la marque disparaît (8 novembre au soir : elle sautait sur l'ennemi le plus proche) ; le prochain ennemi
+        // touché sera marqué.
         void OnEnemyKilled(Enemy enemy, DamageInfo info)
         {
             if (enemy == null || enemy != m_Marked)
                 return;
 
-            m_Exclude.Clear();
-            m_Exclude.Add(enemy);
-            var next = SpecialArrows.NearestEnemy(enemy.Center, k_MarkJump, m_Exclude);
-            m_Marked = null;
-            if (next != null)
-                SetMark(next);
-            else
-                SetMark(null);
+            SetMark(null);
         }
 
         // ---------------------------------------------------------------- corde du faucon, œil de faucon
@@ -1415,7 +1419,7 @@ namespace Archery.Upgrades
             if (enemy == null)
                 return;
 
-            if (Level(UpgradeEffect.HunterMark) > 0 && enemy.IsAlive)
+            if (Level(UpgradeEffect.HunterMark) > 0 && enemy.IsAlive && !HasLiveMark)
                 SetMark(enemy);
             if (Level(UpgradeEffect.Executioner) > 0)
                 TryExecute(enemy, hit, zone == HitZone.Head);

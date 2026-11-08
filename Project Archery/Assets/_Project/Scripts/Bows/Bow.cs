@@ -321,6 +321,14 @@ namespace Archery.Bows
         // (largeur du vert) s'y ajoute au lancement de l'anneau.
         public float SpeedMultiplier { get; set; } = 1f;
         public float DamageMultiplier { get; set; } = 1f;
+
+        /// <summary>Les dégâts des tirs parfaits, en plus (8 novembre : les parchemins d'adresse, +20 % chacun).</summary>
+        public float PerfectDamageMultiplier { get; set; } = 1f;
+
+        /// <summary>Les dégâts d'un tir de cette qualité (le réglage des tirs), avec le bonus des tirs parfaits.</summary>
+        public float GradeDamage(ShotGrade grade) =>
+            Tuning.Get(grade).damage * (grade == ShotGrade.Perfect ? Mathf.Max(0f, PerfectDamageMultiplier) : 1f);
+
         public float RingSpeedMultiplier { get; set; } = 1f;
         public float BandWidthMultiplier { get; set; } = 1f;
         public float GoldWidthMultiplier { get; set; } = 1f;
@@ -353,7 +361,7 @@ namespace Archery.Bows
         /// Dégâts d'un coup de flèche au corps à corps (GDD, section 4.5) : ceux d'un tir de cette qualité
         /// à pleine tension, bonus de dégâts compris.
         /// </summary>
-        public float MeleeDamage(ShotGrade grade) => Def.damage * Tuning.Get(grade).damage * DamageMultiplier;
+        public float MeleeDamage(ShotGrade grade) => Def.damage * GradeDamage(grade) * DamageMultiplier;
 
         protected override void Awake()
         {
@@ -572,7 +580,7 @@ namespace Archery.Bows
             var modifiers = Tuning.Get(grade);
             var power = Def.drawToPower.Evaluate(ratio);
             var speed = Def.arrowSpeed * power * modifiers.speed * SpeedMultiplier;
-            var damage = Def.damage * power * modifiers.damage * DamageMultiplier * charge;
+            var damage = Def.damage * power * GradeDamage(grade) * DamageMultiplier * charge;
             var origin = arrow.transform.position;
             var trailColor = grade == ShotGrade.None ? new Color(1f, 1f, 1f, 0.5f) : modifiers.color;
 
@@ -627,7 +635,7 @@ namespace Archery.Bows
             var def = Def;
             var modifiers = Tuning.Get(grade);
             var power = def.drawToPower.Evaluate(ratio);
-            var damage = def.damage * power * modifiers.damage * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier) * charge;
+            var damage = def.damage * power * GradeDamage(grade) * DamageMultiplier * Mathf.Max(0f, def.laserDamageMultiplier) * charge;
             var direction = m_AimDirection;
             var start = arrow.TipPosition;
 
