@@ -272,14 +272,14 @@ MonoBehaviour:
     maxStacks: 1
     icon: {fileID: 21300000, guid: a7788351226f46a09216a46f09b373bc, type: 3}
   - displayName: Force
-    description: "+15 % \u27B6, anneau 7,5 % plus rapide"
-    levelUpText: "+15 % \u27B6 de plus, anneau 7,5 % plus rapide"
+    description: "+10 % \u27B6, anneau 10 % plus rapide"
+    levelUpText: "+10 % \u27B6 de plus, anneau 10 % plus rapide"
     kind: 1
     slot: 0
     rarity: 0
     effect: 21
     trigger: 0
-    value: 0.15
+    value: 0.1
     maxStacks: 0
     icon: {fileID: 21300000, guid: 535cf88a039c4b82817da0410b95ef35, type: 3}
   - displayName: Adresse
@@ -629,9 +629,10 @@ MonoBehaviour:
     maxStacks: 3
     icon: {fileID: 21300000, guid: c799948e8116454a93b70c8de152fba5, type: 3}
   - displayName: "Corde fant\xF4me"
-    description: "Juste apr\xE8s un tir, tire la corde \xE0 vide : une fl\xE8che
-      fant\xF4me part ({120 %|150 %|200 %} \u27B6)"
-    levelUpText: "{120 %|150 %|200 %} \u27B6"
+    description: "Apr\xE8s un tir, une fl\xE8che fant\xF4me se pose sur la corde
+      : prends-la et tends la corde, elle part comme ton dernier tir (+20 % \u27B6)
+      ; {1 fois|2 fois|sans fin}"
+    levelUpText: "{1 fl\xE8che fant\xF4me|2 fl\xE8ches fant\xF4mes|sans fin}"
     kind: 0
     slot: 4
     rarity: 1
@@ -691,10 +692,30 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 3b7b7465c49e4fd297bc4e4bdeb2cd4c, type: 3}
   rarityOdds:
   - fromWave: 1
+    common: 65
+    rare: 22
+    legendary: 4
+    epic: 9
+  - fromWave: 2
     common: 60
     rare: 24
     legendary: 5
     epic: 11
+  - fromWave: 3
+    common: 55
+    rare: 26
+    legendary: 6
+    epic: 13
+  - fromWave: 4
+    common: 50
+    rare: 28
+    legendary: 7
+    epic: 15
+  - fromWave: 5
+    common: 45
+    rare: 30
+    legendary: 8
+    epic: 17
   minCommonShare: 0.4
   objectOffers: 3
   objectsPerShop: 3

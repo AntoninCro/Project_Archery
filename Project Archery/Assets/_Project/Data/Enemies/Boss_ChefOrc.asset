@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Francine
   maxHealth: 551
-  moveSpeed: 1.7
+  moveSpeed: 3
   attackDamage: 75
   attackRange: 3.4
   attackInterval: 2.4

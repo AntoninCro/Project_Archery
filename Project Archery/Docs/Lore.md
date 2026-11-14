@@ -453,6 +453,7 @@ Le reflet apprend de toi : **la fin dépend de la façon dont tu as joué**. Pis
   - **la caméra** : comme dans *Kinito Pet*, qui allume la webcam du PC pour prendre le joueur en photo, l'IA prendrait aussi nos vrais mouvements.
 
 **Idées de futurs easter eggs**
+- *Un univers steampunk* (13 novembre, le joueur) : la batte de baseball est steampunk (des tuyaux un peu partout, de la vapeur à chaque coup), pour aller vers un autre univers et s'éloigner un peu du cyberpunk des autres ; « ce qui irait dans le lore du jeu ». La batte pourrait devenir le secret d'un acte 2 (pour l'instant, débloquée dès le départ).
 - *La dimension des étoiles* (le portail) : faite le 18 octobre.
 - *Une ville cyberpunk déchue* (noté le 18 octobre) : une ville un peu déchue, abandonnée, à la cyberpunk.
   - Précisé le 20 octobre (en discussion) : le haut d'un immeuble ; une foule d'ennemis apparaît autour du joueur, ne bouge pas et lui tire dessus ; il faut esquiver les balles ; l'arme : deux armes à flèches, une dans chaque main.

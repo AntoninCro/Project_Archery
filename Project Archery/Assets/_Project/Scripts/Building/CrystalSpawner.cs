@@ -7,7 +7,6 @@ using Archery.Player;
 using Archery.UI;
 using Archery.Waves;
 using UnityEngine;
-using UnityEngine.AI;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using UnityEngine.InputSystem;
 #endif
@@ -53,9 +52,15 @@ namespace Archery.Building
         [Header("Les gardiens (4 novembre)")]
         [Tooltip("Chaque coffre de la vague a ses gardiens : des ennemis de la vague (au sol), là dès l'apparition du coffre, qui " +
                  "vadrouillent autour au hasard en faisant des pauses, et attaquent le joueur qui approche (l'idée du joueur, 4 novembre : " +
-                 "les coffres étaient « une randonnée »). Le coffre n'est pas verrouillé : on peut foncer dessus, au prix de ses PV.")]
+                 "les coffres étaient « une randonnée »).")]
         [SerializeField]
         bool m_Guards = true;
+
+        [Tooltip("Le coffre est scellé tant que ses gardiens vivent (12 novembre, le joueur : courir prendre tous les coffres sans un " +
+                 "coup était trop simple ; et sans bon arc, pas de coffre, donc pas de bonne tourelle). Décoché : le coffre libre du " +
+                 "4 novembre, qu'on pouvait ouvrir en fonçant, au prix de ses PV.")]
+        [SerializeField]
+        bool m_SealedByGuards = true;
 
         [Tooltip("Gardiens par coffre, vague par vague (le dernier vaut pour les suivantes).")]
         [SerializeField]
@@ -250,7 +255,11 @@ namespace Archery.Building
                 var crate = SpawnAt(spot.position, tower);
                 spawned++;
                 if (m_Guards && crate != null)
-                    SpawnGuards(crate.transform.position);
+                {
+                    var guards = SpawnGuards(crate.transform.position);
+                    if (m_SealedByGuards && guards.Count > 0)
+                        crate.SealWith(guards);
+                }
             }
 
             if (spawned == 0)
@@ -263,44 +272,54 @@ namespace Archery.Building
                 Sfx.Play(m_AppearClip, PlayerPosition() + Vector3.up, 0.8f, 1f, 0f);
             var side = m_Side < 0 ? "gauche" : "droit";
             var title = spawned == 1 ? $"Un coffre est apparu, côté {side} !" : $"{spawned} coffres sont apparus, côté {side} !";
-            Announce(title + "\n<size=70%>Vu de la tour, face aux ennemis ; un parchemin, une tourelle, un objet</size>");
+            Announce(title + (m_Guards && m_SealedByGuards
+                ? "\n<size=70%>Vu de la tour, face aux ennemis ; scellés : tue leurs gardiens pour les ouvrir</size>"
+                : "\n<size=70%>Vu de la tour, face aux ennemis ; un parchemin, une tourelle, un objet</size>"));
         }
 
         // ---------------------------------------------------------------- les gardiens (4 novembre)
 
         // Ses gardiens apparaissent avec le coffre, au hasard autour de lui (le joueur, 4 novembre : « ils sont là dès le début et
         // vadrouillent un peu au hasard en prenant des pauses de temps en temps » ; d'abord, ils sortaient des fourrés à son approche).
-        void SpawnGuards(Vector3 chest)
+        // Ils scellent le coffre (12 novembre) : la liste est rendue pour lui.
+        List<Enemy> SpawnGuards(Vector3 chest)
         {
+            var guards = new List<Enemy>();
             var wave = Mathf.Max(1, m_Waves.WaveNumber);
             var count = m_GuardsPerWave != null && m_GuardsPerWave.Length > 0
                 ? m_GuardsPerWave[Mathf.Clamp(wave - 1, 0, m_GuardsPerWave.Length - 1)]
                 : 2;
 
             var spawned = 0;
+            Enemy.TakeGuardRefusals();
             for (var i = 0; i < count; i++)
             {
                 var prefab = PickGuard(wave);
                 if (prefab == null)
                     break;
-                var offset = Random.insideUnitCircle.normalized * Random.Range(2f, Mathf.Max(2.5f, m_GuardRadius));
-                var point = chest + new Vector3(offset.x, 0f, offset.y);
-                if (!NavMesh.SamplePosition(point, out var hit, 3f, NavMesh.AllAreas) &&
-                    !NavMesh.SamplePosition(chest, out hit, 4f, NavMesh.AllAreas))
+                // Au sol à l'air libre, relié à la tour, hors des voies si possible (12 novembre, le soir : un gardien apparaissait
+                // parfois sur la voie, ou sous la carte, introuvable ; Enemy.TryGuardPoint). Sans bon point, un gardien de moins.
+                if (!Enemy.TryGuardPoint(chest, 2f, Mathf.Max(2.5f, m_GuardRadius), true, out var point))
                     continue;
 
-                var enemy = Instantiate(prefab, hit.position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
+                var enemy = Instantiate(prefab, point, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
                 if (!enemy.Guard(chest, m_GuardRadius, m_GuardAggro, m_GuardLeash, false))
                 {
                     Destroy(enemy.gameObject);
                     continue;
                 }
 
+                guards.Add(enemy);
                 spawned++;
             }
 
+            // Moins de gardiens que prévu (12 novembre : le premier jet des points au sol n'en faisait plus apparaître aucun) : un
+            // avertissement, compté au bilan du journal de partie, avec les raisons des refus.
+            if (spawned < count)
+                Debug.LogWarning($"CrystalSpawner : {spawned} gardien(s) sur {count} pour un coffre ({Enemy.TakeGuardRefusals()}).", this);
             if (spawned > 0)
                 GuardsCameOut?.Invoke(spawned, chest);
+            return guards;
         }
 
         // Un ennemi de cette vague, au sol (pas un volant, ni un boss), tiré au sort selon son poids, comme ceux des voies.

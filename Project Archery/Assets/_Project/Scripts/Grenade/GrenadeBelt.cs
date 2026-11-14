@@ -58,6 +58,17 @@ namespace Archery.Grenades
         [SerializeField]
         float m_MinCooldown = 4f;
 
+        [Tooltip("Avec la batte de baseball (13 novembre, le joueur : « le temps de recharge de la grenade est divisé par 5 ») : " +
+                 "la recharge de base, en secondes. L'Adresse la raccourcit (+20 % de cadence par parchemin commun).")]
+        [Min(0.5f)]
+        [SerializeField]
+        float m_BatCooldown = 3f;
+
+        [Tooltip("Avec la batte : la recharge minimale, quelles que soient les améliorations.")]
+        [Min(0.3f)]
+        [SerializeField]
+        float m_BatMinCooldown = 1.5f;
+
         [Header("Retours")]
         [Tooltip("Petite vibration quand une main vide entre dans la zone (une toutes les 2 s au plus : en courant, les " +
                  "bras balancés y passent sans arrêt).")]
@@ -70,6 +81,7 @@ namespace Archery.Grenades
         const float k_EnterPulseInterval = 2f;
 
         PlayerRig m_Rig;
+        Archery.Bows.Bow m_Bow;
         ArrowGrenade m_Held;
         float m_LastEnterPulse = float.NegativeInfinity;
         float m_Remaining;
@@ -87,11 +99,18 @@ namespace Archery.Grenades
 
         public bool IsReady => m_Remaining <= 0f && m_Held == null;
 
+        /// <summary>La grenade de la ceinture (la batte en fait sa grenade fantôme, 13 novembre).</summary>
+        public ArrowGrenade GrenadePrefab => m_GrenadePrefab;
+
         // Le talisman de la super grenade (26 octobre) : la recharge raccourcie de 50 % au niveau 1, et de 10 % de plus par niveau.
         const float k_SuperGrenadeCooldown = 0.5f;
         const float k_SuperGrenadeCooldownPerLevel = 0.1f;
 
-        /// <summary>Recharge actuelle, améliorations « Grenade rapide » (retirée) et « Super grenade » comprises.</summary>
+        /// <summary>
+        /// Recharge actuelle, améliorations « Grenade rapide » (retirée) et « Super grenade » comprises. Avec la batte de baseball
+        /// (13 novembre) : 3 s au lieu de 15, et l'Adresse l'accélère comme la cadence des bâtiments (la recharge divisée par
+        /// 1 + son bonus : 2,5 s avec un parchemin commun), jusqu'à 1,5 s.
+        /// </summary>
         public float Cooldown
         {
             get
@@ -101,7 +120,23 @@ namespace Archery.Grenades
                 var super = upgrades != null ? upgrades.Stacks(UpgradeEffect.SuperGrenade) : 0;
                 if (super > 0)
                     reduction = Mathf.Max(reduction, k_SuperGrenadeCooldown + k_SuperGrenadeCooldownPerLevel * (super - 1));
-                return Mathf.Max(m_MinCooldown, m_BaseCooldown * (1f - Mathf.Clamp01(reduction)));
+
+                if (!BatEquipped)
+                    return Mathf.Max(m_MinCooldown, m_BaseCooldown * (1f - Mathf.Clamp01(reduction)));
+
+                var dexterity = upgrades != null ? Mathf.Max(0f, upgrades.Total(UpgradeEffect.Dexterity)) : 0f;
+                return Mathf.Max(m_BatMinCooldown, m_BatCooldown * (1f - Mathf.Clamp01(reduction)) / (1f + dexterity));
+            }
+        }
+
+        // La batte de baseball est l'arme du joueur (l'arc est cherché une fois, puis gardé).
+        bool BatEquipped
+        {
+            get
+            {
+                if (m_Bow == null)
+                    m_Bow = FindAnyObjectByType<Archery.Bows.Bow>();
+                return m_Bow != null && m_Bow.IsBat;
             }
         }
 

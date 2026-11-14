@@ -399,6 +399,8 @@ namespace Archery.Journal
             var space = type.Namespace ?? "";
             if (type.Name.Contains("Katana") || type.Name.Contains("Rift"))
                 return "Joueur : katana";
+            if (type.Name == "BaseballBat")
+                return "Joueur : batte";
             if (space.EndsWith(".Grenade"))
                 return "Joueur : grenade";
             if (space.EndsWith(".Upgrades"))

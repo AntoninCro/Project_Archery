@@ -3988,3 +3988,231 @@ au casque, `…_16h52m05.md` au clavier) :
 - **Une piste notée** (le joueur) : un style « extraction shooter » pour la deuxième partie du jeu (GDD, section 24).
 
 Compilé ; **pas encore vu dans Unity ni testé au casque**.
+
+### 12.74 Le neuvième essai : les coffres scellés, les tours −25 %, l'Horloge, la porte de l'antre (12 novembre)
+
+La partie du 12 novembre (Normal, au casque ; `Logs/Parties/Partie_2026-11-12_19h00m54.md`) : victoire, MK tué en 1:36 (17:17),
+puis la vague 7 du mode infini ; jamais mort (au plus bas 61/127 PV, vague 3), la tour n'a perdu que 178 PV sur la partie, chaque
+boss des vagues tombe en 20 à 27 s, les 4 coffres ouverts à chaque vague. **Ce que le journal montre** : MK à 20 291 PV, ses trois
+phases à 66 % et 33 % (12.68 et 12.70 vérifiés) ; la vague 1 à 18 ennemis (24 ou 25 le 8 novembre : 12.73 vérifié) ; les
+bâtiments font 83 % des dégâts (l'Avalanche, fusionnée dès la pause de la vague 2, 26 % de la partie et 104 éliminations, plus que
+les 58 du joueur) ; **la Force prise 7 fois sur 12 parchemins** (×14,5 en raretés : ses dégâts ×3,2 pour les flèches et les
+bâtiments, l'anneau deux fois plus rapide) ; **la Grande Horloge prenait les cibles du joueur** : à la vague 7, 74 % des dégâts, et
+4 flèches sur 53 qui touchent (ses flèches arrêtées par Minuit repartaient au moment même où le dégel tuait les figés) ; 21
+parchemins proposés aux pauses, dont 6 épiques et 3 légendaires (2 et 1 attendus à 60 / 24 / 11 / 5 : le catalogue est bien réglé,
+le code tire bien ainsi ; sans doute le hasard) ; 14 plans jamais posés.
+
+**Les retours du joueur, et ce qui est fait** (compilé : le jeu, les outils d'éditeur, aucun champ en double ; **pas encore vu dans
+Unity ni testé au casque**) :
+- **Les coffres scellés** (« depuis que [la course] augmente la vitesse, c'est trop simple de juste courir et prendre tous les coffres
+  sans prendre de dégâts » ; l'idée proposée par Claude le 4 novembre, écartée alors ; « ça permettrait en même temps de remettre l'arc
+  au cœur du jeu : sans bon arc, on ne peut avoir de bonne tourelle, puisqu'on ne peut ouvrir de coffre ») : un coffre de la vague ne
+  s'ouvre qu'une fois ses gardiens tués, par les flèches ou les bâtiments (`Chests/ChestSeal`, `Chest.SealWith`, `ChestLid` ; réglage
+  *Sealed By Guards* du Crystal Spawner). Tant qu'il en reste : le rayon du coffre rouge, l'étiquette « Scellé · N gardiens »
+  au-dessus, qui regarde le joueur ; le couvercle refuse (une petite vibration, l'étiquette grossit et rappelle « Tue ses gardiens
+  pour l'ouvrir ») ; au dernier, « Sceau brisé ! ». Un gardien passé du côté du joueur (le Colisée) ne compte plus. L'annonce des
+  coffres le dit (« scellés : tue leurs gardiens pour les ouvrir ») ; le tutoriel aussi (`Editor/NinthTestBaker`). Claude n'a trouvé
+  aucune amélioration qui accélère la course : à demander au joueur ce qu'il appelle « l'agilité ».
+- **Les tours −25 %** (« les tourelles faisaient effectivement trop de dégâts […] nerf quand même les dégâts des tourelles de 25 % ») :
+  la *Structure Power* de chaque difficulté ×0,75 : 0,38 / 0,45 / 0,73 / 1,07 (Facile, Normal, Difficile, Impossible ; duos, trios et
+  ultimes compris ; `Editor/NinthTestBaker`).
+- **La Force** (« nerf vers la prochaine valeur ronde ») : +15 % → **+10 %** de dégâts ; puis, le même soir, « vitesse de l'anneau à
+  10 % aussi » : l'anneau 7,5 % → **10 %** plus rapide (autant que les dégâts, la moitié avant : `PlayerUpgrades.StrengthRingShare`, 1) ;
+  la commune, ×1,5 à ×3 selon la rareté ; le texte de la carte suit (`ShopCatalog.ScrollText`, `Editor/NinthTestBaker`).
+  `RaretesBaker` ne la remet pas à 0,15 (il ne change que 0,3 et 0,12).
+- **La Grande Horloge** (« nerf par 3 ses dégâts à la fin du dégel : c'est une tourelle de contrôle avant tout ; et fais bien que les
+  flèches tirées […] partent dans leur direction à la fin du dégel ») : le dégel ÷3 (350 → 117 sur la carte, 2 % → 0,67 % des PV d'un
+  boss, 3 % → 1 % de ceux de MK ; `Editor/NinthTestBaker`) ; au douzième coup, **tes flèches arrêtées repartent d'abord**, chacune à sa
+  vitesse et dans sa direction, et les figés le restent **0,5 s** (préparés, gelés : tes flèches y font plus mal) ; le dégel ne les
+  brise qu'ensuite (`UltimeHorloge.ReleaseArrows`, `UpdateThaw`, *k_ArrowLead*). **La musique du boss final ne s'arrête plus** pendant
+  Minuit dans l'arène (« le fait qu'elle s'arrête en plein milieu retire beaucoup à l'ambiance ») : le silence de Minuit reste sur la carte.
+- **Les ultimes dans l'arène attendent** (« l'Horloge attaque MK avant que les lumières de la salle se soient allumées ; c'est le cas
+  pour toutes les tours ultimes ») : ArenaTurrets les rallume au début du combat ; jusque-là, le Colosse plaquait MK au premier grand
+  coup et le Manège chargeait tout de suite (leurs minuteurs étaient à zéro). Maintenant, leur premier effet unique vient
+  **MkUniqueInterval (15 s) au plus tôt après le début du combat** : le Colosse (`m_NextPin`), le Manège (`m_NextArenaCharge`),
+  l'Horloge (son compte jusqu'au XII, même surchargée par le talisman). Si le joueur voit encore une ultime agir trop tôt, lui demander
+  ce qu'il voit (les ultimes sont éteintes pendant l'intro : rien ne devrait partir avant le combat).
+- **Le chantier du début** (« on retire l'idée du trio + barricade au début et on garde que le trio, pour comprendre facilement
+  l'ultime ; peut-être que je retirerai cette fonctionnalité entière plus tard ») : les 3 tours d'un trio, sans la Barricade
+  (`BuildManager`, *k_StartingStructures* ; le réglage *Extra Starting Structures* est retiré).
+- **Le gong** (« j'ai bien tapé le gong pendant la partie, deux fois je crois ; c'est le code qui ne le remarque pas ») : il avait
+  marché (la montée des vagues 4 et 7 n'a duré que 15 et 17 s, 29 s aux autres), mais rien ne le montrait : le journal écrivait toujours
+  « le chrono est fini », et la carte rendue plus rare n'était pas signalée. Maintenant : « le boss est appelé au gong » dans le journal,
+  et la carte plus rare de chaque ligne dit « Prendre · gong » (le journal la marque « [gong] » ; `ShopManager.MarkBoosted`).
+- **La porte de l'antre** : le message dit d'**entrer dans la porte** (« entre dans la porte pour affronter le dragon ») ; **des
+  particules** à l'ouverture (des gerbes d'étincelles et de flammes de la fente qui s'élargit, un souffle de feu grande ouverte, puis
+  des braises et des bouffées de flammes : `FinalBoss/LairGate.Opening.cs`) ; **les battants qui scintillaient** (« deux textures l'une
+  entre les autres ») : Claude a lu le modèle (`Resources/Lair/Arch_Door.fbx`, un petit lecteur de FBX en Python) : ses matériaux
+  *Wood* et *DarkWood* ont des faces presque confondues (0,6 à 2 mm) sur la face des battants ; le bois clair est épaissi de 6 %
+  (`LairGate.Swell`) ; **les deux barres de la grotte** : sans doute la fine bande de pierre éclairée (2 cm) entre le cadre et le noir
+  du couloir, de chaque côté : le noir commence maintenant 3 mm derrière le cadre ; **le court éclair blanc** quand la porte se
+  referme et qu'on se colle au mur du fond (on passait au travers du noir pendant le fondu) : le noir est fait d'un coup à 0,6 m du
+  fond (`LairGate.HeadNearBack`, `FinalBossDirector`).
+
+**Les raretés.** Le joueur trouve qu'il a eu trop d'épiques et de légendaires, et demandait d'abord si un programme augmente encore la
+chance au fil de la partie. Réponse : pour les objets et les parchemins, non (une seule ligne de chances, 60 / 24 / 11 / 5, toute la
+partie ; aucune pièce de chance prise) ; **pour les tourelles, oui** : le nombre de plans d'une orbe (donc sa couleur : 3 plans épique,
+4 légendaire) monte avec les vagues (*Plan Chances* du Build Manager, 12.63 : à la vague 5, 35 % de 3 plans et 20 % de 4).
+Sa décision : « prends 70 / 20 / 7 / 3 pour tout et augmente comme pour les tourelles progressivement au cours de la partie (fais en
+sorte qu'en moyenne on arrive au même nombre de légendaires, d'épiques, etc. qu'actuellement) ; si on applique cela partout, ça ne
+changera que les tours, qui seront légèrement nerf ». Codé (`Editor/NinthTestBaker` ; les valeurs par défaut du code suivent) :
+
+| Vague | Commune | Rare | Épique | Légendaire | Plans par orbe (moyenne) |
+|---|---|---|---|---|---|
+| 1 | 70 | 20 | 7 | 3 | 1,43 |
+| 2 | 65 | 22 | 9 | 4 | 1,52 |
+| 3 | 60 | 24 | 11 | 5 | 1,61 |
+| 4 | 55 | 26 | 13 | 6 | 1,70 |
+| 5 et après | 50 | 28 | 15 | 7 | 1,79 |
+| **Moyenne des 5** | **60** | **24** | **11** | **5** | **1,61** |
+
+- **Objets et parchemins** (`ShopCatalog.rarityOdds`, une ligne par vague) : la moyenne sur les 5 vagues à coffres (une pause après
+  chacune, le même nombre de cartes) reste 60 / 24 / 11 / 5 ; moins de raretés hautes au début, plus à la fin. La pause après MK et les
+  vagues d'après prennent la ligne de la vague 5.
+- **Tourelles** (*Plan Chances* du Build Manager, dans la scène : le baker la change si elle a encore les chances du 4 novembre, puis
+  Ctrl+S) : la même montée, 1 plan commun, 2 rare, 3 épique, 4 légendaire. **Le nerf n'est pas léger** : 1,6 plan par orbe en
+  moyenne au lieu de 2,2 (−27 % de plans), épiques et légendaires 16 % des orbes au lieu de 35 %. Le joueur l'a voulu (« le nerf de
+  rareté + des tourelles devrait résoudre le problème ») ; ajouté au −25 % de dégâts et aux coffres scellés, le tower defense
+  s'affaiblit beaucoup d'un coup : regarder au journal la part des bâtiments et leur niveau à la vague 5 ; s'ils ne suivent plus,
+  remonter d'abord les plans des tourelles seules. Prévenu de l'ampleur (−27 % de plans), le joueur garde ce nerf pour l'essai
+  (« Oui, on essaie », 12 novembre).
+- La chance (`UpgradeEffect.Luck`) et le gong (une carte par ligne d'un cran plus rare, d'un plan de plus) restent par-dessus.
+
+### 12.75 Une courte partie : les hitbox des petits ennemis, les gardiens sous la carte, les boss trop lents (12 novembre au soir)
+
+Le joueur a fait une courte partie avant de partir (`Logs/Parties/Partie_2026-11-12_21h52m44.md` : Normal, au casque, arrêtée à la
+pause de la vague 3). Le baker du neuvième essai a bien tourné (« 11 réglage(s) changé(s) »), mais **la scène n'a pas été
+enregistrée** : les plans des tourelles de la scène, dans le fichier, sont encore ceux du 4 novembre (la partie a joué avec les
+nouveaux, en mémoire). Le baker les remettra à la prochaine ouverture de Unity tant que la scène n'est pas enregistrée : Ctrl+S.
+
+Au journal : à la vague 1, **un coffre est resté scellé** (8 gardiens, 7 tués ; il en restait 1 à trouver), et le joueur a perdu
+40 PV contre un Rampant « alors qu'il n'y avait aucun ennemi à proximité » ; à la vague 3, aucun des 4 coffres ouvert (4 gardiens
+tués sur 12). Les raretés qui montent se voient : 1 et 3 plans aux premières pauses, plus de communes.
+
+Ses trois retours, codés le soir même (compilé ; **pas encore vu dans Unity ni testé au casque**) :
+
+- **« Retravailler la hitbox des petits ennemis comme le slime ou le champignon, ainsi que le soldat de base : elles sont trop
+  petites, on passe souvent à travers ; et les champignons qui sautillent sont intenables, puisque leurs hitbox ne suivent pas
+  leurs sauts. »** Mesuré dans leurs FBX (les bornes du maillage, à l'échelle du prefab) : le champignon fait 1,48 m de large au
+  chapeau et 1,21 m de haut en jeu, ses zones couvraient 0,73 m (le corps) et 0,84 m (la tête) ; le gluant fait 1,27 × 1,22 m, sa
+  boule s'arrêtait à 0,94 m et descendait sous le sol. Et la zone du corps est posée **sur la racine** de l'ennemi (au sol), quand
+  l'animation fait bondir le modèle par ses os : seule la tête, sur un os, suivait le saut. `Editor/HitboxBossBaker` (une fois,
+  gardé sur les anciennes mesures) :
+
+  | Ennemi | Corps : rayon × hauteur (centre) | Tête (rayon, repère de l'os) | Suit ses sauts |
+  |---|---|---|---|
+  | Gluant | 0,546 × 1,092 (0,39) → **0,6 × 1,2 (0,6)** | 0,22 → **0,29** | oui |
+  | Gluant bleu | 0,546 × 1,092 (0,39) → **0,6 × 1,2 (0,6)** | 0,25 → **0,32** | oui |
+  | Champignon | 0,364 × 0,728 (0,358) → **0,5 × 1 (0,5)** | 0,32 → **0,45** (le chapeau) | oui |
+  | Champignon furieux | 0,406 × 0,812 (0,399) → **0,55 × 1,1 (0,55)** | 0,32 → **0,45** | oui |
+  | Fantassin | 0,304 × 1,188 (0,594) → **0,4 × 1,25 (0,625)** | 32 → **38** (os à l'échelle 0,01) | non |
+
+  Le centre du corps (*Center Height* : la visée automatique, les éclairs, les explosions) suit. **Le corps qui suit les sauts**
+  (`Enemy.Hop.cs`, case *Body Follows Hops* de l'Enemy) : à l'apparition, la hauteur de la tête au repos ; après l'animation, la
+  zone du corps monte d'autant que la tête est plus haute (jamais plus bas que sa place, 2,5 m au plus). La taille de la tête de
+  la difficulté (*Head Size*) s'applique toujours par-dessus. Le boss champignon (Thomas), déjà grand, n'est pas touché.
+- **« Les coffres scellés sont une bonne idée, mais les ennemis spawn parfois en dehors de la forêt, sur la voie, et parfois en
+  dessous de la map (à la vague 1, j'ai cherché un ennemi partout sans le trouver, et je me suis pris des dégâts alors qu'il n'y
+  avait aucun ennemi à proximité). »** Les gardiens apparaissaient au point du NavMesh le plus proche d'un point au hasard à 2–5 m
+  du coffre (`NavMesh.SamplePosition`, 3 m de rayon), sans rien vérifier : le NavMesh a des morceaux isolés (sous les dalles du
+  sol, dans les rochers) que cette recherche trouvait parfois avant le sol ; et un ennemi frappe dès qu'il est à portée **à
+  l'horizontale** (`Enemy`), d'où les coups venus d'en dessous. Maintenant (`Enemy.TryGuardPoint`, pour l'apparition et la ronde) :
+  un point du NavMesh **au sol à l'air libre** (à la verticale, aucun dessus tourné vers le haut entre 1 et 8 m au-dessus de lui :
+  ni plante, ni objet qui bouge, ni le joueur), à moins de 2,5 m de hauteur du coffre, **relié aux voies** par le NavMesh (à
+  l'apparition : un chemin complet jusqu'au point d'apparition d'une voie ; si aucun essai ne l'est, un point au sol suffit), et
+  **à 5 m au moins des voies** si l'un des 16 essais l'est (sinon le premier bon point ; sans bon point, un gardien de moins). Et
+  chaque seconde, **un gardien enfoui ou à plus de 6 m de hauteur de son coffre revient près de lui** (`CheckGuardFooting`).
+  **Le premier jet ne faisait plus apparaître aucun gardien** (le joueur, le soir même ; le journal : « gardiens : 0 ») : il
+  voulait un chemin complet jusqu'au point du NavMesh le plus proche de la tour, et regardait 30 m au-dessus de chaque point, tout
+  dessus compris. Or le NavMesh est construit d'après **tous les colliders** de la scène (*NavMeshSurface*, *Physics Colliders*),
+  jusque sur le toit de la tour : ce point-là est sans doute un morceau isolé, qu'aucun chemin n'atteint. Corrigé comme ci-dessus
+  (les voies, 8 m, les dessus seulement). Non vérifié dans Unity : un coffre qui a moins de gardiens que prévu écrit maintenant un
+  avertissement (« CrystalSpawner : N gardien(s) sur M pour un coffre (refus : sans NavMesh, trop haut ou trop bas, sous un
+  dessus, coupé des voies) », compté au bilan du journal) : s'il revient, il dit quelle règle refuse les points.
+- **« Les boss ne font vraiment rien, et la raison est leur vitesse : ils ne sont pas menaçants puisqu'ils vont très lentement ;
+  ils devraient aller plus vite que les ennemis de base. »** Les cinq boss des vagues (`Data/Enemies/Boss_*`, `HitboxBossBaker`),
+  avant la difficulté (en Normal, ×1,3 au sol) : Thomas 1,5 → **3** m/s ; Jean 2,3 → **3,4** ; Gontrand 1 → **2,6** ; Francine
+  1,7 → **3** ; Nolan (qui tire de loin) 1,2 → **2,4**. Les ennemis au sol vont de 1,3 à 3,4 m/s, 2,3 en moyenne. Leur animation de
+  course (*Run Animation Speed* du Boss, 0,35 pour tous) suit leur vitesse : 0,7 ; 0,52 ; 0,91 ; 0,62 ; 0,7. MK n'est pas touché.
+- Puis : **« une flèche qui touche un projectile devrait le traverser sans s'arrêter (à part pour MK) »**. Elle s'y plantait, et
+  disparaissait avec lui. Maintenant (`IArrowPassThrough`, `Arrow.HandleHit`), elle abat le projectile (les points, « Abattu ! »)
+  et poursuit sa route, sans perdre de perçage ni déclencher ses pouvoirs (la pointe explosive, le ricochet… sont pour la cible
+  d'après), et cherche aussitôt ce qui est juste derrière lui, dans le même pas. Les projectiles des tireurs, des liches et de
+  Nolan (`EnemyProjectile`) ; pas les boules de feu de MK (`DragonFireball`), qui l'arrêtent toujours.
+
+À vérifier : la console de Unity dit « Les petits ennemis et les boss (12 novembre, le soir) : 10 réglage(s) changé(s) » ; au
+casque, les flèches ne passent plus au travers des petits ennemis, ni des champignons en plein saut ; aucun gardien sur la voie ni
+introuvable, et chaque coffre s'ouvre ; les boss arrivent vite à la tour : en Normal, en les laissant faire, la tour tient-elle ?
+
+### 12.76 Le dixième essai : la porte, le rayon scellé, le saut, la Tour-aimant, la grenade, la corde fantôme (12 novembre au soir)
+
+La partie de 22:36 (`Logs/Parties/Partie_2026-11-12_22h36m55.md` : Normal, au casque, victoire, MK en 1:09, jamais mort) : les
+gardiens apparaissent tous (56 sur 56, aucun avertissement : le correctif de 12.75 tient) ; 63 % des flèches touchent (40 % à la
+partie de 21:52, avant les hitbox agrandies) ; les boss plus rapides atteignent la tour (Francine, Nolan) mais meurent en 12 à 33 s ;
+**un Mortier fait 59 % des dégâts** de la partie (7 plans de Mortier dès la vague 1 : niveau 5 avant le premier boss ; 68 % contre
+MK) ; un seul duo (Chaîne de forçats, à la fin), ni trio ni ultime. La pause d'avant MK proposait trois parchemins légendaires et un
+objet légendaire (7 % chacun à la vague 5 : une chance sur 3 000 ; rien ne force la rareté, vérifié : à surveiller). Codé le soir
+même (compilé ; **pas encore vu dans Unity ni testé au casque**) :
+
+- **La porte de l'antre, « toujours buguée aux deux endroits »** (la capture du joueur : des taches sombres en haut et en bas de chaque
+  battant ouvert, aux hauteurs des deux bandes de fer). Le modèle est coupé en deux battants (`MeshCut.SplitAtX`), et chaque morceau
+  tranché est refermé par un couvercle plat, tous dans le plan de la coupe : là où la bande de fer entoure les planches, son couvercle
+  (fer sombre) et celui des planches (bois) étaient l'un sur l'autre, au millimètre près, et se disputaient l'écran sur la tranche des
+  battants. Chaque couvercle sort maintenant de la coupe d'une part de son épaisseur (1,5 % : 5 mm au plus) : le morceau le plus
+  épais, qui entoure les autres, passe devant (`MeshCut.k_CapLift`). Vérifié dans le modèle (`Arch_Door.fbx`, lu en Python) : le bois
+  épaissi de 12.74 ne recouvre aucune ferrure.
+- **« Le rayon du coffre doit être plus visible, puisqu'il est devenu rouge »** : le rayon s'ajoute à la lumière derrière lui (shader
+  `Archery/LightBeam`), et un rouge à la même intensité que le blanc d'origine se perdait sur le ciel. Scellé, il est d'un rouge vif
+  plus intense (×3), plus plein, 1,7 fois plus large, et il respire (`ChestSeal`) ; il reprend sa couleur et sa taille au sceau brisé.
+- **« Le saut est un peu trop sensible ; peut-être rajouter un paramètre pour le modifier dans les menus »** : la vitesse des mains
+  qu'il faut pour sauter passe de 1,8 à 2,3 m/s (`Editor/TenthTestBaker`, scène ouverte : Ctrl+S) ; et une ligne **« Sensibilité du
+  saut »** dans les paramètres (copie de celle de la vignette, `SettingsPanel.BuildJumpRow`, enregistrée dans `settings.json`) :
+  « Coupé » au plus bas, 50 % = 2,3 m/s, jusqu'à ×0,62 (1,4 m/s) au plus haut, ×1,55 (3,6 m/s) juste au-dessus de « Coupé ».
+- **« La tour-aimant attire toutes les flèches, cependant elle ne touche pas les points faibles des boss et empêche notre flèche
+  d'atteindre certains ennemis précis ; pareil avec le talisman de l'ingénieur, je ne pouvais pas tirer sur mes tours »** : au niveau 4,
+  elle courbait toute flèche de sa zone vers le centre d'un ennemi. Maintenant, seulement une flèche qui allait manquer
+  (`StructureMagnet.OnCourse`) : celle qui va déjà toucher quelque chose qui réagit aux flèches (un ennemi, une zone, une cible, le
+  gong) file droit ; avec le talisman de l'ingénieur, celle qui traverse un bâtiment aussi. Et une flèche courbée vers un boss vise
+  sa gemme (son point faible, dégâts ×3), plus son corps (`AimPoint`).
+- **« La grenade devient très inutile en fin et en milieu de partie : fais en sorte que chaque flèche de la grenade ait chacune de nos
+  améliorations actuelles »** : chaque flèche de la grenade reçoit ce que reçoit une flèche tirée « très bonne »
+  (`SpecialArrows.PrepareThrown`) : ses effets à l'impact tirés au sort (foudre, explosion, glace), le perçage, le déluge, les pièces
+  de la flèche (pointe, fût, empennage, corde, talisman). Pas ce qui ne joue qu'aux tirs parfaits, ni le multitir, la corde triple et
+  l'écho (ils restent au tir de l'arc : la grenade lance déjà 28 flèches). À surveiller : la fluidité au casque quand une grenade
+  éclate avec beaucoup de pièces (28 flèches, 84 en mega-bomba, chacune avec ses effets).
+- **La corde fantôme refaite** (le joueur : « une flèche transparente est ancrée dans la corde après en avoir tiré une, posée comme si
+  on chargeait l'arc avec elle à 0 % ; on peut la prendre puis tendre la corde comme les flèches classiques, et elle part avec la même
+  puissance que la dernière (parfait, etc.), mais toujours avec un bonus de dégâts ; on peut en tirer 1, 2, à l'infini pour chaque
+  niveau ») : `Upgrades/ArrowPieces.Ghost.cs`, qui remplace l'ancienne (dans `ArrowPieces.Lot3`). Après un tir de l'arc, une flèche du
+  pool, à l'allure d'un hologramme bleu pâle (le shader des hologrammes de l'arène de MK), se pose sur la corde, tournée où l'arc vise ;
+  la main libre qui se ferme près de la corde la prend (`Arrow.TryPutInHand`, comme le carquois), l'arc l'encoche et on la tend ; au
+  lâcher, l'arc reprend la qualité et la tension du dernier vrai tir (`Bow.ForcedShotFor`, nouveau), dégâts **+20 %** à tous les
+  niveaux (les niveaux donnent maintenant le nombre : 1, 2, sans fin ; avant, 120, 150 ou 200 % pour une seule flèche). C'est un vrai
+  tir de l'arc (multitir, écho, pièces). L'anneau tourne mais ne compte pas (tout vert si le dernier tir était parfait). Une vraie
+  flèche encochée efface la fantôme (son tir en redonne) ; lâchée sans tir, la fantôme revient sur la corde. Sans casque : le clic du
+  milieu la tire. Le texte de sa carte suit (`TenthTestBaker`, seulement s'il était encore l'ancien mot pour mot : une proposition).
+  À trancher au casque : sans fin au niveau 3, avec la qualité du dernier tir, c'est très fort (un parfait, puis des parfaits sans
+  viser l'anneau) ; si c'est trop, borner le niveau 3 (par exemple 4 flèches) ou garder la qualité « très bon ».
+
+**L'avis demandé : « la partie m'a paru très fade, pas d'amélioration incroyable ni de construction gigantesque ; peut-être augmenter
+légèrement les drops, en particulier en début de partie ».** Le même soir, quatre réglages ont tous retiré au début de partie : les
+raretés qui partent de 70 / 20 / 7 / 3, 27 % de plans de tourelles en moins (1,4 plan par orbe à la vague 1), les coffres scellés,
+les tours −25 %. Les constructions gigantesques (duos, trios, ultimes) demandent deux ou trois tours montées : avec peu de plans,
+répartis sur un chantier qui grandit, on ne monte qu'une tour (le Mortier). La proposition faite au joueur, **appliquée** (« Oui,
+applique » ; `Editor/TenthTestBaker`, les valeurs par défaut du code suivent) : remonter le début des deux courbes, pas leur fin. Objets et parchemins : 65 / 22 / 9 / 4 à la vague 1 (au lieu de 70 / 20 / 7 / 3),
+jusqu'à 45 / 30 / 17 / 8 à la vague 5 ; tourelles : 50 / 30 / 14 / 6 (1,8 plan par orbe) à la vague 1, jusqu'à 30 / 35 / 22 / 13 (2,2) à
+la vague 5, 2 plans en moyenne (1,6 depuis 12.74, 2,2 avant).
+
+| Vague | Objets et parchemins (commune, rare, épique, légendaire) | Tourelles (1, 2, 3, 4 plans) | Plans par orbe |
+|---|---|---|---|
+| 1 | 65 / 22 / 9 / 4 | 50 / 30 / 14 / 6 | 1,76 |
+| 2 | 60 / 24 / 11 / 5 | 45 / 31 / 16 / 8 | 1,87 |
+| 3 | 55 / 26 / 13 / 6 | 40 / 33 / 18 / 9 | 1,96 |
+| 4 | 50 / 28 / 15 / 7 | 35 / 34 / 20 / 11 | 2,07 |
+| 5 et après | 45 / 30 / 17 / 8 | 30 / 35 / 22 / 13 | 2,18 |
+| **Moyenne des 5** | **55 / 26 / 13 / 6** | **40 / 33 / 18 / 9** | **1,97** |
+
+Les objets et les parchemins suivent la courbe de 12.74 décalée d'une vague (un peu plus de raretés hautes sur la partie : 55 / 26 /
+13 / 6 en moyenne au lieu de 60 / 24 / 11 / 5). Les tourelles ont maintenant leur propre courbe, plus généreuse que celle des
+objets : le nombre de plans fait aussi la taille des constructions. Le baker reconnaît les plans de la scène aux chances du
+12 novembre comme à celles du 4 (scène pas enregistrée).

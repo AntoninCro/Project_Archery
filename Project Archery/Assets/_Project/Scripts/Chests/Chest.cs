@@ -101,6 +101,26 @@ namespace Archery.Chests
         /// <summary>Le coffre laissé par le boss de la vague : des objets (refonte du 25 octobre).</summary>
         public bool IsBossChest { get; private set; }
 
+        ChestSeal m_Seal;
+
+        /// <summary>Scellé : il reste des gardiens à tuer avant de pouvoir l'ouvrir (12 novembre, <see cref="ChestSeal"/>).</summary>
+        public bool IsSealed => m_Seal != null && m_Seal.IsSealed;
+
+        /// <summary>Scelle le coffre jusqu'à la mort de ces gardiens. À appeler juste après sa création.</summary>
+        public void SealWith(IEnumerable<Archery.Enemies.Enemy> guards)
+        {
+            if (m_Seal == null)
+                m_Seal = gameObject.AddComponent<ChestSeal>();
+            m_Seal.Setup(guards, m_Beam);
+        }
+
+        /// <summary>Le joueur a voulu l'ouvrir encore scellé (le couvercle a refusé) : l'étiquette le lui rappelle.</summary>
+        public void RefuseSealed()
+        {
+            if (m_Seal != null)
+                m_Seal.Refuse();
+        }
+
         /// <summary>En fait un coffre de boss, plus grand. À appeler juste après sa création, avant son ouverture.</summary>
         public void MakeBossChest()
         {

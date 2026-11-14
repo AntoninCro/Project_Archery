@@ -75,9 +75,10 @@ namespace Archery.UI
             m_Collider.center = new Vector3(rect.center.x, rect.center.y, k_Behind / scale + depth * 0.5f);
         }
 
+        // Une flèche en plus (multitir, déluge, flèches de la grenade) ne clique rien (13 novembre au soir) : seule la flèche visée.
         public bool OnArrowHit(in ArrowHit hit)
         {
-            if (!hit.IsShot || m_Selectable == null || !m_Selectable.IsActive() || !m_Selectable.IsInteractable())
+            if (!hit.IsShot || hit.IsExtraArrow || m_Selectable == null || !m_Selectable.IsActive() || !m_Selectable.IsInteractable())
                 return false;
 
             if (m_Selectable is Slider slider)

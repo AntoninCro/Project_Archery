@@ -10,7 +10,8 @@ namespace Archery.Chests
 {
     /// <summary>
     /// Couvercle d'un coffre (GDD, section 13). On vise le coffre (couvercle ou caisse) et on appuie sur la gâchette
-    /// de prise, à quelques mètres au plus, ou on l'attrape de près : il s'ouvre d'un coup.
+    /// de prise, à quelques mètres au plus, ou on l'attrape de près : il s'ouvre d'un coup. Pas tant qu'il est scellé
+    /// (ses gardiens en vie, 12 novembre : <see cref="ChestSeal"/>).
     /// </summary>
     /// <remarks>
     /// À placer sur l'objet qui porte le collider du couvercle, enfant de la charnière : l'os du couvercle d'un modèle animé,
@@ -100,6 +101,16 @@ namespace Archery.Chests
             base.OnSelectEntered(args);
             if (IsOpen)
                 return;
+
+            // Scellé (12 novembre) : il reste des gardiens ; le couvercle ne bouge pas, une petite vibration et l'étiquette du sceau
+            // le rappellent.
+            var chest = GetComponentInParent<Chest>();
+            if (chest != null && chest.IsSealed)
+            {
+                Haptics.Pulse(args.interactorObject, 0.25f, 0.06f);
+                chest.RefuseSealed();
+                return;
+            }
 
             IsOpen = true;
             Haptics.Pulse(args.interactorObject, 0.6f, 0.12f);

@@ -489,7 +489,9 @@ namespace Archery.Upgrades
         // entièrement vert. À garder identique à ClaimPerfect.
         // (Le talisman d'acrobate rendait aussi chaque tir parfait en l'air : retiré le 8 novembre au soir, le joueur : « slow + parfait
         // me semble très puissant », surtout pour une commune ; il garde le ralenti, et l'anneau tourne en temps réel.)
-        bool PeekPerfect(Arrow arrow) => (arrow != null && m_PerfectArrows.Contains(arrow)) || m_QueuedPerfects > 0;
+        // Une flèche fantôme encochée (12 novembre) : l'anneau est tout vert si elle répète un tir parfait (ArrowPieces.Ghost).
+        bool PeekPerfect(Arrow arrow) =>
+            IsGhost(arrow) ? m_GhostGrade == ShotGrade.Perfect : (arrow != null && m_PerfectArrows.Contains(arrow)) || m_QueuedPerfects > 0;
 
         // Les flèches rattrapées ne restent parfaites que tant qu'elles sont en main ou encochées : rendue au pool (lâchée, rangée),
         // une flèche ne l'est plus (le pool la redonnerait au carquois).

@@ -70,11 +70,12 @@ MonoBehaviour:
     windows:
     - title: Ouvrir les coffres
       text: "Au d\xE9but de chaque vague, des coffres apparaissent d'un c\xF4t\xE9
-        de la jungle, sous un rayon dor\xE9 (l'autre c\xF4t\xE9 \xE0 la vague suivante).
-        Vise-en un et appuie sur la g\xE2chette (ou la g\xE2chette de prise) : choisis
-        un parchemin, deux plans d'un b\xE2timent de ton chantier, ou un objet. Ton
-        chantier : 4 b\xE2timents au d\xE9but (de quoi b\xE2tir un trio), un de plus
-        apr\xE8s chaque boss."
+        de la jungle, sous un rayon (l'autre c\xF4t\xE9 \xE0 la vague suivante).
+        Chacun est gard\xE9 par des ennemis et scell\xE9 tant qu'ils vivent : tue-les,
+        \xE0 l'arc ou avec tes b\xE2timents. Puis vise le coffre et appuie sur la
+        g\xE2chette (ou la g\xE2chette de prise) : choisis un parchemin, des plans
+        d'un b\xE2timent de ton chantier, ou un objet. Ton chantier : les 3 b\xE2timents
+        d'un trio au d\xE9but, un de plus apr\xE8s chaque boss."
     - title: "Choisir un b\xE2timent"
       text: "Touche le bouton \xAB Plans \xBB de ta montre avec l'autre main : le
         menu des plans s'ouvre, et l'hologramme du b\xE2timent du milieu suit le

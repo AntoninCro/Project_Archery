@@ -63,9 +63,17 @@ namespace Archery.Menus
 
         GameObject m_TurnSpeedRow;
 
+        // La ligne « Sensibilité du saut » (12 novembre, le joueur : « le saut est un peu trop sensible ; peut-être rajouter un
+        // paramètre pour le modifier dans les menus ») : une copie de celle de la vignette, juste sous elle.
+        Slider m_JumpSlider;
+        TMP_Text m_JumpValue;
+
         void Awake()
         {
             BuildTurnSpeedRow();
+            BuildJumpRow();
+            if (m_JumpSlider != null)
+                m_JumpSlider.onValueChanged.AddListener(OnJumpChanged);
 
             // Le bouton passe d'un mode à l'autre : par crans, continue, coupée.
             if (m_SnapTurnButton != null)
@@ -96,6 +104,47 @@ namespace Archery.Menus
                 m_VignetteSlider.SetValueWithoutNotify(data.comfortVignette);
             ShowVignette(data.comfortVignette);
             ShowSnapTurn(data.snapTurn);
+            if (m_JumpSlider != null)
+                m_JumpSlider.SetValueWithoutNotify(data.jumpSensitivity);
+            ShowJump(data.jumpSensitivity);
+        }
+
+        void BuildJumpRow()
+        {
+            if (m_VignetteSlider == null)
+                return;
+
+            var template = m_VignetteSlider.transform.parent;
+            var row = Instantiate(template.gameObject, template.parent, false);
+            row.name = "Jump row";
+            row.transform.SetSiblingIndex(template.GetSiblingIndex() + 1);
+            m_JumpSlider = row.GetComponentInChildren<Slider>(true);
+            if (m_JumpSlider != null)
+                m_JumpSlider.onValueChanged.RemoveAllListeners();
+            foreach (var text in row.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (text.name == "Label")
+                    text.text = "Sensibilité du saut";
+                else if (text.name == "Value")
+                    m_JumpValue = text;
+            }
+
+            // Une ligne de plus encore : les lignes un peu plus serrées, pour que tout tienne dans la page.
+            if (template.parent.TryGetComponent<VerticalLayoutGroup>(out var layout))
+                layout.spacing = Mathf.Min(layout.spacing, 8f);
+            MenuArrowTarget.AttachAll(row);
+        }
+
+        void OnJumpChanged(float value)
+        {
+            Apply(settings => settings.JumpSensitivity = value, null, value);
+            ShowJump(value);
+        }
+
+        void ShowJump(float value)
+        {
+            if (m_JumpValue != null)
+                m_JumpValue.text = value < GameSettings.JumpOff ? "Coupé" : Mathf.RoundToInt(value * 100f) + " %";
         }
 
         // La ligne « Vitesse de rotation » : une copie de celle de la vignette, placée juste sous le bouton de rotation.

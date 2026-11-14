@@ -209,6 +209,8 @@ namespace Archery.Enemies
             // Le poteau et le socle d'un mannequin n'ont pas de zone de touche, exprès.
             if (!IsTrainingDummy)
                 WarnAboutCollidersWithoutHitbox();
+            // La zone du corps qui suit les sauts (12 novembre ; Enemy.Hop.cs) : la pose de repos, avant toute animation.
+            SetupHopFollow();
 
             // Difficulté, puis renforcement selon la vague (courbe exponentielle).
             var difficulty = DifficultyManager.Current;

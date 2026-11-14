@@ -667,9 +667,12 @@ namespace Archery.Building
         {
             Arrow.AnyHit += OnArrowHit;
 
-            // Dans l'arène, au début du combat (ArenaTurrets le rallume) : ce qu'il sait faire contre MK.
+            // Dans l'arène, au début du combat (ArenaTurrets le rallume) : ce qu'il sait faire contre MK. Sa première charge,
+            // MkUniqueInterval s plus tard au plus tôt (12 novembre, le joueur : les ultimes frappaient MK avant que la salle soit
+            // allumée ; la charge partait dès le début du combat).
             if (InArena && IsBuilt && !m_ArenaHint)
             {
+                m_NextArenaCharge = Time.time + MkUniqueInterval;
                 m_ArenaHint = true;
                 HeadMessages.Show("Le Grand Manège est là !\n<size=65%>Touche MK : ses chevaux suivent tes flèches ; au 5e tour, ils le " +
                                   "chargent et l'étourdissent</size>", k_Title, 5f);

@@ -63,14 +63,9 @@ namespace Archery.Upgrades
         // La part de la pluie d'une flèche tirée que sème une flèche du déluge (8 novembre au soir).
         const float k_DelugeRainShare = 0.5f;
 
-        // Corde fantôme : le temps (s) après un tir pour attraper la corde, la distance (m) de la main à l'encoche, la longueur
-        // (m) à tirer, le temps (s) au plus où on la garde, la part des dégâts du tir (niveaux 1, 2, 3).
-        const float k_GhostWindow = 1.2f;
+        // Corde fantôme : la distance (m) de la main à la corde pour prendre la flèche fantôme (ArrowPieces.Ghost) ; le rappel
+        // ne part pas d'une main aussi près de la corde.
         const float k_GhostGrab = 0.22f;
-        const float k_GhostPull = 0.3f;
-        const float k_GhostMaxHold = 3f;
-        // (120 / 150 / 200 % depuis le 27 octobre, réglage du joueur ; 60 / 75 / 90 % avant.)
-        static readonly Vector3 k_GhostDamage = new Vector3(1.2f, 1.5f, 2f);
 
         // Empennage piqué : l'angle (°) au-dessus de l'horizontale d'un tir qui pique, la distance (m) du tireur où il cherche un
         // ennemi (niveaux 1, 2, 3) et l'écart (°) à la visée, le temps (s) après le tir où il pique (ou à son sommet, s'il vient
@@ -288,18 +283,6 @@ namespace Archery.Upgrades
         float m_NextAkimboSearch;
         readonly bool[] m_AkimboFull = new bool[2];
 
-        // La corde fantôme : le tir qu'elle répète, le temps qui reste pour attraper la corde, la main qui la tient.
-        bool m_GhostReady;
-        float m_GhostUntil;
-        float m_GhostSpeed;
-        float m_GhostDamage;
-        ShotGrade m_GhostGrade;
-        float m_GhostGravity;
-        XRBaseInputInteractor m_GhostHand;
-        float m_GhostGrabbedAt;
-        float m_NextGhostLine;
-        AimGuide m_GhostGuide;
-
         /// <summary>Le talisman d'acrobate ralentit le temps en ce moment (le joueur est en l'air ou glisse).</summary>
         public bool AcrobatActive => m_AcrobatActive;
 
@@ -321,6 +304,7 @@ namespace Archery.Upgrades
         {
             Bow.HeldChargeMultiplier = SiegeCharge;
             ArrowPool.StuckArrowReclaimed += OnStuckArrowReclaimed;
+            EnableGhost();
         }
 
         void DisableLot3()
@@ -338,9 +322,7 @@ namespace Archery.Upgrades
             m_Sentinels.Clear();
             m_RailSegments.Clear();
             m_FenceFrozen.Clear();
-            m_GhostReady = false;
-            m_GhostHand = null;
-            HideGhostGuide();
+            ClearGhost();
         }
 
         // ---------------------------------------------------------------- au tir
@@ -370,22 +352,8 @@ namespace Archery.Upgrades
                 }
             }
 
-            // Corde fantôme : un tir de l'arc (pas des arbalètes) ouvre la fenêtre pour attraper la corde à vide.
-            if (Level(UpgradeEffect.Ghost) > 0 && shot.Arrow != null)
-            {
-                if (m_Bow == null)
-                    m_Bow = FindAnyObjectByType<Bow>();
-                if (m_Bow != null && shot.Aim != null && shot.Aim.IsChildOf(m_Bow.transform))
-                {
-                    m_GhostReady = true;
-                    m_GhostUntil = Time.unscaledTime + k_GhostWindow;
-                    m_GhostSpeed = shot.Speed;
-                    m_GhostDamage = shot.Damage;
-                    m_GhostGrade = shot.Grade;
-                    m_GhostGravity = shot.Arrow.GravityScale;
-                    m_GhostHand = null;
-                }
-            }
+            // Corde fantôme (refaite le 12 novembre ; ArrowPieces.Ghost) : un tir de l'arc pose une flèche fantôme sur la corde.
+            OnGhostShotStart(shot);
         }
 
         // La charge de la corde de siège (Bow.HeldChargeMultiplier) : les dégâts du tir selon le temps passé au bout de l'anneau.
@@ -799,128 +767,6 @@ namespace Archery.Upgrades
                     FloatingText.Spawn(tip + Vector3.up * 0.15f, "Chargée !", k_SiegeColor, 0.4f, 0.7f);
                 }
             }
-        }
-
-        // Corde fantôme : la main libre attrape la corde à vide près de l'encoche, la tire, la lâche.
-        void UpdateGhost()
-        {
-            if (!m_GhostReady || Level(UpgradeEffect.Ghost) == 0 || m_Bow == null)
-            {
-                m_GhostReady = false;
-                HideGhostGuide();
-                return;
-            }
-
-            var desktop = DesktopControls.Instance;
-            var mouse = Mouse.current;
-            if (desktop != null && desktop.IsActive)
-            {
-                if (Time.unscaledTime > m_GhostUntil)
-                    m_GhostReady = false;
-                else if (mouse != null && mouse.middleButton.wasPressedThisFrame)
-                    FireGhost(1f);
-                if (m_GhostReady)
-                    ShowGhostGuide(1f, 1f);
-                else
-                    HideGhostGuide();
-                return;
-            }
-
-            var stringPoint = m_Bow.StringPoint;
-            if (m_GhostHand == null)
-            {
-                HideGhostGuide();
-                if (Time.unscaledTime > m_GhostUntil)
-                {
-                    m_GhostReady = false;
-                    return;
-                }
-
-                var rig = PlayerRig.Instance;
-                if (rig == null)
-                    return;
-                foreach (var hand in rig.Hands)
-                {
-                    if (hand == null || hand.selectInput == null || hand.hasSelection || ReferenceEquals(hand, m_ShotHand))
-                        continue;
-                    if (hand.selectInput.ReadWasPerformedThisFrame() && Vector3.Distance(hand.transform.position, stringPoint) < k_GhostGrab)
-                    {
-                        m_GhostHand = hand;
-                        m_GhostGrabbedAt = Time.unscaledTime;
-                        Haptics.Pulse(hand, 0.3f, 0.04f);
-                        break;
-                    }
-                }
-
-                return;
-            }
-
-            // La corde fantôme : un fil pâle de l'encoche à la main.
-            var handPosition = m_GhostHand.transform.position;
-            var pull = Vector3.Dot(stringPoint - handPosition, m_Bow.AimForward);
-            if (Time.unscaledTime >= m_NextGhostLine)
-            {
-                m_NextGhostLine = Time.unscaledTime + 0.05f;
-                LightningBolt.Spawn(stringPoint, handPosition, k_GhostColor, EffectMaterial, 0.012f, 0.07f);
-                Haptics.Pulse(m_GhostHand, 0.05f + 0.25f * Mathf.Clamp01(pull / k_GhostPull), 0.02f);
-            }
-
-            if (m_GhostHand.selectInput.ReadIsPerformed() && Time.unscaledTime - m_GhostGrabbedAt < k_GhostMaxHold)
-            {
-                ShowGhostGuide(Mathf.Clamp(pull / k_GhostPull, 1f, 1.5f), Mathf.Clamp01(pull / k_GhostPull));
-                return;
-            }
-
-            var released = m_GhostHand.selectInput.ReadIsPerformed() == false;
-            m_GhostHand = null;
-            m_GhostReady = false;
-            HideGhostGuide();
-            if (released && pull >= k_GhostPull)
-                FireGhost(Mathf.Clamp(pull / k_GhostPull, 1f, 1.5f));
-        }
-
-        // L'aide à la visée du tir fantôme (27 octobre ; le joueur : « la corde fantôme n'a pas d'aide à la visée ») : la
-        // trajectoire qu'aurait la flèche fantôme lâchée maintenant, de plus en plus nette à mesure qu'on tire la corde (sans
-        // casque, pendant toute la fenêtre du clic du milieu).
-        void ShowGhostGuide(float power, float strength)
-        {
-            if (m_Bow == null)
-                return;
-            if (m_GhostGuide == null)
-            {
-                m_GhostGuide = new GameObject("Aide à la visée fantôme").AddComponent<AimGuide>();
-                m_GhostGuide.transform.SetParent(transform, false);
-            }
-
-            var direction = m_Bow.AimForward;
-            m_GhostGuide.Show(m_Bow.StringPoint + direction * 0.45f, direction, m_GhostSpeed * Mathf.Min(1.2f, power), k_GhostColor,
-                              0.35f + 0.65f * strength, 0f, m_GhostGravity);
-        }
-
-        void HideGhostGuide()
-        {
-            if (m_GhostGuide != null)
-                m_GhostGuide.Hide();
-        }
-
-        // La flèche fantôme part de l'arc, là où il vise, avec les pièces (une flèche en plus : elle ne casse pas le combo).
-        void FireGhost(float power)
-        {
-            var arrows = SpecialArrows.Instance;
-            if (arrows == null || m_Bow == null)
-                return;
-
-            m_GhostReady = false;
-            var level = Mathf.Max(1, Level(UpgradeEffect.Ghost));
-            var direction = m_Bow.AimForward;
-            var origin = m_Bow.StringPoint + direction * 0.45f;
-            var arrow = arrows.LaunchExtraShot(origin, direction, m_GhostSpeed * Mathf.Min(1.2f, power),
-                                               m_GhostDamage * SpecialArrows.ByLevel(k_GhostDamage, level), m_GhostGrade, k_GhostColor, m_GhostGravity);
-            if (arrow == null)
-                return;
-
-            Sfx.Play(PieceSounds.Whoosh, origin, 0.8f, 1.35f);
-            FloatingText.Spawn(origin + Vector3.up * 0.2f, "Fantôme !", k_GhostColor, 0.45f, 0.7f);
         }
 
         // Empennage de rappel : la main libre se ferme devant soi (pas au carquois, ni à la hanche, ni sur la corde) ; sans

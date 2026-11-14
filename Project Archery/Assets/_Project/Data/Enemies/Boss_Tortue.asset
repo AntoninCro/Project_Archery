@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Gontrand
   maxHealth: 414
-  moveSpeed: 1
+  moveSpeed: 2.6
   attackDamage: 60
   attackRange: 3.4
   attackInterval: 2.6

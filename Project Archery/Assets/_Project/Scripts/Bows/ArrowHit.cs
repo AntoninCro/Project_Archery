@@ -21,6 +21,14 @@ namespace Archery.Bows
 
         /// <summary>Faux pour une flèche lâchée ou lancée à la main : elle ne rapporte rien.</summary>
         public bool IsShot;
+
+        /// <summary>
+        /// Une flèche en plus (multitir, déluge, flèches de la grenade : <see cref="Arrow.IsExtra"/>), pas celle que le joueur a visée.
+        /// Les menus, les panneaux de difficulté et les choix de l'arène ne réagissent pas à elle (13 novembre au soir, le joueur :
+        /// « les flèches des grenades peuvent activer tous les menus, ça fout le bazar quand on en lâche une »), comme le gong depuis
+        /// longtemps.
+        /// </summary>
+        public bool IsExtraArrow => Arrow != null && Arrow.IsExtra;
     }
 
     /// <summary>
@@ -41,6 +49,15 @@ namespace Archery.Bows
     /// (le gong, qui se cache pendant le combat contre le boss : une flèche plantée y flotterait dans le vide).
     /// </summary>
     public interface IArrowAbsorber
+    {
+    }
+
+    /// <summary>
+    /// Avec <see cref="IArrowHitHandler"/> : la flèche le touche (il réagit) puis le traverse et poursuit sa route, sans perdre de
+    /// perçage ni déclencher ses pouvoirs (12 novembre, le joueur : « une flèche qui touche un projectile devrait le traverser sans
+    /// s'arrêter, à part pour MK » ; les projectiles des tireurs et des liches, pas les boules de feu de MK).
+    /// </summary>
+    public interface IArrowPassThrough
     {
     }
 

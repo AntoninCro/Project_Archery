@@ -79,6 +79,21 @@ namespace Archery.Bows
         public static float ArrowGravity(float definitionGravity) =>
             Mathf.Max(0.001f, (definitionGravity > 0f ? definitionGravity : 1f) * GravityMultiplier);
 
+        /// <summary>Un tir imposé à une flèche (<see cref="ForcedShotFor"/>) : sa qualité, sa tension (0 à 1), ses dégâts en plus (×).</summary>
+        public struct ForcedShot
+        {
+            public ShotGrade Grade;
+            public float Ratio;
+            public float DamageMultiplier;
+        }
+
+        /// <summary>
+        /// Le tir imposé à cette flèche encochée, ou null : celui de l'anneau, comme d'habitude (12 novembre : la flèche fantôme de la
+        /// corde fantôme part comme le dernier tir de l'arc, sa qualité et sa tension, avec un bonus de dégâts ; il faut quand même
+        /// tendre la corde pour tirer).
+        /// </summary>
+        public static Func<Arrow, ForcedShot?> ForcedShotFor;
+
         /// <summary>Ce tir de qualité <paramref name="grade"/> devient-il parfait ? (forcé, ou accordé par <see cref="ClaimPerfectShot"/>).</summary>
         public bool MakesPerfect(ShotGrade grade, Arrow arrow = null) =>
             grade != ShotGrade.None && (ForcePerfect || (ClaimPerfectShot != null && ClaimPerfectShot(arrow)));
@@ -239,6 +254,7 @@ namespace Archery.Bows
         readonly List<Collider> m_DesktopDisabledColliders = new List<Collider>();
         Akimbow m_Akimbow;
         Archery.Combat.Katana m_Katana;
+        Archery.Combat.BaseballBat m_Bat;
         bool m_ReplacedHidden;
         readonly List<Renderer> m_ReplacedRenderers = new List<Renderer>();
         readonly List<Collider> m_ReplacedColliders = new List<Collider>();
@@ -305,8 +321,11 @@ namespace Archery.Bows
         /// <summary>L'arme est le katana (<see cref="BowDefinition.katana"/>) : l'arc est caché et ne se prend plus.</summary>
         public bool IsKatana => m_Katana != null;
 
-        /// <summary>Une autre arme remplace l'arc (Akimbow, katana) : il est caché et ne se prend plus.</summary>
-        public bool IsReplaced => m_Akimbow != null || m_Katana != null;
+        /// <summary>L'arme est la batte de baseball (<see cref="BowDefinition.bat"/>, 13 novembre) : l'arc est caché et ne se prend plus.</summary>
+        public bool IsBat => m_Bat != null;
+
+        /// <summary>Une autre arme remplace l'arc (Akimbow, katana, batte) : il est caché et ne se prend plus.</summary>
+        public bool IsReplaced => m_Akimbow != null || m_Katana != null || m_Bat != null;
 
         /// <summary>L'anneau de timing de l'arc : les Akimbow en prennent une copie chacune.</summary>
         public TimingRing TimingRingTemplate => m_TimingRing;
@@ -407,6 +426,8 @@ namespace Archery.Bows
                 Destroy(m_Akimbow.gameObject);
             if (m_Katana != null)
                 Destroy(m_Katana.gameObject);
+            if (m_Bat != null)
+                Destroy(m_Bat.gameObject);
             ArrowIgnore.Unregister(m_OwnColliders);
             if (m_TimingRing != null)
             {
@@ -554,7 +575,20 @@ namespace Archery.Bows
             if (grade != ShotGrade.Held)
                 held = 0f;
             var charge = held > 0f && HeldChargeMultiplier != null ? Mathf.Max(1f, HeldChargeMultiplier(held)) : 1f;
-            if (canFire && ratio >= Def.minDrawToFire && MakesPerfect(grade, arrow))
+
+            // Un tir imposé (la flèche fantôme, 12 novembre) : la qualité et la tension du tir qu'il répète, plus ses dégâts en plus ;
+            // ni anneau, ni charge, ni laser.
+            var forced = ForcedShotFor != null ? ForcedShotFor(arrow) : null;
+            var forcedDamage = 1f;
+            if (forced.HasValue && canFire && ratio >= Def.minDrawToFire)
+            {
+                grade = forced.Value.Grade;
+                ratio = Mathf.Clamp(forced.Value.Ratio, Def.minDrawToFire, 1f);
+                held = 0f;
+                charge = 1f;
+                forcedDamage = Mathf.Max(0f, forced.Value.DamageMultiplier);
+            }
+            else if (canFire && ratio >= Def.minDrawToFire && MakesPerfect(grade, arrow))
             {
                 // Un tir chargé au bout de l'anneau (corde de siège) devenu parfait d'office garde sa charge (27 octobre : avant, elle
                 // était perdue) ; la charge part des dégâts du vert clair, ramenée à ceux du parfait.
@@ -571,7 +605,7 @@ namespace Archery.Bows
             }
 
             // Arc cosmique : lâché dans le doré du deuxième cercle (ou dans le vert clair, après), le tir devient un laser.
-            if (Def.overcharge && m_TimingRing != null && m_TimingRing.Overcharged)
+            if (!forced.HasValue && Def.overcharge && m_TimingRing != null && m_TimingRing.Overcharged)
             {
                 FireLaser(arrow, ratio, drawHand, grade == ShotGrade.Perfect ? ShotGrade.Perfect : ShotGrade.Held, charge, held);
                 return;
@@ -580,7 +614,7 @@ namespace Archery.Bows
             var modifiers = Tuning.Get(grade);
             var power = Def.drawToPower.Evaluate(ratio);
             var speed = Def.arrowSpeed * power * modifiers.speed * SpeedMultiplier;
-            var damage = Def.damage * power * GradeDamage(grade) * DamageMultiplier * charge;
+            var damage = Def.damage * power * GradeDamage(grade) * DamageMultiplier * charge * forcedDamage;
             var origin = arrow.transform.position;
             var trailColor = grade == ShotGrade.None ? new Color(1f, 1f, 1f, 0.5f) : modifiers.color;
 
@@ -790,9 +824,10 @@ namespace Archery.Bows
             m_Definition = definition;
             SetAkimbo(definition.akimbo);
             SetKatana(definition.katana);
+            SetBat(definition.bat);
 
-            // Le modèle des Akimbow ou du katana (leur aperçu dans le menu des armes) ne remplace pas celui de l'arc.
-            if (!definition.akimbo && !definition.katana && definition.visualPrefab != null && m_Model != null)
+            // Le modèle des Akimbow, du katana ou de la batte (leur aperçu dans le menu des armes) ne remplace pas celui de l'arc.
+            if (!definition.akimbo && !definition.katana && !definition.bat && definition.visualPrefab != null && m_Model != null)
             {
                 if (m_Visual != null)
                 {
@@ -844,6 +879,25 @@ namespace Archery.Bows
             {
                 Destroy(m_Katana.gameObject);
                 m_Katana = null;
+            }
+
+            ApplyReplaced();
+        }
+
+        // La batte de baseball remplace l'arc (13 novembre ; créée ici, détruite au retour à un arc).
+        void SetBat(bool bat)
+        {
+            if (bat == (m_Bat != null))
+                return;
+
+            if (bat)
+            {
+                m_Bat = Archery.Combat.BaseballBat.Create(this, m_Definition);
+            }
+            else
+            {
+                Destroy(m_Bat.gameObject);
+                m_Bat = null;
             }
 
             ApplyReplaced();

@@ -11,7 +11,7 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 ## Reprendre une session
 
 - Le joueur alterne entre **deux comptes Claude** sur ce dossier : une session n'a pas vu la conversation de la précédente.
-  Avant d'agir : `Reprise_Projet.md` (partie 1, « Le chantier en cours »), `git status` et `git log --oneline -5`. Beaucoup
+  Avant d'agir : `Reprise_Projet.md` (partie 1, « Où on en est »), `git status` et `git log --oneline -5`. Beaucoup
   de travail reste souvent **non commité** : ne rien annuler ni « nettoyer » sans demander (fichiers supprimés exprès,
   `Core/PerfProbe.cs`…).
 - **Deuxième chantier** (27 et 28 octobre) : la refonte du tower defense (caisses de l'ingénieur, plans, grille, pose à la
@@ -31,7 +31,15 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   d'équilibrage après Unity ; puis **plus d'or ni de combo, le choix de la pause** : une carte par ligne parmi trois parchemins,
   trois objets, trois tourelles ; les parchemins à deux effets ; plus de coffre de boss ; 12.69 ; puis **les quatre raretés**
   (épique en violet ; tourelles et parchemins par rareté), le Rappel, MK (paliers, ultimes toutes les 15 s), le Style ; 12.70 ;
-  `Docs/Fiche_Ameliorations.xlsx` remplie par le joueur et appliquée : onze pièces épiques, la Pointe du chasseur refaite ; 12.71 ; puis le gong (une carte par ligne), les raretés à 60 / 24 / 11 / 5, le Déluge qui pleut ; 12.72 ; la vague 1 à 30 % d'ennemis en moins, après les parties d'un ami ; 12.73) ; puis les ultimes (choisies : Colosse de forge, Grand Manège, Grande Horloge, qui prend
+  `Docs/Fiche_Ameliorations.xlsx` remplie par le joueur et appliquée : onze pièces épiques, la Pointe du chasseur refaite ; 12.71 ; puis le gong (une carte par ligne), les raretés à 60 / 24 / 11 / 5, le Déluge qui pleut ; 12.72 ; la vague 1 à 30 % d'ennemis en moins, après les parties d'un ami ; 12.73 ; puis le neuvième essai, 12 novembre : les coffres
+  scellés par leurs gardiens (`Chests/ChestSeal`), les tours −25 %, la Force à +10 %, l'Horloge (dégel ÷3, flèches avant le dégel,
+  musique de MK gardée), les ultimes qui attendent dans l'arène, le chantier sans Barricade, le gong visible, la porte de l'antre ;
+  `Editor/NinthTestBaker` ; les raretés qui montent pour tout, de 70 / 20 / 7 / 3 à 50 / 28 / 15 / 7, la même moyenne, les tourelles
+  avec ; l'anneau de la Force à 10 % ; 12.74 ; puis les hitbox des petits ennemis et le corps qui suit les sauts, les gardiens au sol
+  à l'air libre et hors des voies, les boss plus rapides : `Editor/HitboxBossBaker`, 12.75 ; puis la porte, le rayon scellé, le saut réglable, la Tour-aimant,
+  la grenade, la corde fantôme refaite, les drops du début de partie remontés : `Editor/TenthTestBaker`,
+  `Upgrades/ArrowPieces.Ghost.cs`, 12.76 ; puis la batte de baseball (steampunk, de la vapeur à chaque coup), une arme débloquée dès le départ : la grenade frappée file
+  sur l'ennemi regardé, `Combat/BaseballBat.cs`, `Editor/BatteBaker`, F6, GDD section 5) ; puis les ultimes (choisies : Colosse de forge, Grand Manège, Grande Horloge, qui prend
   Minuit au Beffroi ; 12.44 ; le Beffroi au niveau 3 devient le Phare du passé, 12.45). **Le système des ultimes et le Colosse de
   forge sont codés** (12.46 : `Building/TowerUltimate.cs`, `UltimeColosse.cs`, `FinalBoss/DragonBoss.Pin.cs`, le modèle dans
   `Tools/allure_tours/ultimes.py`) ; le Colosse refait après l'essai du joueur (12.47 : « on doit ressentir sa puissance »),

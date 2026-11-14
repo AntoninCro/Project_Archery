@@ -102,9 +102,10 @@ namespace Archery.FinalBoss
                 m_Seal.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f + m_Age * (m_Used ? 120f : 15f));
         }
 
+        // Une flèche en plus (multitir, déluge, flèches de la grenade) ne choisit pas la suite de la partie (13 novembre au soir).
         public bool OnArrowHit(in ArrowHit hit)
         {
-            if (m_Used)
+            if (m_Used || hit.IsExtraArrow)
                 return false;
 
             m_Used = true;

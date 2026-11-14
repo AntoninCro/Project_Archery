@@ -628,6 +628,19 @@ namespace Archery.Upgrades
 
         // Tire au sort ce que fera cette flèche : foudre, explosion, glace, perçage, division en vol.
         // basePierce : le perçage de l'arc, sans les améliorations (il a déjà été donné à la flèche au lancement).
+        /// <summary>
+        /// Une flèche lancée par autre chose que l'arme reçoit les améliorations d'une flèche tirée, comme les flèches en plus d'un
+        /// tir : ses effets à l'impact tirés au sort (foudre, explosion, glace), le perçage, le déluge et les pièces de la flèche
+        /// (12 novembre, le joueur : « la grenade devient très inutile en milieu et en fin de partie : fais en sorte que chaque flèche
+        /// de la grenade ait chacune de nos améliorations actuelles »). Les flèches en plus d'un tir (multitir, corde triple, écho)
+        /// restent au tir de l'arme : la grenade lance déjà les siennes.
+        /// </summary>
+        public void PrepareThrown(Arrow arrow, float damage, ShotGrade grade)
+        {
+            if (arrow != null && PlayerUpgrades.Instance != null)
+                Prepare(arrow, damage, grade, arrow.PierceLeft, arrow.TrailColor, true);
+        }
+
         void Prepare(Arrow arrow, float damage, ShotGrade grade, int basePierce, Color trail, bool canSplit)
         {
             if (m_Tracked.TryGetValue(arrow, out var previous))

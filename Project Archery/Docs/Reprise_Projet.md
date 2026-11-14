@@ -1,19 +1,26 @@
-# Reprise du projet (26 octobre)
+# Reprise du projet (26 octobre, mis à jour le 12 novembre)
 
 Ce document fait le point pour reprendre le projet ailleurs (autre compte Claude, autre PC, coéquipier). Il complète le GDD
-(`GDD.md`, la référence, à tenir à jour) et les règles de travail (`../../CLAUDE.md`).
+(`GDD.md`, la référence, à tenir à jour) et les règles de travail (`../../CLAUDE.md`). **Pour reprendre vite : lire d'abord
+« Où on en est (12 novembre) », un peu plus bas.**
 
 ## 1. Où en est le jeu
 
-THUNK VR est complet et jouable de la première vague au dragon : tir à l'arc physique avec anneau de timing, 6 vagues (accalmie,
-montée, boss), tower defense (cristaux, 12 socles, 4 bâtiments à 3 niveaux, marteau), boutique roguelike (en refonte depuis le 25 octobre : parchemins et pièces de la flèche, voir plus bas),
-coffres, 4 difficultés avec leur ciel, menu des armes et succès, deux secrets (portail des étoiles, toit cyberpunk), le dragon MK
-dans son antre, mode infini, classement, tutoriel en vidéos, menu en cours de partie avec pause, jeu au clavier sans casque.
+THUNK VR est complet et jouable de la première vague au dragon : tir à l'arc physique avec anneau de timing, 6 vagues de durée
+fixe (accalmie, montée, boss), un tower defense (des coffres gardés donnent des plans ; 10 tours à 5 niveaux posées sur une grille
+depuis la montre ; 13 duos, 7 trios et 3 ultimes par fusion ; la tour à défendre), la flèche en pièces (pointe, empennage, fût,
+corde, talisman ; l'atelier) et les parchemins, **le choix de la pause** (une carte par ligne : parchemins, objets, tourelles ;
+plus d'or depuis le 8 novembre), 4 raretés, 4 difficultés avec leur ciel, menu des armes et succès, deux secrets (portail des
+étoiles, toit cyberpunk), le dragon MK dans son antre, mode infini, classement, tutoriel en vidéos, menu en cours de partie avec
+pause, jeu au clavier sans casque, et un journal écrit à chaque partie (`Logs/Parties/`).
 
 **Testé au casque** : le cœur du jeu (les guides montés et testés jusqu'au 13 octobre, voir `Feuille_de_route.md`), puis au fil
-des retours du joueur une partie des nouveautés (la grenade, les Akimbow, le portail, le menu en cours de partie).
-**Pas encore vérifié** : les cases non cochées de `Checklist_Demo.md` (la passe de tests complète n'a pas été faite), à commencer
-par la liste « Nouveautés du 19 au 23 octobre », en tête de la partie 1.
+des retours du joueur une partie des nouveautés (la grenade, les Akimbow, le portail, le menu en cours de partie), la refonte
+roguelike (27 octobre), et **depuis le 2 novembre des parties entières en Normal**, lues par Claude dans le journal de partie
+(la dernière le 8 novembre, plus deux parties d'un ami qui découvrait le jeu).
+**Pas encore vérifié** : les cases non cochées de `Checklist_Demo.md` (la passe de tests complète n'a pas été faite ; beaucoup de
+cases restent vides même pour ce qui a été joué depuis : les relire avec le journal), à commencer par celles du 8 novembre, en
+tête de la partie 1.
 
 **Commité le 25 octobre** (`f986573`) : la 3e version du katana (partie 2), le toit cyberpunk refait (décor 4, épreuve rendue
 faisable), la présentation et le rapport. **Commité le 26 octobre** (`5232b71`) : le lore, acte 1, première partie (GDD,
@@ -27,17 +34,94 @@ sceaux animés), les PV des parchemins retirés, la télékinésie guidée par l
 base, le tourniquet), la vitrine F4 et les 10 premiers duos. **Commité et poussé le 31 octobre au soir**, avant le
 **changement de PC** : les 3 derniers duos, le Toboggan revu, les bugs du premier essai des duos, et les consignes pour
 Claude (`CLAUDE.md`, à la racine du dépôt) désormais dans le dépôt, avec ce que Claude avait retenu sur le PC d'avant.
+**Commité et poussé ensuite** : le 1er novembre (`d512b9f`, `a80b17b`), les 7 trios et le scaling des bâtiments ; le 3 novembre
+(`08052c5`), le tableau d'équilibrage appliqué, les parchemins qui valent pour les tours, le coffre unique, les premiers essais et
+les trois ultimes (`Refonte_TowerDefense.md`, 12.33 à 12.52) ; le 8 novembre au matin (`24ca2b8`), le chantier du début, les
+gardiens des coffres, la vague de durée fixe, le journal de partie et les suites des essais du 3 et du 4 novembre (12.53 à
+12.67) ; le 8 novembre au soir (`0594a0e`), l'or et le combo retirés, le choix de la pause, les quatre raretés et la fiche des
+améliorations (12.68 à 12.73). Au 12 novembre, rien d'autre n'attend d'être commité (seuls les réglages OpenXR et les polices
+Cinzel, réenregistrés par Unity).
 
 **Sur le nouveau PC** (installé le 1er novembre) : le dépôt est cloné dans `C:\Users\anton\Desktop\dev\Thunk VR` (où est
 `CLAUDE.md`), Unity 6000.5.10f1, Python et le SDK .NET sont installés, et les deux `compile_check` passent sans erreur ni
 avertissement (détail : `CLAUDE.md`, « Pièges connus »). Les packs d'assets téléchargés mais pas importés
 (`projet archery/Assets_TowerDefense/`) étaient hors du dépôt : à recopier à la main depuis l'ancien PC s'ils servent.
+Installés depuis, le 2 novembre : openpyxl (pip) et LibreOffice (winget), pour les tableaux Excel (`CLAUDE.md`).
+
+### Où on en est (12 novembre) : la dernière session, le 8 novembre, et la suite
+
+**Le fil rouge** (règle du joueur, 2 novembre ; GDD, section 1) : **simple à jouer, riche par les combinaisons**. Le jeu a eu
+beaucoup d'ajouts : le but est maintenant de réduire la complexité (ne rien proposer de plus sans dire ce que ça remplace). Pour
+les bâtiments (4 novembre) : **contrôler plutôt que tuer** ; et ne pas affaiblir les pièces de zone (renforcer plutôt la monocible
+et les ennemis).
+
+**Le 8 novembre** (au casque, en Normal : trois parties entières du joueur, gagnées, et quelques courtes, lues dans le journal ;
+puis deux parties d'un ami ; tout est commité ; détail dans `Refonte_TowerDefense.md`, 12.68 à 12.73) :
+- **Le Phare affaibli** (il faisait 32 % des dégâts de la partie) : son jugement (niveau 5) n'inflige plus de dégâts, il étourdit
+  l'ennemi le plus fort 3 s (un boss 1,5 s) ; il ne voit plus MK à travers le ciel (12.68, `Editor/PhareJugementBaker`).
+- **MK** : ses PV à lui ×1,3 (environ 20 300 en Normal), ses phases à temps, puis **un palier par phase** (ses PV ne passent pas le
+  seuil de l'envol ni celui de la rage avant la phase) ; dans l'arène, les ultimes ne font plus que leur effet unique, toutes les 15 s
+  (12.68, 12.70).
+- **Construire** : plusieurs niveaux d'un coup (« +2 niveaux · 2 plans »…), on vise le bâtiment entier (et l'ultime) plus seulement son
+  socle, le panneau ne s'ouvre plus dans le bâtiment, l'annonce de la vague rappelle les plans en réserve (12.68, 12.70).
+- **Plus d'or ni de combo** (12.69, le choix du joueur ; retirés du code, plus seulement de l'écran ; la touche **M** ne sert plus) :
+  la boutique devient **le choix de la pause**, trois lignes de trois cartes (parchemins, objets, tourelles), **une carte gratuite
+  par ligne** ; le coffre de boss est retiré ; le talisman de l'avare et le butin aussi. **Les parchemins ont deux effets** chacun :
+  la Force, les dégâts et l'anneau plus rapide ; l'Adresse, la bande verte plus large et les tirs parfaits plus forts ; la Vigueur,
+  des PV et les flèches qui vont plus loin (pour les bâtiments, toujours dégâts, cadence, PV de la tour et des barricades).
+- **Quatre raretés** (12.70) : commune (blanc), rare (bleu), **épique (violet)**, légendaire (or), tirées à **60 / 24 / 11 / 5**
+  (12.72 ; `Editor/RaretesBaker`). Les parchemins ont une rareté qui multiplie leur effet (×1, ×1,5, ×2, ×3 ; leurs valeurs de
+  base divisées par deux) ; une tourelle vaut 1 à 4 plans selon sa rareté, et son orbe la montre en miniature.
+- **La fiche des améliorations** (`Docs/Fiche_Ameliorations.xlsx`, écrite par `Tools/fiche_ameliorations.py` ; le joueur remplit les
+  colonnes jaunes) : onze pièces passent épiques, la Pointe du chasseur garde sa marque sur un seul ennemi jusqu'à sa mort (12.71,
+  `Editor/FicheAmeliorationsBaker`).
+- **Les autres réglages** : le gong (le boss appelé tôt) ne rend plus qu'une carte par ligne plus rare ; « Le style, ça compte aussi »
+  ne donne plus de tir parfait (le ralenti seulement ; l'anneau tourne en temps réel pendant les ralentis) ; le Rappel avec la Pluie de
+  flèches, plus fort ; chaque flèche du Déluge fait aussi pleuvoir ; 1 s de répit après un étourdissement (plus de stun-lock) ; plus de
+  chiffre doré au-dessus des ennemis tués ; **la vague 1 a 30 % d'ennemis en moins** (après les parties de l'ami ; 12.70, 12.72, 12.73).
+
+**Le 12 novembre, le neuvième essai** (une partie au casque, en Normal : victoire, MK en 1:36, la vague 1 plus douce et ses trois
+phases vérifiées ; `Refonte_TowerDefense.md`, 12.74) et les retours du joueur, codés le soir même (compilé, **pas encore vu dans
+Unity ni testé au casque**) : **les coffres scellés** par leurs gardiens (`Chests/ChestSeal`) ; **les tours −25 %** (la *Structure
+Power*) ; **la Force à +10 %**, l'anneau 10 % plus rapide ; **les raretés montent au fil de la partie, pour tout** (70 / 20 / 7 / 3
+à la vague 1, 50 / 28 / 15 / 7 à la vague 5, la même moyenne qu'avant ; les tourelles suivent : 1,6 plan par orbe au lieu de 2,2) ;
+**la Grande Horloge** (le dégel ÷3, tes flèches repartent 0,5 s avant lui, la musique de MK
+continue pendant Minuit) ; **les ultimes dans l'arène** attendent 15 s après le début du combat ; **le chantier du début** sans la
+Barricade ; **le gong** se voit (la carte « Prendre · gong », le journal) ; **la porte de l'antre** (le message, les particules, le
+scintillement des battants, les barres de la grotte, l'éclair blanc au fond). Tout passe par `Editor/NinthTestBaker` (qui change
+aussi la scène ouverte : l'enregistrer, Ctrl+S ; **pas encore fait** après la partie du soir : le baker le refera) et le code.
+Puis, après une courte partie le soir même (12.75) : **les hitbox des petits ennemis** à la taille de leur modèle et le corps
+des sauteurs qui suit leurs sauts (`Enemy.Hop.cs`), **les gardiens** au sol à l'air libre, reliés aux voies, hors d'elles
+(`Enemy.TryGuardPoint` ; un gardien sous la carte bloquait un coffre), **les boss** plus rapides que les ennemis de base ;
+`Editor/HitboxBossBaker`.
+Puis le dixième essai (22:36, 12.76) : **la porte** (les couvercles de la coupe des battants, `MeshCut`), **le rayon scellé** plus
+visible, **le saut** moins sensible et réglable dans les paramètres, **la Tour-aimant** qui ne courbe plus une flèche bien visée,
+**la grenade** dont chaque flèche a tes améliorations, **la corde fantôme refaite** (`Upgrades/ArrowPieces.Ghost.cs`) ;
+`Editor/TenthTestBaker`, qui remonte aussi les drops du début de partie (accepté par le joueur : objets et parchemins de
+65 / 22 / 9 / 4 à 45 / 30 / 17 / 8, tourelles de 50 / 30 / 14 / 6 à 30 / 35 / 22 / 13, 2 plans par orbe en moyenne). « L'agilité » du joueur est le parchemin **Adresse** (réponse du 13 novembre).
+Puis, le 13 novembre (le joueur, à distance, depuis son téléphone) : **la batte de baseball**, une nouvelle arme débloquée dès
+le départ : la grenade lancée puis frappée file sur l'ennemi regardé, la qualité vient du chemin parcouru par la grenade ;
+grenade toutes les 3 s, l'Adresse l'accélère (`Combat/BaseballBat.cs`, `Editor/BatteBaker`, GDD section 5, raccourci F6).
+Pas encore vue dans Unity ni au casque ; sons provisoires, le joueur choisit parmi des sons freesound proposés ; la liste des
+améliorations à adapter à la batte est à valider avec lui.
+
+**Pas encore essayé** : les dernières retouches du 8 au soir, celles de 12.72 (le gong, les raretés à 60 / 24 / 11 / 5, le Déluge),
+et tout ce qui est fait le 12 novembre. **Les points ouverts** : le journal a écrit deux fois « Boss vaincu » pour Francine et Nolan, pas encore
+expliqué (12.68) ; relancer `py Tools/equilibrage_tours.py` et `py Tools/fiche_ameliorations.py` après le passage de Unity ; les
+menaces par voie sont en sommeil (12.56) ; les vidéos du tutoriel de construction montrent encore l'ancienne pose.
+
+**LA PROCHAINE TÂCHE** : ouvrir Unity (cliquer dans la fenêtre, lire la console, Ctrl+S si un baker a changé la scène), une partie
+entière en **Normal** au casque, puis demander à Claude de lire le journal (`Logs/Parties/`, le plus récent) ; les tests sont en tête
+de `Checklist_Demo.md` (le neuvième essai, puis le huitième, le septième et le sixième). **Plus tard** (idées du joueur, rien de
+commencé ; GDD, sections 21 et 24) : le menu des constructions (tout ce qu'on peut bâtir, grisé tant qu'on ne l'a pas obtenu), le mode
+démo en tutoriel interactif (le Normal est trop dur pour un débutant au casque), et, pour la deuxième partie du jeu, des sorts ou des
+compétences, ou un style « extraction shooter ».
 
 ### Le deuxième chantier : la refonte du tower defense (27 et 28 octobre, dans une autre discussion)
 
 Tout est dans `Refonte_TowerDefense.md` (partie « Avancement » en tête : ce qui est fait, ce qui reste, l'étape suivante).
-En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à essayer les duos dans Unity le 31 octobre),
-**codé et compilé, rien de testé dans Unity ni au casque** :
+L'historique, jour par jour (au 28 octobre, tout était **codé et compilé, rien de testé dans Unity ni au casque** ; depuis, tout
+est commité, et le joueur joue des parties entières au casque depuis le 2 novembre ; le point du 12 novembre est plus haut) :
 - étape 1, les modèles : 5 packs CC0 dans `projet archery/Assets_TowerDefense/` (hors du dépôt), et ce que le joueur a choisi
   dans `Assets/construction` (pack RTS allégé, modèles Poly Pizza ; crédités) ;
 - étape 2 : les **caisses de l'ingénieur** (à la place des cristaux) donnent des **plans** (à la place des matériaux) ;
@@ -107,9 +191,7 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   la régénération du joueur, MK ×2. Le 2 novembre, **le deuxième essai** (12.42 : les places refusées signalées par le joueur, la
   partie de sa sœur) : 2 plans par coffre, la courbe des PV relevée (pas MK), les tours ×1,2, des vagues plus courtes, la grille
   (plus de limite de distance, habillage des falaises ignoré, la voie réservée à la terre des voies, demi-cases en clairière) ;
-  compilé, pas encore vu dans Unity. **LA PROCHAINE TÂCHE** : ouvrir Unity (les bakers), un nouvel essai au casque
-  (`Checklist_Demo.md`, « Le deuxième essai du 2 novembre », puis « Le premier essai du 2 novembre »), relancer le tableau
-  d'équilibrage ; ensuite : les ultimes. Le même soir : le centre d'entraînement sur la voie du milieu (5 mannequins, dont deux
+  compilé, puis essayé au casque les jours suivants (les essais suivants sont plus bas). Le même soir : le centre d'entraînement sur la voie du milieu (5 mannequins, dont deux
   qui vont et viennent, avec le visage dessiné par le joueur ; plus de cibles) et les torches au bord des voies (12.43,
   `Editor/TrainingLaneBaker` ; enregistrer la scène après Unity). Les ultimes : règles décidées (12.44 : le niveau 4 d'un trio
   au niveau 3, 10 plans, une par partie, une par famille, 3 en tout) ; choisies : le Colosse de forge, le Grand Manège, la Grande
@@ -167,10 +249,18 @@ En bref (au 28 octobre ; depuis, tout est commité, et le joueur a commencé à 
   visible, le joueur à 100 PV et la Vigueur à +12 (`Editor/PlayerHealth100Baker`) ; à faire plus tard : le menu des constructions (GDD, section 21). Les menaces par voie, le lot 5 (12.56 : chaque voie sa famille
   d'ennemis), codées puis mises en sommeil le même jour (les mots au-dessus des voies tombaient dans les murs ; le joueur :
   « retirons cette mécanique pour le moment » ; les idées pour une autre annonce sont dans 12.56). Plus tard (idée du joueur) : des sorts ou des compétences
-  pour la deuxième partie du jeu (GDD, section 24, à préciser).
-Raccourcis : **B** (2 plans de chaque), **V** (une caisse), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, chaque trio, puis chaque ultime, posée à plusieurs niveaux).
+  pour la deuxième partie du jeu (GDD, section 24, à préciser). Le 8 novembre (12.68 à 12.73) : le Phare affaibli, MK et ses
+  paliers, plusieurs niveaux d'un coup, plus d'or ni de combo, le choix de la pause, les quatre raretés, la fiche des
+  améliorations, la vague 1 plus douce ; le détail est dans « Où on en est (12 novembre) », plus haut.
+Raccourcis : **B** (2 plans de chaque), **V** (un coffre ; le coffre unique depuis le 2 novembre), **F2** (menu des plans et pose sans casque), **F3** (projeter les ennemis proches), **F4** (la vitrine : chaque tour, puis chaque duo, chaque trio, puis chaque ultime, posée à plusieurs niveaux).
 
-### Le chantier en cours : la refonte roguelike (25 et 26 octobre)
+### La refonte roguelike (25 au 27 octobre, finie ; revue le 8 novembre)
+
+**Depuis le 8 novembre** (dans la discussion du tower defense : `Refonte_TowerDefense.md`, 12.69 à 12.72 ; le point est dans « Où
+on en est (12 novembre) », plus haut) : **plus d'or, plus de boutique ni de prix**, plus de coffre de boss ; la pause propose une
+carte gratuite par ligne (parchemins, objets, tourelles) ; les parchemins ont deux effets et une rareté ; quatre raretés (l'épique
+en violet), 60 / 24 / 11 / 5 ; onze pièces épiques (`Docs/Fiche_Ameliorations.xlsx`). Ce qui suit, sur la boutique, les prix et le
+coffre de boss, est l'historique.
 
 **Pourquoi** : le joueur trouvait la partie roguelike ratée (des hausses de statistiques en boucle, une cinquantaine
 d'améliorations par partie, presque toujours les mêmes). Il a choisi la proposition B, « la flèche en pièces »
@@ -241,8 +331,8 @@ tombe là où le boss est mort (`Chests/ChestSpawner.cs` ; le raccourci X le pos
 
 **À l'ouverture de Unity** : cliquer dans la fenêtre ; la console écrit ce que chaque baker a fait (le catalogue de la
 boutique est modifié une seule fois par étape). Si un baker a changé la scène, l'enregistrer (Ctrl+S). Puis les tests :
-`Checklist_Demo.md`, parties « Refonte roguelike, étape 1 » à « étape 5 » ; raccourcis **R**, **F**, **X**, **M**
-(`Demo_Vendredi.md`).
+`Checklist_Demo.md`, parties « Refonte roguelike, étape 1 » à « étape 5 » ; raccourcis **R**, **F**, **X**
+(`Demo_Vendredi.md` ; **M**, l'or, ne sert plus depuis le 8 novembre).
 
 | Fichier | Rôle |
 |---|---|
@@ -252,9 +342,9 @@ boutique est modifié une seule fois par étape). Si un baker a changé la scèn
 | `Scripts/Upgrades/ArrowPieces.cs`, `ArrowPieces.Lot2.cs` | les 24 pièces nouvelles et ce que font les duos (réglages en tête des fichiers) |
 | `Scripts/Upgrades/ArrowDuos.cs` | les 6 duos, « Duo possible » |
 | `Scripts/Upgrades/PieceLook.cs`, `PieceSounds.cs` | les pièces visibles (flèches, corde, breloque, flèche de l'atelier) et leurs couleurs ; les sons fabriqués |
-| `Scripts/Shop/ShopCatalog.cs`, `ShopManager.cs`, `ShopPanel.cs`, `ShopCard.cs`, `ShopOffer.cs` | la boutique : prix, offres, panneau |
+| `Scripts/Shop/ShopCatalog.cs`, `ShopManager.cs`, `ShopPanel.cs`, `ShopCard.cs`, `ShopOffer.cs` | le choix de la pause (la boutique jusqu'au 8 novembre) : les offres, une carte par ligne, le panneau ; l'ordre des raretés (`ShopCatalog.Rank`), le texte des parchemins selon leur rareté (`ScrollText`) |
 | `Scripts/Shop/ArrowWorkshop.cs` | l'atelier : la flèche 3D debout, les sceaux animés et leurs légendes, les pièces à équiper (place, tailles et vitesses en tête du fichier) |
-| `Scripts/Chests/ChestReward.cs`, `Chest.cs`, `ChestSpawner.cs` | les coffres et le coffre de boss |
+| `Scripts/Chests/ChestReward.cs`, `Chest.cs`, `ChestSpawner.cs`, `ChestOrb.cs` | les coffres (le coffre de boss est retiré le 8 novembre) ; la miniature d'une tourelle dans son orbe |
 | `Editor/RoguelikeStep1Baker.cs` à `RoguelikeStep5Baker.cs` | les changements du catalogue et de la scène, faits une fois |
 | `Editor/RoguelikeTuningBaker.cs` | les réglages du joueur du 26 octobre au soir (catalogue, mannequin, mannequins en plus), faits une fois |
 | `Editor/RoguelikeAllShotsBaker.cs` | le 27 octobre : les cartes réservées aux tirs parfaits jouent à chaque flèche, fait une fois |
@@ -267,8 +357,8 @@ boutique est modifié une seule fois par étape). Si un baker a changé la scèn
 | `Scripts/Core/DemoBoost.cs` | les raccourcis F et R |
 
 **En attente du joueur** : quels anciens objets ne jouent qu'aux tirs parfaits (tableau dans `Refonte_Roguelike.md`), la
-courbe des ennemis avec moins d'améliorations, les textes et les icônes des pièces nouvelles (provisoires), la hausse
-de prix de chaque parchemin (*Own Scroll Price Increase*, 10 %). **Ensuite** : l'étape 6
+courbe des ennemis avec moins d'améliorations, les textes et les icônes des pièces nouvelles (provisoires) ; la hausse
+de prix de chaque parchemin (*Own Scroll Price Increase*) n'a plus d'objet depuis que l'or est retiré. **Ensuite** : l'étape 6
 (des pièces débloquées par les succès, une réserve par source).
 
 ## 2. Le katana, 3e version (refait le 24 octobre, après l'oral ; testé au casque le même jour, satisfaisant)
@@ -324,10 +414,13 @@ L'ancienne version aux traces libres (katana et bouclier) est dans Git, au commi
 
 **La suite du développement, dans l'ordre** (choisie par le joueur le 26 octobre ; détail dans le GDD, section 21, « La
 suite, dans l'ordre ») :
-1. finir la refonte roguelike (partie 1 et `Refonte_Roguelike.md`) ;
+1. finir la refonte roguelike (partie 1 et `Refonte_Roguelike.md`) : **faite** (27 octobre), revue le 8 novembre (plus d'or,
+   le choix de la pause, les quatre raretés) ;
 2. la refonte des tourelles : plus de matériaux, des sortes de coffres qui proposent plusieurs tourelles au choix, beaucoup
    plus de tourelles et de constructions, construire n'importe où sur les zones constructibles ; brainstorm fait le
-   27 octobre (dans une autre discussion que la refonte roguelike) : `Refonte_TowerDefense.md`, partie « Avancement » ;
+   27 octobre (dans une autre discussion que la refonte roguelike) : `Refonte_TowerDefense.md`, partie « Avancement ».
+   **Faite** (10 tours à 5 niveaux, 13 duos, 7 trios, 3 ultimes) ; **en cours au 12 novembre : l'équilibrage, essai après
+   essai** (partie 1, « Où on en est ») ;
 3. le troisième easter egg : le katana en sera l'arme ; un monde fait presque entièrement de 0 et 1 ;
 4. le boss d'après MK, qui fait la transition entre l'acte 1 et l'acte 2 ;
 5. commencer l'acte 2.
@@ -350,11 +443,11 @@ Le reste, qui se glisse entre ces étapes, dans l'ordre conseillé (aussi dans l
    avec la condition d'apparition des runes.
 9. Le Quest seul : premier build testé le 25 octobre au soir, qui rame un peu vers la vague 10. Mesurer une partie
    (`Docs/Audit_Performance_Quest.md`, partie 8), puis alléger ce qui pèse.
-10. La refonte roguelike (partie 1, « Le chantier en cours », et `Docs/Refonte_Roguelike.md`) : tester au casque les étapes 1 à 5
-    (codées les 25 et 26 octobre : `Checklist_Demo.md`, « Refonte roguelike » ; R pour essayer les pièces nouvelles,
-    F pour les avoir toutes dans l'atelier), les régler, écrire leurs textes, décider quels anciens objets ne jouent
-    qu'aux tirs parfaits, reprendre la courbe des ennemis.
-11. Plus tard : le mode démo en tutoriel interactif, la suite du lore (`Lore.md`, GDD section 24).
+10. La refonte roguelike (partie 1, « La refonte roguelike », et `Docs/Refonte_Roguelike.md`) : testée au casque le 27 octobre,
+    puis dans les parties entières depuis le 2 novembre ; restent ses textes et la courbe des ennemis (que les essais du
+    tower defense reprennent).
+11. Plus tard : le mode démo en tutoriel interactif, le menu des constructions, la suite du lore (`Lore.md`, GDD sections 21
+    et 24).
 
 ## 4. Pour la présentation
 

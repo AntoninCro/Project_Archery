@@ -125,6 +125,8 @@ Inventaire de tout ce qui vient d'ailleurs dans le projet (packs, polices, sons,
 | Le temps qui s'arrête et qui reprend (`Audio/Horloge_Arret.wav`, `Horloge_Reprise.wav`) | *Reverse Crash Cymbal Projection*, deleted_user_7146007 (freesound.org/people/deleted_user_7146007/sounds/383903) ; sa dernière seconde (l'arrêt) et ses 2,5 dernières secondes remises à l'endroit (la reprise), en mono, 48 kHz. L'original est dans `Audio/` | CC0 |
 | La glace qui éclate (`Audio/Horloge_Bris.wav`, `Horloge_Eclat.wav`) | *Ice break*, humanoide9000 (freesound.org/people/humanoide9000/sounds/329744) ; la série de craquements (5 à 7,2 s) et trois coups serrés (6,25 à 6,8 s), un peu écrêtés, en mono, 48 kHz. L'original est dans `Audio/` | CC0 |
 | Le carillon des échos (`Audio/Horloge_Carillon.wav`) | *GLEAM-GLOW-SFX-CHIME.wav*, newagesoup (freesound.org/people/newagesoup/sounds/351408) ; depuis son attaque (1,2 s), 3,4 s, en mono, 48 kHz. L'original est dans `Audio/` | CC0 |
+| Coup de la batte de baseball (`Audio/Batte_Coup.wav`, 13 novembre) | *Bat_hit2*, hashtagsmcgee (freesound.org/people/hashtagsmcgee/sounds/851452 ; une batte d'aluminium sur une balle) ; depuis son attaque, 0,62 s, fondu, en mono, 48 kHz. L'aperçu MP3 de freesound est dans `Audio/` | CC0 |
+| Coup parfait de la batte (`Audio/Batte_Parfait.wav`) | *Big impact.wav*, AudioPapkin (freesound.org/people/AudioPapkin/sounds/430977) ; 2,2 s depuis son attaque, saturé fort (écrêtage doux puis saturation asymétrique), sa retombée refaite, mêlé à *Bat_hit2* (ci-dessus), ramené au volume de l'explosion de la grenade, en mono, 48 kHz (`Tools/sons/batte.py`). L'aperçu MP3 de freesound est dans `Audio/` | CC0 |
 
 ### Fait pour le projet
 

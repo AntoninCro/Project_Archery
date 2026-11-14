@@ -50,15 +50,28 @@ namespace Archery.Shop
         [Header("Améliorations")]
         public List<Upgrade> upgrades = new List<Upgrade>();
 
-        [Tooltip("Chances des raretés des objets (boutique, coffres). Une seule ligne : les mêmes chances toute la partie. " +
-                 "On peut ajouter des lignes pour les faire changer à partir d'une vague.")]
+        [Tooltip("Chances des raretés des objets et des parchemins (pause, coffres). Une ligne par vague de départ (la dernière vaut " +
+                 "pour les suivantes) : depuis le 12 novembre, elles montent au fil de la partie. Les tourelles ont les mêmes, en " +
+                 "nombre de plans (BuildManager, Plan Chances).")]
         // 50 / 35 / 15 depuis le 27 octobre au soir (choix du joueur) : une légendaire précise sortait aussi souvent qu'une commune
         // précise (20 / 60 / 20 avant).
         // 45 / 30 / 17 / 8 le 8 novembre au soir, avec l'épique ; puis 60 / 24 / 11 / 5 le même soir, après la partie de 15:40
         // (moins de rares, d'épiques et de légendaires ; Editor/RaretesBaker).
+        // Depuis le 12 novembre (le joueur, après le neuvième essai : « trop de légendaires et d'épiques » ; « prends 70 / 20 / 7 / 3
+        // pour tout et augmente progressivement au cours de la partie, qu'en moyenne on arrive au même nombre qu'actuellement ») :
+        // 70 / 20 / 7 / 3 à la vague 1, 5 points de communes de moins à chaque vague, jusqu'à 50 / 28 / 15 / 7 à la vague 5. Sur les
+        // 5 vagues à coffres (une pause après chacune), la moyenne reste 60 / 24 / 11 / 5. Les tourelles suivent la même montée
+        // (BuildManager) ; Editor/NinthTestBaker.
+        // Le soir même, après le dixième essai (le joueur : « la partie m'a paru très fade […] peut-être augmenter légèrement les
+        // drops, en particulier en début de partie » ; Editor/TenthTestBaker) : la courbe part une vague plus haut, de 65 / 22 / 9 / 4
+        // à 45 / 30 / 17 / 8 ; 55 / 26 / 13 / 6 en moyenne sur les 5 vagues à coffres.
         public List<RarityOdds> rarityOdds = new List<RarityOdds>
         {
-            new RarityOdds(1, 60f, 24f, 11f, 5f),
+            new RarityOdds(1, 65f, 22f, 9f, 4f),
+            new RarityOdds(2, 60f, 24f, 11f, 5f),
+            new RarityOdds(3, 55f, 26f, 13f, 6f),
+            new RarityOdds(4, 50f, 28f, 15f, 7f),
+            new RarityOdds(5, 45f, 30f, 17f, 8f),
         };
 
         [Tooltip("Part minimale des cartes communes, même avec beaucoup d'améliorations Chance (0,4 = 40 %).")]
@@ -175,7 +188,7 @@ namespace Archery.Shop
 
         /// <summary>
         /// Le texte d'un parchemin à cette échelle (sa rareté), prêt pour un texte TMP (« ➶ » devient le sprite des dégâts : la police
-        /// Cinzel n'a pas ce caractère, il s'affichait en carré ; 8 novembre au soir), d'après sa valeur : la Force, les dégâts et l'anneau (la moitié) ;
+        /// Cinzel n'a pas ce caractère, il s'affichait en carré ; 8 novembre au soir), d'après sa valeur : la Force, les dégâts et l'anneau (autant depuis le 12 novembre, la moitié avant ; PlayerUpgrades.StrengthRingShare) ;
         /// l'Adresse, la bande verte et les tirs parfaits ; la Vigueur, les PV et la portée (la même part des PV de base).
         /// </summary>
         public static string ScrollText(Upgrade upgrade, float scale)
@@ -187,7 +200,7 @@ namespace Archery.Shop
             switch (upgrade.effect)
             {
                 case UpgradeEffect.Strength:
-                    return CardText.Symbols($"+{Percent(value)} \u27B6, anneau {Percent(value * 0.5f)} plus rapide");
+                    return CardText.Symbols($"+{Percent(value)} \u27B6, anneau {Percent(value * PlayerUpgrades.StrengthRingShare)} plus rapide");
                 case UpgradeEffect.Dexterity:
                     return CardText.Symbols($"Bande verte {Percent(value)} plus large, tirs parfaits +{Percent(value)} \u27B6");
                 case UpgradeEffect.Vigor:
@@ -336,7 +349,8 @@ namespace Archery.Shop
 
         /// <summary>
         /// La pièce agit avec l'arme choisie (27 octobre, demandé par le joueur) : la corde fantôme (la corde à vide) n'existe qu'avec
-        /// un arc ; avec les Akimbow ou le katana, la boutique et les coffres ne la proposent pas. Les raccourcis de test (R, Tab, F)
+        /// un arc ; avec les Akimbow ou le katana, la boutique et les coffres ne la proposent pas (avec la batte, depuis le 13 novembre au
+        /// soir : une grenade fantôme flotte devant le joueur, <c>Combat/BaseballBat</c>). Les raccourcis de test (R, Tab, F)
         /// la donnent quand même. La corde de siège marche avec toutes les armes depuis le 27 octobre (les arbalètes se chargent au
         /// bout de leur anneau, les failles du katana mûrissent).
         /// </summary>

@@ -34,6 +34,12 @@ namespace Archery.Save
 
         /// <summary>Force de la vignette de confort pendant le slide (0 = désactivée, 1 = la plus forte).</summary>
         public float comfortVignette = 0.5f;
+
+        /// <summary>
+        /// Sensibilité du saut aux bras (12 novembre, le joueur : « le saut est un peu trop sensible ; peut-être rajouter un paramètre
+        /// pour le modifier dans les menus ») : 0 = pas de saut aux bras, 0,5 = le réglage de la scène, 1 = le plus sensible.
+        /// </summary>
+        public float jumpSensitivity = 0.5f;
     }
 
     /// <summary>
@@ -171,6 +177,26 @@ namespace Archery.Save
 
         public const float MinTurnSpeed = 30f;
         public const float MaxTurnSpeed = 180f;
+
+        /// <summary>Sensibilité du saut aux bras (0 à 1 ; en dessous de <see cref="JumpOff"/>, pas de saut aux bras).</summary>
+        public float JumpSensitivity
+        {
+            get => Data.jumpSensitivity;
+            set
+            {
+                Data.jumpSensitivity = Mathf.Clamp01(value);
+                MarkDirty();
+            }
+        }
+
+        /// <summary>En dessous de cette sensibilité, le saut aux bras est coupé.</summary>
+        public const float JumpOff = 0.05f;
+
+        /// <summary>
+        /// La vitesse des mains qu'il faut pour sauter, par rapport au réglage de la scène, à cette sensibilité : ×1 à 0,5 (le
+        /// milieu), ×1,55 au plus bas, ×0,62 au plus haut.
+        /// </summary>
+        public static float JumpSpeedFactor(float sensitivity) => Mathf.Pow(2f, (0.5f - Mathf.Clamp01(sensitivity)) * 1.4f);
 
         void Awake()
         {

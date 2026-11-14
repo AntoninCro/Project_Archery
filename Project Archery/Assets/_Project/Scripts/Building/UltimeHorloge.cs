@@ -464,6 +464,8 @@ namespace Archery.Building
         float m_NextStroke;
         float m_MidnightStart = -1f;
         float m_MidnightEnd;
+        // Après le douzième coup, tes flèches repartent d'abord ; le dégel brise les figés à cette heure-là (12 novembre).
+        float m_ThawAt = -1f;
         float m_NextArrowScan;
         float m_StrokeTime;
         Transform m_Bubble;
@@ -487,6 +489,10 @@ namespace Archery.Building
         Vector3 Hub => transform.position;
 
         bool InMidnight => m_Strokes > 0;
+
+        // Le temps que tes flèches arrêtées ont pour toucher les figés avant que le dégel les brise (12 novembre, le joueur, après
+        // la vague 7 de sa partie : 4 flèches sur 53 avaient touché, le dégel tuait tout au moment où elles repartaient).
+        const float k_ArrowLead = 0.5f;
 
         protected override void Awake()
         {
@@ -581,8 +587,13 @@ namespace Archery.Building
         {
             Arrow.AnyHit += OnArrowHit;
 
+            // Dans l'arène, au début du combat (ArenaTurrets la rallume) : son premier Minuit, MkUniqueInterval s plus tard au plus tôt
+            // (12 novembre, le joueur : les ultimes frappaient MK avant que la salle soit allumée), même surchargée.
             if (InArena && IsBuilt && !m_ArenaHint)
             {
+                m_Thrown = 0;
+                var countdown = (k_Hours - 1) * m_TickInterval / Mathf.Max(0.1f, OverchargeRate) + m_MidnightWindup;
+                m_NextTick = Time.time + Mathf.Max(0.6f, MkUniqueInterval - countdown);
                 m_ArenaHint = true;
                 HeadMessages.Show("La Grande Horloge est là !\n<size=65%>Touche MK : tes flèches sont rejouées ; après le XII, Minuit " +
                                   "arrête toute l'arène</size>", k_Title, 5f);
@@ -672,7 +683,9 @@ namespace Archery.Building
                 return;
             }
 
-            if (InMidnight)
+            if (m_ThawAt >= 0f)
+                UpdateThaw();
+            else if (InMidnight)
                 UpdateMidnight();
             else
                 UpdateTicks();
@@ -957,7 +970,10 @@ namespace Archery.Building
             m_MidnightEnd = Time.time + time + 0.2f;
             m_Spin = 0f;
             m_GlowFlare = 2f;
-            Sfx.Hush();
+            // Dans l'arène, la musique du boss final continue (12 novembre, le joueur : « le fait qu'elle s'arrête en plein milieu
+            // retire beaucoup à l'ambiance ») ; sur la carte, le silence de Minuit.
+            if (!InArena)
+                Sfx.Hush();
             // Moins fort (le joueur, 3 novembre, après l'avoir entendu) : 0,6 ; il enfle jusqu'à sa coupure.
             Sfx.PlayThroughHush(m_TimeStopClip, CenterPoint, 0.6f, 1f, 0f);
             // Les mots du joueur (2 novembre).
@@ -977,7 +993,9 @@ namespace Archery.Building
         {
             FreezeTime();
             // Le silence (3 novembre, le joueur) : plus que l'horloge et le joueur ; toutes ses sources passent par PlayThroughHush.
-            Sfx.Hush();
+            // Pas dans l'arène (12 novembre).
+            if (!InArena)
+                Sfx.Hush();
             if (Time.time < m_NextStroke)
                 return;
 
@@ -993,12 +1011,50 @@ namespace Archery.Building
             if (m_Strokes > 0)
                 return;
 
-            EndMidnight(true);
+            // Le douzième coup (12 novembre, le joueur) : tes flèches arrêtées repartent d'abord, droit devant elles, et touchent les
+            // figés (gelés : préparés pour elles) ; le dégel ne les brise qu'un instant plus tard.
+            ReleaseArrows();
+            m_ThawAt = Time.time + k_ArrowLead;
+            foreach (var enemy in m_Frozen)
+            {
+                if (enemy != null && enemy.IsAlive)
+                    enemy.Freeze(k_ArrowLead + 0.1f);
+            }
+
+            if (m_StoppedDragon != null)
+                m_StoppedDragon.StopTime(k_ArrowLead + 0.1f);
             // Les mots du joueur (2 novembre).
             HeadMessages.Show("Le temps reprend son cours", k_Gold, 2.5f);
+        }
+
+        // Entre le départ des flèches et le dégel : les figés le restent, rien d'autre ne s'arrête.
+        void UpdateThaw()
+        {
+            if (Time.time < m_ThawAt)
+                return;
+
+            EndMidnight(true);
             m_Thrown = 0;
             m_HourAngle = 0f;
             m_NextTick = Time.time + 1f;
+        }
+
+        // Les flèches arrêtées par Minuit repartent toutes ensemble, chacune à sa vitesse et dans sa direction.
+        void ReleaseArrows()
+        {
+            var released = false;
+            foreach (var stopped in m_Stopped)
+            {
+                if (stopped.Arrow == null || !stopped.Arrow.IsHovering)
+                    continue;
+                stopped.Arrow.Hover(false);
+                stopped.Arrow.Velocity = stopped.Velocity;
+                released = true;
+            }
+
+            if (released)
+                Burst(CenterPoint, k_Gold, 60, 10f, 0.3f, 0.9f, 0.3f);
+            m_Stopped.Clear();
         }
 
         // Le rayon atteint par la bulle de Minuit : elle part vite, puis ralentit en arrivant au bord.
@@ -1064,18 +1120,12 @@ namespace Archery.Building
             return false;
         }
 
-        // Le douzième coup : les flèches repartent toutes ensemble, les ennemis reprennent ; et (shatter) le dégel qui brise : le givre
-        // de tous les figés éclate d'un coup.
+        // La fin de Minuit : les flèches qui attendaient encore repartent, les ennemis reprennent ; et (shatter) le dégel qui brise :
+        // le givre de tous les figés éclate d'un coup (depuis le 12 novembre, un instant après le départ des flèches : UpdateMidnight).
         void EndMidnight(bool shatter)
         {
             Sfx.Unhush();
-            foreach (var stopped in m_Stopped)
-            {
-                if (stopped.Arrow == null || !stopped.Arrow.IsHovering)
-                    continue;
-                stopped.Arrow.Hover(false);
-                stopped.Arrow.Velocity = stopped.Velocity;
-            }
+            ReleaseArrows();
 
             if (m_StoppedDragon != null)
             {
@@ -1116,11 +1166,9 @@ namespace Archery.Building
                 Rumble(Hub, 0.6f);
             }
 
-            if (m_Stopped.Count > 0)
-                Burst(CenterPoint, k_Gold, 60, 10f, 0.3f, 0.9f, 0.3f);
-            m_Stopped.Clear();
             m_Frozen.Clear();
             m_Strokes = 0;
+            m_ThawAt = -1f;
             m_MidnightStart = -1f;
             m_Spin = 1f;
         }

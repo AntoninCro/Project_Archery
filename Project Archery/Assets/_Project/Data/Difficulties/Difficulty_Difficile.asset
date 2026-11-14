@@ -35,7 +35,7 @@ MonoBehaviour:
   fullStrengthWave: 3
   waveCurve: 1
   scoreMultiplier: 1.5
-  structurePower: 0.97
+  structurePower: 0.73
   ballistaFireRate: 1
   sky:
     elevation: 35

@@ -335,8 +335,9 @@ namespace Archery.Journal
                 rows[i] = new List<string>();
             foreach (var offer in m_Shop.UpgradeOffers)
             {
+                // La carte que le gong a rendue plus rare le dit (12 novembre, ShopManager.MarkBoosted).
                 if (offer != null && offer.Row >= 0 && offer.Row < rows.Length && offer.Kind != Archery.Shop.ShopOfferKind.Unavailable)
-                    rows[offer.Row].Add(OfferName(offer));
+                    rows[offer.Row].Add(OfferName(offer) + (offer.PriceText != null && offer.PriceText.EndsWith("gong") ? " [gong]" : ""));
             }
 
             string Row(int i, string name) => $"{name} : {(rows[i].Count > 0 ? string.Join(", ", rows[i]) : "rien")}";
@@ -378,7 +379,11 @@ namespace Archery.Journal
                     Line($"Vague {m_Waves.WaveNumber} : la montée commence.");
                     break;
                 case WaveStage.Boss:
-                    Line($"Vague {m_Waves.WaveNumber} : le chrono est fini, le boss arrive.");
+                    // Le boss appelé au gong (12 novembre : le journal écrivait toujours « le chrono est fini », et le joueur croyait
+                    // que ses deux coups de gong n'avaient pas compté).
+                    Line(m_Waves.BossCalledEarly
+                        ? $"Vague {m_Waves.WaveNumber} : **le boss est appelé au gong** (la pause qui suit : une carte plus rare par ligne)."
+                        : $"Vague {m_Waves.WaveNumber} : le chrono est fini, le boss arrive.");
                     break;
                 case WaveStage.FinalBoss:
                     Line("La vague du boss final : l'antre de MK est ouvert.");

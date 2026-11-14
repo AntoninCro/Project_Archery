@@ -126,6 +126,10 @@ namespace Archery.FinalBoss
         const float k_VoussoirJut = 0.3f;      // les claveaux avancent jusque-là devant la façade (la clé)
         const float k_Overlap = 0.02f;         // un bloc qui en touche un autre dépasse un peu : pas de faces confondues
         const int k_ArchSteps = 64;
+        const float k_DarkBackInset = 0.6f;    // le fond noir du couloir, en retrait de la face de la montagne
+        // Le bois clair du modèle de la porte (son matériau « Wood », pas « DarkWood »), épaissi de 6 % (voir PrepareDoor).
+        const string k_WoodMaterial = "Wood";
+        const float k_WoodSwell = 1.06f;
 
         GeneratedRoot m_Generated;
         Transform m_LeftHinge;
@@ -177,6 +181,21 @@ namespace Archery.FinalBoss
         /// <summary>Profondeur de la face de la montagne derrière le porche (repère de la porte).</summary>
         public float FaceDepth => m_Depth;
 
+        /// <summary>
+        /// La tête du joueur est à moins de <paramref name="margin"/> m du fond noir du couloir, ou au-delà (12 novembre, le joueur :
+        /// collée au fond pendant le fondu de l'entrée, elle passait au travers et voyait le jour derrière, un court éclair blanc).
+        /// </summary>
+        public bool HeadNearBack(float margin)
+        {
+            var rig = PlayerRig.Instance;
+            var head = rig != null ? rig.Head : null;
+            if (head == null)
+                return false;
+
+            var local = transform.InverseTransformPoint(head.position);
+            return local.z > m_Depth - k_DarkBackInset - margin && Mathf.Abs(local.x) < PorchHalfWidth;
+        }
+
         void OnEnable()
         {
             m_Generated ??= new GeneratedRoot(transform, "Porte (générée)");
@@ -194,6 +213,7 @@ namespace Archery.FinalBoss
             m_TargetAngle = OpenAngle;
             m_Duration = m_OpenDuration;
             SetFireLit(true);
+            BeginOpeningEffects();
             var center = transform.TransformPoint(0f, m_DoorTop * 0.5f, 0f);
             Sfx.Play(m_OpenClip, center, 1f, 0.55f, 0.4f);
             Invoke(nameof(PlayOpenedClip), m_OpenDuration * 0.85f);
@@ -203,6 +223,7 @@ namespace Archery.FinalBoss
         public void Close()
         {
             CancelInvoke(nameof(PlayOpenedClip));
+            StopOpeningEffects();
             m_TargetAngle = 0f;
             m_Duration = m_CloseDuration;
             Sfx.Play(m_CloseClip, transform.TransformPoint(0f, 2f, 0f), 1f, 0.5f, 0.3f);
@@ -237,6 +258,7 @@ namespace Archery.FinalBoss
             }
 
             CheckThreshold();
+            UpdateOpeningEffects();
             UpdateGlitch();
             UpdateTitle();
         }
@@ -488,7 +510,38 @@ namespace Archery.FinalBoss
 
             var renderer = filter.GetComponent<MeshRenderer>();
             materials = renderer != null ? renderer.sharedMaterials : new[] { m_WoodMaterial };
+
+            // Le bois clair et le bois foncé du modèle ont des faces presque confondues sur la face des battants (à moins de 2 mm l'une
+            // de l'autre) : de loin, elles se disputaient l'écran (12 novembre, le joueur, la porte ouverte : « deux textures l'une entre
+            // les autres »). Le bois clair est un peu épaissi : il passe devant, nettement.
+            var wood = Array.FindIndex(materials, material => material != null && material.name.StartsWith(k_WoodMaterial));
+            if (wood >= 0)
+            {
+                Swell(left, wood, k_WoodSwell);
+                Swell(right, wood, k_WoodSwell);
+            }
+
             return true;
+        }
+
+        // Écarte du milieu de la porte (z = 0 : le milieu de son épaisseur) les sommets d'un de ses matériaux.
+        static void Swell(Mesh mesh, int subMesh, float factor)
+        {
+            if (mesh == null || subMesh >= mesh.subMeshCount)
+                return;
+
+            var positions = mesh.vertices;
+            var moved = new bool[positions.Length];
+            foreach (var index in mesh.GetTriangles(subMesh))
+            {
+                if (moved[index])
+                    continue;
+                moved[index] = true;
+                positions[index].z *= factor;
+            }
+
+            mesh.vertices = positions;
+            mesh.RecalculateBounds();
         }
 
         // ---------------------------------------------------------------- fabrication
@@ -545,8 +598,10 @@ namespace Archery.FinalBoss
             // Intérieur tout noir, posé juste devant la pierre (jamais au même endroit) : murs, voûte, fond et sol.
             // Le fond est en retrait de la face de la montagne, dont la roche n'est pas tout à fait plane.
             var dark = new MeshBuilder();
-            var darkFront = jambFront + k_Overlap;
-            var darkBack = depth - 0.6f;
+            // Juste derrière la face de la feuillure (3 mm) : avec 2 cm, on voyait de chaque côté une fine bande de pierre éclairée
+            // entre le cadre et le noir, qui scintillait de loin (12 novembre, le joueur : « deux barres un peu buguées »).
+            var darkFront = jambFront + 0.003f;
+            var darkBack = depth - k_DarkBackInset;
             var wallInner = corridor - k_Overlap * 1.5f;
             foreach (var side in new[] { -1f, 1f })
                 AddBox(dark, side, wallInner, wallInner + 0.05f, 0f, corridorSide - k_Overlap, darkFront, darkBack);

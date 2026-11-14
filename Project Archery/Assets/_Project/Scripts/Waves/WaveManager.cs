@@ -292,9 +292,11 @@ namespace Archery.Waves
                 m_CalmQueue.Clear();
                 m_RiseQueue.Clear();
 
-                // Le message reste devant le joueur tant qu'il n'est pas entré dans l'arène (Final Boss Director).
+                // Le message reste devant le joueur tant qu'il n'est pas entré dans l'arène (Final Boss Director). Il dit d'entrer dans
+                // la porte (12 novembre, le joueur : « s'ouvre » seul ne disait pas quoi faire).
                 HeadMessages.Pin(FinalBossMessageId,
-                                 $"Vague {WaveNumber} / {WavesToWin}\nBoss final\n<size=60%>La porte de l'antre s'ouvre,\nau bout de la voie du milieu</size>",
+                                 $"Vague {WaveNumber} / {WavesToWin}\nBoss final\n<size=60%>La porte de l'antre s'ouvre, au bout de la voie du milieu :\n" +
+                                 "entre dans la porte pour affronter le dragon</size>",
                                  new Color(1f, 0.35f, 0.25f), 1.15f);
                 Sfx.Play(m_WaveStartClip, AnnouncePosition(), 1f, 1f, 0f);
             }

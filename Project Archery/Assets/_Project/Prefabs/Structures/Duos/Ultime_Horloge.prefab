@@ -6997,8 +6997,8 @@ MonoBehaviour:
   m_MidnightTime: 9
   m_BubbleGrowTime: 0.8
   m_BubbleSaturation: -100
-  m_ShatterDamage: 350
-  m_ShatterBossShare: 0.02
+  m_ShatterDamage: 117
+  m_ShatterBossShare: 0.0067
   m_EchoDelay: 1
   m_EchoInterval: 0.2
   m_QueueSize: 8
@@ -7022,7 +7022,7 @@ MonoBehaviour:
   m_SkyMidnight: 0.85
   m_ArenaScale: 0.65
   m_ArenaMidnightTime: 6
-  m_ArenaShatterShare: 0.03
+  m_ArenaShatterShare: 0.01
   m_TickClip: {fileID: 8300000, guid: 42ed0c3545b709f49a39998329c956bc, type: 3}
   m_BellClip: {fileID: 8300000, guid: 9ce6840b74ea80146a59b5055d0d570b, type: 3}
   m_StopClip: {fileID: 8300000, guid: 2f1aa632dcca75b459834e9b021bb460, type: 3}

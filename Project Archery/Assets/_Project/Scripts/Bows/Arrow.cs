@@ -185,6 +185,9 @@ namespace Archery.Bows
         float m_StuckTime;
 
         bool m_HandlingHit;
+
+        // Le dernier impact était un projectile traversé (IArrowPassThrough) : chercher ce qui est derrière, dans le même pas.
+        bool m_PassedThrough;
         bool m_DeflectPending;
         Vector3 m_DeflectVelocity;
         bool m_BouncePending;
@@ -818,12 +821,20 @@ namespace Archery.Bows
 
                 // Rayon depuis la pointe jusqu'à sa position au prochain pas physique :
                 // on détecte l'impact avant que la flèche ne traverse la cible.
+                // Après un projectile traversé (IArrowPassThrough, 12 novembre), elle cherche aussitôt ce qui est derrière lui, dans le
+                // même pas : un ennemi juste derrière la boule qu'elle vient d'abattre.
                 var tip = m_Body.position + direction * m_Length;
-                if (TryFindHit(tip, direction, speed * deltaTime + 0.02f, out var hit))
+                for (var check = 0; check < 3; check++)
                 {
+                    if (!TryFindHit(tip, direction, speed * deltaTime + 0.02f, out var hit))
+                        break;
+
+                    m_PassedThrough = false;
                     HandleHit(hit, velocity);
                     if (m_State != State.Flying)
                         return;
+                    if (!m_PassedThrough)
+                        break;
                 }
             }
 
@@ -927,6 +938,19 @@ namespace Archery.Bows
             };
 
             var handler = raycastHit.collider.GetComponentInParent<IArrowHitHandler>();
+
+            // Un projectile ennemi (12 novembre, le joueur : « une flèche qui touche un projectile devrait le traverser sans s'arrêter,
+            // à part pour MK ») : elle l'abat et poursuit sa route, sans perdre de perçage ni déclencher ses pouvoirs (AnyHit : ils
+            // sont pour la cible d'après) ; il fait lui-même son bruit. Les boules de feu de MK (DragonFireball) l'arrêtent toujours.
+            // Avant, elle se plantait dans le projectile, qui disparaissait aussitôt avec elle.
+            if (handler is IArrowPassThrough)
+            {
+                handler.OnArrowHit(hit);
+                m_Pierced.Add(PierceKey(raycastHit));
+                m_PassedThrough = true;
+                return;
+            }
+
             var hitLivingThing = handler != null && handler.OnArrowHit(hit);
 
             // Pendant AnyHit, un script peut demander un ricochet (Deflect).

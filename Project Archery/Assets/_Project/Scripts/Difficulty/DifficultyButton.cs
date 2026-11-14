@@ -147,9 +147,10 @@ namespace Archery.Difficulty
             DifficultyManager.Changed -= OnDifficultyChanged;
         }
 
+        // Une flèche en plus (multitir, déluge, flèches de la grenade) ne choisit pas la difficulté (13 novembre au soir).
         public bool OnArrowHit(in ArrowHit hit)
         {
-            if (hit.IsShot)
+            if (hit.IsShot && !hit.IsExtraArrow)
                 Select();
             return false;
         }

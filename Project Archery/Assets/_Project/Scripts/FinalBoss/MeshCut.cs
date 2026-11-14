@@ -16,6 +16,13 @@ namespace Archery.FinalBoss
     {
         const float k_Weld = 1000f;     // sommets confondus à 1 mm près
 
+        // Les couvercles de morceaux qui se chevauchent (une bande de fer qui entoure les planches, les planches autour du panneau du
+        // milieu) étaient tous dans le plan x = 0 : sur la tranche des battants ouverts, ils se disputaient l'écran (12 novembre, le
+        // joueur : « la porte est toujours buguée aux deux endroits », à la hauteur des deux bandes de fer de chaque battant). Chaque
+        // couvercle sort de la coupe d'une petite part de son épaisseur (z, l'épaisseur de la porte) : le morceau le plus épais, qui
+        // entoure les autres, passe devant eux (de l'ordre du millimètre de l'un à l'autre ; 5 mm au plus pour une porte de 35 cm).
+        const float k_CapLift = 0.015f;
+
         sealed class Half
         {
             public readonly List<Vector3> Positions = new List<Vector3>();
@@ -249,13 +256,23 @@ namespace Archery.FinalBoss
                     continue;
 
                 var subMesh = loopSubMesh[loop.Key];
-                Vertex V(Vector3 p, Vector3 n) => new Vertex { Position = p, Normal = n, Uv = Vector2.zero, Weld = -1 };
+                var minZ = float.MaxValue;
+                var maxZ = float.MinValue;
+                foreach (var point in hull)
+                {
+                    minZ = Mathf.Min(minZ, point.z);
+                    maxZ = Mathf.Max(maxZ, point.z);
+                }
+
+                var lift = (maxZ - minZ) * k_CapLift;
+                Vertex L(Vector3 p) => new Vertex { Position = new Vector3(lift, p.y, p.z), Normal = Vector3.right, Uv = Vector2.zero, Weld = -1 };
+                Vertex R(Vector3 p) => new Vertex { Position = new Vector3(-lift, p.y, p.z), Normal = Vector3.left, Uv = Vector2.zero, Weld = -1 };
                 for (var i = 1; i + 1 < hull.Count; i++)
                 {
                     // L'enveloppe tourne dans le sens direct du plan (z, y) : c'est le sens inverse d'Unity vu depuis +x
                     // (couvercle de la moitié gauche, tourné vers +x), et son sens vu depuis -x (moitié droite).
-                    leftHalf.Add(subMesh, V(hull[0], Vector3.right), V(hull[i + 1], Vector3.right), V(hull[i], Vector3.right));
-                    rightHalf.Add(subMesh, V(hull[0], Vector3.left), V(hull[i], Vector3.left), V(hull[i + 1], Vector3.left));
+                    leftHalf.Add(subMesh, L(hull[0]), L(hull[i + 1]), L(hull[i]));
+                    rightHalf.Add(subMesh, R(hull[0]), R(hull[i]), R(hull[i + 1]));
                 }
             }
 

@@ -40730,29 +40730,28 @@ MonoBehaviour:
   m_DuoFromLevel: 3
   m_DuoClip: {fileID: 0}
   m_UltimateClip: {fileID: 0}
-  m_ExtraStartingStructures: 1
   m_StructuresPerBoss: 1
   m_PlanChances:
-  - one: 40
-    two: 45
-    three: 10
-    four: 5
-  - one: 30
-    two: 45
-    three: 20
-    four: 5
-  - one: 25
-    two: 40
-    three: 25
-    four: 10
-  - one: 20
-    two: 35
-    three: 30
-    four: 15
-  - one: 15
+  - one: 50
     two: 30
-    three: 35
-    four: 20
+    three: 14
+    four: 6
+  - one: 45
+    two: 31
+    three: 16
+    four: 8
+  - one: 40
+    two: 33
+    three: 18
+    four: 9
+  - one: 35
+    two: 34
+    three: 20
+    four: 11
+  - one: 30
+    two: 35
+    three: 22
+    four: 13
   m_ShowWaveReport: 1
 --- !u!1001 &146234247
 PrefabInstance:
@@ -76870,6 +76869,7 @@ MonoBehaviour:
   m_MinTowerDistance: 15
   m_SpawnDelay: 3
   m_Guards: 1
+  m_SealedByGuards: 1
   m_GuardsPerWave: 0200000002000000030000000300000004000000
   m_GuardRadius: 5
   m_GuardAggro: 15
@@ -282959,7 +282959,7 @@ MonoBehaviour:
   m_SlideCooldown: 0.4
   m_ArmJump: 1
   m_JumpHeight: 1.3
-  m_JumpHandSpeed: 1.8
+  m_JumpHandSpeed: 2.3
   m_JumpMinimumSpeed: 0.3
   m_JumpCooldown: 0.6
   m_JumpClip: {fileID: 0}

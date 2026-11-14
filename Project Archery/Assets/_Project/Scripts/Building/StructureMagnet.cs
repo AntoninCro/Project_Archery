@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Archery.Bows;
 using Archery.Combat;
 using Archery.Core;
 using Archery.Enemies;
@@ -218,7 +219,11 @@ namespace Archery.Building
 
         // ---------------------------------------------------------------- niveau 4 : les flèches courbées
 
-        // Une flèche dans la zone se tourne vers l'ennemi attiré qu'elle allait le mieux toucher (devant elle).
+        // Une flèche dans la zone se tourne vers l'ennemi attiré qu'elle allait le mieux toucher (devant elle). Depuis le 12 novembre
+        // (le joueur : « la tour-aimant attire toutes les flèches, cependant elle ne touche pas les points faibles des boss et empêche
+        // notre flèche d'atteindre certains ennemis précis ; pareil avec le talisman de l'ingénieur, je ne pouvais pas tirer sur mes
+        // tours »), seulement une flèche qui allait manquer (OnCourse) : celle qui va déjà toucher un ennemi, une cible ou un de tes
+        // bâtiments (avec le talisman de l'ingénieur) file droit ; et vers un boss, elle vise son point faible (AimPoint).
         void CurveArrows(float deltaTime)
         {
             var range = Range;
@@ -236,13 +241,18 @@ namespace Archery.Building
                     continue;
 
                 var heading = velocity / speed;
+                if (OnCourse(to, heading))
+                    continue;
+
                 Enemy best = null;
                 var bestDot = 0.6f;
+                var bestPoint = Vector3.zero;
                 foreach (var enemy in AliveEnemies())
                 {
                     if (enemy == null || !enemy.IsAlive)
                         continue;
-                    var toEnemy = enemy.Center - to;
+                    var point = AimPoint(enemy);
+                    var toEnemy = point - to;
                     var offset = enemy.transform.position - transform.position;
                     offset.y = 0f;
                     if (offset.sqrMagnitude > range * range || toEnemy.sqrMagnitude < 0.25f)
@@ -253,18 +263,82 @@ namespace Archery.Building
                     {
                         best = enemy;
                         bestDot = dot;
+                        bestPoint = point;
                     }
                 }
 
                 if (best == null)
                     continue;
 
-                var turned = Vector3.RotateTowards(heading, (best.Center - to).normalized, m_CurveRate * Mathf.Deg2Rad * deltaTime, 0f);
+                var turned = Vector3.RotateTowards(heading, (bestPoint - to).normalized, m_CurveRate * Mathf.Deg2Rad * deltaTime, 0f);
                 arrow.Velocity = turned * speed;
                 if (m_Arrows.Once(arrow))
                     arrow.SetTrailColor(m_BoltColor);
             }
         }
+
+        // Jusqu'où (m) une flèche regarde devant elle si elle va toucher quelque chose.
+        const float k_CourseCheck = 60f;
+        static readonly RaycastHit[] s_CourseHits = new RaycastHit[16];
+        static readonly Dictionary<Enemy, Collider> s_WeakPoints = new Dictionary<Enemy, Collider>();
+
+        // La flèche va déjà toucher quelque chose : le premier obstacle devant elle réagit aux flèches (un ennemi, une cible, le
+        // gong…), ou, avec le talisman de l'ingénieur, elle traverse un bâtiment avant lui (il le surcharge).
+        static bool OnCourse(Vector3 from, Vector3 heading)
+        {
+            var count = Physics.RaycastNonAlloc(from, heading, s_CourseHits, k_CourseCheck, Physics.DefaultRaycastLayers,
+                                                QueryTriggerInteraction.Ignore);
+            var nearest = k_CourseCheck;
+            Collider first = null;
+            for (var i = 0; i < count; i++)
+            {
+                var collider = s_CourseHits[i].collider;
+                if (collider == null || s_CourseHits[i].distance >= nearest || ArrowIgnore.IsIgnored(collider) ||
+                    collider.GetComponentInParent<Arrow>() != null)
+                    continue;
+                nearest = s_CourseHits[i].distance;
+                first = collider;
+            }
+
+            if (first != null && first.GetComponentInParent<IArrowHitHandler>() != null)
+                return true;
+
+            var owned = PlayerUpgrades.Instance;
+            if (owned == null || owned.Level(UpgradeEffect.Engineer) <= 0)
+                return false;
+
+            var ray = new Ray(from, heading);
+            foreach (var structure in All)
+            {
+                if (structure != null && structure.IsBuilt && structure.ArrowBounds.IntersectRay(ray, out var distance) && distance <= nearest)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // Où viser un ennemi : le point faible d'un boss (sa gemme : dégâts ×3), le centre du corps des autres.
+        static Vector3 AimPoint(Enemy enemy)
+        {
+            if (!enemy.IsBoss)
+                return enemy.Center;
+
+            if (!s_WeakPoints.TryGetValue(enemy, out var weak))
+            {
+                foreach (var hitbox in enemy.GetComponentsInChildren<Hitbox>())
+                {
+                    if (hitbox.Zone == HitZone.WeakPoint && hitbox.TryGetComponent<Collider>(out weak))
+                        break;
+                }
+
+                s_WeakPoints[enemy] = weak;
+            }
+
+            return weak != null && weak.enabled ? weak.bounds.center : enemy.Center;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetMagnetStatics() => s_WeakPoints.Clear();
 
         // ---------------------------------------------------------------- niveau 5 : la singularité
 

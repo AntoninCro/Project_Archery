@@ -6,8 +6,8 @@ namespace Archery.Player
 {
     /// <summary>
     /// Voile rouge autour de la vision (GDD, section 14) : plus le joueur a perdu de PV, plus il est rouge et plus il
-    /// s'approche du centre de la vue. Il suit vite les PV qui baissent, lentement ceux qui remontent ; sous 30 % des PV (le danger,
-    /// 4 novembre), il est presque à son plus fort et bat comme un cœur.
+    /// s'approche du centre de la vue. Il suit vite les PV qui baissent, lentement ceux qui remontent ; sous 55 % des PV (le danger,
+    /// 4 novembre ; 30 % jusqu'au 14 novembre), il est presque à son plus fort et bat comme un cœur.
     /// Il disparaît quand les PV remontent, et à la mort (l'écran de fin reste lisible).
     /// </summary>
     /// <remarks>
@@ -44,10 +44,17 @@ namespace Archery.Player
         [SerializeField]
         float m_RiseSmoothing = 0.12f;
 
-        [Tooltip("Sous cette part de PV restants, le danger : le voile est presque à son plus fort et bat comme un cœur.")]
+        [Tooltip("Sous cette part de PV restants, le danger : le voile est presque à son plus fort et bat comme un cœur. 0,55 depuis le " +
+                 "14 novembre (le joueur, tué par Jean en deux coups de 50 : « je n'ai pas vu la mort venir, l'écran doit être plus " +
+                 "rouge plus tôt » ; 0,3 avant : de 100 à 50 PV, puis la mort, sans jamais le voir battre).")]
         [Range(0f, 1f)]
         [SerializeField]
-        float m_PulseBelow = 0.3f;
+        float m_PulseBelow = 0.55f;
+
+        [Tooltip("Le rouge selon les PV perdus (au-delà du seuil), avant le danger : 1,6 fois leur part depuis le 14 novembre (1,2 avant) ; " +
+                 "à 70 % des PV, il est déjà nettement visible.")]
+        [SerializeField]
+        float m_IntensityGain = 1.6f;
 
         [Tooltip("Dans le danger : la force du rouge au moins (part de l'opacité maximale), et le creux de chaque battement (part du " +
                  "rouge). Le joueur, 4 novembre : « on ne voit pas assez le rouge sur le côté de l'écran quand on est sur le point de " +
@@ -103,7 +110,7 @@ namespace Archery.Player
 
             // Le danger (4 novembre) : le rouge presque à son plus fort, qui bat nettement ; il ne s'approche pas plus du centre
             // pour autant (on doit pouvoir viser).
-            var intensity = Mathf.Clamp01(m_Amount * 1.2f);
+            var intensity = Mathf.Clamp01(m_Amount * m_IntensityGain);
             if (alive && remaining < m_PulseBelow)
             {
                 var beat = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 7f);

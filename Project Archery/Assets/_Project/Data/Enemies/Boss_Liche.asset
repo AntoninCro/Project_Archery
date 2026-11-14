@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Nolan
   maxHealth: 608
-  moveSpeed: 1.2
+  moveSpeed: 2.4
   attackDamage: 45
   attackRange: 26
   attackInterval: 3

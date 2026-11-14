@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Jean
   maxHealth: 268
-  moveSpeed: 2.3
+  moveSpeed: 3.4
   attackDamage: 50
   attackRange: 3
   attackInterval: 2

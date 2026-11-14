@@ -26,6 +26,9 @@ namespace Archery.FinalBoss
     [DisallowMultipleComponent]
     public class FinalBossDirector : MonoBehaviour
     {
+        // À moins de … m du fond noir du couloir, le fondu de l'entrée se termine d'un coup (12 novembre).
+        const float k_BackMargin = 0.6f;
+
         [SerializeField]
         LairGate m_Gate;
 
@@ -156,7 +159,17 @@ namespace Archery.FinalBoss
 
             var fader = ScreenFader.Instance;
             if (fader != null)
-                yield return fader.Fade(1f, m_EnterFadeTime);
+            {
+                // Le fondu rattrape le joueur au fond du couloir (12 novembre, le joueur : collé au mur du fond pendant le fondu, on
+                // passait au travers du noir et on prenait un court éclair blanc) : là, le noir est fait d'un coup.
+                fader.FadeTo(1f, m_EnterFadeTime);
+                while (!Mathf.Approximately(fader.Alpha, 1f))
+                {
+                    if (m_Gate != null && m_Gate.HeadNearBack(k_BackMargin))
+                        fader.FadeTo(1f, 0f);
+                    yield return null;
+                }
+            }
 
             var loading = LoadArenaScene();
             if (loading == null)

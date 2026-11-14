@@ -453,7 +453,13 @@ namespace Archery.Locomotion
             if (!m_ArmJump || m_Jump == null || !m_Jump.isActiveAndEnabled || !grounded || m_JumpCooldownTimer > 0f)
                 return;
 
-            if (Mathf.Min(m_LeftRise, m_RightRise) < m_JumpHandSpeed || !m_Jump.CanJump())
+            // La sensibilité du saut, dans les paramètres (12 novembre, le joueur : « un peu trop sensible ») : coupé au plus bas ; la
+            // vitesse des mains de la scène au milieu, plus ou moins de part et d'autre (GameSettings.JumpSpeedFactor).
+            var sensitivity = GameSettings.Data.jumpSensitivity;
+            if (sensitivity < GameSettings.JumpOff)
+                return;
+            var needed = m_JumpHandSpeed * GameSettings.JumpSpeedFactor(sensitivity);
+            if (Mathf.Min(m_LeftRise, m_RightRise) < needed || !m_Jump.CanJump())
                 return;
 
             // Une main part vers l'arrière, ou est déjà derrière la tête : elle va chercher une flèche (l'autre lève

@@ -206,6 +206,36 @@ namespace Archery.Bows
         [Tooltip("Son d'une faille lancée parfaite (un bug).")]
         public AudioClip katanaSignClip;
 
+        [Header("Batte de baseball")]
+        [Tooltip("Une batte de baseball à la place de l'arc (13 novembre, l'idée du joueur) : elle se prend avec la poignée, comme " +
+                 "le katana, et frappe au corps à corps (Bat Damage). Une grenade lancée puis frappée par la batte file sur l'ennemi " +
+                 "le plus proche du centre de la vue et y éclate ; la qualité vient du chemin parcouru par la grenade avant le coup " +
+                 "(lancée haut, elle monte et redescend). La grenade recharge en 3 s, et l'Adresse raccourcit la recharge. Les " +
+                 "flèches de la grenade gardent les dégâts de l'arc du début de partie. Visual Prefab ne sert qu'à l'aperçu du menu.")]
+        public bool bat;
+
+        [Tooltip("Modèle de la batte : le milieu de la poignée à l'origine, la batte vers +Y ; enfant « Bout » au bout de la " +
+                 "batte, et des enfants « Vapeur » au bout des tuyaux (la vapeur sort vers leur +Z). Vide : une batte simple, faite " +
+                 "au lancement.")]
+        public GameObject batModel;
+
+        [Tooltip("Matériau de la vapeur qui sort des tuyaux de la batte à chaque coup (des particules : la fumée de la grenade).")]
+        public Material batSteamMaterial;
+
+        [Tooltip("Matériau de l'anneau qui marque l'ennemi verrouillé par la main libre (shader Archery/Glow : la couleur vient des " +
+                 "sommets).")]
+        public Material batLockMaterial;
+
+        [Tooltip("Dégâts d'un coup de batte sur un ennemi (à 2,5 m/s ; jusqu'à ×1,6 à 7 m/s ; tête ×2) ; le coup le repousse aussi. " +
+                 "22 depuis l'essai du 13 novembre au soir (30 avant, « peut-être un peu trop de dégâts »).")]
+        public float batDamage = 22f;
+
+        [Tooltip("Son d'un coup de batte qui touche une grenade ou un ennemi.")]
+        public AudioClip batHitClip;
+
+        [Tooltip("Son d'une grenade frappée en parfait (le coup de circuit), joué en plus du coup.")]
+        public AudioClip batHomeRunClip;
+
         [Header("Anneau de timing")]
         [Tooltip("Temps (s) pour que le cercle d'approche aille du bord au centre.")]
         public float ringDuration = 1.2f;

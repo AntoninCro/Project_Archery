@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.EnemyDefinition
   displayName: Thomas
   maxHealth: 190
-  moveSpeed: 1.5
+  moveSpeed: 3
   attackDamage: 40
   attackRange: 2.8
   attackInterval: 2.2

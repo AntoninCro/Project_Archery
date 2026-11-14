@@ -92,15 +92,13 @@ namespace Archery.Building
         [SerializeField]
         AudioClip m_UltimateClip;
 
-        [Header("Chantier de la partie (2 novembre)")]
-        [Tooltip("Au début de la partie, les coffres ne proposent que les plans du chantier (le joueur, après son premier essai : " +
-                 "les plans s'éparpillaient sur les 10 tours, et les duos n'arrivaient pas). Depuis le 3 novembre (le joueur), il " +
-                 "commence par les 3 tours d'un trio tiré au hasard, puis ces bâtiments de plus : la Barricade d'abord (si le trio " +
-                 "ne l'a pas), puis au hasard. 4 bâtiments au début ; avant, 3 au hasard (Starting Structures, retiré).")]
-        [Min(0)]
-        [SerializeField]
-        int m_ExtraStartingStructures = 1;
+        // Au début de la partie, les coffres ne proposent que les plans du chantier (le joueur, après son premier essai : les plans
+        // s'éparpillaient sur les 10 tours, et les duos n'arrivaient pas). Depuis le 3 novembre (le joueur), il commence par les 3 tours
+        // d'un trio tiré au hasard ; depuis le 12 novembre, sans rien de plus (la Barricade, ajoutée le 3 novembre, est retirée : « pour
+        // comprendre facilement l'ultime » ; Extra Starting Structures, retiré).
+        const int k_StartingStructures = 3;
 
+        [Header("Chantier de la partie (2 novembre)")]
         [Tooltip("Bâtiments qui rejoignent le chantier après chaque boss vaincu (à la fin de chaque vague).")]
         [Min(0)]
         [SerializeField]
@@ -108,18 +106,25 @@ namespace Archery.Building
 
         [Tooltip("Plans donnés par l'orbe de tourelle d'un coffre : de 1 à 4, tirés au sort (puis multipliés par le lot du bâtiment, " +
                  "Lot Size, 1 partout). Une ligne par vague (la dernière vaut pour les suivantes) : les chances de 1, 2, 3 et 4 plans, " +
-                 "en poids (leur total n'a pas besoin de faire 100). Le joueur, 4 novembre : « entre 1 et 4 plans par coffre, au hasard ; " +
-                 "les chances d'en avoir plus augmentent pendant la partie ; sur la partie, en moyenne, un peu plus qu'avant (10 % de " +
-                 "plus) » : 1,8 plan en moyenne à la vague 1, puis 2, 2,2, 2,4 et 2,6 ; 2,2 sur les 5 vagues à coffres. " +
-                 "Avant : toujours 2 (2 novembre au soir, deuxième essai) ; 1 avant.")]
+                 "en poids (leur total n'a pas besoin de faire 100). Le nombre de plans fait la rareté de la carte (1 commune, 2 rare, " +
+                 "3 épique, 4 légendaire). Depuis le 12 novembre au soir : 50 / 30 / 14 / 6 à la vague 1 (1,8 plan en moyenne), jusqu'à " +
+                 "30 / 35 / 22 / 13 à la vague 5 (2,2) ; 2 plans en moyenne sur les 5 vagues à coffres. Le même jour, d'abord : les " +
+                 "chances des objets (de 70 / 20 / 7 / 3 à 50 / 28 / 15 / 7, 1,6 plan en moyenne). Du 4 au 12 novembre : de " +
+                 "40 / 45 / 10 / 5 à 15 / 30 / 35 / 20, 2,2 plans en moyenne. Avant : toujours 2 (2 novembre au soir) ; 1 avant.")]
+        // Le 4 novembre, le joueur : « entre 1 et 4 plans par coffre, au hasard ; les chances d'en avoir plus augmentent pendant la
+        // partie ». Le 12 novembre, après le neuvième essai (trop de tourelles épiques et légendaires) : « prends 70 / 20 / 7 / 3 pour
+        // tout et augmente progressivement [...] ; si on applique cela partout, ça ne changera que les tours, qui seront légèrement
+        // nerf » (Editor/NinthTestBaker). Le soir même, après le dixième essai (« la partie m'a paru très fade, pas de construction
+        // gigantesque ; peut-être augmenter légèrement les drops, en particulier en début de partie ») : le début remonte, pas la fin
+        // (Editor/TenthTestBaker).
         [SerializeField]
         PlanChances[] m_PlanChances =
         {
-            new PlanChances(40f, 45f, 10f, 5f),
-            new PlanChances(30f, 45f, 20f, 5f),
-            new PlanChances(25f, 40f, 25f, 10f),
-            new PlanChances(20f, 35f, 30f, 15f),
-            new PlanChances(15f, 30f, 35f, 20f),
+            new PlanChances(50f, 30f, 14f, 6f),
+            new PlanChances(45f, 31f, 16f, 8f),
+            new PlanChances(40f, 33f, 18f, 9f),
+            new PlanChances(35f, 34f, 20f, 11f),
+            new PlanChances(30f, 35f, 22f, 13f),
         };
 
         [Header("Bilan")]
@@ -152,8 +157,8 @@ namespace Archery.Building
         public IReadOnlyList<StructureDefinition> Structures => m_Structures;
 
         /// <summary>
-        /// Le chantier de la partie (2 novembre) : les bâtiments dont les coffres proposent les plans. 4 au début (3 novembre : les
-        /// 3 tours d'un trio tiré au hasard, et la Barricade ou un autre), un de plus après chaque boss. On n'apprend que quelques
+        /// Le chantier de la partie (2 novembre) : les bâtiments dont les coffres proposent les plans. 3 au début (3 novembre : les
+        /// 3 tours d'un trio tiré au hasard ; la Barricade en plus jusqu'au 12 novembre), un de plus après chaque boss. On n'apprend que quelques
         /// tours au début, les plans se concentrent (les duos et les trios arrivent), et chaque partie a sa couleur.
         /// </summary>
         public IReadOnlyList<StructureDefinition> RunStructures => m_RunStructures;
@@ -316,8 +321,8 @@ namespace Archery.Building
         }
 
         // Le chantier du début (3 novembre, le joueur) : les 3 tours d'un trio tiré au hasard, pour qu'un trio (et son ultime) soit
-        // à portée dans chaque partie ; puis la Barricade, ou un autre bâtiment au hasard si le trio l'a déjà. Sans trio possible
-        // (pas de catalogue), au hasard comme avant.
+        // à portée dans chaque partie ; plus de Barricade en plus depuis le 12 novembre. Sans trio possible (pas de catalogue), au
+        // hasard comme avant.
         void PickStartingStructures()
         {
             var catalog = TowerDuoCatalog.Instance;
@@ -339,15 +344,7 @@ namespace Archery.Building
                 m_RunStructures.AddRange(picked.Towers);
             }
 
-            var count = 3 + m_ExtraStartingStructures;
-            if (m_RunStructures.Count < count && !m_RunStructures.Exists(d => d.kind == StructureKind.Barricade))
-            {
-                var barricade = m_Structures.Find(d => IsOffered(d) && d.kind == StructureKind.Barricade);
-                if (barricade != null)
-                    m_RunStructures.Add(barricade);
-            }
-
-            while (m_RunStructures.Count < count)
+            while (m_RunStructures.Count < k_StartingStructures)
             {
                 if (AddRunStructure() == null)
                     break;

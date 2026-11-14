@@ -14,9 +14,11 @@ namespace Archery.Enemies
     /// (quelques points en récompense).
     /// </summary>
     /// <remarks>
-    /// Il lui faut un collider qui n'est pas un trigger, pour que les flèches puissent le toucher.
+    /// Il lui faut un collider qui n'est pas un trigger, pour que les flèches puissent le toucher. Depuis le 12 novembre, la flèche
+    /// qui l'abat le traverse et poursuit sa route (<see cref="IArrowPassThrough"/> ; avant, elle s'y plantait et disparaissait avec
+    /// lui) ; pas les boules de feu de MK.
     /// </remarks>
-    public class EnemyProjectile : MonoBehaviour, IArrowHitHandler
+    public class EnemyProjectile : MonoBehaviour, IArrowHitHandler, IArrowPassThrough
     {
         [Tooltip("Durée de vie maximale (s).")]
         [SerializeField]

@@ -744,6 +744,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35f12640c148dce499f473d6eb64bc4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Archery.Runtime::Archery.Enemies.Enemy
+  m_BodyFollowsHops: 0
   m_Definition: {fileID: 11400000, guid: f755a0252b7da8dd107487079e68ce36, type: 2}
   m_Animator: {fileID: 0}
   m_CorpseLifetime: 4
@@ -790,6 +791,8 @@ MonoBehaviour:
   m_ArrivalClip: {fileID: 8300000, guid: 59605b2e81f76164fa6b67586fb63ddc, type: 3}
   m_TextColor: {r: 1, g: 0.35, b: 0.25, a: 1}
   m_WeakPointColor: {r: 0.62, g: 1, b: 0.18, a: 1}
+  m_WeakPointSteadiness: 0.8
+  m_RunAnimationSpeed: 0.7
 --- !u!1 &8363649572472922409
 GameObject:
   m_ObjectHideFlags: 0

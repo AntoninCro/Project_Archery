@@ -296,6 +296,22 @@ namespace Archery.Shop
             }
 
             FillRow(k_TowerRow);
+            if (RarityBoost > 0)
+                MarkBoosted();
+        }
+
+        // Les cartes que le gong a rendues plus rares, une par ligne, le disent (12 novembre : rien ne les signalait, et le joueur croyait
+        // que ses coups de gong n'avaient pas compté).
+        void MarkBoosted()
+        {
+            var index = new int[Rows];
+            foreach (var offer in m_UpgradeOffers)
+            {
+                if (offer == null || offer.Row < 0 || offer.Row >= Rows)
+                    continue;
+                if (index[offer.Row]++ == m_BoostedCard[offer.Row] && offer.Kind != ShopOfferKind.Unavailable)
+                    offer.PriceText = "Prendre · gong";
+            }
         }
 
         static string RarityName(float scrollScale) =>

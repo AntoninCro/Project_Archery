@@ -51,8 +51,10 @@ namespace Archery.Upgrades
         // l'Adresse, +20 % de bande verte et de dégâts des tirs parfaits ; la Vigueur, +35 PV (35 % des PV de base) et 35 % de
         // portée. Avant, la Force faisait aussi aller les flèches plus vite (le cinquième de son bonus) et l'Adresse accélérait
         // l'anneau. (Le même soir, d'abord : la Force +30 % d'anneau, l'Adresse sur la tête et les points faibles ; retouché par
-        // le joueur.)
-        const float k_StrengthRingShare = 0.5f;
+        // le joueur.) Depuis le 12 novembre (le joueur, après le neuvième essai : « vitesse de l'anneau à 10 % aussi »), l'anneau
+        // va aussi vite que les dégâts montent : la Force commune, +10 % de dégâts et l'anneau 10 % plus rapide (la moitié avant).
+        // Public : le texte de sa carte en dépend (ShopCatalog.ScrollText).
+        public const float StrengthRingShare = 1f;
         const float k_DexterityBandShare = 0.5f;
 
         // La part du bonus de l'adresse qui va aux dégâts des tirs parfaits (8 novembre) : tout.
@@ -124,7 +126,7 @@ namespace Archery.Upgrades
             (1f + Total(UpgradeEffect.ArrowSpeed) + 0.25f * Total(UpgradeEffect.Feather)) *
             Mathf.Sqrt(1f + k_VigorRangeShare * ScrollHealthShare);
 
-        public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge) + k_StrengthRingShare * Total(UpgradeEffect.Strength);
+        public float RingSpeedMultiplier => 1f + Total(UpgradeEffect.QuickCharge) + StrengthRingShare * Total(UpgradeEffect.Strength);
 
         float GlassPactMultiplier => Stacks(UpgradeEffect.GlassPact) > 0 ? 1.5f + 0.5f * Stacks(UpgradeEffect.GlassPact) : 1f;
 
