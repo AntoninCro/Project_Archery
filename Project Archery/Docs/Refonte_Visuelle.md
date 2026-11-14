@@ -331,6 +331,26 @@ Pour ne pas refaire de la modélisation en boucle, dès qu'il faut quelque chose
    la forte saturation sont des choix de création) : il va dans la liste ci-dessous.
 4. **Sinon, un son provisoire synthétisé par Claude**, noté dans la liste ci-dessous, à remplacer avant la sortie.
 
+### Les textures : la même règle (le joueur, 14 novembre)
+
+1. **D'abord, une texture gratuite faite par des humains** : ambientCG et Poly Haven (CC0, des matières photographiées ou
+   faites à la main : métal, bois, pierre, glace…), les kits et les textures de Kenney (CC0), OpenGameArt (CC0 ou CC-BY) ; pour
+   les icônes, `kenney_game-icons` et game-icons.net (CC-BY 3.0). Les mêmes licences à écarter (NC, ND, SA, « gratuit » sans
+   licence) ; écarter les sites de textures « générées par IA ». Toujours demander avant de télécharger.
+2. **Les retouches simples par Claude** : recadrer, réduire, rendre raccordable (les bords qui se répètent sans couture),
+   changer la teinte, le contraste ou la luminosité, en tirer un relief. À notre avis, ce n'est pas de l'IA (du montage, comme
+   pour les sons) ; noté dans `Credits_Licences.md`.
+3. **Sinon, une texture nouvelle faite de plusieurs textures ou peinte** (superposer, peindre des détails, dessiner des
+   fissures), **par le joueur**, dans Krita ou GIMP ; Claude propose les textures de départ.
+4. **Sinon, une texture provisoire dessinée par Claude** (par script), notée dans la liste ci-dessous.
+
+Le joueur pense (14 novembre) que toutes les textures actuelles faites par Claude peuvent se refaire ainsi. L'avis de Claude :
+oui. Le fer martelé, le bois peint et la glace des ultimes : des matières d'ambientCG ou de Poly Haven, ou plus de texture du
+tout (le style très low poly se contente de couleurs unies) ; le trou noir, les fissures de l'arène et les fenêtres du toit
+cyberpunk : peints par le joueur (un dégradé, des traits, une grille) ou des textures CC0 ; les palettes des tours : plus
+utiles si le joueur fait ses tours lui-même ; les icônes : des packs (lot 3). Sur le casque, des textures de 1 024 ou
+2 048 px suffisent.
+
 **Avant toute sortie publique** (le jeu, mais aussi une démo sur Steam, les captures et la bande-annonce de la page) : la liste
 doit être vide, sinon la case de Steam se coche. Les textes faits par Claude comptent aussi (partie 1).
 

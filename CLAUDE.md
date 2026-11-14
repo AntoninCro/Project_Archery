@@ -88,7 +88,10 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   caché `Provisoire Claude`. Rien ne sort en public (jeu, démo, page Steam) tant que la liste n'est pas vide. **La même règle
   pour les sons** : un son d'humain (freesound, Kenney) ; le montage simple par Claude (couper, fondre, volume, boucle) n'est
   pas de l'IA ; un son nouveau fait de plusieurs sons (mélange, forte saturation) est fait par le joueur, sinon il va dans la
-  liste ; un son synthétisé par Claude est provisoire, dans la liste.
+  liste ; un son synthétisé par Claude est provisoire, dans la liste. **Et pour les textures** : une texture d'humain
+  (ambientCG, Poly Haven, Kenney, OpenGameArt) ; les retouches simples par Claude (recadrer, raccorder, teinte, contraste) ne
+  sont pas de l'IA ; une texture nouvelle (mélange, peinture) est faite par le joueur ; une texture dessinée par script est
+  provisoire, dans la liste.
   **Règles** : ne jamais refaire ni retoucher par un baker le modèle d'un bâtiment ou d'un objet qui porte l'objet caché
   `Fait main` ; ne jamais lui proposer de retoucher un maillage de Claude pour le livrer ; avant de changer un prefab, sa fiche
   (`Tools/refonte_visuelle/reperes.py` : les pièces que le code utilise, les marques des bakers). Pour Steam (sa page, lue le
