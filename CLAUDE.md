@@ -70,6 +70,29 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
   7 (ce que le Manège a appris : fondre un modèle de centaines de pièces au lancement) et 8 (l'Horloge).
 - **Le chantier en cours** (26 octobre) : la refonte de la partie roguelike, « la flèche en pièces » ; son état et ses étapes
   sont dans `Project Archery/Docs/Refonte_Roguelike.md`, partie « Avancement ».
+- **La refonte visuelle** (depuis le 14 novembre, une conversation à part) : le joueur refait **à la main, depuis zéro**, tout
+  élément visuel fait par Claude (pas de mention d'IA sur Steam, par fierté) ; les modèles de Claude ne servent que de
+  référence (les images de `Tools/refonte_visuelle/planche.py`, dans `Docs/Planches/`). L'inventaire, la méthode et
+  l'avancement : `Project Archery/Docs/Refonte_Visuelle.md` ; le guide pas à pas : `Docs/Guide_Blender.md`.
+  **Sa méthode** (il n'a jamais modélisé) : il assemble lui-même, **dans Blender**, des formes simples et des pièces de packs
+  faits par des humains (qu'il peut retoucher), puis un outil de Claude branche le FBX sur le prefab ; Claude conseille les
+  packs et les pièces, prépare la référence et vérifie, **mais ne donne jamais de composition** (pas de positions) ; les effets
+  sont gardés, l'arène de MK est sa conception (sauf ses fissures, à refaire). **Son style** : du low poly très simple ; ses
+  modèles sont immobiles, **tous les mouvements sont faits par le code de Claude** (il fournit les pièces mobiles à part,
+  nommées, l'origine au pivot).
+  **La règle pour tout nouvel élément visuel** (le joueur, 14 novembre ; détail : `Refonte_Visuelle.md`, partie 5) : 1) un
+  asset gratuit fait par des humains, licence vérifiée (CC0, CC-BY crédité ; jamais NC, ND, SA ni « gratuit » sans licence) ;
+  2) sur demande du joueur, deux ou trois détails simples ajoutés par Claude, notés dans la liste ; 3) sinon un assemblage
+  d'assets gratuits **composé par le joueur** (Claude propose les pièces, jamais la composition) ; 4) sinon un provisoire
+  dessiné par Claude, **noté dans la liste** (`Refonte_Visuelle.md`, partie 5) et marqué dans son prefab par un objet vide
+  caché `Provisoire Claude`. Rien ne sort en public (jeu, démo, page Steam) tant que la liste n'est pas vide. **La même règle
+  pour les sons** : un son d'humain (freesound, Kenney) ; le montage simple par Claude (couper, fondre, volume, boucle) n'est
+  pas de l'IA ; un son nouveau fait de plusieurs sons (mélange, forte saturation) est fait par le joueur, sinon il va dans la
+  liste ; un son synthétisé par Claude est provisoire, dans la liste.
+  **Règles** : ne jamais refaire ni retoucher par un baker le modèle d'un bâtiment ou d'un objet qui porte l'objet caché
+  `Fait main` ; ne jamais lui proposer de retoucher un maillage de Claude pour le livrer ; avant de changer un prefab, sa fiche
+  (`Tools/refonte_visuelle/reperes.py` : les pièces que le code utilise, les marques des bakers). Pour Steam (sa page, lue le
+  14 novembre), les sons et les textes faits par Claude comptent aussi, pas le code.
 
 ## Le fil rouge du jeu : la complexité (règle du joueur, 2 novembre)
 

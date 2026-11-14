@@ -2,7 +2,8 @@
 
 Ce document fait le point pour reprendre le projet ailleurs (autre compte Claude, autre PC, coéquipier). Il complète le GDD
 (`GDD.md`, la référence, à tenir à jour) et les règles de travail (`../../CLAUDE.md`). **Pour reprendre vite : lire d'abord
-« Où on en est (12 novembre) », un peu plus bas.**
+« Où on en est (12 novembre) », un peu plus bas.** Depuis le 14 novembre, un chantier à part : **la refonte visuelle** (le
+joueur refait à la main tout ce que Claude a dessiné ou modelé ; `Refonte_Visuelle.md`).
 
 ## 1. Où en est le jeu
 
