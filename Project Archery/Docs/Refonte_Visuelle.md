@@ -74,7 +74,7 @@ simple est de refaire la tour entière (rien n'empêche de reprendre des pièces
 | Pièges | `Pieges` | 55 | 1 | à faire |
 | Baliste | `Baliste` | 33 | 6 | à faire |
 | Mortier | `Mortier` | 2 | 22 | à faire |
-| Givre | `Givre` | 12 | 3 | en cours (images de référence et guide prêts, 14 novembre) |
+| Givre | `Givre` | 12 | 3 | **modélisé par le joueur** (14 novembre, 33 min dans Blender). Contrôle : taille gardée (2,76 m au sol, 3 × 3 cases comme avant) ; corrigé par Claude : le jour de 4 mm entre les deux cônes du grand cristal et leurs faces collées, les cristaux de la tour séparés et rattachés au repère du code (posé à leur base, 3,42 m) ; le grand cristal tourne (25°/s, `Mouvements/Givre.json`). La glace à la couleur de la palette du joueur (`Transparent glace`, n°4, 0,55). **15 novembre** : les couleurs des pièces de Kenney changées par le joueur (la recoloration de l'onglet THUNK ; 35 min dans Blender en tout) ; contrôle refait : taille et défauts inchangés ; les couleurs essayées puis abandonnées retirées du fichier par Claude (rien ne change à l'écran ; l'extension le fait seule depuis). Puis, vu dans Unity par le joueur : **des carrés recolorés à moitié** (un triangle sur deux ; la texture de Kenney est en dégradé, et la recoloration lisait chaque triangle à part) ; l'outil lit maintenant chaque face d'un bloc, et les 7 faces coupées du Givre (10 triangles, la bande des créneaux et la couronne) ont pris la couleur donnée à leur teinte, le bleu clair (`corriger.py --faces`). Exporté ; à voir dans Unity, puis au casque |
 | Filet | `Filet` | 38 | 5 | à faire |
 | Aimant | `Aimant` | 74 | 1 | à faire |
 | Bulle | `Bulle` | 42 | 4 | à faire |
@@ -134,8 +134,10 @@ Avec eux, **les textures dessinées par script** : `Art/TowerDefense/Colosse_Fer
 
 ### Lot 4 : les armes et les objets
 
-- **La batte : à refaire.** Son maillage (`Art/Batte/Batte_Maillage.asset`) a été construit en entier par `Editor/BatteBaker`.
-  Le plus simple : une batte d'un pack, ou une batte assemblée par toi (un cylindre effilé, des bagues).
+- **La batte : à refaire.** Ses maillages ont été construits en entier par `Editor/BatteBaker` (`Art/Batte/Batte_Maillage.asset`,
+  puis, faits par le baker quand Unity a repris la main le 14 novembre, ceux du 13 novembre : `Batte_Engrenage`, `Batte_Piston`,
+  `Batte_Conduits`, `Batte_Foyer`, `Batte_Aiguille`, et la texture `Batte_Vapeur.png`, dessinée par script ; les matériaux
+  `Batte *.mat`). Le plus simple : une batte d'un pack, ou une batte assemblée par toi (un cylindre effilé, des bagues).
 - **Facultatif** (le joueur, 14 novembre : la base est un pack fait par des humains) : les 10 bandes néon des Akimbow
   (`Prefabs/Bow Visual Akimbow.prefab`), quelques minutes pour les replacer toi-même ; les matériaux que Claude a refaits sur des
   modèles de packs (les arcs légendaire et cosmique, la lame néon du katana, la grenade, les coffres), où choisir tes couleurs
@@ -202,13 +204,17 @@ méthode courante des jeux faits seul (le *kitbashing*), et elle va avec le styl
 kits de Kenney, les ennemis *polyart*).
 
 **L'outil : Blender** (gratuit, blender.org ; choix du joueur, approuvé par Claude le 14 novembre), plutôt que l'éditeur de
-prefab d'Unity : on y retouche les pièces des packs, on y règle le nombre de côtés des formes (un cylindre de 8 à 16 côtés, une
+prefab d'Unity : on y retouche les pièces des packs, on y règle le nombre de côtés des formes (un cylindre de 12 côtés, une
 sphère légère, au lieu des formes d'Unity, lourdes et sans biseau), et c'est un savoir qui sert pour la suite. Le prix : apprendre
-une dizaine de gestes, et un aller-retour Blender > Unity à chaque changement ; Claude écrit le guide pas à pas et l'outil qui
-branche le modèle sur le prefab (4.4), pour que l'aller-retour se fasse en un clic.
+une dizaine de gestes ; l'aller-retour Blender > Unity se fait en un clic (les outils, 4.1).
 
 **Le style et les mouvements** (le joueur, 14 novembre, pour réduire la durée) :
 - **Du low poly très simple** pour toutes les tours, des formes franches et peu de faces.
+- **12 côtés partout** (le choix du joueur, 14 novembre) : les cylindres, les cônes et les sphères du joueur ont la même rondeur
+  que les pièces rondes de Kenney (12 côtés). Avant ce choix, Claude a essayé de simplifier les pièces de Kenney (le modificateur
+  *Décimer* de Blender, cinq réglages, sur le canon, la tourelle et deux bases de tour) : soit les formes se froissent, soit
+  rien ne change (les pièces sont déjà en triangles) ; pas d'outil automatique fiable, donc on accorde les pièces du joueur à
+  celles des kits.
 - **Les modèles sont immobiles** : tout ce qui bouge (les tourelles qui tournent, les yo-yos, les bras, les chevaux…) est animé
   par le code de Claude, comme c'est déjà le cas aujourd'hui (aucune tour n'a d'animation faite à la main). Du code, que Valve
   ne vise pas. Le joueur fournit seulement les pièces mobiles **à part**, nommées comme dans la fiche, avec leur origine au
@@ -223,73 +229,94 @@ branche le modèle sur le prefab (4.4), pour que l'aller-retour se fasse en un c
 - **Le joueur** choisit les pièces, les place, les met à l'échelle, les colore. **Claude ne donne pas de composition** (pas de
   positions, pas de « mets ce cylindre là ») : le bâtiment redeviendrait sa conception, exécutée par d'autres mains.
 
-### 4.1 La référence (Claude la prépare)
+### 4.1 Les outils (14 novembre : tout ce qui entoure la modélisation est automatique)
 
-- **Les images de référence** (`Tools/refonte_visuelle/planche.py`, dans `Docs/Planches/<Batiment>/`) : les vues de face, de
-  droite et de dessus de Blender, à l'échelle exacte (un carreau = 1 m, l'origine marquée), au niveau le plus haut, avec les
-  réglages à taper dans Blender pour les poser ; et une planche des niveaux. Depuis `Project Archery/Assets` :
-  `py -I ../Tools/refonte_visuelle/planche.py _Project/Prefabs/Structures/Givre.prefab ../Docs/Planches/Givre tower-round-crystals`
-  (le dernier argument, facultatif : des objets dont on veut la place). Comment s'en servir : `Guide_Blender.md`, 3.3.
-- **La fiche des pièces à garder** (`Tools/refonte_visuelle/reperes.py`) : la hiérarchie du prefab, et ce que le code en fait.
-  Depuis `Project Archery/Assets` : `py -I ../Tools/refonte_visuelle/reperes.py _Project/Prefabs/Structures/Baliste.prefab`.
-  - `<- m_…` : un script désigne l'objet (une pièce qui bouge, un repère d'où part un tir, les pièces d'un niveau). **Le garder,
-    avec son nom** ; on change son maillage, pas l'objet.
-  - `[porte un script]` : l'objet a un script à lui. Le garder aussi.
-  - `(caché : marque d'un baker, à garder)` : les objets cachés au nom daté (« Allure du 30 octobre », « Duo du 31 octobre »…).
-    Sans eux, le baker refait le modèle de Claude au lancement suivant.
-- **Le modèle de Claude en 3D**, si la planche ne suffit pas : Claude le sort en `.obj`, à mettre dans Blender dans une
-  collection à part, verrouillée et en fil de fer, pour tourner autour ; jamais retouché, jamais exporté.
+| Étape | L'outil | Ce qu'il fait |
+|---|---|---|
+| Préparer un bâtiment | `Tools/refonte_visuelle/preparer.py` (Claude le lance, depuis `Assets` : `py -I ../Tools/refonte_visuelle/preparer.py <prefab>`) | Les images de référence (`planche.py`, dans `Docs/Planches/<Nom>`), puis `Modeles_Blender/<Nom>.blend`, fait par Blender en arrière-plan (`Tools/blender/depart.py`) : les images posées, le modèle de Claude niveau par niveau (verrouillé, jamais exporté), les repères du code (des objets vides nommés, à leur place chez Claude), le cahier des charges (les textes du jeu, les tailles), les réglages de l'extension. **Ne remplace jamais un `.blend` existant** (avec `--refaire`, l'ancien est renommé, pas effacé). |
+| La bibliothèque des pièces | `Tools/blender/bibliotheque.py` → `Modeles_Blender/Bibliotheque` (hors de Git : se refait en une minute) | 781 pièces des kits du projet (Kenney Tower Defense, Château, Village, Nature ; Quaternius RTS et modèles isolés), chacune avec son aperçu, son auteur et sa licence (`thunk_source`) ; un matériau par kit (« Kenney TD »…). Les pièces du joueur : `Mes_pieces.blend`, dans le même dossier (dans Git). |
+| Vérifier, exporter | L'extension `Tools/blender/addons/thunk_blender.py` (onglet THUNK du panneau N), installée par `Tools/blender/installer.py` (Blender fermé) | Les vérifications (repères, sol, cases, triangles, couleurs, crédits), l'export de la collection `Modele` en `Art/Modeles/<Nom>.fbx` avec `<Nom>.json` (les repères et leur chemin dans le prefab), l'export à chaque Ctrl+S, le temps de travail, le modèle de Claude à côté ou caché. Elle déclare aussi la bibliothèque à Blender. |
+| Brancher dans Unity | `Editor/ModelesFaitMain.cs` (tout seul quand le `.fbx` et le `.json` arrivent ; *Tools > THUNK > Brancher les modèles faits main*) | Voir 4.4. |
+| La fiche d'un prefab | `Tools/refonte_visuelle/reperes.py` | La hiérarchie et ce que le code en fait (`<- m_…` : un réglage d'un script le désigne ; `[porte un script]` ; les marques cachées des bakers). Les autres outils s'en servent. |
+
+**L'aller-retour est exact** (vérifié le 14 novembre) : le modèle de Claude passé dans Blender, puis exporté par l'extension et
+relu comme Unity le lit, revient au même endroit (le Yo-yo, qui n'est pas symétrique : écart nul ; en miroir, il serait à 2 m).
 
 ### 4.2 Les pièces
 
-- **Les formes de Blender** (*Shift+A > Mesh*) : cube, cylindre, cône, sphère, tore. **Peu de côtés** : un cylindre de 8 à 16
-  côtés (32 par défaut), une sphère UV de 12 × 6 ou une icosphère de niveau 1 ou 2 (une sphère d'Unity fait près de 800
-  triangles : le Manège de Claude en a 537, environ 400 000 triangles, qu'il faut fondre au lancement).
-- **Les packs** : d'abord ce qui est dans le projet (`kenney_tower-defense-kit`, `kenney_castle-kit`, `kenney_fantasy-town-kit`,
-  `kenney_nature-kit`, dans `Models/FBX format/`, avec leur texture de couleurs `Textures/colormap.png` ;
-  `construction/Ultimate Fantasy RTS by Quaternius/FBX`), à importer dans Blender (*File > Import > FBX*) ; puis d'autres kits
-  de Kenney, de Quaternius ou de KayKit (CC0) que Claude propose bâtiment par bâtiment, avec ce qu'ils contiennent. Les retoucher
-  est permis (CC0 ; pour un CC-BY, le dire dans les crédits). Toujours demander avant de télécharger, créditer au fur et à mesure
-  (`Credits_Licences.md`).
+- **Les formes de Blender** (*Shift+A > Mesh*) : cube, cylindre, cône, sphère, tore, avec **12 côtés** (la règle du
+  14 novembre, la rondeur des pièces de Kenney ; une sphère d'Unity fait près de 800 triangles : le Manège de Claude en a 537, environ 400 000 triangles, qu'il
+  faut fondre au lancement).
+- **Les packs** : la bibliothèque `THUNK Kits` (glisser-déposer depuis l'Asset Browser) ; les retoucher est permis (CC0 ; pour un
+  CC-BY, l'extension le signale, et le crédit va dans `Credits_Licences.md`). D'autres kits de Kenney, de Quaternius ou de KayKit
+  (CC0) se proposent bâtiment par bâtiment ; toujours demander avant de télécharger, puis `bibliotheque.py` les ajoute.
 - **Attention aux modèles faits par IA** : Sketchfab, Poly Pizza ou itch.io en ont de plus en plus (Meshy, Tripo…). S'en tenir
   aux auteurs connus (Kenney, Quaternius, KayKit) ; pour un autre auteur, regarder son profil et ses autres modèles avant.
 
-### 4.3 Dans Blender, bâtiment par bâtiment
+### 4.3 Dans Blender
 
-Le détail des gestes sera dans un guide pas à pas (à écrire avant le premier bâtiment) ; ici, les règles qui comptent pour le jeu.
-1. **Un fichier par bâtiment**, hors d'`Assets` (Unity essaierait d'ouvrir un `.blend` avec Blender) :
-   `Project Archery/Modeles_Blender/<Batiment>.blend`.
-2. **La planche** en image de référence (*Add > Image > Reference*) dans les vues de face et de côté, à l'échelle : la barre de
-   1 m sur un carreau de la grille.
-3. **Le bâtiment au sol, centré sur l'origine du monde** ; 1 unité = 1 m.
-4. **Les pièces que le code utilise** (la fiche) : un objet chacune, **nommé exactement comme dans la fiche**, son origine
-   (*Object > Set Origin*) là où elle tourne ou d'où part le tir. Ce qui bouge ensemble se joint en un objet (*Ctrl+J*).
-5. **Les pièces d'un niveau** : rattachées (*Ctrl+P*) à un objet vide nommé `Niveau 2`, `Niveau 3`… (les tours de base vont
-   jusqu'au niveau 5, les duos et les trios jusqu'au 3).
-6. **Le reste** : autant d'objets que tu veux (Claude les fond côté Unity s'il y en a beaucoup).
-7. **Moins de pièces que Claude** : ses modèles sont surchargés (jusqu'à 942 pièces). Quelques dizaines de pièces bien choisies
-   se lisent mieux de loin dans le casque, et une grosse pièce de pack porte plus de détail que dix cubes.
-8. **Peu de matériaux** : un par couleur (`Bois`, `Pierre`, `Laiton`…), partagé ; les pièces de Kenney gardent le leur (leur
-   texture de couleurs). Ce qui luit : un matériau dont le nom commence par `Lueur` (Claude le rend lumineux dans Unity).
-9. **L'export** : *File > Export > FBX*, dans `Assets/_Project/Art/Modeles/<Batiment>.fbx` (pas d'accents) ; *Limit to* les
-   objets visibles (la référence cachée), *Object Types* `Empty` et `Mesh`, *Scale* 1, *Apply Scalings* `FBX All`, *Forward*
-   `-Z Forward`, *Up* `Y Up`, *Apply Transform* coché. Claude vérifie l'orientation au premier essai, et corrige ces réglages
-   s'il le faut.
+Le pas à pas : `Guide_Blender.md`. Les règles qui comptent pour le jeu : travailler dans la collection `Modele` (la seule
+exportée) ; **rattacher ses pièces aux repères du code** (une pièce qui bouge à son repère, qui en est le pivot ; les pièces d'un
+niveau à `Niveau N`), sans les renommer ni les supprimer ; le bâtiment au sol, centré ; peu de pièces (quelques dizaines) ; un
+matériau par couleur, partagé (le même nom donne la même couleur dans tout le jeu ; `Lueur…` luit).
 
-### 4.4 Dans Unity : le branchement
+### 4.4 Dans Unity : le branchement (`Editor/ModelesFaitMain.cs`)
 
-1. **Au premier bâtiment**, Claude écrit l'outil (un menu d'Unity) qui branche ton FBX sur le prefab : chaque pièce nommée
-   comme une pièce de la fiche prend ta pièce (l'objet du jeu reste, avec ses scripts), les pièces sous `Niveau N` vont sous le
-   `Niveau N` du prefab, le reste sous `Modele fait main` ; pas de colliders ; les pièces de Claude retirées (jamais la racine, ni
-   les marques cachées des bakers) ; l'objet caché `Fait main` ajouté (la règle pour Claude : plus aucun baker ne touche à ce
-   bâtiment).
-2. **À chaque changement** : réexporter le FBX sous le même nom, relancer le menu.
-3. **Tester** : **F4** (la vitrine : chaque bâtiment, à plusieurs niveaux), puis une partie ; demander à Claude de lire le journal
-   et de compter les pièces et les triangles. Si un effet ne marche plus sur tes pièces (une lueur, une couleur qui change),
-   Claude adapte le code. Puis cocher l'**État** ici, et Claude ajoute le bâtiment à `Credits_Licences.md` (« modélisé par le
-   joueur », avec les packs utilisés).
+Dès que `<Nom>.fbx` et `<Nom>.json` arrivent dans `Art/Modeles` (un clic dans la fenêtre d'Unity), le prefab est mis à jour :
+1. **Les objets du code restent** (ceux que désigne un réglage d'un script, ou qui portent un script, comme `reperes.py`) :
+   chacun prend la place de son repère dans Blender, et ce que le joueur y a rattaché ; une pièce que le code lit (elle avait
+   une forme à elle chez Claude) est fondue en un maillage sur l'objet du code (`Art/Modeles/Fusions`).
+2. **Les pièces de Claude partent** : les formes simples, les modèles des kits qu'il avait posés (défaits s'ils contiennent un
+   objet du code) ; ce qui n'est pas une forme reste (lumières, particules, les marques cachées des bakers).
+3. **Le reste du modèle** va sous `Modele fait main` ; pas de colliders.
+4. **Les couleurs** : un matériau par nom (`Art/Modeles/Materiaux`, sur le modèle de `Art/TowerDefense/Bois.mat`) ; la couleur
+   suit Blender à chaque export, le reste se règle dans Unity et reste ; « Kenney TD »… prend la texture du kit ; un nom qui
+   contient `Lueur` luit ; un nom qui commence par `Transparent` est transparent (le joueur, 14 novembre, pour la glace ; sur le
+   modèle de `Art/TowerDefense/Glace.mat`), à l'Alpha réglé dans Blender (0,55 sinon ; l'import des FBX par URP le lit).
+5. **L'objet caché `Fait main`** : plus aucun baker ne touche à ce bâtiment.
+6. La console dit ce qui a été fait (repères placés, pièces, fusions, triangles, pièces de Claude retirées, temps de travail).
 
-### 4.5 L'ordre proposé
+Puis tester : **F4** (la vitrine), une partie, le journal. Si un effet ne marche plus sur les pièces du joueur (une lueur, une
+couleur qui change, un câble tendu par le code), Claude adapte le code. Puis cocher l'**État** ici, et Claude ajoute le bâtiment
+à `Credits_Licences.md` (« modélisé par le joueur », avec les pièces des kits utilisées, que le `.json` liste).
+
+### 4.4 bis Les couleurs : une palette humaine (le choix du joueur, 14 novembre)
+
+Le joueur ne veut pas régler les couleurs lui-même, et des couleurs choisies par Claude seraient de l'allure décidée par l'IA
+(la règle de pouce de la partie 2). D'où **une palette faite par un humain**, choisie une fois par le joueur : les couleurs du kit
+Tower Defense de Kenney (CC0), celles des pièces de kit qu'il utilise déjà, numérotées sur `Docs/Planches/Palette_td.png`
+(`Tools/refonte_visuelle/palette.py planche`). Il donne un numéro à chaque **rôle** dans `Modeles_Blender/Palette.txt` (Pierre,
+Bois, Or, Transparent glace, Lueur cristal…) ; `palette.py matieres` en fait les matériaux de la bibliothèque (`Palette.blend`,
+catalogue « Palette », par `Tools/blender/palette_blender.py`) et `palette_roles.json`, que l'extension applique à tout matériau
+du même nom (à l'ouverture, à *Vérifier*, à l'export). **Claude ne choisit jamais une couleur** : quel rôle va sur quelle pièce,
+c'est le joueur (il nomme, il glisse, ou il le dit à Claude, qui nomme). Pour les pièces des kits (le joueur, 14 novembre),
+l'onglet THUNK lit leurs couleurs et le joueur en choisit une nouvelle pour chacune, en voyant les couleurs : un pot de sa
+palette, une des couleurs du kit, ou une couleur libre (la roue de Blender), transparente ou lumineuse au besoin ; appliquée tout
+de suite. Une couleur du kit ou libre devient le matériau « Couleur #rrggbb » (« Transparent … », « … lueur »), que le
+branchement d'Unity reconnaît comme les autres.
+
+### 4.5 Après chaque tour (le joueur, 14 novembre)
+
+Quand le joueur a fini une tour, il l'enregistre, ferme Blender (son fichier ne doit pas avoir de changements non enregistrés)
+et le dit à Claude, qui :
+1. **Contrôle** (`Tools/refonte_visuelle/controle.py <Nom>`, sur l'export) : les tailles niveau par niveau comparées au modèle de
+   Claude (le prefab d'avant, dans Git) et les cases au sol ; les faces superposées (même plan, même côté : elles scintillent),
+   les jours horizontaux (deux pièces posées l'une sur l'autre avec une fente), les parois proches (souvent voulu par un kit :
+   le rebord d'une pièce autour de la suivante, à ne pas corriger).
+2. **Corrige** dans le fichier Blender (`Tools/blender/corriger.py`, une copie gardée avant) : **la taille** si elle s'écarte
+   nettement de l'ancienne (`--echelle` ; une tour un peu plus grande qui garde ses cases au sol se laisse), **les jours**
+   (`--jours` : tout ce qui est au-dessus descend de l'écart ; les faces collées entre deux pièces transparentes, qu'on verrait
+   au travers, sont retirées), **les repères** sans pièce (`--separer` : les morceaux d'une couleur de kit deviennent la pièce
+   du repère, posé à leur base), **les faces recolorées à moitié** par la recoloration d'avant le 15 novembre (`--faces` ; le
+   Givre seulement : l'outil ne coupe plus les faces). Puis l'export (`--exporter`) ; le joueur clique dans Unity.
+3. **Applique les mouvements demandés** : `Art/Modeles/Mouvements/<Nom>.json` (des pièces, par leur nom dans Blender, qui
+   tournent ensemble autour de leur centre ; `Building/ModelSpin`, posé par le branchement).
+4. Note ce qu'il a fait ici (l'avancement) : ce sont des corrections techniques, de la mise au point, pas l'allure.
+
+Ce que Claude ne fait pas : changer une forme, ajouter ou retirer une pièce visible, déplacer une pièce ailleurs que de quelques
+millimètres.
+
+### 4.6 L'ordre proposé
 
 1. **Un bâtiment simple pour roder la chaîne** : le Givre (12 formes) ou les Pièges.
 2. **Les 10 tours de base** (vues à chaque partie).
@@ -372,5 +399,16 @@ L'inventaire de la partie 3 couvre ce qui existait le 14 novembre (les sons comp
   de base, le Givre en premier exercice, l'export) et **les images de référence du Givre** (`Docs/Planches/Givre/`, faites par
   `Tools/refonte_visuelle/planche.py`). Puis l'estimation (environ 270 h avec le premier style, de 200 à 400 h) et, pour la
   réduire, **le style très low poly et les mouvements laissés au code** (partie 4 ; à peu près 190 h, de 130 à 270 h, à
-  recalculer avec le temps du Givre et des deux tours suivantes). Rien n'est encore refait. **La suite** : le joueur fait le Givre dans Blender ; à son
-  premier export, Claude écrit l'outil de branchement (4.4) et vérifie l'orientation et les réglages d'export.
+  recalculer avec le temps du Givre et des deux tours suivantes). Puis **l'automatisation** (le choix du joueur parmi les idées
+  de Claude : 1, 2, 3) : le fichier de départ de chaque bâtiment avec le modèle de Claude en 3D niveau par niveau, la
+  bibliothèque des pièces des kits, l'extension de Blender (vérifier, exporter, le temps de travail) et le branchement
+  automatique dans Unity (partie 4.1 ; l'aller-retour vérifié exact). `Modeles_Blender/Givre.blend` est prêt. **Le branchement
+  d'Unity essayé** sur une copie du Givre avec un faux modèle (une tour, un cristal rattaché au repère, une pièce de Kenney, une
+  pièce du niveau 3) : du premier coup, « 6 repères placés, 4 pièces du joueur, 1 fusion ; 20 pièces de Claude retirées » ; les
+  cristaux fondus sur l'objet du code à 2,63 m, la texture du kit, la lueur ; le test retiré ensuite. **L'extension et la
+  bibliothèque installées** dans le Blender du joueur (`Tools/blender/installer.py`). Pas encore essayé par le joueur lui-même.
+  Rien n'est encore refait. **La suite** : le Givre.
+- **14 et 15 novembre** : **le Givre refait par le joueur**, la première tour (le détail dans sa ligne, partie 3), avec la
+  procédure « Après chaque tour » (4.5) ; sa palette (4.4 bis) ; la recoloration des pièces de Kenney dans l'onglet THUNK
+  (instantanée, en pastilles : ses pots, les 57 couleurs du kit, une roue ; transparent, lumineux). Pas encore vu dans Unity ni
+  au casque. **La suite** : le voir dans Unity (F4, la vitrine), puis la tour suivante.

@@ -73,11 +73,26 @@ Toolkit 3.5.1, OpenXR, Input System. Le projet Unity est dans `Project Archery/`
 - **La refonte visuelle** (depuis le 14 novembre, une conversation à part) : le joueur refait **à la main, depuis zéro**, tout
   élément visuel fait par Claude (pas de mention d'IA sur Steam, par fierté) ; les modèles de Claude ne servent que de
   référence (les images de `Tools/refonte_visuelle/planche.py`, dans `Docs/Planches/`). L'inventaire, la méthode et
-  l'avancement : `Project Archery/Docs/Refonte_Visuelle.md` ; le guide pas à pas : `Docs/Guide_Blender.md`.
+  l'avancement : `Project Archery/Docs/Refonte_Visuelle.md` ; le guide pas à pas : `Docs/Guide_Blender.md`. **Les outils**
+  (14 novembre ; `Refonte_Visuelle.md`, 4.1) : `Tools/refonte_visuelle/preparer.py <prefab>` (depuis `Assets`) fait le fichier
+  de départ `Modeles_Blender/<Nom>.blend` (Blender en arrière-plan, `Tools/blender/depart.py`) et **ne remplace jamais** un
+  `.blend` existant (le travail du joueur ; `--refaire` renomme l'ancien) ; `Tools/blender/bibliotheque.py` (les pièces des kits,
+  hors de Git) ; l'extension `Tools/blender/addons/thunk_blender.py` (installée par `Tools/blender/installer.py`, Blender fermé) ;
+  le branchement automatique `Editor/ModelesFaitMain.cs`. Blender 5.3 : `C:\Program Files\Blender Foundation\Blender 5.3\blender.exe`.
+  **Après chaque tour** (le joueur, 14 novembre ; `Refonte_Visuelle.md`, 4.5) : il enregistre et ferme Blender ; Claude contrôle
+  (`Tools/refonte_visuelle/controle.py`), corrige la taille et les défauts dans le `.blend` (`Tools/blender/corriger.py`,
+  copie gardée), applique les mouvements demandés (`Art/Modeles/Mouvements/<Nom>.json`, `Building/ModelSpin`), exporte ; jamais
+  de changement de forme.
+  **Les couleurs : sa palette** (14 novembre ; `Refonte_Visuelle.md`, 4.4 bis) : des couleurs du kit Kenney qu'il a choisies une
+  fois par rôle (`Modeles_Blender/Palette.txt`, `Tools/refonte_visuelle/palette.py`) ; **Claude ne choisit jamais une couleur**,
+  le joueur dit quel rôle va sur quelle pièce (Claude peut nommer à sa demande).
+  **Le Blender du joueur est en français** (14 novembre) : donner les noms français exacts des menus (« Explorateur d'assets »,
+  « Type d'éditeur », « Synoptique »…), lus dans `5.3\datafiles\locale\fr\LC_MESSAGES\blender.mo` (Python, `gettext`).
   **Sa méthode** (il n'a jamais modélisé) : il assemble lui-même, **dans Blender**, des formes simples et des pièces de packs
   faits par des humains (qu'il peut retoucher), puis un outil de Claude branche le FBX sur le prefab ; Claude conseille les
   packs et les pièces, prépare la référence et vérifie, **mais ne donne jamais de composition** (pas de positions) ; les effets
-  sont gardés, l'arène de MK est sa conception (sauf ses fissures, à refaire). **Son style** : du low poly très simple ; ses
+  sont gardés, l'arène de MK est sa conception (sauf ses fissures, à refaire). **Son style** : du low poly très simple, **12 côtés
+  partout** (la rondeur des pièces de Kenney ; simplifier les pièces des kits automatiquement ne marche pas, essayé) ; ses
   modèles sont immobiles, **tous les mouvements sont faits par le code de Claude** (il fournit les pièces mobiles à part,
   nommées, l'origine au pivot).
   **La règle pour tout nouvel élément visuel** (le joueur, 14 novembre ; détail : `Refonte_Visuelle.md`, partie 5) : 1) un

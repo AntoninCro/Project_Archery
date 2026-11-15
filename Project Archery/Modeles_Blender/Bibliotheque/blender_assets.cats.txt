@@ -1,0 +1,10 @@
+# Catalogues de la bibliothèque THUNK (Tools/blender/bibliotheque.py ; le joueur peut en ajouter)
+VERSION 1
+
+bf955a4f-f213-58c5-9bae-7efb75c21fb7:Kenney Tower Defense Kit:Kenney Tower Defense Kit
+c1fe3126-c001-597e-ab07-4fd79779ca4d:Kenney Castle Kit:Kenney Castle Kit
+0e22d153-97bd-52d7-9628-98e9c841f5bb:Kenney Fantasy Town Kit:Kenney Fantasy Town Kit
+3c80ee60-39f3-5117-ad50-778159f4e20b:Kenney Nature Kit:Kenney Nature Kit
+e1fcb21f-406f-511b-b52f-d744b83d77f7:Quaternius Ultimate Fantasy RTS:Quaternius Ultimate Fantasy RTS
+aee42ee0-c613-5717-8da3-c00a253f9305:Modèles isolés (construction):Modèles isolés (construction)
+54c2d796-d271-535d-b1ec-36fd3d306498:Palette:Palette

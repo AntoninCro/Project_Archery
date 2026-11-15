@@ -18,3 +18,13 @@ Projet_UnityVR_Archery_Challenge_ST2OOS.pdf
 # Réglages locaux de Claude (l'assistant IA) : propres à chaque PC. Ses consignes (CLAUDE.md) sont dans le dépôt depuis le
 # 31 octobre (le joueur change de PC) ; avant, elles restaient sur le PC (23 octobre).
 .claude/
+
+# Refonte visuelle (14 novembre) : la bibliothèque des kits pour Blender se refait avec Tools/blender/bibliotheque.py ;
+# les fichiers du joueur (Mes_pieces.blend, les bâtiments) restent dans Git. Les copies de sauvegarde de Blender, non.
+Project Archery/Modeles_Blender/Bibliotheque/Kenney_*.blend
+Project Archery/Modeles_Blender/Bibliotheque/Quaternius_*.blend
+Project Archery/Modeles_Blender/Bibliotheque/Divers_*.blend
+*.blend1
+Project Archery/Modeles_Blender/Bibliotheque/Palette.blend
+# les copies d'avant les corrections de Claude (Tools/blender/corriger.py) : sur le PC seulement (15 novembre)
+Project Archery/Modeles_Blender/*_avant_corrections_*.blend

@@ -1,0 +1,65 @@
+{
+ "kit": "td",
+ "roles": [
+  {
+   "nom": "Pierre",
+   "couleur": "#868ba1",
+   "alpha": null
+  },
+  {
+   "nom": "Pierre sombre",
+   "couleur": "#575d75",
+   "alpha": null
+  },
+  {
+   "nom": "Bois",
+   "couleur": "#b06041",
+   "alpha": null
+  },
+  {
+   "nom": "Bois sombre",
+   "couleur": "#835442",
+   "alpha": null
+  },
+  {
+   "nom": "Metal",
+   "couleur": "#ff9c44",
+   "alpha": null
+  },
+  {
+   "nom": "Metal sombre",
+   "couleur": "#ff7444",
+   "alpha": null
+  },
+  {
+   "nom": "Or",
+   "couleur": "#ffc044",
+   "alpha": null
+  },
+  {
+   "nom": "Toit",
+   "couleur": "#c9835b",
+   "alpha": null
+  },
+  {
+   "nom": "Tissu",
+   "couleur": "#f378f0",
+   "alpha": null
+  },
+  {
+   "nom": "Transparent glace",
+   "couleur": "#d0e8ff",
+   "alpha": 0.55
+  },
+  {
+   "nom": "Lueur cristal",
+   "couleur": "#a676e7",
+   "alpha": null
+  },
+  {
+   "nom": "Lueur feu",
+   "couleur": "#fd6c40",
+   "alpha": null
+  }
+ ]
+}

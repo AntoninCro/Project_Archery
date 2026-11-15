@@ -1,0 +1,19 @@
+# La palette du jeu (le choix du joueur, 14 novembre ; Docs/Refonte_Visuelle.md, « Les couleurs »).
+# Pour chaque rôle, le numéro d'une couleur de la planche Docs/Planches/Palette_td.png (les couleurs du kit Tower Defense de
+# Kenney, CC0). Un rôle sans numéro est ignoré. On peut ajouter des rôles (une ligne « Nom = numéro »).
+# Un nom qui commence par « Transparent » est transparent : « Transparent glace = 4, 0.5 » (le 0.5 : sa transparence, 1 =
+# opaque ; 0,55 sans rien). Un nom qui contient « Lueur » luit.
+# Puis Claude lance : py -I Tools/refonte_visuelle/palette.py matieres
+
+Pierre = 46
+Pierre sombre = 48
+Bois = 15
+Bois sombre = 17
+Metal = 31
+Metal sombre = 32
+Or = 27
+Toit = 20
+Tissu = 10
+Transparent glace = 4, 0.55
+Lueur cristal = 8
+Lueur feu = 34

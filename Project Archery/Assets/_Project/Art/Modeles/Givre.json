@@ -1,0 +1,74 @@
+{
+ "batiment": "Givre",
+ "prefab": "Assets/_Project/Prefabs/Structures/Givre.prefab",
+ "fbx": "Assets/_Project/Art/Modeles/Givre.fbx",
+ "exporte_le": "2026-11-15T17:53:45",
+ "reperes": [
+  {
+   "cle": "tower-round-crystals",
+   "chemin": [
+    {
+     "nom": "tower-round-crystals",
+     "rang": 0
+    }
+   ],
+   "piece": true
+  },
+  {
+   "cle": "Glow",
+   "chemin": [
+    {
+     "nom": "Glow",
+     "rang": 0
+    }
+   ],
+   "piece": false
+  },
+  {
+   "cle": "Niveau 2",
+   "chemin": [
+    {
+     "nom": "Niveau 2",
+     "rang": 0
+    }
+   ],
+   "piece": false
+  },
+  {
+   "cle": "Niveau 3",
+   "chemin": [
+    {
+     "nom": "Niveau 3",
+     "rang": 0
+    }
+   ],
+   "piece": false
+  },
+  {
+   "cle": "Niveau 4",
+   "chemin": [
+    {
+     "nom": "Niveau 4",
+     "rang": 0
+    }
+   ],
+   "piece": false
+  },
+  {
+   "cle": "Niveau 5",
+   "chemin": [
+    {
+     "nom": "Niveau 5",
+     "rang": 0
+    }
+   ],
+   "piece": false
+  }
+ ],
+ "sources": [
+  "Kenney Tower Defense Kit · Kenney · CC0 · kenney_tower-defense-kit/Models/FBX format/detail-crystal.fbx",
+  "Kenney Tower Defense Kit · Kenney · CC0 · kenney_tower-defense-kit/Models/FBX format/tower-round-crystals.fbx",
+  "Kenney Tower Defense Kit · Kenney · CC0 · kenney_tower-defense-kit/Models/FBX format/tower-square-middle-c.fbx"
+ ],
+ "minutes": 35
+}

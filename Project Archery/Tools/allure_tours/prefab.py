@@ -180,7 +180,7 @@ class Node:
         self.active = True
         self.go = None
 
-def build(path, level_parts_out=None):
+def build(path, level_parts_out=None, nodes_out=None):
     docs = parse(path)
     comps = {}
     for d in docs.values():
@@ -314,6 +314,9 @@ def build(path, level_parts_out=None):
             if f_ in nodes and nodes[f_] is not None and nodes[d['id']] not in nodes[f_].children:
                 nodes[f_].children.append(nodes[d['id']])
     roots = [nodes[d['id']] for d in docs.values() if d['cls'] == 4 and not d['stripped'] and ref(field(d, 'm_Father')) in (None, '0')]
+    # les nœuds par transform (14 novembre, refonte visuelle : refonte_visuelle/preparer.py y cherche les repères du code)
+    if nodes_out is not None:
+        nodes_out.update(nodes)
     return roots[0] if roots else None
 
 def collect(node, M, hidden, out, skip_names=()):
