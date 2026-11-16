@@ -79,13 +79,19 @@ def localiser(objs=None):
     return mapping
 
 
+COULEUR_NOMMEE = re.compile(r'^(Transparent )?Couleur #[0-9a-fA-F]{6}( lueur)?$')
+
+
 def ranger_couleurs():
-    """Range les copies des matériaux des kits (« Kenney TD.001 », faites à chaque pièce glissée) dans l'original."""
+    """Range les copies des matériaux des kits (« Kenney TD.001 », faites à chaque pièce glissée) dans l'original ; de même
+    les copies d'une couleur du pinceau ou de la recoloration (« Couleur #c98967.001 », une pièce copiée : son nom dit sa
+    couleur ; 16 novembre)."""
     count = 0
     for m in list(bpy.data.materials):
         base = re.sub(r'\.\d{3}$', '', m.name)
         target = bpy.data.materials.get(base)
-        if base == m.name or not base.startswith(KIT_PREFIXES) or m.library or target is None or target.library:
+        if base == m.name or not (base.startswith(KIT_PREFIXES) or COULEUR_NOMMEE.match(base)) or m.library or \
+                target is None or target.library:
             continue
         m.user_remap(target)
         bpy.data.materials.remove(m)
@@ -270,6 +276,10 @@ def verifier(scene=None):
                     line + (' Plus de cases : il prendra plus de place sur la grille.' if c[0] * c[1] > theirs[0] * theirs[1] else '')))
     else:
         out.append(('ATTENTION', 'Rien au niveau 1 : toutes les pièces sont rattachées à un niveau.'))
+    gone = [o for o in meshes if retire_level(o)]
+    if gone:
+        out.append(('INFO', 'Disparaissent : %s.' % ', '.join('%s (au niveau %d)' % (o.name, retire_level(o))
+                                                              for o in gone[:8]) + ('…' if len(gone) > 8 else '')))
 
     deps = bpy.context.evaluated_depsgraph_get()
     tris = 0
@@ -367,6 +377,16 @@ def exporter(scene=None):
         'reperes': [{'cle': r['cle'], 'chemin': r['chemin'], 'piece': bool(r.get('piece'))} for r in data['reperes']],
         'sources': sorted({o['thunk_source'] for o in meshes if 'thunk_source' in o}),
         'minutes': int(scene.get('thunk_minutes', 0)),
+        # le niveau où chaque pièce apparaît, et celui où elle disparaît (0 : jamais ; 15 novembre) : Unity pose LevelHide,
+        # le contrôle ne compare pas deux pièces qui ne sont jamais là ensemble
+        'niveaux': [{'piece': o.name, 'de': level_number(o), 'retire': retire_level(o)} for o in meshes] +
+                   # un repère du code rattaché à une pièce qui disparaît disparaît avec elle (16 novembre : la bouche du
+                   # canon du niveau 1 du Mortier, remplacé par deux au niveau 3 ; une bouche cachée ne tire pas)
+                   [{'piece': o.name, 'de': level_number(o), 'retire': retire_level(o)} for o in chosen
+                    if o.type == 'EMPTY' and o.name in {r['cle'] for r in data['reperes']} and retire_level(o)],
+        # la place de chaque objet dans Blender : le FBX donne un quart de tour de trop à une pièce rattachée à un repère
+        # lui-même rattaché (16 novembre, le Mortier) ; Unity replace tout d'après elle
+        'objets': [{'nom': o.name, 'matrice': [round(v, 6) for row in o.matrix_world for v in row]} for o in chosen],
     }
     with open(os.path.splitext(fbx)[0] + '.json', 'w', encoding='utf-8') as f:
         json.dump(side, f, ensure_ascii=False, indent=1)
@@ -1090,6 +1110,282 @@ class THUNK_OT_couleurs_kenney(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# ---------------------------------------------------------------- le pinceau (le joueur, 15 novembre)
+# « Peindre les faces avec un outil simple où je dois juste cliquer une face avec une couleur » (la base du Mortier, un cube) : les
+# mêmes couleurs que la recoloration (ses pots, les couleurs du kit, la roue ; transparente, lumineuse). Une face d'une pièce de
+# kit se peint d'un bloc (face_regions) ; la couleur d'avant chaque face peinte est gardée (thunk_kit_mat), pour la gomme et pour
+# « Remettre les couleurs Kenney ».
+
+_activite = [False]   # un clic de pinceau compte dans le temps de travail (tick)
+
+
+def pinceau_items(self, context):
+    items = [('GARDER', 'Gomme', 'Rendre à la face sa couleur d\'avant le pinceau (celle du kit)', 'LOOP_BACK', 0)]
+    for i, (name, r) in enumerate(palette_roles().items()):
+        items.append(('R%d' % i, name, 'Ta palette : %s (%s)' % (name, r['couleur']), icon(r['couleur']), 1 + i))
+    for i, h in enumerate(kit_colors()):
+        items.append(('K%d' % i, h, 'Couleur %d du kit Kenney (%s)' % (i + 1, h), icon(h), 100 + i))
+    items.append(('LIBRE', 'Couleur libre', 'La couleur choisie à la roue, à droite', 'COLOR', 999))
+    _choix_cache['pinceau'] = items
+    return items
+
+
+def on_pinceau_libre(self, context):
+    if self.choix != 'LIBRE':
+        self.choix = 'LIBRE'
+
+
+class THUNK_Pinceau(bpy.types.PropertyGroup):
+    choix: bpy.props.EnumProperty(items=pinceau_items, name='Couleur du pinceau')
+    libre: bpy.props.FloatVectorProperty(subtype='COLOR_GAMMA', size=3, min=0.0, max=1.0, default=(0.8, 0.8, 0.8),
+                                         name='Couleur libre', description='La roue de couleurs : une couleur à toi',
+                                         update=on_pinceau_libre)
+    transparent: bpy.props.BoolProperty(name='Transparente', description='Transparente dans le jeu (comme la glace)')
+    lueur: bpy.props.BoolProperty(name='Lumineuse', description='Lumineuse dans le jeu')
+
+
+def peindre_face(o, index, mat):
+    """Peint la face « index » de la pièce (toute sa face visible pour une pièce de kit) ; mat None : la gomme. Une forme sans
+    couleur la prend d'abord partout. Rend le nombre de faces changées."""
+    if o.data.users > 1:
+        o.data = o.data.copy()       # une pièce à elle : ses copies liées (Alt+D) ne changent pas
+    me = o.data
+    stored = me.attributes.get('thunk_kit_mat')
+    if stored is None:
+        stored = me.attributes.new('thunk_kit_mat', 'INT', 'FACE')
+        stored.data.foreach_set('value', [-1] * len(me.polygons))
+        stored = me.attributes.get('thunk_kit_mat')
+    idx = original_slot(o, me.polygons[index], stored)
+    kit = idx < len(o.material_slots) and kit_image(o.material_slots[idx].material) is not None
+    if kit and me.uv_layers.active is not None:
+        region = face_regions(o)[0]
+        faces = [i for i, r in region.items() if r == region[index]]
+    else:
+        faces = [index]
+    n = 0
+    if mat is None:
+        for i in faces:
+            v = stored.data[i].value
+            if v >= 0:
+                me.polygons[i].material_index = v
+                stored.data[i].value = -1
+                n += 1
+    else:
+        if not o.material_slots:
+            me.materials.append(mat)
+            n = len(me.polygons)
+        mats = [s.material for s in o.material_slots]
+        if mat not in mats:
+            me.materials.append(mat)
+            mats.append(mat)
+        slot = mats.index(mat)
+        for i in faces:
+            p = me.polygons[i]
+            if p.material_index == slot:
+                continue
+            if stored.data[i].value < 0:
+                stored.data[i].value = p.material_index
+            p.material_index = slot
+            n += 1
+    me.update()
+    retirer_couleurs_vides([o])
+    return n
+
+
+def view_under_mouse(context, event):
+    """La vue 3D sous la souris : (région, vue) ; None ailleurs (le panneau N, les outils, les menus, l'outliner…)."""
+    x, y = event.mouse_x, event.mouse_y
+    for area in context.window.screen.areas:
+        if area.type != 'VIEW_3D' or not (area.x <= x < area.x + area.width and area.y <= y < area.y + area.height):
+            continue
+        win = None
+        for r in area.regions:
+            if r.width <= 1 or r.height <= 1 or not (r.x <= x < r.x + r.width and r.y <= y < r.y + r.height):
+                continue
+            if r.type != 'WINDOW':
+                return None          # le panneau N, les outils, l'en-tête : posés par-dessus la vue
+            win = r
+        if win is not None and win.data is not None:
+            return win, win.data
+    return None
+
+
+def face_sous_souris(context, region, rv3d, coord):
+    """La pièce de Modele et sa face sous la souris (la première touchée, le modèle de Claude et le reste traversés)."""
+    from bpy_extras import view3d_utils
+    origin = view3d_utils.region_2d_to_origin_3d(region, rv3d, coord)
+    direction = view3d_utils.region_2d_to_vector_3d(region, rv3d, coord)
+    return face_on_ray(context, origin, direction)
+
+
+def face_on_ray(context, origin, direction):
+    deps = context.evaluated_depsgraph_get()
+    col = bpy.data.collections.get(MODEL)
+    inside = set(col.all_objects) if col else set()
+    for _ in range(32):
+        ok, loc, normal, index, obj, mw = context.scene.ray_cast(deps, origin, direction)
+        if not ok:
+            return None, None, ''
+        o = obj.original
+        if o in inside and o.type == 'MESH':
+            if len(obj.data.polygons) != len(o.data.polygons):
+                return None, None, '« %s » a des modificateurs : applique-les d\'abord pour le peindre.' % o.name
+            return o, index, ''
+        origin = loc + direction * 1e-4
+    return None, None, ''
+
+
+def redraw(context):
+    for area in context.window.screen.areas:
+        area.tag_redraw()
+
+
+class THUNK_OT_pinceau(bpy.types.Operator):
+    bl_idname = 'thunk.pinceau'
+    bl_label = 'Pinceau'
+    bl_description = ('Peindre d\'un clic : clic gauche sur une face de tes pièces, avec la couleur choisie. Clic droit, '
+                      'Échap ou ce bouton : fini')
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        if wm.thunk_pinceau_actif:
+            wm.thunk_pinceau_actif = False      # le bouton une deuxième fois : le pinceau en cours s'arrête
+            return {'CANCELLED'}
+        if context.mode != 'OBJECT':
+            self.report({'WARNING'}, 'Le pinceau marche en Mode objet (Tab pour sortir du Mode édition).')
+            return {'CANCELLED'}
+        wm.thunk_pinceau_actif = True
+        wm.modal_handler_add(self)
+        context.window.cursor_modal_set('PAINT_BRUSH')
+        context.workspace.status_text_set('Pinceau THUNK : clic gauche sur une face pour la peindre ; clic droit ou Échap '
+                                          'pour finir')
+        redraw(context)
+        return {'RUNNING_MODAL'}
+
+    def finish(self, context):
+        context.window_manager.thunk_pinceau_actif = False
+        context.window.cursor_modal_restore()
+        context.workspace.status_text_set(None)
+        redraw(context)
+
+    def modal(self, context, event):
+        if not context.window_manager.thunk_pinceau_actif or \
+                (event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS'):
+            self.finish(context)
+            return {'FINISHED'}
+        if event.type != 'LEFTMOUSE' or event.value != 'PRESS':
+            return {'PASS_THROUGH'}      # tourner la vue, Ctrl+Z, le panneau…
+        hit = view_under_mouse(context, event)
+        if hit is None:
+            return {'PASS_THROUGH'}      # un clic ailleurs : choisir une autre couleur dans le panneau
+        region, rv3d = hit
+        o, index, why = face_sous_souris(context, region, rv3d, (event.mouse_x - region.x, event.mouse_y - region.y))
+        if why:
+            self.report({'WARNING'}, why)
+        if o is None:
+            return {'RUNNING_MODAL'}
+        if o.library or o.data.library:
+            o = next(iter(localiser([o]).values()), o)
+        if peindre_face(o, index, material_for(context.scene.thunk_pinceau)):
+            _activite[0] = True
+            bpy.ops.ed.undo_push(message='Pinceau THUNK')
+        return {'RUNNING_MODAL'}
+
+
+# ---------------------------------------------------------------- les pièces qui disparaissent à un niveau (le joueur, 15 novembre)
+# « Pouvoir retirer une pièce de la tour quand elle monte de niveau » : la base du Mortier d'une couleur par niveau, des copies,
+# chacune visible de son niveau jusqu'au suivant. Par défaut, une pièce reste jusqu'au dernier niveau. Une propriété de la pièce
+# (thunk_retire : le niveau où elle disparaît), écrite dans le .json de l'export ; Unity pose Building/LevelHide sur la pièce.
+
+RETIRE = 'thunk_retire'
+
+
+def retire_level(o):
+    """Le niveau où la pièce disparaît (elle, ou une pièce à laquelle elle est rattachée) ; 0 : jamais."""
+    out = 0
+    for p in [o] + list(ancestors(o)):
+        try:
+            r = int(p.get(RETIRE, 0))
+        except Exception:
+            r = 0
+        if r > 0 and (out == 0 or r < out):
+            out = r
+    return out
+
+
+def visible_at(o, level):
+    r = retire_level(o)
+    return level_number(o) <= level and (r == 0 or level < r)
+
+
+class THUNK_OT_retrait(bpy.types.Operator):
+    bl_idname = 'thunk.retrait'
+    bl_label = 'Disparaît au niveau'
+    bl_description = ('Les pièces sélectionnées disparaissent à partir de ce niveau (« Jamais » : elles restent jusqu\'au '
+                      'dernier niveau, comme d\'habitude)')
+    bl_options = {'REGISTER', 'UNDO'}
+    niveau: bpy.props.IntProperty(default=0, min=0)
+
+    def execute(self, context):
+        data = info(context.scene)
+        col = bpy.data.collections.get(MODEL)
+        if data is None or col is None:
+            return {'CANCELLED'}
+        reperes = {local_object(r['cle']) for r in data['reperes']} - {None}
+        sel = list(context.selected_objects)
+        linked = [o for o in sel if o.library or (o.data is not None and o.data.library)]
+        if linked:
+            ptrs = [o.as_pointer() for o in sel]
+            mapping = localiser(linked)
+            sel = [mapping.get(p) or o for p, o in zip(ptrs, sel)]
+        model_set = set(col.all_objects)
+        pieces = [o for o in sel if o.type == 'MESH' and o in model_set and o not in reperes]
+        if not pieces:
+            self.report({'WARNING'}, 'Sélectionne d\'abord tes pièces (dans Modele), puis clique sur le niveau.')
+            return {'CANCELLED'}
+        done, refused = 0, []
+        for o in pieces:
+            if self.niveau == 0:
+                if RETIRE in o:
+                    del o[RETIRE]
+                done += 1
+            elif self.niveau <= level_number(o):
+                refused.append(o)
+            else:
+                o[RETIRE] = self.niveau
+                done += 1
+        if refused:
+            o = refused[0]
+            self.report({'WARNING'}, '« %s » apparaît au niveau %d : elle ne peut disparaître qu\'à un niveau plus haut.' % (
+                o.name, level_number(o)))
+        if done:
+            self.report({'INFO'}, '%d pièce(s) : %s.' % (done, 'restent jusqu\'au bout' if self.niveau == 0 else
+                                                        'disparaissent au niveau %d' % self.niveau))
+        return {'FINISHED'} if done else {'CANCELLED'}
+
+
+class THUNK_OT_voir_niveau(bpy.types.Operator):
+    bl_idname = 'thunk.voir_niveau'
+    bl_label = 'Voir le niveau'
+    bl_description = 'Montrer seulement les pièces visibles dans le jeu à ce niveau (« Tout » : toutes les pièces)'
+    niveau: bpy.props.IntProperty(default=0, min=0)
+
+    def execute(self, context):
+        col = bpy.data.collections.get(MODEL)
+        if col is None:
+            return {'CANCELLED'}
+        layer = context.view_layer
+        for o in col.all_objects:
+            if o.type != 'MESH':
+                continue
+            try:
+                o.hide_set(not (self.niveau == 0 or visible_at(o, self.niveau)), view_layer=layer)
+            except RuntimeError:
+                pass
+        context.scene['thunk_vue_niveau'] = self.niveau
+        return {'FINISHED'}
+
+
 class THUNK_PT_panel(bpy.types.Panel):
     bl_label = 'THUNK VR'
     bl_idname = 'THUNK_PT_panel'
@@ -1115,11 +1411,37 @@ class THUNK_PT_panel(bpy.types.Panel):
             if active is not None and active in reperes:
                 box.label(text='« %s » : un repère du code' % active.name, icon='EMPTY_AXIS')
             elif active is not None:
-                box.label(text='« %s » : niveau %d' % (active.name, level_number(active)), icon='OBJECT_DATA')
+                r = retire_level(active)
+                if r:
+                    box.label(text='« %s » : niveaux %d à %d' % (active.name, level_number(active), r - 1), icon='OBJECT_DATA')
+                else:
+                    box.label(text='« %s » : niveau %d' % (active.name, level_number(active)), icon='OBJECT_DATA')
             box.label(text='Mettre la sélection au niveau :')
             row = box.row(align=True)
             for n in range(1, data['niveaux'] + 1):
                 row.operator('thunk.niveau', text=str(n)).niveau = n
+            box.label(text='La sélection disparaît au niveau :')
+            row = box.row(align=True)
+            row.operator('thunk.retrait', text='Jamais').niveau = 0
+            for n in range(2, data['niveaux'] + 1):
+                row.operator('thunk.retrait', text=str(n)).niveau = n
+            box.label(text='Voir comme dans le jeu au niveau :')
+            row = box.row(align=True)
+            vue = int(context.scene.get('thunk_vue_niveau', 0))
+            for n in range(1, data['niveaux'] + 1):
+                row.operator('thunk.voir_niveau', text=str(n), depress=(vue == n)).niveau = n
+            row.operator('thunk.voir_niveau', text='Tout', depress=(vue == 0)).niveau = 0
+        box = lay.box()
+        box.label(text='Pinceau', icon='BRUSH_DATA')
+        p = context.scene.thunk_pinceau
+        row = box.row(align=True)
+        row.template_icon_view(p, 'choix', show_labels=False, scale=1.0, scale_popup=3.0)
+        row.prop(p, 'libre', text='')
+        row.prop(p, 'transparent', text='', icon='IMAGE_ALPHA')
+        row.prop(p, 'lueur', text='', icon='LIGHT_SUN')
+        actif = context.window_manager.thunk_pinceau_actif
+        box.operator('thunk.pinceau', text='Arrêter le pinceau' if actif else 'Peindre : clic sur une face',
+                     icon='BRUSH_DATA', depress=actif)
         row = lay.row(align=True)
         row.operator('thunk.verifier', icon='CHECKMARK')
         row.operator('thunk.exporter', icon='EXPORT')
@@ -1253,17 +1575,18 @@ def tick():
         scene = bpy.context.scene
         ops = wm.operators
         sig = (len(ops), ops[-1].as_pointer() if len(ops) else 0)
-        if info(scene) is not None and _last[0] is not None and sig != _last[0]:
+        if info(scene) is not None and _last[0] is not None and (sig != _last[0] or _activite[0]):
             scene['thunk_minutes'] = int(scene.get('thunk_minutes', 0)) + 1
         _last[0] = sig
+        _activite[0] = False
     except Exception:
         pass
     return 60.0
 
 
-CLASSES = (THUNK_KitColor, THUNK_OT_verifier, THUNK_OT_exporter, THUNK_OT_niveau, THUNK_OT_localiser, THUNK_OT_ranger,
-           THUNK_OT_lire_couleurs, THUNK_OT_couleurs_kenney, THUNK_OT_decaler, THUNK_OT_voir,
-           THUNK_PT_panel)
+CLASSES = (THUNK_KitColor, THUNK_Pinceau, THUNK_OT_verifier, THUNK_OT_exporter, THUNK_OT_niveau, THUNK_OT_localiser,
+           THUNK_OT_ranger, THUNK_OT_lire_couleurs, THUNK_OT_couleurs_kenney, THUNK_OT_pinceau, THUNK_OT_retrait,
+           THUNK_OT_voir_niveau, THUNK_OT_decaler, THUNK_OT_voir, THUNK_PT_panel)
 
 
 def register():
@@ -1271,6 +1594,8 @@ def register():
         bpy.utils.register_class(c)
     bpy.types.Scene.thunk_kit_colors = bpy.props.CollectionProperty(type=THUNK_KitColor)
     bpy.types.Scene.thunk_kit_objets = bpy.props.StringProperty(default='')
+    bpy.types.Scene.thunk_pinceau = bpy.props.PointerProperty(type=THUNK_Pinceau)
+    bpy.types.WindowManager.thunk_pinceau_actif = bpy.props.BoolProperty(default=False)
     bpy.types.Scene.thunk_kit_nuances = bpy.props.BoolProperty(
         name='Séparer les nuances', description='Plus de couleurs à choisir (les nuances proches d\'une couleur du kit à part)',
         default=False)
@@ -1298,6 +1623,8 @@ def unregister():
     del bpy.types.Scene.thunk_kit_colors
     del bpy.types.Scene.thunk_kit_nuances
     del bpy.types.Scene.thunk_kit_objets
+    del bpy.types.Scene.thunk_pinceau
+    del bpy.types.WindowManager.thunk_pinceau_actif
     global _icons
     if _icons is not None:
         bpy.utils.previews.remove(_icons)

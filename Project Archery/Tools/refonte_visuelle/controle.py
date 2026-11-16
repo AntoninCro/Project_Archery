@@ -73,7 +73,19 @@ def overlap(t1, t2, n):
     return area(poly)
 
 
-def defauts(tris):
+def ensemble(niveaux):
+    """Deux pièces sont-elles là en même temps à un niveau ? (15 novembre : les copies d'une pièce, une par niveau, chacune
+    disparaissant au suivant, se superposent exprès.) niveaux : le .json de l'export, {pièce : (de, retire)}."""
+    def span(n):
+        de, retire = niveaux.get(n, (1, 0))
+        return de, (retire - 1 if retire else 99)
+    def f(a, b):
+        sa, sb = span(a), span(b)
+        return max(sa[0], sb[0]) <= min(sa[1], sb[1])
+    return f
+
+
+def defauts(tris, together=lambda a, b: True):
     names = [t[0] for t in tris]
     V = np.array([[t[1], t[2], t[3]] for t in tris])          # (n, 3, 3)
     N = np.cross(V[:, 1] - V[:, 0], V[:, 2] - V[:, 0])
@@ -103,6 +115,8 @@ def defauts(tris):
                 continue          # collées pour de vrai (dedans, invisibles), ou franchement écartées
             if set(map(tuple, np.round(V[a], 5))) & set(map(tuple, np.round(V[b], 5))) and names[a] == names[b]:
                 continue          # deux triangles voisins d'une même face
+            if names[a] != names[b] and not together(names[a], names[b]):
+                continue          # jamais là ensemble (une pièce remplacée à un niveau par sa copie)
             ov = overlap(V[a], V[b], N[a])
             if ov < 1e-4:          # moins de 1 cm² en commun
                 continue
@@ -121,6 +135,19 @@ def main():
     fbx = '_Project/Art/Modeles/%s.fbx' % name
     side = json.load(open('_Project/Art/Modeles/%s.json' % name, encoding='utf-8'))
     meshes = lf.load(fbx)
+    # la place de chaque pièce d'après Blender (le .json, 16 novembre) : le FBX tourne d'un quart de tour de trop une pièce
+    # rattachée à un repère lui-même rattaché (comme le branchement d'Unity, Editor/ModelesFaitMain)
+    places = {o['nom']: np.array(o['matrice']).reshape(4, 4) for o in side.get('objets', [])}
+    if places:
+        C = np.linalg.inv(A)       # Blender -> Unity
+        fixed = []
+        for P, T, Cl, nm, UV in lf.load(fbx, local='node'):
+            if nm in places:
+                M = places[nm]
+                Q = (np.c_[P @ A.T, np.ones(len(P))] @ M.T)[:, :3]      # données (Unity) -> Blender local -> Blender monde
+                P = Q @ C.T                                             # -> Unity monde
+            fixed.append((P, T, Cl, nm, UV))
+        meshes = fixed
     tris = tris_of(meshes)
 
     # les tailles, comparées au modèle de Claude
@@ -143,8 +170,12 @@ def main():
         B = P @ A.T
         print('    %-26s %4d tri  de (%.2f %.2f %.2f) à (%.2f %.2f %.2f)' % (nm, len(T), *B.min(0), *B.max(0)))
 
+    niveaux = {n['piece']: (n['de'], n['retire']) for n in side.get('niveaux', [])}
+    for n, (de, retire) in sorted(niveaux.items()):
+        if retire:
+            print('    %-26s niveaux %d à %d (disparaît au %d)' % (n, de, retire - 1, retire))
     print('== Défauts')
-    found = defauts(tris)
+    found = defauts(tris, ensemble(niveaux))
     if not found:
         print('  aucun')
     seen = set()

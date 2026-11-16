@@ -195,6 +195,12 @@ namespace Archery.Building
 
         float MaxRange => ValueFor(m_RangePerLevel, Mathf.Max(1, Level), 24f) * RangeScale * OverchargeRange;
 
+        /// <summary>
+        /// La distance de la cible, de 0 (portée la plus courte) à 1 (la plus longue) ; -1 sans cible. Les tubes d'un modèle fait
+        /// main se lèvent d'après elle (<see cref="BarrelPitch"/>, 16 novembre).
+        /// </summary>
+        public float AimDistance01 { get; private set; } = -1f;
+
         protected override void Update()
         {
             base.Update();
@@ -212,6 +218,7 @@ namespace Archery.Building
                 m_Target = m_Targets.Count > 0 ? m_Targets[0] : null;
             }
 
+            AimDistance01 = -1f;
             if (m_Target == null || m_Turret == null)
                 return;
 
@@ -219,6 +226,7 @@ namespace Archery.Building
             toTarget.y = 0f;
             if (toTarget.sqrMagnitude < 1e-4f)
                 return;
+            AimDistance01 = Mathf.InverseLerp(m_MinRange, MaxRange, toTarget.magnitude);
 
             var aim = Quaternion.LookRotation(toTarget.normalized);
             m_Turret.rotation = Quaternion.RotateTowards(m_Turret.rotation, aim, m_TurnSpeed * deltaTime);

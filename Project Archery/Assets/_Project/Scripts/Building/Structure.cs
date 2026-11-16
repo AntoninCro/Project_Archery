@@ -503,9 +503,16 @@ namespace Archery.Building
             for (var current = part; current != null; current = current.parent)
             {
                 var index = m_LevelParts != null ? Array.IndexOf(m_LevelParts, current.gameObject) : -1;
+                var hide = current.GetComponent<LevelHide>();
                 if (index >= 0)
                 {
                     if (level < index + 2)
+                        return false;
+                }
+                else if (hide != null)
+                {
+                    // éteinte ou non selon le niveau du moment : on la juge au niveau demandé
+                    if (!hide.IsShownAt(level))
                         return false;
                 }
                 else if (!current.gameObject.activeSelf)
@@ -704,12 +711,22 @@ namespace Archery.Building
             m_Blueprint.SetFloat(k_FlashId, m_Flash);
         }
 
+        // Les pièces d'un modèle fait main qui disparaissent à un niveau (15 novembre, LevelHide) : lues une fois, actives ou non.
+        LevelHide[] m_LevelHides;
+
         void ShowLevelParts(int level)
         {
             for (var i = 0; i < m_LevelParts.Length; i++)
             {
                 if (m_LevelParts[i] != null)
                     m_LevelParts[i].SetActive(level >= i + 2);
+            }
+
+            m_LevelHides ??= GetComponentsInChildren<LevelHide>(true);
+            foreach (var hide in m_LevelHides)
+            {
+                if (hide != null)
+                    hide.gameObject.SetActive(hide.IsShownAt(level));
             }
         }
 

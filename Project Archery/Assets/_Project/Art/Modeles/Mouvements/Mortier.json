@@ -1,0 +1,22 @@
+{
+ "mouvements": [
+  {
+   "nom": "Tubes",
+   "pieces": [
+    "weapon-cannon tube",
+    "weapon-cannon.001 tube",
+    "weapon-cannon.002 tube"
+   ],
+   "vise": [
+    72,
+    84,
+    58
+   ],
+   "suiveurs": [
+    "Bouche",
+    "Bouche 2",
+    "Bouche 3"
+   ]
+  }
+ ]
+}

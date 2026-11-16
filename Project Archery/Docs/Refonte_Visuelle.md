@@ -73,11 +73,11 @@ simple est de refaire la tour entière (rien n'empêche de reprendre des pièces
 | Barricade | `Barricade` | 33 | 19 | à faire |
 | Pièges | `Pieges` | 55 | 1 | à faire |
 | Baliste | `Baliste` | 33 | 6 | à faire |
-| Mortier | `Mortier` | 2 | 22 | à faire |
-| Givre | `Givre` | 12 | 3 | **modélisé par le joueur** (14 novembre, 33 min dans Blender). Contrôle : taille gardée (2,76 m au sol, 3 × 3 cases comme avant) ; corrigé par Claude : le jour de 4 mm entre les deux cônes du grand cristal et leurs faces collées, les cristaux de la tour séparés et rattachés au repère du code (posé à leur base, 3,42 m) ; le grand cristal tourne (25°/s, `Mouvements/Givre.json`). La glace à la couleur de la palette du joueur (`Transparent glace`, n°4, 0,55). **15 novembre** : les couleurs des pièces de Kenney changées par le joueur (la recoloration de l'onglet THUNK ; 35 min dans Blender en tout) ; contrôle refait : taille et défauts inchangés ; les couleurs essayées puis abandonnées retirées du fichier par Claude (rien ne change à l'écran ; l'extension le fait seule depuis). Puis, vu dans Unity par le joueur : **des carrés recolorés à moitié** (un triangle sur deux ; la texture de Kenney est en dégradé, et la recoloration lisait chaque triangle à part) ; l'outil lit maintenant chaque face d'un bloc, et les 7 faces coupées du Givre (10 triangles, la bande des créneaux et la couronne) ont pris la couleur donnée à leur teinte, le bleu clair (`corriger.py --faces`). Exporté ; à voir dans Unity, puis au casque |
+| Mortier | `Mortier` | 2 | 22 | **modélisé par le joueur** (15 et 16 novembre, 20 min au compteur de l'extension) : sa base, un cube peint au pinceau, d'une couleur au niveau 1 et d'une autre à partir du 2 (une copie, la première disparaît au niveau 2) ; un canon, remplacé au niveau 3 par deux ; des tonneaux au niveau 4, quatre petits canons au niveau 5. **Seul le canon tourne vers l'ennemi, avec son support, pas la base** (le joueur, 16 novembre : chez Claude, tout le haut tournait et la base « flottait »). Contrôle et corrections de Claude (16 novembre, `corriger.py`) : le canon du niveau 1 rattaché au repère `Affût` (il ne tournait pas), les bouches posées à la bouche de ses canons (elles flottaient 60 cm plus haut), 17 faces d'aire nulle retirées, les tonneaux côte à côte et les deux canons du niveau 3 écartés de 2 à 3 cm (faces superposées), tout agrandi de 1,132 (2 × 2 cases au lieu de 3 × 3 : maintenant 3 × 3 au niveau 1, 4 × 3 au niveau 5, comme Claude). Puis les tubes qui se lèvent comme un vrai mortier et la troisième bouche (partie 6). **Vu dans Unity par le joueur : « ça marche »** (16 novembre) ; commité. Reste le casque. Puis, à la demande du joueur : le dessus et le dessous des deux bases (en transparent, jamais vus) retirés, et la face basse de devant de la base du niveau 1, plus foncée par erreur, mise à la couleur des autres (`--retirer-faces`, `--repeindre`). Exporté ; pas encore vu dans Unity. Fichier de départ du 15 novembre (`Modeles_Blender/Mortier.blend`, images dans `Docs/Planches/Mortier/`). Les pièces de Claude : `weapon-cannon` ×6 et `weapon-ammo-cannonball` ×8 (Tower Defense), `tower-square-base-border`, `tower-square-top-color` et `flag-banner-short` ×2 (Château), `Barrel` ×4 (Quaternius RTS) ; les 2 flaques de goudron, des formes. L'affût tourne seul (code, autour du repère `Affût`, la bouche vers -Y de Blender) ; le tube du niveau 3 tourne avec lui |
+| Givre | `Givre` | 12 | 3 | **modélisé par le joueur** (14 novembre, 33 min dans Blender). Contrôle : taille gardée (2,76 m au sol, 3 × 3 cases comme avant) ; corrigé par Claude : le jour de 4 mm entre les deux cônes du grand cristal et leurs faces collées, les cristaux de la tour séparés et rattachés au repère du code (posé à leur base, 3,42 m) ; le grand cristal tourne (25°/s, `Mouvements/Givre.json`). La glace à la couleur de la palette du joueur (`Transparent glace`, n°4, 0,55). **15 novembre** : les couleurs des pièces de Kenney changées par le joueur (la recoloration de l'onglet THUNK ; 35 min dans Blender en tout) ; contrôle refait : taille et défauts inchangés ; les couleurs essayées puis abandonnées retirées du fichier par Claude (rien ne change à l'écran ; l'extension le fait seule depuis). Puis, vu dans Unity par le joueur : **des carrés recolorés à moitié** (un triangle sur deux ; la texture de Kenney est en dégradé, et la recoloration lisait chaque triangle à part) ; l'outil lit maintenant chaque face d'un bloc, et les 7 faces coupées du Givre (10 triangles, la bande des créneaux et la couronne) ont pris la couleur donnée à leur teinte, le bleu clair (`corriger.py --faces`). Vu dans Unity par le joueur : « ça marche » ; commité (15 novembre). Reste le casque |
 | Filet | `Filet` | 38 | 5 | à faire |
 | Aimant | `Aimant` | 74 | 1 | à faire |
-| Bulle | `Bulle` | 42 | 4 | à faire |
+| Bulle | `Bulle` | 42 | 4 | **fichier de départ prêt** (16 novembre, `Modeles_Blender/Bulle.blend`, images dans `Docs/Planches/Bulle/`). Choisie pour la troisième tour : aucune pièce que le code fait bouger, seulement les niveaux. Les pièces de kit de Claude : `fountain-round` (Village, le bassin du niveau 4), `detail-rocks` ×2 et `detail-crystal-large` (Tower Defense) ; le reste, des formes (la cuve, les bulles, l'anneau, l'orbe du niveau 5) |
 | Phare | `Phare` | 52 | 6 | à faire |
 | Tremplin | `Tremplin` | 38 | 1 | à faire |
 
@@ -410,5 +410,28 @@ L'inventaire de la partie 3 couvre ce qui existait le 14 novembre (les sons comp
   Rien n'est encore refait. **La suite** : le Givre.
 - **14 et 15 novembre** : **le Givre refait par le joueur**, la première tour (le détail dans sa ligne, partie 3), avec la
   procédure « Après chaque tour » (4.5) ; sa palette (4.4 bis) ; la recoloration des pièces de Kenney dans l'onglet THUNK
-  (instantanée, en pastilles : ses pots, les 57 couleurs du kit, une roue ; transparent, lumineux). Pas encore vu dans Unity ni
-  au casque. **La suite** : le voir dans Unity (F4, la vitrine), puis la tour suivante.
+  (instantanée, en pastilles : ses pots, les 57 couleurs du kit, une roue ; transparent, lumineux), qui recolore chaque face
+  d'un bloc. Vu dans Unity par le joueur, commité. **La suite** : le Mortier (choisi par Claude pour la deuxième tour : 2 formes
+  de Claude seulement, le reste des pièces de kits, le plus proche du Givre), fichier de départ prêt. Puis, à la demande du
+  joueur pendant le Mortier : **le pinceau** (un clic peint une face, onglet THUNK) et **les pièces qui disparaissent à un
+  niveau** (la base d'une couleur par niveau : des copies, chacune retirée au niveau suivant ; dans le jeu `Building/LevelHide`,
+  allumée ou éteinte par `Structure` avec les pièces des niveaux ; posée par `Editor/ModelesFaitMain` d'après le `.json` ;
+  `controle.py` ne compare pas deux pièces jamais là ensemble). Essayés dans Blender sur une copie, pas encore dans Unity.
+- **16 novembre** : **le Mortier refait par le joueur** (sa ligne, partie 3), contrôlé, corrigé et exporté par Claude
+  (`corriger.py` : `--rattacher`, `--bouche`, `--deplacer`, `--faces-nulles`, nouveaux). Pas encore vu dans Unity : c'est le
+  premier essai du retrait au niveau (`LevelHide`). Puis **la troisième bouche** (le joueur, oui) : au niveau 3, le premier
+  obus partait encore de la bouche du canon du niveau 1, disparu. Dans Blender, chaque bouche est rattachée à son canon, et
+  un repère rattaché à une pièce qui disparaît disparaît avec elle (l'export l'écrit dans le `.json`, le branchement pose
+  `LevelHide` sur l'objet du code ; une bouche cachée ne tire pas) ; « Bouche 3 », nouvelle, au canon de droite du niveau 3
+  (`corriger.py --ajouter-repere`), ajoutée au prefab et à `m_Muzzles` par `Editor/MortierBoucheBaker` (une fois), qui fait
+  rebrancher le modèle. Puis, vu dans Unity par le joueur : **les canons du niveau 3 pointaient vers le sol**. La cause :
+  l'export FBX de Blender (« Appliquer la transformation ») donne un quart de tour de trop à une pièce rattachée à un repère
+  lui-même rattaché à un repère (`Affût` > `Niveau 3` > canon ; un défaut de l'exporteur, `fbx_object_matrix`). Le `.json` de
+  l'export porte maintenant la place de chaque objet dans Blender (`objets`), et le branchement replace tout d'après elle
+  (`ModelesFaitMain`, 7 ter) ; `controle.py` aussi. Et la demande du joueur : **le socle et les supports tournent vers
+  l'ennemi, le tube se lève comme un vrai mortier** (près de la verticale pour un ennemi proche, plus couché pour un loin) :
+  les tubes détachés des canons (`corriger.py --tube`, origine sur l'axe, levés de 72° au repos), `Building/BarrelPitch`
+  (posé d'après `Mouvements/Mortier.json`, « vise » : 72° au repos, 84° au plus près, 58° au plus loin ; les bouches suivent
+  le bout de leur tube), `StructureMortar.AimDistance01` ; les petits canons du niveau 5 tournés chacun vers son coin, leur
+  tube levé de 72° (immobiles ; `--vers-dehors`). Vu dans Unity par le joueur : « ça marche » ; commité. **La suite** : la
+  Bulle (fichier de départ prêt).

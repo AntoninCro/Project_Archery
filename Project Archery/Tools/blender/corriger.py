@@ -10,11 +10,30 @@
 # - --faces : les faces des pièces de kit recolorées à moitié par la recoloration d'avant le 15 novembre (un triangle d'un
 #   carré d'une couleur, l'autre d'une autre) : toute la face prend la couleur donnée à sa teinte Kenney (l'extension THUNK,
 #   reunir_faces_coupees ; les teintes lues nuances séparées, comme le joueur les avait lues) ;
+# - --rattacher PIECE REPERE : la pièce rattachée au repère du code, sans bouger (le canon du Mortier à « Affût », qui tourne
+#   pour viser ; 16 novembre) ;
+# - --bouche REPERE PIECE X Y Z : le repère posé au point (X, Y, Z) du repère local de la pièce (la bouche d'un canon de
+#   Kenney, weapon-cannon : 0 -0.30 0.352 ; d'où partent les obus) ;
+# - --ajouter-repere CLE CHEMIN CHAMP : un repère du code nouveau (un objet vide ajouté au prefab par un baker), CHEMIN son
+#   chemin dans le prefab (« Affût/Niveau 3/Tube/Bouche 3 »), CHAMP le champ du code (m_Muzzles) ; à poser ensuite
+#   (--bouche, --rattacher) ; 16 novembre, la troisième bouche du Mortier ;
+# - --repeindre PIECE DE VERS : les faces de la couleur DE prennent la couleur VERS (un matériau du fichier), à la demande
+#   du joueur (16 novembre : une face du Mortier peinte par erreur) ;
+# - --retirer-faces PIECE COULEUR : les faces de cette couleur retirées, à la demande du joueur (des faces qui ne se voient
+#   jamais : le dessus et le dessous de la base du Mortier, en transparent) ; la couleur sort aussi de la pièce ;
+# - --tube PIECE ELEVATION : le tube d'un canon de Kenney (weapon-cannon : ses morceaux au-dessus de l'axe, au milieu)
+#   détaché en une pièce « <PIECE> tube », rattachée au canon, son origine sur l'axe, levé de ELEVATION degrés (16 novembre,
+#   le joueur : le Mortier, « plus comme un vrai mortier qu'un canon » ; le code le fait bouger, Building/BarrelPitch) ;
+# - --vers-dehors PIECE : la pièce tournée sur elle-même pour regarder à l'opposé du centre de la tour (les petits canons
+#   du niveau 5 du Mortier, chacun vers son coin ; le joueur, 16 novembre) ;
+# - --faces-nulles : les faces d'aire nulle (des arêtes écrasées en modelant) retirées ; rien ne change à l'écran ;
+# - --deplacer PIECE DX DY DZ : la pièce déplacée de quelques centimètres (dans le monde), pour séparer deux pièces qui
+#   s'enfoncent l'une dans l'autre avec des faces superposées (deux tonneaux côte à côte, les deux canons du niveau 3) ;
 # - --exporter : puis l'export vers Unity, comme le bouton de l'onglet THUNK.
 #   blender --background --python Tools/blender/corriger.py -- Modeles_Blender/Givre.blend --jours --exporter
 import bpy, bmesh, sys, os, shutil, datetime
 import numpy as np
-from mathutils import Vector
+from mathutils import Vector, Matrix, Euler
 
 args = sys.argv[sys.argv.index('--') + 1:]
 path = os.path.abspath(args[0])
@@ -285,6 +304,155 @@ while i < len(args):
         n = tb.reunir_faces_coupees(meshes(), tb.MERGE_FINE)
         tb.retirer_couleurs_vides(meshes())
         log.append('%d triangles de faces coupées remis à la couleur de leur face' % n)
+    elif a == '--rattacher':
+        piece, rep = bpy.data.objects[args[i + 1]], bpy.data.objects[args[i + 2]]; i += 2
+        world = piece.matrix_world.copy()
+        piece.parent = rep
+        piece.matrix_world = world
+        log.append('« %s » rattachée à « %s », sans bouger' % (piece.name, rep.name))
+    elif a == '--bouche':
+        rep, piece = bpy.data.objects[args[i + 1]], bpy.data.objects[args[i + 2]]
+        local = Vector(tuple(float(x) for x in args[i + 3:i + 6])); i += 5
+        before = rep.matrix_world.translation.copy()
+        m = rep.matrix_world.copy()
+        m.translation = piece.matrix_world @ local
+        rep.matrix_world = m
+        log.append('repère « %s » posé à la bouche de « %s » : (%.2f %.2f %.2f), avant (%.2f %.2f %.2f)' % (
+            rep.name, piece.name, *rep.matrix_world.translation, *before))
+    elif a == '--deplacer':
+        piece = bpy.data.objects[args[i + 1]]
+        d = Vector(tuple(float(x) for x in args[i + 2:i + 5])); i += 4
+        piece.matrix_world.translation += d
+        log.append('« %s » déplacée de (%.1f %.1f %.1f) cm' % (piece.name, d.x * 100, d.y * 100, d.z * 100))
+    elif a == '--ajouter-repere':
+        import json
+        cle, chemin, champ = args[i + 1], args[i + 2], args[i + 3]; i += 3
+        data = json.loads(bpy.context.scene['thunk'])
+        if not any(r['cle'] == cle for r in data['reperes']):
+            segs = [{'nom': s, 'rang': 0} for s in chemin.split('/')]
+            data['reperes'].append({'cle': cle, 'nom': segs[-1]['nom'], 'chemin': segs, 'piece': False, 'champs': [champ]})
+            bpy.context.scene['thunk'] = json.dumps(data, ensure_ascii=False)
+            e = bpy.data.objects.get(cle) or bpy.data.objects.new(cle, None)
+            e.empty_display_type = 'ARROWS'
+            e.empty_display_size = 0.3
+            if e.name not in model.objects:
+                model.objects.link(e)
+            e['thunk_chemin'] = json.dumps(segs, ensure_ascii=False)
+            txt = bpy.data.texts.get('Cahier des charges')
+            if txt is not None:
+                lines = txt.as_string().split('\n')
+                at = max((k for k, l in enumerate(lines) if l.startswith('  - ')), default=len(lines) - 1) + 1
+                lines.insert(at, '  - %s (le code : %s ; ajouté par Claude)' % (cle, champ))
+                txt.clear()
+                txt.write('\n'.join(lines))
+            log.append('repère « %s » ajouté (%s, %s)' % (cle, chemin, champ))
+    elif a in ('--repeindre', '--retirer-faces'):
+        import re
+        piece = bpy.data.objects[args[i + 1]]
+        me = piece.data
+        base = lambda n: re.sub(r'\.\d{3}$', '', n or '')
+        names = [base(s.material.name if s.material else '') for s in piece.material_slots]
+        src = [k for k, n in enumerate(names) if n == base(args[i + 2])]
+        if a == '--repeindre':
+            dst = bpy.data.materials[args[i + 3]]; i += 3
+            mats = [s.material for s in piece.material_slots]
+            if dst not in mats:
+                me.materials.append(dst)
+                mats.append(dst)
+            slot = mats.index(dst)
+            n = 0
+            for p in me.polygons:
+                if p.material_index in src:
+                    p.material_index = slot
+                    n += 1
+            log.append('« %s » : %d face(s) %s repeinte(s) en %s' % (piece.name, n, args[i - 1], dst.name))
+        else:
+            i += 2
+            bm = bmesh.new()
+            bm.from_mesh(me)
+            gone = [f for f in bm.faces if f.material_index in src]
+            bmesh.ops.delete(bm, geom=gone, context='FACES_ONLY')
+            bm.to_mesh(me)
+            bm.free()
+            # leur couleur n'est plus « la couleur d'avant » d'aucune face (la gomme, « Remettre les couleurs Kenney »)
+            st = me.attributes.get('thunk_kit_mat')
+            if st is not None:
+                for d in st.data:
+                    if d.value in src:
+                        d.value = -1
+            me.update()
+            log.append('« %s » : %d face(s) %s retirée(s)' % (piece.name, len(gone), args[i]))
+    elif a == '--vers-dehors':
+        import math
+        piece = bpy.data.objects[args[i + 1]]; i += 1
+        c = piece.matrix_world.translation
+        before = math.degrees(piece.matrix_world.to_euler().z)
+        world = piece.matrix_world.copy()
+        loc, rot, sca = world.decompose()
+        # l'avant d'une pièce de Kenney : -Y ; tournée autour de la verticale pour que -Y regarde à l'opposé du centre
+        ang = math.atan2(c.x, -c.y)
+        piece.matrix_world = Matrix.LocRotScale(loc, Euler((0, 0, ang)).to_quaternion(), sca)
+        log.append('« %s » tournée vers l\'extérieur (%.0f° -> %.0f°)' % (piece.name, before, math.degrees(ang)))
+    elif a == '--tube':
+        import math
+        piece = bpy.data.objects[args[i + 1]]
+        elev = float(args[i + 2]); i += 2
+        me = piece.data
+        bm = bmesh.new()
+        bm.from_mesh(me)
+        isl = islands(bm)
+        tube_faces = set()
+        lo = hi = None
+        for faces in isl:
+            vs = {v for f in faces for v in f.verts}
+            xs = [v.co.x for v in vs]; zs = [v.co.z for v in vs]
+            if min(xs) < -0.05 and max(xs) > 0.05 and (min(zs) + max(zs)) / 2 > 0.3:
+                tube_faces |= {f.index for f in faces}
+                zl, zh = min(zs), max(zs)
+                lo = zl if lo is None else min(lo, zl)
+                hi = zh if hi is None else max(hi, zh)
+        bm.free()
+        if not tube_faces:
+            log.append('« %s » : pas de tube trouvé' % piece.name)
+        else:
+            pivot = Vector((0.0, 0.0, (lo + hi) / 2))
+            if me.users > 1:
+                piece.data = me = me.copy()
+            tube_me = me.copy()
+            tube_me.name = piece.name + ' tube'
+            for data, keep in ((me, False), (tube_me, True)):
+                b = bmesh.new()
+                b.from_mesh(data)
+                b.faces.ensure_lookup_table()
+                gone = [f for f in b.faces if (f.index in tube_faces) != keep]
+                bmesh.ops.delete(b, geom=gone, context='FACES')
+                if keep:
+                    for v in b.verts:
+                        v.co -= pivot
+                b.to_mesh(data)
+                b.free()
+                data.update()
+            tube = bpy.data.objects.new(piece.name + ' tube', tube_me)
+            for col in piece.users_collection:
+                col.objects.link(tube)
+            if 'thunk_source' in piece:
+                tube['thunk_source'] = piece['thunk_source']
+            tube.parent = piece
+            tube.matrix_world = piece.matrix_world @ Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(-elev), 4, 'X')
+            log.append('« %s » : tube détaché (« %s », %d faces), levé de %.0f°' % (piece.name, tube.name, len(tube_faces), elev))
+    elif a == '--faces-nulles':
+        n = 0
+        for o in meshes():
+            bm = bmesh.new()
+            bm.from_mesh(o.data)
+            before = len(bm.faces)
+            bmesh.ops.dissolve_degenerate(bm, dist=1e-5, edges=bm.edges[:])
+            n += before - len(bm.faces)
+            if before != len(bm.faces):
+                bm.to_mesh(o.data)
+                o.data.update()
+            bm.free()
+        log.append('%d faces d\'aire nulle retirées' % n)
     elif a == '--exporter':
         export = True
     i += 1

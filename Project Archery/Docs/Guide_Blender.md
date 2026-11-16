@@ -217,6 +217,25 @@ Avec les pièces de la bibliothèque (2.6) et tes formes (2.3), construis le niv
   même code de couleur donne la même couleur dans tous les bâtiments). **Remettre les couleurs Kenney** rend aux faces leur
   couleur d'origine (et `Ctrl+Z` marche aussi). Relire les couleurs d'une pièce recolorée montre ses couleurs d'origine, et ce
   que tu leur as donné.
+- **Le pinceau** (15 novembre) : peindre une face d'un clic, sur tes formes comme sur les pièces de kit. Onglet THUNK, case
+  **Pinceau** :
+  1. choisis la couleur : la **pastille** (la même grille : tes pots, les couleurs du kit, *Couleur libre* ; la première case,
+     la **gomme**, rend à une face sa couleur d'avant le pinceau), la **roue**, et les interrupteurs **transparente** et
+     **lumineuse** ;
+  2. **Peindre : clic sur une face** : le curseur devient un pinceau ; chaque clic gauche sur une face de tes pièces la peint.
+     Tu peux tourner la vue (clic molette) et changer de couleur dans le panneau sans arrêter. **Clic droit**, **Échap** ou le
+     bouton (**Arrêter le pinceau**) : fini. `Ctrl+Z` défait un clic.
+
+  Une forme sans couleur (un cube neuf) prend la couleur partout au premier clic ; ensuite, chaque clic peint une face. Une
+  face d'une pièce de kit se peint d'un bloc (tous ses triangles). Le pinceau marche en *Mode objet* et ne touche que les
+  pièces de `Modele` (il traverse le modèle de Claude).
+- **Une pièce qui disparaît à un niveau** (15 novembre) : par défaut, une pièce reste jusqu'au dernier niveau. Pour qu'elle
+  laisse la place à une autre (la base d'une couleur par niveau : des copies, `Maj+D`, une par niveau), sélectionne-la et
+  clique, dans **La sélection disparaît au niveau**, sur le niveau où elle s'en va (**Jamais** : elle reste). Exemple : la base
+  du niveau 1 disparaît au niveau 2 ; sa copie, mise au niveau 2 (**Mettre la sélection au niveau**), disparaît au 3, etc.
+  **Voir comme dans le jeu au niveau 1, 2, 3…** ne montre que les pièces présentes à ce niveau (pour travailler sur une copie
+  sans que l'autre la cache) ; **Tout** remontre tout. Tout part à l'export, caché ou non. Un repère du code rattaché à une
+  pièce qui disparaît (`Ctrl+P`) disparaît avec elle : la bouche d'un canon remplacé à un niveau ne tire plus.
 - Enregistre souvent (`Ctrl+S`).
 
 ## 4. Vérifier et exporter (l'onglet THUNK)
@@ -229,6 +248,8 @@ Dans la vue 3D, `N`, onglet **THUNK** :
   `Assets/_Project/Art/Modeles/Givre.fbx`, avec les bons réglages (vérifiés le 14 novembre par un aller-retour exact).
 - **Exporter à chaque Ctrl+S** : à cocher quand tout marche ; chaque enregistrement exporte (si la vérification passe).
 - **Mettre la sélection au niveau 1, 2, 3…** : le niveau des pièces sélectionnées (3.2), et celui de la pièce active.
+- **La sélection disparaît au niveau** et **Voir comme dans le jeu au niveau** : les pièces qui s'en vont à un niveau (3.3).
+- **Pinceau** : peindre une face d'un clic (3.3).
 - **Rendre les pièces modifiables** (seulement s'il y en a) : les pièces glissées en mode *Empaqueter* (2.6).
 - **Ranger les pièces dans Modele** (seulement s'il y en a) : les pièces posées hors de `Modele`, qui ne partiraient pas.
 - **Modèle de Claude** : à côté / au centre, voir / cacher.
